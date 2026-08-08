@@ -19,6 +19,16 @@
       "colour": "#019E4F"
     },
     {
+      "id": "GDV",
+      "name": "Colony of Godvind",
+      "colour": "#019E4F"
+    },
+    {
+      "id": "HTL",
+      "name": "Colony of Hetland Island",
+      "colour": "#019E4F"
+    },
+    {
       "id": "AGN",
       "name": "Colony of Agnarland",
       "colour": "#019E4F"
@@ -187,6 +197,46 @@
       "id": "ROS",
       "name": "Rosombe",
       "colour": "#CB70E0"
+    },
+    {
+      "id": "SUK",
+      "name": "Union of Aoiwa-Sukuishima",
+      "colour": "#998C00"
+    },
+    {
+      "id": "NAH",
+      "name": "Republic of Nova Aheria",
+      "colour": "#8D4EE5"
+    },
+    {
+      "id": "TVC",
+      "name": "Republic of Tavociel",
+      "colour": "#59E3E5"
+    },
+    {
+      "id": "ONW",
+      "name": "Onanwa Nation",
+      "colour": "#CC6968"
+    },
+    {
+      "id": "TRN",
+      "name": "Three Nations",
+      "colour": "#E56498"
+    },
+    {
+      "id": "SHN",
+      "name": "Republic of Shinchi",
+      "colour": "#A84571"
+    },
+    {
+      "id": "TBR",
+      "name": "United Republic of Tirbryn",
+      "colour": "#74A83C"
+    },
+    {
+      "id": "GRG",
+      "name": "Republic of Giorgia",
+      "colour": "#E5E509"
     }
   ],
   "provinces": [
@@ -3387,7 +3437,7 @@
       "owner": "ARV"
     },
     {
-      "id": "unnamed_01",
+      "id": "ankerby",
       "name": "Ankerby",
       "colour": "#82a58b",
       "terrain": [
@@ -3396,7 +3446,7 @@
       "owner": "AGN"
     },
     {
-      "id": "unnamed_02",
+      "id": "molbu",
       "name": "Molbu",
       "colour": "#a3447d",
       "terrain": [
@@ -3405,7 +3455,7 @@
       "owner": "YNK"
     },
     {
-      "id": "unnamed_03",
+      "id": "central_yunkallpa",
       "name": "Central Yunkallpa",
       "colour": "#a38642",
       "terrain": [
@@ -3414,7 +3464,7 @@
       "owner": "YNK"
     },
     {
-      "id": "unnamed_04",
+      "id": "northeast_yunkallpa",
       "name": "Northeast Yunkallpa",
       "colour": "#a30049",
       "terrain": [
@@ -3423,7 +3473,7 @@
       "owner": "YNK"
     },
     {
-      "id": "unnamed_05",
+      "id": "west_yunkallpa",
       "name": "West Yunkallpa",
       "colour": "#6e51a3",
       "terrain": [
@@ -3432,7 +3482,7 @@
       "owner": "YNK"
     },
     {
-      "id": "unnamed_06",
+      "id": "sortsos",
       "name": "Sortsos",
       "colour": "#74a596",
       "terrain": [
@@ -3441,7 +3491,7 @@
       "owner": "AGN"
     },
     {
-      "id": "unnamed_07",
+      "id": "south_agnarland",
       "name": "South Agnarland",
       "colour": "#a57a5b",
       "terrain": [
@@ -3450,7 +3500,7 @@
       "owner": "AGN"
     },
     {
-      "id": "unnamed_08",
+      "id": "east_yunkallpa",
       "name": "East Yunkallpa",
       "colour": "#737aa3",
       "terrain": [
@@ -3459,13 +3509,1187 @@
       "owner": "YNK"
     },
     {
-      "id": "unnamed_09",
+      "id": "yaotl",
       "name": "Yaotl",
       "colour": "#2ca1a3",
       "terrain": [
         "Plains"
       ],
       "owner": "YNK"
+    },
+    {
+      "id": "crepanisic_island",
+      "name": "Crepanisic Island",
+      "colour": "#e25aaa",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "surbac",
+      "name": "Surbac",
+      "colour": "#7395e2",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_huanca_desert",
+      "name": "North Huanca Desert",
+      "colour": "#e09d50",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "dravnik",
+      "name": "Dravnik",
+      "colour": "#b54887",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "tuzdor",
+      "name": "Tuzdor",
+      "colour": "#960c48",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "nagona",
+      "name": "Nagona",
+      "colour": "#58b56e",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "marevo",
+      "name": "Marevo",
+      "colour": "#b53834",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "slatigir_island",
+      "name": "Slatigir Island",
+      "colour": "#8d4ee5",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "west_nova_aheria",
+      "name": "West Nova Aheria",
+      "colour": "#699601",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "huanska_radosevic",
+      "name": "Huanska-Radošević",
+      "colour": "#e0166a",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "huanska_pjescana",
+      "name": "Huanska-Pješčana",
+      "colour": "#879346",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "paraska",
+      "name": "Paraska",
+      "colour": "#933f50",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "prohac",
+      "name": "Prohac",
+      "colour": "#b56f24",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "sukuishima",
+      "name": "Sukuishima",
+      "colour": "#998c00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SUK"
+    },
+    {
+      "id": "tokvero",
+      "name": "Tokvero",
+      "colour": "#e0dd7d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "novarinsko",
+      "name": "Novarinsko",
+      "colour": "#703c93",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "aoiwa",
+      "name": "Aoiwa",
+      "colour": "#1c0099",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SUK"
+    },
+    {
+      "id": "novo_sletanje",
+      "name": "Novo Sletanje",
+      "colour": "#8cb54f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_amotle",
+      "name": "North Amotle",
+      "colour": "#939285",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_new_guildkister",
+      "name": "North New Guildkister",
+      "colour": "#8f914f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_fitzgerald",
+      "name": "North Fitzgerald",
+      "colour": "#68888e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_cedrina",
+      "name": "North Cedrina",
+      "colour": "#913551",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "zarkovo",
+      "name": "Zarkovo",
+      "colour": "#934e72",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "north_pisiallpa",
+      "name": "North Pisiallpa",
+      "colour": "#931c3a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "lamir_island",
+      "name": "Lamir Island",
+      "colour": "#b2884c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NAH"
+    },
+    {
+      "id": "god_vind_islands",
+      "name": "God Vind Islands",
+      "colour": "#923e9b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GDV"
+    },
+    {
+      "id": "inner_costa_auro",
+      "name": "Inner Costa Auro",
+      "colour": "#b26947",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "costa_auro",
+      "name": "Costa Auro",
+      "colour": "#a689b2",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "ettore_da_gadine",
+      "name": "Ettore-da-Gadine",
+      "colour": "#9f66af",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "east_citta_nel_nulla",
+      "name": "East Città nel Nulla",
+      "colour": "#870c4b",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "rasello_islands",
+      "name": "Rasello Islands",
+      "colour": "#6d28e2",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "intiraymi",
+      "name": "Intiraymi",
+      "colour": "#874684",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "west_nuova_frontiera",
+      "name": "West Nuova Frontiera",
+      "colour": "#e2caa1",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "chakapuyu",
+      "name": "Chakapuyu",
+      "colour": "#a8af1f",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "east_gelsominia",
+      "name": "East Gelsominia",
+      "colour": "#e21600",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "gelsominia",
+      "name": "Gelsominia",
+      "colour": "#e2d6b1",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "west_alta_novacasa",
+      "name": "West Alta Novacasa",
+      "colour": "#c1945d",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "east_alta_novacasa",
+      "name": "East Alta Novacasa",
+      "colour": "#c10047",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "east_lenzia",
+      "name": "East Lenzia",
+      "colour": "#c111bb",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "west_lenzia",
+      "name": "West Lenzia",
+      "colour": "#2ec1ab",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "liberatore_c_l_molenaar",
+      "name": "Liberatore C. L. Molenaar",
+      "colour": "#bf225b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "popolo",
+      "name": "Popolo",
+      "colour": "#a9bf01",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "hetland_island",
+      "name": "Hetland Island",
+      "colour": "#9b0913",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "HTL"
+    },
+    {
+      "id": "santa_alberta",
+      "name": "Santa Alberta",
+      "colour": "#bf7f00",
+      "terrain": [
+        "Hills",
+        "Mountains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "costa_ricca",
+      "name": "Costa Ricca",
+      "colour": "#bf1c68",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "bassa_novacasa",
+      "name": "Bassa Novacasa",
+      "colour": "#a8bf00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TVC"
+    },
+    {
+      "id": "south_amotle",
+      "name": "South Amotle",
+      "colour": "#9aa83f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "west_pisiallpa",
+      "name": "West Pisiallpa",
+      "colour": "#36a82a",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_fitzgerald",
+      "name": "South Fitzgerald",
+      "colour": "#90dba5",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_new_guildkister",
+      "name": "South New Guildkister",
+      "colour": "#a87984",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_cedrina",
+      "name": "South Cedrina",
+      "colour": "#6fa88f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "pisiallpa",
+      "name": "Pisiallpa",
+      "colour": "#a81f7f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "jamesland",
+      "name": "Jamesland",
+      "colour": "#7f55ba",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "tusetta",
+      "name": "Tusetta",
+      "colour": "#a86955",
+      "terrain": [
+        "Hills",
+        "Mountains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "lakonia",
+      "name": "Lakonia",
+      "colour": "#85c4db",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "torbury",
+      "name": "Torbury",
+      "colour": "#98b76c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "new_blackmouth",
+      "name": "New Blackmouth",
+      "colour": "#db1500",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "josephinia",
+      "name": "Josephinia",
+      "colour": "#8e4544",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "lakesouth",
+      "name": "Lakesouth",
+      "colour": "#a85488",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "pheonixburg",
+      "name": "Pheonixburg",
+      "colour": "#9050b7",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nuova_frontiera",
+      "name": "Nuova Frontiera",
+      "colour": "#db607b",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "brue",
+      "name": "Brue",
+      "colour": "#b7006e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "riahua",
+      "name": "Riahua",
+      "colour": "#b7aea1",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nakochee",
+      "name": "Nakochee",
+      "colour": "#b76683",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "saint_camille",
+      "name": "Saint Camille",
+      "colour": "#bab3ad",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "vetro",
+      "name": "Vetro",
+      "colour": "#6bdbd5",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "ifombree",
+      "name": "Ifombree",
+      "colour": "#0078db",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "north_dovasia",
+      "name": "North Dovasia",
+      "colour": "#78db7f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "north_arenaria",
+      "name": "North Arenaria",
+      "colour": "#db0057",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "patokayoo",
+      "name": "Patokayoo",
+      "colour": "#c11300",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "fresvane",
+      "name": "Fresvane",
+      "colour": "#8194db",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "chambers",
+      "name": "Chambers",
+      "colour": "#b7b773",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "dibella",
+      "name": "Dibella",
+      "colour": "#ba8651",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nanowin",
+      "name": "Nanowin",
+      "colour": "#bc7631",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "east_onanwa",
+      "name": "East Onanwa",
+      "colour": "#b443bc",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ONW"
+    },
+    {
+      "id": "central_onanwa",
+      "name": "Central Onanwa",
+      "colour": "#bc9340",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ONW"
+    },
+    {
+      "id": "guristalay",
+      "name": "Guristalay",
+      "colour": "#5c7a32",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "piccolo_roccia",
+      "name": "Piccolo Roccia",
+      "colour": "#bf6600",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "central_arenaria",
+      "name": "Central Arenaria",
+      "colour": "#abdbbb",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "dubuisson",
+      "name": "Dubuisson",
+      "colour": "#7a646f",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "denude",
+      "name": "Denude",
+      "colour": "#8abc73",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "caquienne",
+      "name": "Caquienne",
+      "colour": "#5a7a72",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "coastal_onanwa",
+      "name": "Coastal Onanwa",
+      "colour": "#bc95b2",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "tantoque",
+      "name": "Tantoque",
+      "colour": "#77592f",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "far_east_onanwa",
+      "name": "Far-East Onanwa",
+      "colour": "#db237c",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "terre_de_justin",
+      "name": "Terre de Justin",
+      "colour": "#a196bc",
+      "terrain": [
+        "Hills",
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "capovi",
+      "name": "Capovi",
+      "colour": "#995761",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_arenaria",
+      "name": "South Arenaria",
+      "colour": "#dbd05c",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_dovasia",
+      "name": "South Dovasia",
+      "colour": "#ba4165",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "north_supte",
+      "name": "North Supte",
+      "colour": "#7a233a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nouvelle_alenzon",
+      "name": "Nouvelle Alenzon",
+      "colour": "#bc2e23",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "onanwa_exclave",
+      "name": "Onanwa Exclave",
+      "colour": "#995f46",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "west_umokavinia",
+      "name": "West Umokavinia",
+      "colour": "#466899",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "east_umokavinia",
+      "name": "East Umokavinia",
+      "colour": "#990163",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "basse_terregrise",
+      "name": "Basse Terregrise",
+      "colour": "#a5bc20",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "vianuovo",
+      "name": "Vianuovo",
+      "colour": "#99928f",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "marillac",
+      "name": "Marillac",
+      "colour": "#bc85b5",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "haute_terregrise",
+      "name": "Haute Terregrise",
+      "colour": "#bcb7a6",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "terra_del_fueco",
+      "name": "Terra del Fueco",
+      "colour": "#994689",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "south_supte",
+      "name": "South Supte",
+      "colour": "#6d5b7a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "masiomau",
+      "name": "Masiomau",
+      "colour": "#993b3a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nouvelle_vandamme",
+      "name": "Nouvelle Vandamme",
+      "colour": "#5cbcae",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "east_fiume_rosso",
+      "name": "East Fiume Rosso",
+      "colour": "#8c8299",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "monzani",
+      "name": "Monzani",
+      "colour": "#949998",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "etienne",
+      "name": "Étienne",
+      "colour": "#86bc74",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "tambasco",
+      "name": "Tambasco",
+      "colour": "#994451",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nuova_capoli",
+      "name": "Nuova Capoli",
+      "colour": "#609977",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "santa_ania",
+      "name": "Santa Ania",
+      "colour": "#7a4444",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "fiume_nero",
+      "name": "Fiume Nero",
+      "colour": "#969946",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "bonaria",
+      "name": "Bonaria",
+      "colour": "#78337a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "aurelia",
+      "name": "Aurelia",
+      "colour": "#60357a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "nuova_luma",
+      "name": "Nuova Luma",
+      "colour": "#7a7142",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "pannet",
+      "name": "Pannet",
+      "colour": "#a27eba",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "west_fiume_rosso",
+      "name": "West Fiume Rosso",
+      "colour": "#997b7f",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TRN"
+    },
+    {
+      "id": "north_shinchi",
+      "name": "North Shinchi",
+      "colour": "#a5a18c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SHN"
+    },
+    {
+      "id": "south_shinchi",
+      "name": "South Shinchi",
+      "colour": "#801e99",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "SHN"
+    },
+    {
+      "id": "north_mawr",
+      "name": "North Mawr",
+      "colour": "#715a99",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "SHN"
+    },
+    {
+      "id": "north_tirbryn",
+      "name": "North Tirbryn",
+      "colour": "#bab65b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "nanes",
+      "name": "Nanes",
+      "colour": "#949974",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "east_denude",
+      "name": "East Denude",
+      "colour": "#ba5d75",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "east_tirbryn",
+      "name": "East Tirbryn",
+      "colour": "#86ba84",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "central_tirbryn",
+      "name": "Central Tirbryn",
+      "colour": "#ba6039",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "malmara",
+      "name": "Malmara",
+      "colour": "#ba5780",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "south_tirbryn",
+      "name": "South Tirbryn",
+      "colour": "#74a83c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "north_giorgia",
+      "name": "North Giorgia",
+      "colour": "#991a6a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GRG"
+    },
+    {
+      "id": "andy_island",
+      "name": "Andy Island",
+      "colour": "#24b71f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TBR"
+    },
+    {
+      "id": "nuova_serran",
+      "name": "Nuova Serran",
+      "colour": "#6f7799",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GRG"
+    },
+    {
+      "id": "south_giorgia",
+      "name": "South Giorgia",
+      "colour": "#3e9923",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GRG"
+    },
+    {
+      "id": "frisk_island",
+      "name": "Frisk Island",
+      "colour": "#99187d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GRG"
+    },
+    {
+      "id": "axel_island",
+      "name": "Axel Island",
+      "colour": "#996d52",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "GRG"
     }
   ]
 }

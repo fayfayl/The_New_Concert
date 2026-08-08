@@ -34,6 +34,13 @@
  * not. Which one a value is in is noted wherever it is not obvious.
  */
 
+import {
+  OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH,
+  toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
+  indexProvinces,
+} from './mapdata.js';
+import { CACHE_FILE, hashInputs, unpackCache, worldFromCache } from './mapcache.js';
+
 // ============================================================ 1. data loading
 
 // Map data changes constantly while drawing, and a stale cache looks exactly
@@ -46,6 +53,42 @@ async function loadJSON(url) {
   return res.json();
 }
 
+/** Raw bytes, or null if there is no such file. Used for optional data. */
+async function loadBytes(url, optional = false) {
+  const res = await fetch(noCache(url), { cache: 'no-store' });
+  if (!res.ok) {
+    if (optional) return null;
+    throw new Error(`could not load ${url} (${res.status})`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
+/**
+ * The precomputed map, if there is one and it still matches its inputs.
+ *
+ * Returns null for every kind of miss — no file, an old format, a hash from a
+ * bitmap since redrawn — and the caller then derives everything itself. The
+ * cache is only ever allowed to make loading faster, never to decide what the
+ * map is.
+ */
+async function loadCache(bytes, expectedHash) {
+  if (!bytes) return null;
+  if (typeof DecompressionStream !== 'function') return null;   // older browser
+  try {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'));
+    const cache = unpackCache(new Uint8Array(await new Response(stream).arrayBuffer()));
+    if (!cache) return null;
+    if (cache.meta.hash !== expectedHash) {
+      console.info('map-cache.bin is out of date and was ignored. Rebuild it with: node sync-provinces.js --cache');
+      return null;
+    }
+    return cache;
+  } catch (err) {
+    console.warn('map-cache.bin could not be read; computing from the bitmap instead.', err);
+    return null;
+  }
+}
+
 /**
  * Read the bitmap's pixels exactly as authored.
  *
@@ -54,10 +97,8 @@ async function loadJSON(url) {
  * barely do, but a saturated colour shifts enough to stop matching the JSON —
  * and that province then silently reads as ocean. This turns that off.
  */
-async function loadPixels(url) {
-  const res = await fetch(noCache(url), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`could not load ${url} (${res.status})`);
-  const bitmap = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
+async function loadPixels(bytes) {
+  const bitmap = await createImageBitmap(new Blob([bytes]), { colorSpaceConversion: 'none' });
 
   const c = document.createElement('canvas');
   c.width = bitmap.width;
@@ -89,317 +130,13 @@ async function loadBitmap(url) {
   }
 }
 
-/**
- * Accepts "#c44a3e", the shorthand "#c43", or an existing [r,g,b] array, and
- * always returns [r,g,b]. Throws on anything else rather than quietly yielding
- * a colour that would never match a pixel.
- */
-function toRgb(value) {
-  if (Array.isArray(value)) return value;
-  let h = String(value).trim().replace(/^#/, '');
-  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-  if (!/^[0-9a-f]{6}$/i.test(h)) throw new Error(`bad colour: ${value}`);
-  const n = parseInt(h, 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
-/**
- * Puts the raw JSON into the shape the rest of the file expects, so nothing
- * downstream has to handle more than one form of anything:
- *   - every colour becomes [r,g,b], whatever it was written as
- *   - `terrain` becomes a list, so a bare string works as shorthand for one tag
- *   - polities get a Map by id, since they are looked up per province per repaint
- * Mutates and returns the same object.
- */
-function normaliseTable(table) {
-  table.oceanColour = toRgb(table.oceanColour);
-  for (const q of table.polities) q.colour = toRgb(q.colour);
-  for (const p of table.provinces) {
-    p.colour = toRgb(p.colour);
-    p.terrain = Array.isArray(p.terrain) ? p.terrain : (p.terrain ? [p.terrain] : []);
-  }
-  table.polityById = new Map(table.polities.map((q) => [q.id, q]));
-  return table;
-}
 
 // ============================================================= 2. world model
 
-const OCEAN = 0;                    // province index 0 is reserved for sea and empty space
 const UNKNOWN_POLITY = { id: '?', name: 'Unknown', colour: [90, 90, 96] };
 
-// Packs a colour into one integer so it can key a Map. Comparing three separate
-// channels per pixel, or building "r,g,b" strings, would both be far slower.
-const rgbKey = (r, g, b) => (r << 16) | (g << 8) | b;
+// The model itself is built in mapdata.js, which the build script shares.
 
-/**
- * Turns the province table and the bitmap into the world model everything else
- * reads: which province owns each pixel, who borders whom, what is coastal, and
- * where each province sits.
- *
- * TWO WAYS TO NAME A PROVINCE, and the distinction matters:
- *   id     a string, e.g. "rodtfjell". The public name. Events and save data use
- *          it, so it survives the map being redrawn.
- *   index  a small integer. Internal only. The per-pixel array is a typed array
- *          and can hold nothing but numbers, so pixels are stored as indices.
- * buildWorld() assigns the index and is the only place that should care how the
- * two relate; everything outside works in ids.
- */
-function buildWorld(table, image) {
-  const { width, height } = image;
-  const { byId, atIndex, colourToIndex } = indexProvinces(table);
-  const { provinceAt, unknown } = mapPixels(image, table, colourToIndex);
-
-  if (unknown.size) warnUnknownColours(unknown, table);
-
-  const { adjacency, coastal, bounds } = scanAdjacency(provinceAt, width, height, byId, atIndex);
-  warnEmptyProvinces(byId, bounds);
-
-  return { width, height, provinceAt, atIndex, byId, adjacency, coastal, bounds, table };
-}
-
-/**
- * Gives every province its integer index and builds the three lookups the rest
- * of buildWorld() needs: id -> province, index -> province, colour -> index.
- *
- * A province with a missing or duplicate id is warned about and skipped rather
- * than throwing, so one bad row cannot take the whole map down.
- */
-function indexProvinces(table) {
-  const byId = new Map();
-  const atIndex = [null];            // slot 0 is OCEAN, so real provinces start at 1
-  const colourToIndex = new Map();
-
-  for (const p of table.provinces) {
-    if (p.id === undefined || p.id === null || p.id === '') {
-      console.warn('province with no id, skipped:', p);
-    } else if (byId.has(p.id)) {
-      console.warn(`duplicate province id "${p.id}" — the second is ignored`, p);
-    } else {
-      p.index = atIndex.length;
-      atIndex.push(p);
-      byId.set(p.id, p);
-      colourToIndex.set(rgbKey(...p.colour), p.index);
-    }
-  }
-  return { byId, atIndex, colourToIndex };
-}
-
-/**
- * Reduces the bitmap to one province index per pixel — the array every later
- * pass reads instead of the image itself.
- *
- * A colour that is in neither the JSON nor the ocean is counted and reported,
- * then left as ocean. That is almost always a stray anti-aliased edge or a
- * province someone painted but never added to the table.
- */
-function mapPixels(image, table, colourToIndex) {
-  const px = image.data;
-  // Two bytes per pixel where the province count allows it. On a 6000x2650 map
-  // that is 32MB instead of 64MB, and the array is walked constantly.
-  const Store = table.provinces.length < 65535 ? Uint16Array : Int32Array;
-  const provinceAt = new Store(image.width * image.height);
-  const oceanKey = rgbKey(...table.oceanColour);
-  const unknown = new Map();
-
-  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
-    const k = rgbKey(px[i], px[i + 1], px[i + 2]);
-    if (k === oceanKey) continue;                  // array is already 0
-    const index = colourToIndex.get(k);
-    if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
-    else provinceAt[p] = index;
-  }
-  return { provinceAt, unknown };
-}
-
-/**
- * Derives adjacency, coastline and per-province bounds in a single pass — the
- * step that makes the bitmap, rather than any hand-written list, the authority
- * on which provinces touch.
- *
- * Each pixel is compared only with the one to its RIGHT and the one BELOW. That
- * is enough to catch every touching pair exactly once: a left-right pair is seen
- * from the left pixel, a top-bottom pair from the upper one. Checking all four
- * directions would find the same pairs twice over.
- *
- * Provinces meeting only at a diagonal do not count as neighbours, which matches
- * how armies move — corner to corner is not a shared border.
- *
- * The loop works in integer indices for speed but records results against public
- * string ids, so callers never see an index.
- */
-function scanAdjacency(provinceAt, width, height, byId, atIndex) {
-  const adjacency = new Map([...byId.keys()].map((id) => [id, new Set()]));
-  const coastal = new Set();
-  const bounds = new Map();
-  const idOf = (index) => atIndex[index].id;
-
-  // Record what one touching pair of pixels means. Same province: nothing. Land
-  // against sea: that province is coastal. Two provinces: they are neighbours.
-  const link = (a, b) => {
-    if (a === b) return;
-    if (a === OCEAN || b === OCEAN) {
-      coastal.add(idOf(a === OCEAN ? b : a));
-      return;
-    }
-    adjacency.get(idOf(a)).add(idOf(b));
-    adjacency.get(idOf(b)).add(idOf(a));
-  };
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = y * width + x;
-      const index = provinceAt[i];
-
-      // Grow this province's box, count its pixels, and sum their positions.
-      if (index !== OCEAN) {
-        const id = idOf(index);
-        let bb = bounds.get(id);
-        if (!bb) bounds.set(id, (bb = { minX: x, minY: y, maxX: x, maxY: y, n: 0, sx: 0, sy: 0 }));
-        if (x < bb.minX) bb.minX = x; else if (x > bb.maxX) bb.maxX = x;
-        if (y < bb.minY) bb.minY = y; else if (y > bb.maxY) bb.maxY = y;
-        bb.n++; bb.sx += x; bb.sy += y;
-      }
-
-      if (x + 1 < width) link(index, provinceAt[i + 1]);      // pair to the right
-      if (y + 1 < height) link(index, provinceAt[i + width]); // pair below
-    }
-  }
-  // Position sums become centroids now the counts are final. Note this is the
-  // centre of MASS, not of the box: for an L-shaped province it can fall outside.
-  for (const bb of bounds.values()) { bb.cx = bb.sx / bb.n; bb.cy = bb.sy / bb.n; }
-  return { adjacency, coastal, bounds };
-}
-
-/**
- * How far every land pixel is from the nearest NATIONAL border, so the country
- * colour can be strong at the frontier and fade away inland.
- *
- * A national border means a boundary with a different owner, or with open sea.
- * Province subdivisions inside one country do not count — they get their thin
- * line and nothing more.
- *
- * This is a two-pass chamfer distance transform. The first pass carries
- * distances down and right, the second back up and left; between them every
- * pixel has effectively seen the whole map, in two linear passes rather than a
- * search per pixel.
- *
- * A diagonal step is weighted 4 against 3 for an orthogonal one, approximating
- * the true ratio of sqrt(2). That keeps the fade within 5.7% of a circle in
- * every direction — close enough to show no corners — while a distance still
- * fits in one byte, holding the field to 16MB rather than the 64MB an exact
- * float field would take. The weights bound how far can be measured, at
- * 255/3 = 85 map pixels, which FADE_PX has to stay under.
- *
- * Owners are fixed at load, so this is built once. If provinces ever change
- * hands it has to be rebuilt.
- */
-const CHAMFER_ORTH = 3;
-const CHAMFER_DIAG = 4;
-
-function buildBorderDistance(world) {
-  const { width, height, provinceAt, atIndex } = world;
-
-  // Owner per province index, as a small integer. Index 0 is ocean and keeps
-  // -1, which matches no country, so every coastline seeds the transform.
-  const ownerAt = new Int32Array(atIndex.length).fill(-1);
-  const ordinal = new Map();
-  for (let ix = 1; ix < atIndex.length; ix++) {
-    const owner = atIndex[ix].owner;
-    if (!ordinal.has(owner)) ordinal.set(owner, ordinal.size);
-    ownerAt[ix] = ordinal.get(owner);
-  }
-
-  const MAX = 255;
-  const dist = new Uint8Array(width * height).fill(MAX);
-
-  // Seeds: the sea, and any land pixel with a differently owned neighbour. All
-  // four directions are tested, unlike the border drawing which needs only two
-  // — a one-sided seed would bias the whole field a pixel in one direction.
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = y * width + x;
-      const index = provinceAt[i];
-      if (index === OCEAN) { dist[i] = 0; continue; }
-      const mine = ownerAt[index];
-      const left = x > 0 ? ownerAt[provinceAt[i - 1]] : -1;
-      const right = x + 1 < width ? ownerAt[provinceAt[i + 1]] : -1;
-      const up = y > 0 ? ownerAt[provinceAt[i - width]] : -1;
-      const down = y + 1 < height ? ownerAt[provinceAt[i + width]] : -1;
-      if (left !== mine || right !== mine || up !== mine || down !== mine) dist[i] = 0;
-    }
-  }
-
-  const A = CHAMFER_ORTH, B = CHAMFER_DIAG;
-
-  for (let y = 0; y < height; y++) {              // forward: down and right
-    for (let x = 0; x < width; x++) {
-      const i = y * width + x;
-      let d = dist[i];
-      if (d === 0) continue;
-      if (x > 0) d = Math.min(d, dist[i - 1] + A);
-      if (y > 0) d = Math.min(d, dist[i - width] + A);
-      if (y > 0 && x > 0) d = Math.min(d, dist[i - width - 1] + B);
-      if (y > 0 && x + 1 < width) d = Math.min(d, dist[i - width + 1] + B);
-      dist[i] = d > MAX ? MAX : d;      // clamp by hand: Uint8Array wraps, it does not saturate
-    }
-  }
-
-  for (let y = height - 1; y >= 0; y--) {         // backward: up and left
-    for (let x = width - 1; x >= 0; x--) {
-      const i = y * width + x;
-      let d = dist[i];
-      if (d === 0) continue;
-      if (x + 1 < width) d = Math.min(d, dist[i + 1] + A);
-      if (y + 1 < height) d = Math.min(d, dist[i + width] + A);
-      if (y + 1 < height && x + 1 < width) d = Math.min(d, dist[i + width + 1] + B);
-      if (y + 1 < height && x > 0) d = Math.min(d, dist[i + width - 1] + B);
-      dist[i] = d > MAX ? MAX : d;
-    }
-  }
-  return dist;
-}
-
-/**
- * Reports colours found in the bitmap that no province claims, worst first.
- *
- * Each is shown with the nearest colour that IS in the table, because the
- * distance says what went wrong. A distance of only a few points means the same
- * colour arrived slightly altered — anti-aliasing, lossy compression, or the
- * colour management that loadPixels() turns off. A large distance means a
- * genuinely unregistered province.
- */
-function warnUnknownColours(unknown, table) {
-  const rows = [...unknown.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, n]) => {
-    const rgb = [(k >> 16) & 255, (k >> 8) & 255, k & 255];
-    let best = null, bestD = Infinity;
-    for (const p of table.provinces) {
-      const d = Math.abs(p.colour[0] - rgb[0]) + Math.abs(p.colour[1] - rgb[1]) + Math.abs(p.colour[2] - rgb[2]);
-      if (d < bestD) { bestD = d; best = p; }
-    }
-    return { found: `rgb(${rgb})`, pixels: n, nearest: best ? `${best.id} rgb(${best.colour})` : '-', distance: bestD };
-  });
-  const drift = rows.some((r) => r.distance > 0 && r.distance <= 12);
-  console.warn(
-    `${unknown.size} colour(s) in the bitmap are not in provinces.json.` +
-    (drift ? ' Small distances mean the browser colour-managed the image.' : ''),
-    rows
-  );
-}
-
-/**
- * Reports provinces listed in the JSON whose colour appears nowhere in the
- * bitmap. They have no pixels, so they are unclickable and invisible, and behave
- * as ocean. Usually a typo in the colour, or a province painted over.
- */
-function warnEmptyProvinces(byId, bounds) {
-  const empty = [...byId.values()].filter((p) => !bounds.has(p.id));
-  if (empty.length) {
-    console.warn(
-      `${empty.length} province(s) matched no pixels and will behave as ocean:`,
-      empty.map((p) => ({ id: p.id, name: p.name, expected: `rgb(${p.colour})` }))
-    );
-  }
-}
 
 // ================================================================ 3. rendering
 //
@@ -872,11 +609,67 @@ function repaintProvinces(world, mode, selected, hovered, ids) {
 // multiplying by view.scale at the last moment.
 
 // --- appearance
-const LABEL_MIN_PX = 9;          // on-screen size below which a label is skipped as unreadable
-const LABEL_MAX_PX = 40;         // and above which it stops growing
+// Labels belong to the MAP, not to the screen: a name is sized and positioned in
+// map units and simply scales with the zoom, as though painted onto the terrain.
+// A country's name therefore covers the same part of that country at every zoom.
+//
+// Deliberately no upper size limit. Capping it would stop the text growing once
+// the cap was reached, which reads as the label shrinking back toward its own
+// centre as you zoom further in — it stops sitting still on the land.
+//
+// Zoom decides only how VISIBLE a name is, never its size or place. See
+// LABEL_FADE_IN below.
 const LABEL_TRACKING = 0.16;     // letter spacing, as a fraction of the font size
 const LABEL_LINE_HEIGHT = 1.1;   // distance between stacked lines, as a multiple of the font size
-const LABEL_ALPHA = { far: 0.85, near: 0.5 };    // opacity when zoomed out / fully zoomed in
+/*
+ * Opacity is a function of the label's OWN size on screen, not of the zoom.
+ *
+ * That distinction is the whole point. A label tied to the zoom fades in step
+ * with every other label, however big or small its country — so zooming in
+ * dims a tiny country's name at the very moment it finally became readable.
+ * Driven by size instead, each label lives its own life: it fades in when it
+ * grows readable, holds while it is a useful size, and fades out once it has
+ * grown so large that you are plainly looking at provinces rather than at
+ * countries. A large country reaches that point at a much lower zoom than a
+ * small one, which is why big names disappear first.
+ *
+ * Both thresholds are in screen pixels of font size.
+ */
+const LABEL_ALPHA = 0.85;                  // peak opacity, in the band between the two
+
+// The two ends are measured in different units, on purpose.
+//
+// Fading IN is about legibility, which is absolute: text under about eight
+// pixels cannot be read whatever it names, so this is in screen pixels of font
+// size.
+//
+// Fading OUT is about the name having outlived its usefulness, which is
+// relative: what matters is how much of the WINDOW the country now fills. Font
+// size is a poor proxy for that, because fitLabel() sizes a long name smaller
+// than a short one — so at any given font size, a long-named country is far more
+// zoomed in than a short-named one, and the two would drop out at quite
+// different moments. Since a label is always laid out at LABEL_FIT.along of its
+// territory's span, its width IS that span, and comparing it with the viewport
+// asks the question directly. Fully faded by the time a country fills the
+// screen, which is the point at which you are looking at provinces.
+const LABEL_FADE_IN = [3, 6];              // screen pixels of font size
+const LABEL_FADE_OUT = [0.34, 0.78];       // label width, as a fraction of the window
+
+/** Eased 0..1 ramp, so neither end of a fade arrives as a visible step. */
+const smoothstep = (a, b, x) => {
+  const t = clamp((x - a) / (b - a), 0, 1);
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * A label's opacity: `px` is its font size on screen, `covers` the share of the
+ * window its widest line spans. 0 means do not draw it at all.
+ */
+function labelOpacity(px, covers) {
+  return LABEL_ALPHA
+    * smoothstep(LABEL_FADE_IN[0], LABEL_FADE_IN[1], px)
+    * (1 - smoothstep(LABEL_FADE_OUT[0], LABEL_FADE_OUT[1], covers));
+}
 const MAX_BEND = 0.28;           // ceiling on spine curvature, so text cannot fold back on itself
 
 // Polity label colours, as "r,g,b". Opacity is kept separate because it varies
@@ -899,7 +692,7 @@ const LABEL_WRAP_ASPECT = 2.3;   // length-to-width above which a block never st
 const LABEL_WRAP_GAIN = 1.15;    // and an extra line must grow the type by this factor to be worth taking
 
 // --- choosing which stretch of the block the name covers
-const LABEL_HIST_BUCKET = 3;     // map pixels per slice, when measuring the block's width along its axis
+// LABEL_HIST_BUCKET comes from mapdata.js — the label geometry is computed there.
 const LABEL_DENSITY_FLOOR = 0.4; // a slice counts as solid ground at this fraction of the block's mean width
 const LABEL_MIN_DENSITY = 0.3;   // a whole block sparser than this is an archipelago, and gets no label
 
@@ -982,7 +775,7 @@ function fitLabel(text, span, thickness, maxLines) {
     // length and so nearly doubles the size that fits, meaning size alone would
     // keep wrapping forever; requiring a real gain stops a name splitting again
     // for one or two percent and stranding a word like "OF" on a line by itself.
-    if (!best || size > best.size * LABEL_WRAP_GAIN) best = { lines: wrapped.lines, size };
+    if (!best || size > best.size * LABEL_WRAP_GAIN) best = { lines: wrapped.lines, size, width: wrapped.worst };
   }
   return best;
 }
@@ -1043,83 +836,9 @@ function denseRange(f, floor) {
  * One label per contiguous block, so a polity split across an enclave or an
  * island group gets its name written on each piece separately.
  */
-function computeLabels(world) {
-  const { width, provinceAt, atIndex, byId, adjacency } = world;
-
-  // --- group provinces into blocks: flood fill the adjacency graph, never
-  //     crossing into a different owner. Unowned land gets no label.
-  const blocks = [];
-  const blockOf = new Map();
-  for (const p of byId.values()) {
-    if (blockOf.has(p.id) || !world.table.polityById.has(p.owner) || p.owner === 'NONE') continue;
-    const n = blocks.length;
-    const stack = [p.id];
-    blockOf.set(p.id, n);
-    while (stack.length) {
-      const id = stack.pop();
-      for (const q of adjacency.get(id)) {
-        if (blockOf.has(q) || byId.get(q).owner !== p.owner) continue;
-        blockOf.set(q, n);
-        stack.push(q);
-      }
-    }
-    blocks.push({ owner: p.owner });
-  }
-  if (!blocks.length) return [];
-
-  const blockAt = new Int32Array(atIndex.length).fill(-1);
-  for (const [id, b] of blockOf) blockAt[byId.get(id).index] = b;
-
-  // --- STEP 1: one pass over the map summing each block's pixel positions, which
-  //     gives the centroid and covariance, and from those the principal axis.
-  // Both passes below walk x and y as loop counters rather than deriving them
-  // from the index. A division and a modulo per pixel is invisible on a small
-  // map and tens of millions of operations on a large one.
-  const height = provinceAt.length / width;
-  const acc = blocks.map(() => ({ n: 0, sx: 0, sy: 0, sxx: 0, sxy: 0, syy: 0 }));
-  for (let y = 0, i = 0; y < height; y++) {
-    for (let x = 0; x < width; x++, i++) {
-      const b = blockAt[provinceAt[i]];
-      if (b < 0) continue;
-      const a = acc[b];
-      a.n++; a.sx += x; a.sy += y; a.sxx += x * x; a.sxy += x * y; a.syy += y * y;
-    }
-  }
-
-  const geo = acc.map((a) => {
-    if (a.n < 12) return null;                  // too few pixels for a meaningful axis
-    const cx = a.sx / a.n, cy = a.sy / a.n;
-    const vxx = a.sxx / a.n - cx * cx;
-    const vxy = a.sxy / a.n - cx * cy;
-    const vyy = a.syy / a.n - cy * cy;
-    const theta = 0.5 * Math.atan2(2 * vxy, vxx - vyy);   // principal eigenvector
-    return { cx, cy, ux: Math.cos(theta), uy: Math.sin(theta), n: a.n };
-  });
-
-  // --- STEP 2: a second pass, now that the axis is known. Each pixel is measured
-  //     along it (t) and across it (u). The sums feed the least-squares spine,
-  //     and the tally of pixels per slice of t feeds denseRange.
-  const fit = geo.map((g) => g && {
-    tMin: Infinity, tMax: -Infinity, n: 0, pp: 0, hist: new Map(),
-    s0: 0, s1: 0, s2: 0, s3: 0, s4: 0, u0: 0, u1: 0, u2: 0,
-  });
-  for (let y = 0, i = 0; y < height; y++) {
-    for (let x = 0; x < width; x++, i++) {
-      const b = blockAt[provinceAt[i]];
-      if (b < 0 || !geo[b]) continue;
-      const g = geo[b], f = fit[b];
-      const dx = x - g.cx, dy = y - g.cy;
-      const t = dx * g.ux + dy * g.uy;          // along the axis
-      const u = -dx * g.uy + dy * g.ux;         // perpendicular to it
-      if (t < f.tMin) f.tMin = t; else if (t > f.tMax) f.tMax = t;
-      const bucket = Math.floor(t / LABEL_HIST_BUCKET);      // land per slice along the axis
-      f.hist.set(bucket, (f.hist.get(bucket) || 0) + 1);
-      const t2 = t * t;
-      f.n++; f.pp += u * u;
-      f.s0++; f.s1 += t; f.s2 += t2; f.s3 += t2 * t; f.s4 += t2 * t2;
-      f.u0 += u; f.u1 += u * t; f.u2 += u * t2;
-    }
-  }
+function buildLabels(world, geometry) {
+  if (!geometry) return [];
+  const { blocks, geo, fit } = geometry;
 
   const labels = [];
   blocks.forEach((blk, b) => {
@@ -1158,11 +877,12 @@ function computeLabels(world) {
     if (!laid) return;
 
     // Deliberately no minimum size. A small block just gets small type and stays
-    // hidden until LABEL_MIN_PX lets it through, which happens as you zoom in.
+    // hidden until the zoom makes it large enough on screen to read.
     // Dropping it here instead would mean it never gets a name at any zoom.
 
     labels.push({
       lines: laid.lines, size: clamp(laid.size, 0.05, 400),
+      width: laid.width,          // widest line, in ems — see labelOpacity()
       tMid: (tLo + tHi) / 2,
       cx: g.cx, cy: g.cy, ux: g.ux, uy: g.uy,
       a2: bend, a1, a0,
@@ -1222,27 +942,23 @@ function spinePoint(L, t, u = 0) {
  * Each glyph is stroked before it is filled, giving the dark outline that keeps
  * white text readable over any province colour.
  */
-function drawLabels(ctx, labels) {
+function drawLabels(ctx, labels, cssW) {
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
 
   for (const L of labels) {
-    // L.size is in map pixels, so it has to be scaled to find the size on screen.
-    // A tiny country therefore has a real label all along; it simply stays below
-    // the legibility floor until you zoom in far enough.
-    const size = L.size * view.scale;
-    if (size < LABEL_MIN_PX) continue;
-    const px = Math.min(size, LABEL_MAX_PX);
+    // L.size is in map units, so scaling by the zoom gives the size on screen.
+    // Used directly and uncapped: the text grows with the land it names and keeps
+    // covering the same stretch of it. A small country has a real label all
+    // along; it is only skipped while too small on screen to read.
+    const px = L.size * view.scale;
+    const alpha = labelOpacity(px, (L.width * px) / cssW);
+    if (alpha <= 0.004) continue;              // fully faded, or not readable yet
 
     ctx.font = labelFont(px);
     const gap = px * LABEL_TRACKING;
-
-    // Fade out as the view zooms in. Labels are there to orient you across the
-    // whole map; up close the provinces themselves are what you are looking at.
-    const zoom = (view.scale - MIN_SCALE) / (MAX_SCALE - MIN_SCALE);
-    const alpha = LABEL_ALPHA.far + (LABEL_ALPHA.near - LABEL_ALPHA.far) * clamp(zoom, 0, 1);
 
     ctx.lineWidth = px * LABEL_OUTLINE_WIDTH;
     ctx.strokeStyle = `rgba(${LABEL_OUTLINE},${(alpha * LABEL_OUTLINE_ALPHA).toFixed(3)})`;
@@ -1595,7 +1311,7 @@ function drawView() {
     drawSelectionRing(ctx, state, 1);
     if (state.fade) drawSelectionRing(ctx, state.fade, fadeStrength());
 
-    if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels);
+    if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW);
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -1847,7 +1563,7 @@ function invalidateProvinces(...ids) {
 
 /* Timings and tallies for the debug menu's Performance block. Kept as running
  * averages because a single frame's number is too noisy to read. */
-const perf = { fps: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0 };
+const perf = { fps: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null };
 const ease = (was, now) => (was ? was * 0.9 + now * 0.1 : now);
 
 /** True when the canvas's CSS box no longer matches its pixel buffer. */
@@ -2089,6 +1805,7 @@ function updateReadout(now) {
     statRow('Drawing from', drawing) +
     statRow('Chunks drawn', visible) +
     statRow('Zoom', `${Math.round(view.scale * 100)}%`) +
+    statRow('Load', `${perf.load.ms.toFixed(0)} ms ${perf.load.cached ? '(cached)' : '(computed)'}`, !perf.load.cached) +
     (state.showProvinceNames ? statRow('Names shown', `${debug.names} / ${state.world.byId.size}`) : '');
 }
 
@@ -2256,29 +1973,46 @@ function wireInput() {
 /**
  * Loads the data, builds the model, and starts the render loop.
  *
- * Order matters here: buildWorld() needs the normalised table, computeLabels()
+ * Order matters here: buildWorld() needs the normalised table, buildLabels()
  * needs the adjacency buildWorld() derives, and fitToView() needs the map's size
  * to know what to fit to.
  */
 async function init() {
-  const table = normaliseTable(await loadJSON('./data/provinces.json'));
+  const t0 = performance.now();
 
-  // Fetched together: the imagery is the larger file by far, and waiting for it
-  // after the province bitmap would add its whole download to the load time.
-  const [pixels, satellite] = await Promise.all([
-    loadPixels('./data/provinces.png'),
+  // All four fetched together. The imagery is by far the largest, and waiting
+  // for it after the others would add its whole download to the load time.
+  const [raw, pngBytes, cacheBytes, satellite] = await Promise.all([
+    loadJSON('./data/provinces.json'),
+    loadBytes('./data/provinces.png'),
+    loadBytes(`./data/${CACHE_FILE}`, true),
     loadBitmap('./data/satellite.png'),
   ]);
 
-  const world = buildWorld(table, pixels);
-  world.satellite = satellite;
+  // Hashed before normaliseTable(), which rewrites the colours in place — the
+  // build script hashes the same fields in the same form.
+  const hash = hashInputs(pngBytes, raw);
+  const cache = await loadCache(cacheBytes, hash);
+  const table = normaliseTable(raw);
 
-  // Only needed to fade the country colours into the imagery, and it is three
-  // passes over every pixel — so it is skipped entirely when there is none.
-  if (satellite) world.borderDist = buildBorderDistance(world);
-  world.labels = computeLabels(world);      // placed once; only their size changes with zoom
+  let world, geometry;
+  const restored = cache && worldFromCache(table, cache, indexProvinces);
+  if (restored) {
+    ({ world, geometry } = restored);
+  } else {
+    // No usable cache, so derive it all: a colour lookup per pixel, an adjacency
+    // scan, a distance transform, and two more passes for the label geometry.
+    world = buildWorld(table, await loadPixels(pngBytes));
+    world.borderDist = buildBorderDistance(world);
+    geometry = computeLabelGeometry(world);
+  }
+
+  world.satellite = satellite;
+  // Finishing the labels needs to measure real text, so it always happens here.
+  world.labels = buildLabels(world, geometry);
   state.world = world;
   state.satellite = !!satellite;
+  perf.load = { ms: performance.now() - t0, cached: !!restored };
 
   // The imagery has to line up with the province bitmap pixel for pixel, since
   // it is blitted with the same coordinates. Anything else is a mistake worth
