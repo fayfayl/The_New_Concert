@@ -25,16 +25,28 @@
  * pixels; nothing below N is then listed as a warning.
  */
 
-const fs = require('fs');
-const path = require('path');
-const zlib = require('zlib');
+import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
+import { fileURLToPath } from 'url';
+
+// The scans below are the renderer's own, imported rather than reimplemented —
+// see the note at the top of src/mapdata.js for why that matters.
+import {
+  normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
+} from './src/mapdata.js';
+import { CACHE_FILE, hashInputs, buildCacheMeta, packCache } from './src/mapcache.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const WRITE = process.argv.includes('--write');
 const RESLUG = process.argv.includes('--reslug');
 const PRUNE = process.argv.includes('--prune');
+const CACHE = process.argv.includes('--cache');
 const DIR = path.join(__dirname, 'data');
 const PNG = path.join(DIR, 'provinces.png');
 const JSON_PATH = path.join(DIR, 'provinces.json');
+const CACHE_PATH = path.join(DIR, CACHE_FILE);
 
 // Opt-in speck hunt: --min-size=8 warns about anything under 8 px.
 // Off by default, because a small island is a legitimate province.
@@ -345,4 +357,52 @@ if (WRITE) {
   console.log(`\nwrote ${path.relative(process.cwd(), JSON_PATH)}`);
 } else {
   console.log(`\n(dry run — nothing written. re-run with --write to apply)`);
+}
+
+// ----------------------------------------------------------- the map cache
+
+/**
+ * Precomputes everything the page would otherwise derive at load, and writes it
+ * to data/map-cache.bin.
+ *
+ * Runs the renderer's own scans, imported from src/mapdata.js — the whole point
+ * being that the cache holds exactly what the browser would have computed.
+ *
+ * Only ever written against the JSON as it exists ON DISK. Building it from a
+ * table that has not been saved would produce a cache describing a map nobody
+ * has, and it would pass its own hash check while doing so.
+ */
+if (CACHE) {
+  if (!WRITE && (added.length || (PRUNE && stale.length) || reslugged.length)) {
+    console.log('\ncache NOT written: there are unsaved changes above. Run with --write --cache.');
+  } else {
+    const started = Date.now();
+    const raw = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
+    const hash = hashInputs(fs.readFileSync(PNG), raw);
+
+    // The decoder above keeps a packed colour per pixel, which is all the rest
+    // of this script needs; mapPixels() reads the RGBA bytes a browser would
+    // hand it, so expand into that shape rather than teaching it a second one.
+    const data = new Uint8ClampedArray(img.width * img.height * 4);
+    for (let i = 0, o = 0; i < img.px.length; i++, o += 4) {
+      const k = img.px[i];
+      data[o] = (k >> 16) & 255; data[o + 1] = (k >> 8) & 255; data[o + 2] = k & 255; data[o + 3] = 255;
+    }
+
+    // normaliseTable mutates, so the hash above is taken first — it has to see
+    // the colours in the form the browser will hash them in.
+    const world = buildWorld(normaliseTable(raw), { width: img.width, height: img.height, data });
+    world.borderDist = buildBorderDistance(world);
+    const geometry = computeLabelGeometry(world);
+
+    const packed = packCache(buildCacheMeta(world, geometry, hash), world.provinceAt, world.borderDist);
+    const gz = zlib.deflateSync(packed, { level: 9 });
+    fs.writeFileSync(CACHE_PATH, gz);
+
+    const mb = (n) => (n / 1048576).toFixed(2) + ' MB';
+    console.log(`\nwrote ${path.relative(process.cwd(), CACHE_PATH)}`);
+    console.log(`  ${mb(packed.length)} packed -> ${mb(gz.length)} deflated, built in ${Date.now() - started} ms`);
+    console.log(`  the page skips its own scans while provinces.png and the owners in`);
+    console.log(`  provinces.json are unchanged; edit either and it recomputes and warns.`);
+  }
 }
