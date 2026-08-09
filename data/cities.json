@@ -1,12 +1,44 @@
 {
   "cities": [
     {
+      "id": "norrhus",
+      "name": "Norrhus",
+      "capital": false,
+      "x": 2276,
+      "y": 426,
+      "province": "norrhus"
+    },
+    {
+      "id": "lindesfor",
+      "name": "Lindesfor",
+      "capital": false,
+      "x": 2087,
+      "y": 488,
+      "province": "northwest_krenland"
+    },
+    {
       "id": "rodtfjell",
       "name": "Rodtfjell",
       "capital": false,
       "x": 2370,
       "y": 488,
       "province": "rodtfjell"
+    },
+    {
+      "id": "skehammar",
+      "name": "Skehammar",
+      "capital": false,
+      "x": 2126,
+      "y": 518,
+      "province": "skehammar"
+    },
+    {
+      "id": "cederholm",
+      "name": "Cederholm",
+      "capital": true,
+      "x": 2148,
+      "y": 521,
+      "province": "cederholm"
     },
     {
       "id": "askerfjord",
@@ -25,6 +57,46 @@
       "province": "pollenby"
     },
     {
+      "id": "borgsand",
+      "name": "Borgsand",
+      "capital": false,
+      "x": 2177,
+      "y": 547,
+      "province": "borgsand"
+    },
+    {
+      "id": "duncreig",
+      "name": "Duncreig",
+      "capital": false,
+      "x": 2608,
+      "y": 554,
+      "province": "iparvaeia"
+    },
+    {
+      "id": "helsinghall",
+      "name": "Helsinghall",
+      "capital": false,
+      "x": 2224,
+      "y": 560,
+      "province": "helsinghall"
+    },
+    {
+      "id": "rhinadelm",
+      "name": "Rhinadelm",
+      "capital": true,
+      "x": 2264,
+      "y": 567,
+      "province": "rhinadelm"
+    },
+    {
+      "id": "canves",
+      "name": "Canves",
+      "capital": false,
+      "x": 2294,
+      "y": 571,
+      "province": "canves"
+    },
+    {
       "id": "elkjur",
       "name": "Elkjur",
       "capital": false,
@@ -39,6 +111,22 @@
       "x": 2554,
       "y": 585,
       "province": "vordhus"
+    },
+    {
+      "id": "gleannronan",
+      "name": "Gleannronan",
+      "capital": false,
+      "x": 2601,
+      "y": 590,
+      "province": "north_gutzalur"
+    },
+    {
+      "id": "harmold",
+      "name": "Harmold",
+      "capital": false,
+      "x": 2231,
+      "y": 591,
+      "province": "lerdalien"
     },
     {
       "id": "kalvan",
@@ -57,12 +145,60 @@
       "province": "vollemaar"
     },
     {
+      "id": "kemble",
+      "name": "Kemble",
+      "capital": false,
+      "x": 2864,
+      "y": 611,
+      "province": "kemble"
+    },
+    {
+      "id": "ennesfurt",
+      "name": "Ennesfurt",
+      "capital": true,
+      "x": 2249,
+      "y": 621,
+      "province": "enneland_hermadren"
+    },
+    {
+      "id": "delfea",
+      "name": "Delfea",
+      "capital": false,
+      "x": 2323,
+      "y": 621,
+      "province": "delfea"
+    },
+    {
       "id": "meerdorp",
       "name": "Meerdorp",
       "capital": false,
       "x": 2372,
       "y": 629,
       "province": "meerdorp"
+    },
+    {
+      "id": "griesburg",
+      "name": "Griesburg",
+      "capital": false,
+      "x": 2304,
+      "y": 633,
+      "province": "griesburg"
+    },
+    {
+      "id": "aradewick",
+      "name": "Aradewick",
+      "capital": false,
+      "x": 2343,
+      "y": 639,
+      "province": "aradewick"
+    },
+    {
+      "id": "dinasferic",
+      "name": "Dinasferic",
+      "capital": false,
+      "x": 2560,
+      "y": 646,
+      "province": "dinasferic"
     },
     {
       "id": "oyestad",
@@ -105,12 +241,44 @@
       "province": "osterholm"
     },
     {
+      "id": "addlebury",
+      "name": "Addlebury",
+      "capital": true,
+      "x": 2327,
+      "y": 667,
+      "province": "south_swanders"
+    },
+    {
+      "id": "afongaer",
+      "name": "Afongaer",
+      "capital": true,
+      "x": 2586,
+      "y": 671,
+      "province": "afongaer"
+    },
+    {
+      "id": "fenhaven",
+      "name": "Fenhaven",
+      "capital": false,
+      "x": 2352,
+      "y": 676,
+      "province": "fenhaven"
+    },
+    {
       "id": "nyhaven",
       "name": "Nyhaven",
       "capital": true,
       "x": 2401,
       "y": 681,
       "province": "nyhaven"
+    },
+    {
+      "id": "dwrcoch",
+      "name": "Dwrcoch",
+      "capital": false,
+      "x": 2653,
+      "y": 709,
+      "province": "east_gweru"
     }
   ]
 }

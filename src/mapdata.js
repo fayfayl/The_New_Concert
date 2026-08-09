@@ -333,8 +333,82 @@ export function warnEmptyProvinces(byId, bounds) {
  * precomputing — while the other half has to measure real text, which needs a
  * canvas and can only happen in the browser.
  */
+/** A narrow channel of sea still counts as one country, up to this many pixels. */
+export const NEAR_GAP = 5;
+
+/**
+ * Which provinces come within NEAR_GAP pixels of each other across open water.
+ *
+ * Touching is too strict a test for labelling. An island a few pixels off the
+ * coast is plainly part of the same country to anyone looking at the map, but
+ * scanAdjacency() sees no shared border and the label machinery treats it as a
+ * separate territory — so it gets a name of its own, in tiny type, instead of
+ * being swept into the one big label it belongs to.
+ *
+ * This grows every province outwards through the sea, one ring at a time, up to
+ * `radius`. Where two growths meet, the provinces behind them are that far apart
+ * and are recorded as near neighbours. One pass over the coastal water settles
+ * every pair at once, which is why this is cheap despite sounding expensive:
+ * only sea within `radius` of land is ever visited.
+ *
+ * The spread goes through WATER only. Two provinces separated by a third are
+ * already connected through it, or deliberately are not.
+ */
+export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
+  const claim = new Uint16Array(provinceAt.length);   // which province reached this water
+  const dist = new Uint8Array(provinceAt.length);
+  const near = new Map();
+
+  const link = (a, b) => {
+    if (a === b || !a || !b) return;
+    if (!near.has(a)) near.set(a, new Set());
+    if (!near.has(b)) near.set(b, new Set());
+    near.get(a).add(b);
+    near.get(b).add(a);
+  };
+
+  let frontier = [];
+  for (let i = 0; i < provinceAt.length; i++) {
+    if (provinceAt[i] !== OCEAN) { claim[i] = provinceAt[i]; frontier.push(i); }
+  }
+
+  for (let step = 1; step <= radius && frontier.length; step++) {
+    const next = [];
+    for (const i of frontier) {
+      const x = i % width, y = (i - x) / width;
+      for (let k = 0; k < 4; k++) {
+        const nx = x + (k === 0 ? -1 : k === 1 ? 1 : 0);
+        const ny = y + (k === 2 ? -1 : k === 3 ? 1 : 0);
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const j = ny * width + nx;
+        if (provinceAt[j] !== OCEAN) continue;        // land is scanAdjacency's business
+
+        if (!claim[j]) {
+          claim[j] = claim[i];
+          dist[j] = step;
+          next.push(j);
+        } else if (claim[j] !== claim[i] && dist[j] + step <= radius) {
+          // Two growths have met: their provinces are dist[j] + step apart.
+          link(claim[i], claim[j]);
+        }
+      }
+    }
+    frontier = next;
+  }
+  return near;
+}
+
 export function computeLabelGeometry(world) {
   const { width, provinceAt, atIndex, byId, adjacency } = world;
+
+  // Provinces that all but touch count as touching for labelling — see above.
+  const height = provinceAt.length / width;
+  const near = nearbyProvinces(provinceAt, width, height);
+  const neighboursOfId = (id) => {
+    const extra = near.get(byId.get(id).index);
+    if (!extra) return adjacency.get(id);
+    return [...adjacency.get(id), ...[...extra].map((ix) => atIndex[ix].id)];
+  };
 
   // --- group provinces into blocks: flood fill the adjacency graph, never
   //     crossing into a different owner. Unowned land gets no label.
@@ -347,7 +421,7 @@ export function computeLabelGeometry(world) {
     blockOf.set(p.id, n);
     while (stack.length) {
       const id = stack.pop();
-      for (const q of adjacency.get(id)) {
+      for (const q of neighboursOfId(id)) {
         if (blockOf.has(q) || byId.get(q).owner !== p.owner) continue;
         blockOf.set(q, n);
         stack.push(q);
@@ -365,7 +439,6 @@ export function computeLabelGeometry(world) {
   // Both passes below walk x and y as loop counters rather than deriving them
   // from the index. A division and a modulo per pixel is invisible on a small
   // map and tens of millions of operations on a large one.
-  const height = provinceAt.length / width;
   const acc = blocks.map(() => ({ n: 0, sx: 0, sy: 0, sxx: 0, sxy: 0, syy: 0 }));
   for (let y = 0, i = 0; y < height; y++) {
     for (let x = 0; x < width; x++, i++) {

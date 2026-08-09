@@ -3,7 +3,7 @@
  *
  * Run:  node sync-provinces.js             report only, writes nothing
  *       node sync-provinces.js --write     apply the changes
- *       node sync-provinces.js --reslug    regenerate ids from province names
+ *       node sync-provinces.js --reslug    regenerate ids from names, provinces and cities alike
  *       node sync-provinces.js --prune     delete entries no longer in the bitmap
  *
  * Ids are slugs of the province name ("Rodtfjell" -> "rodtfjell"). They are
@@ -503,17 +503,22 @@ if (CITIES) {
       }
 
       const takenCityIds = new Set();
-      const cities = marks.map((m) => ({
+      const cityReslugged = [];
+      const cities = marks.map((m) => {
         // A city new to the bitmap is named after the province it stands in.
         // Provinces here are named for their city as often as not, so that is
         // usually right already, and obvious to correct when it is not.
-        id: uniqueWithin(m.was?.id ?? slugify(m.provinceName ?? 'city'), takenCityIds),
-        name: m.was?.name ?? m.provinceName ?? 'Unnamed City',
-        capital: m.kind === 'capital',
-        x: m.x,
-        y: m.y,
-        province: m.province,
-      }));
+        const name = m.was?.name ?? m.provinceName ?? 'Unnamed City';
+
+        // An id, once given, is kept — the same reasoning as for provinces: it
+        // is what a save or an event refers to, so renaming a city should not
+        // quietly break anything pointing at it. --reslug is how you ask for it
+        // to be brought back in line with the name.
+        const id = uniqueWithin(m.was && !RESLUG ? m.was.id : slugify(name), takenCityIds);
+        if (m.was && id !== m.was.id) cityReslugged.push({ from: m.was.id, to: id });
+
+        return { id, name, capital: m.kind === 'capital', x: m.x, y: m.y, province: m.province };
+      });
 
       const added = marks.filter((m) => !m.was).length;
       const moved = marks.filter((m) => m.moved).length;
@@ -539,6 +544,12 @@ if (CITIES) {
 
       if (unclaimed.length) {
         console.log(`  no longer in the bitmap, dropped: ${unclaimed.map((c) => c.name).join(', ')}`);
+      }
+
+      if (cityReslugged.length) {
+        console.log(`  ids regenerated from names (${cityReslugged.length}):`);
+        for (const r of cityReslugged.slice(0, 12)) console.log(`    ${String(r.from).padEnd(20)} -> ${r.to}`);
+        if (cityReslugged.length > 12) console.log(`    ... and ${cityReslugged.length - 12} more`);
       }
 
       if (WRITE) {

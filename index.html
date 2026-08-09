@@ -58,6 +58,87 @@
       overflow: hidden;
     }
 
+    /* ======================================================== start menu */
+    #start {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* The map's own imagery, standing in until there is real cover art. The
+         scrim over it is what keeps the text readable on top of terrain. */
+      background:
+        linear-gradient(rgba(8, 11, 16, .72), rgba(8, 11, 16, .88)),
+        url('./data/satellite.png') center / cover no-repeat,
+        var(--steel-deepest);
+      transition: opacity .45s ease, visibility 0s .45s;
+    }
+
+    /* Dismissed rather than deleted, so the fade has something to fade. */
+    #start.gone {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .start-panel {
+      max-width: 460px;
+      padding: 0 32px;
+      text-align: center;
+    }
+
+    .start-panel h1 {
+      margin: 0 0 30px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .38em;
+      text-transform: uppercase;
+      color: var(--paper);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
+    }
+
+    #start-enter {
+      background: linear-gradient(180deg, #46586e, #2b3746);
+      color: var(--paper);
+      border: 1px solid var(--rule-bright);
+      border-top-color: var(--accent);
+      border-radius: 2px;
+      padding: 13px 54px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 6px 22px rgba(0, 0, 0, .55);
+      transition: background .14s, border-color .14s;
+    }
+
+    #start-enter:hover:not(:disabled) {
+      background: linear-gradient(180deg, #566b85, #354355);
+      border-top-color: var(--accent-bright);
+    }
+
+    #start-enter:disabled {
+      opacity: .45;
+      cursor: default;
+      letter-spacing: .18em;
+    }
+
+    #start-enter:focus-visible {
+      outline: 1px solid var(--accent-bright);
+      outline-offset: 3px;
+    }
+
+    .start-panel p {
+      margin: 30px 0 0;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+    }
+
     /* =============================================================== map */
     #map-area {
       flex: 1;
@@ -543,6 +624,23 @@
 </head>
 
 <body>
+
+  <!--
+    Shown first, over everything. The map loads behind it, and the button stays
+    disabled until it is ready — so pressing Enter always lands on a finished
+    map rather than a half-drawn one.
+  -->
+  <div id="start">
+    <div class="start-panel">
+      <h1>Hearts of Iron Chron</h1>
+      <button id="start-enter" disabled>Loading&hellip;</button>
+      <p>
+        Hearts of Iron Chron is the placeholder name of this in-development game.
+        Currently, there is no game to speak of so have fun looking at an
+        imcomplete map.
+      </p>
+    </div>
+  </div>
 
   <div id="map-area">
     <div id="toolbar" class="milled">

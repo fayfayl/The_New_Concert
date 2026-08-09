@@ -679,7 +679,14 @@ function labelOpacity(px, covers) {
     * smoothstep(LABEL_FADE_IN[0], LABEL_FADE_IN[1], px)
     * (1 - smoothstep(LABEL_FADE_OUT[0], LABEL_FADE_OUT[1], covers));
 }
-const MAX_BEND = 0.28;           // ceiling on spine curvature, so text cannot fold back on itself
+// The tightest the spine may curve, as a multiple of the label's own type size.
+//
+// Crowding on the inside of a bend is dealt with by curveWiden(), which widens
+// the letter gaps to cancel it — so this no longer has to protect letterspacing
+// and can sit just clear of the one radius that has no answer: h/2, where the
+// inner edge of the text stops moving forward at all and the letters invert.
+// Everything above that is fair game, and the spine follows the land.
+const BEND_RADIUS = 7;
 
 // Polity label colours, as "r,g,b". Opacity is kept separate because it varies
 // with zoom: LABEL_ALPHA sets the pair's overall strength at the current scale,
@@ -872,10 +879,8 @@ function buildLabels(world, geometry) {
     if (span <= 0) return;
 
     // STEP 2: solve the 3x3 normal equations for u = a*t^2 + b*t + c by Cramer's
-    // rule. That quadratic is the spine; MAX_BEND keeps it from curling up.
+    // rule. That quadratic is the spine — the curve the text is set along.
     const [a2, a1, a0] = solveQuadratic(f) || [0, 0, 0];
-    const half = span / 2;
-    const bend = clamp(a2, -MAX_BEND / Math.max(half, 1), MAX_BEND / Math.max(half, 1));
 
     // STEP 4. Note which measurement each argument gets: whether stacking is
     // allowed is judged on `extent`, the block's real shape, while the type is
@@ -884,6 +889,30 @@ function buildLabels(world, geometry) {
     const maxLines = extent / thickness < LABEL_WRAP_ASPECT ? LABEL_MAX_LINES : 1;
     const laid = fitLabel(text, span, thickness, maxLines);
     if (!laid) return;
+
+    // Only now can the curvature be limited, because the thing that limits it is
+    // the size of the type.
+    //
+    // A curve of radius R crowds the letters on its inner side; they collide once
+    // R approaches the height of the text. So the spine may bend as tightly as
+    // BEND_RADIUS text-heights and no tighter — which on a strongly curved
+    // country usually means no limit at all, and the spine simply follows the
+    // land. Capping it by any fixed fraction of the label's length instead, as
+    // this did before, straightened out exactly the curved countries that most
+    // needed to bend.
+    const radius = BEND_RADIUS * laid.size;
+    const bendLimit = 1 / (2 * Math.max(radius, 1));
+    const bend = clamp(a2, -bendLimit, bendLimit);
+
+    // Flattening the curve means re-deriving the constant with it.
+    //
+    // t and u are both measured from the block's centre of mass, so the fit has
+    // mean zero, which pins the constant to the curvature: a0 = -a2 * E[t^2].
+    // A parabola bending downwards therefore sits ABOVE the centre at its vertex
+    // and below at its ends — correct, and how it tracks a curved country. But
+    // clamp the curvature and leave a0 alone and the spine keeps an offset only
+    // the original, steeper curve justified: flat AND pushed off the land.
+    const a0Fixed = a0 + (f.s0 ? (a2 - bend) * (f.s2 / f.s0) : 0);
 
     // Deliberately no minimum size. A small block just gets small type and stays
     // hidden until the zoom makes it large enough on screen to read.
@@ -894,7 +923,7 @@ function buildLabels(world, geometry) {
       width: laid.width,          // widest line, in ems — see labelOpacity()
       tMid: (tLo + tHi) / 2,
       cx: g.cx, cy: g.cy, ux: g.ux, uy: g.uy,
-      a2: bend, a1, a0,
+      a2: bend, a1, a0: a0Fixed,
     });
   });
   return labels;
@@ -943,6 +972,43 @@ function spinePoint(L, t, u = 0) {
 }
 
 /**
+ * How much wider the letter gaps must be at a point on the spine to hold their
+ * spacing, as a multiple. 1 on a straight spine.
+ *
+ * A curve of radius R carries the inner edge of a line of text, half its height
+ * in, around a radius of R - h/2. That inner edge travels less far than the
+ * centre for the same angle, so the letters bunch up on it, and widening by
+ * R / (R - h/2) gives back exactly what the curve took.
+ */
+/**
+ * Moves `arc` along the spine from t, and returns the t it arrives at. Both are
+ * in map units; `arc` may be negative.
+ *
+ * Along a curve of slope s, dt = ds / sqrt(1 + s*s). The slope changes as you
+ * go, so this walks in a few substeps and re-reads it each time — enough for
+ * text, where the spine is a gentle parabola over a few hundred pixels.
+ */
+function advanceT(L, t, arc) {
+  if (!L.a2 && !L.a1) return t + arc;        // straight spine: nothing to correct
+  const STEPS = 4;
+  const d = arc / STEPS;
+  for (let i = 0; i < STEPS; i++) {
+    const slope = 2 * L.a2 * (L.tMid + t) + L.a1;
+    t += d / Math.sqrt(1 + slope * slope);
+  }
+  return t;
+}
+
+function curveWiden(L, t, px) {
+  if (!L.a2) return 1;
+  const tt = L.tMid + t;
+  const slope = 2 * L.a2 * tt + L.a1;
+  const radius = Math.pow(1 + slope * slope, 1.5) / Math.abs(2 * L.a2) * view.scale;
+  const inner = radius - px / 2;
+  return inner > 1 ? radius / inner : 4;
+}
+
+/**
  * Draws every label, one glyph at a time so the text can follow the curve.
  *
  * Canvas has no curved-text primitive, so each character is positioned and
@@ -982,19 +1048,50 @@ function drawLabels(ctx, labels, cssW) {
       const across = (li - (n - 1) / 2) * LABEL_LINE_HEIGHT * px / view.scale;
       const chars = [...L.lines[li]];
       const widths = chars.map((c) => ctx.measureText(c).width);
-      const total = widths.reduce((s, w) => s + w, 0) + gap * (chars.length - 1);
 
-      let cursor = -total / 2;
+      // Letters have height, so on a curve their inner edges sit closer together
+      // than their centres and the word looks cramped on the inside of a bend.
+      // The gap is widened to give that back — but by ONE amount for the whole
+      // line, taken from the tightest point the text passes through.
+      //
+      // Uniform is the whole point. Curvature varies along a parabola, so
+      // compensating letter by letter makes every gap slightly different, and
+      // uneven letterspacing is far uglier than a bend ever was. Letters in the
+      // gentler stretches get a hair more room than they strictly needed, and
+      // nobody can see that; what they can see is spacing that wobbles.
+      const flat = widths.reduce((s, w) => s + w, 0) + gap * (chars.length - 1);
+      let at = -flat / 2, widen = 1;
       for (let i = 0; i < chars.length; i++) {
-        const centre = cursor + widths[i] / 2;
-        const { x, y, angle } = spinePoint(L, centre / view.scale, across);
+        widen = Math.max(widen, curveWiden(L, (at + widths[i] / 2) / view.scale, px));
+        at += widths[i] + gap;
+      }
+
+      const spacing = gap * widen;
+      const total = widths.reduce((s, w) => s + w, 0) + spacing * (chars.length - 1);
+
+      // Walk the glyphs along the CURVE, not along the axis.
+      //
+      // spinePoint() takes t, a distance measured along the straight axis, but a
+      // letter's width is a distance along the curve the letters actually sit
+      // on. Those are not the same: where the spine is tilted by slope s, one
+      // step along the axis covers sqrt(1 + s*s) of curve. Feeding widths in as
+      // if they were axis distances therefore spreads the letters out wherever
+      // the curve is steep and packs them where it is flat — which is uneven
+      // letterspacing, and far larger than any crowding on the inside of a bend.
+      //
+      // advanceT() converts the other way, so every letter is placed a true
+      // width plus a true gap further along the curve than the last.
+      let t = advanceT(L, 0, -total / 2 / view.scale);
+      for (let i = 0; i < chars.length; i++) {
+        t = advanceT(L, t, widths[i] / 2 / view.scale);
+        const { x, y, angle } = spinePoint(L, t, across);
         ctx.save();
         ctx.translate(x * view.scale + view.x, y * view.scale + view.y);
         ctx.rotate(angle);
         ctx.strokeText(chars[i], 0, 0);
         ctx.fillText(chars[i], 0, 0);
         ctx.restore();
-        cursor += widths[i] + gap;
+        t = advanceT(L, t, (widths[i] / 2 + spacing) / view.scale);
       }
     }
   }
@@ -1318,10 +1415,14 @@ function drawView() {
     ctx.translate(dx, 0);
 
     drawSelectionRing(ctx, state, 1);
-    if (state.showCities) drawCities(ctx, cssW, cssH, dx);
     if (state.fade) drawSelectionRing(ctx, state.fade, fadeStrength());
 
+    // Country names first, then cities over them. A country name is a huge,
+    // sparse thing spread across a whole territory and can afford to be crossed;
+    // a city name is small and pinned to one point, and is unreadable the moment
+    // anything lands on it. Where the two meet, the city has to win.
     if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW);
+    if (state.showCities) drawCities(ctx, cssW, cssH, dx);
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -1368,6 +1469,13 @@ const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
 const CAPITAL_NAME_PX = 13;
 const CITY_NAME_GAP = 3;            // clearance between an icon and its name
 const CITY_NAME_PAD = 2;            // breathing room when testing for overlaps
+
+// Deliberately the inverse of the polity labels: light text on a dark halo,
+// where a country name is dark text on a light one. Two kinds of name on the
+// same map should not look like the same kind of thing, and reversing the
+// contrast separates them at a glance without another colour or another font.
+const CITY_NAME_COLOUR = LABEL_OUTLINE;
+const CITY_NAME_OUTLINE = LABEL_COLOUR;
 
 // Index into the four opacities below. Order: icons then names, ordinary then
 // capital, which is also the order they are drawn in.
@@ -1488,8 +1596,8 @@ function drawCities(ctx, cssW, cssH, dx) {
 
     ctx.globalAlpha = nameA[k];
     ctx.lineWidth = px * LABEL_OUTLINE_WIDTH;
-    ctx.strokeStyle = `rgba(${LABEL_OUTLINE},${LABEL_OUTLINE_ALPHA})`;
-    ctx.fillStyle = `rgba(${LABEL_COLOUR},${LABEL_COLOUR_OPACITY})`;
+    ctx.strokeStyle = `rgba(${CITY_NAME_OUTLINE},${LABEL_OUTLINE_ALPHA})`;
+    ctx.fillStyle = `rgba(${CITY_NAME_COLOUR},${LABEL_COLOUR_OPACITY})`;
     ctx.strokeText(c.name, Math.round(box.cx), Math.round(box.cy));
     ctx.fillText(c.name, Math.round(box.cx), Math.round(box.cy));
   }
@@ -1952,6 +2060,10 @@ function updatePanel() {
     }</ul>`;
 }
 
+// Bumped whenever this file is edited, and shown in the debug menu. If what is
+// on screen does not match what is in the file, this is how you find out.
+const BUILD = 'arc-spacing';
+
 const READOUT_MS = 250;    // refresh rate of the live numbers; per-frame DOM writes are wasteful
 let readoutAt = 0;
 
@@ -1972,13 +2084,18 @@ function updateReadout(now) {
   const visible = drawing === 'tiles' ? `${debug.tilesDrawn} / ${tiles.list.length}` : `0 / ${tiles.list.length}`;
 
   els.perf.innerHTML =
+    statRow('Build', BUILD) +
     statRow('Frame', `${perf.fps.toFixed(0)} fps`, perf.fps < 45) +
     statRow('Blit', `${perf.draw.toFixed(2)} ms`, perf.draw > 8) +
     statRow('Last paint', `${perf.paint.toFixed(2)} ms`, perf.paint > 16) +
     statRow('Repaints', `${perf.fullRepaints} full / ${perf.partRepaints} part`) +
     statRow('Drawing from', drawing) +
     statRow('Chunks drawn', visible) +
-    statRow('Zoom', `${Math.round(view.scale * 100)}%`) +
+    statRow('Zoom', `${view.scale.toFixed(2)}  (${Math.round(view.scale * 100)}%)`) +
+    statRow('City icons', `${cityFade(F_CITY).toFixed(2)} @ ${CITY_AT}`) +
+    statRow('Capital icons', `${cityFade(F_CAPITAL).toFixed(2)} @ ${CAPITAL_AT}`) +
+    statRow('City names', `${cityFade(F_CITY_NAME).toFixed(2)} @ ${CITY_NAME_AT}`) +
+    statRow('Capital names', `${cityFade(F_CAPITAL_NAME).toFixed(2)} @ ${CAPITAL_NAME_AT}`) +
     statRow('Load', `${perf.load.ms.toFixed(0)} ms ${perf.load.cached ? '(cached)' : '(computed)'}`, !perf.load.cached) +
     (state.showProvinceNames ? statRow('Names shown', `${debug.names} / ${state.world.byId.size}`) : '');
 }
@@ -2001,6 +2118,9 @@ function showStats(w) {
     statRow('Labels', w.labels.length) +
     statRow('Chunks', `${tiles.cols} &times; ${tiles.rows} @ ${TILE}px`) +
     statRow('Overview', `${overview.canvas.width} &times; ${overview.canvas.height}`) +
+    statRow('Cities', w.cities.length
+      ? `${w.cities.length} (${w.cities.filter((c) => c.capital).length} capital)`
+      : 'none', !w.cities.length) +
     statRow('Satellite', w.satellite ? `${w.satellite.width} &times; ${w.satellite.height}` : 'none',
       !!w.satellite && (w.satellite.width !== w.width || w.satellite.height !== w.height)) +
     // A province in the table with no pixels is invisible and unclickable, so
@@ -2213,6 +2333,40 @@ async function init() {
   fitToView();
   updatePanel();
   requestAnimationFrame(frame);
+  openStartMenu();
+}
+
+/**
+ * Arms the start menu, which has been on screen since the page loaded.
+ *
+ * Called at the end of init() rather than the beginning, so the button cannot be
+ * pressed until there is a map behind it — the alternative is dismissing the
+ * menu onto a blank canvas while the bitmap is still being read.
+ */
+function openStartMenu() {
+  const menu = document.getElementById('start');
+  const enter = document.getElementById('start-enter');
+  if (!menu || !enter) return;
+
+  enter.disabled = false;
+  enter.textContent = 'Enter';
+  enter.focus();
+
+  const dismiss = () => {
+    menu.classList.add('gone');
+    els.canvas.focus?.();
+  };
+  enter.addEventListener('click', dismiss);
+
+  // Enter and Escape both work, but only while the menu is up — afterwards
+  // Escape belongs to clearing the selection.
+  window.addEventListener('keydown', (ev) => {
+    if (menu.classList.contains('gone')) return;
+    if (ev.key === 'Enter' || ev.key === 'Escape' || ev.key === ' ') {
+      ev.preventDefault();
+      dismiss();
+    }
+  });
 }
 
 init().catch((err) => {

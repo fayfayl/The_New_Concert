@@ -27,7 +27,11 @@
  * the browser inflates, and neither belongs in here.
  */
 
-export const CACHE_VERSION = 1;
+// Bump whenever the meaning of what is stored changes — a new field, or a
+// change to how any of it is derived. The hash catches changed INPUTS; this
+// catches changed CODE, which the hash cannot see. Version 2: label blocks now
+// join provinces that come within NEAR_GAP pixels of each other.
+export const CACHE_VERSION = 2;
 export const CACHE_FILE = 'map-cache.bin';
 
 const MAGIC = 0x314d4843;      // "CHM1" read as a little-endian uint32

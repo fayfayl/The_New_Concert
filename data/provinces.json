@@ -237,6 +237,56 @@
       "id": "GRG",
       "name": "Republic of Giorgia",
       "colour": "#E5E509"
+    },
+    {
+      "id": "EMS",
+      "name": "Emasic Republic",
+      "colour": "#AD4927"
+    },
+    {
+      "id": "ARY",
+      "name": "Imperial Republic of Aroyan",
+      "colour": "#87ADA5"
+    },
+    {
+      "id": "KWE",
+      "name": "Kingdom of Kewelat",
+      "colour": "#AD5666"
+    },
+    {
+      "id": "JSH",
+      "name": "Kingdom of Jashastan",
+      "colour": "#ADABAD"
+    },
+    {
+      "id": "ILT",
+      "name": "Republic of Ilitaria",
+      "colour": "#8527AD"
+    },
+    {
+      "id": "BUM",
+      "name": "Niroumandist Republic of Bumen",
+      "colour": "#007FFF"
+    },
+    {
+      "id": "SIS",
+      "name": "Federation of the Six Sororal Realms",
+      "colour": "#FFEE00"
+    },
+    {
+      "id": "QRG",
+      "name": "People's Republic of Qorgastan",
+      "colour": "#A97E7E"
+    },
+    {
+      "id": "AGR",
+      "name": "Kingdom of Agaria",
+      "colour": "#AD4169"
+    },
+    {
+      "id": "VRP",
+      "name": "Virupan Empire",
+      "colour": "#FFEE3D"
     }
   ],
   "provinces": [
@@ -4690,6 +4740,1472 @@
         "Plains"
       ],
       "owner": "GRG"
+    },
+    {
+      "id": "norban",
+      "name": "Norban",
+      "colour": "#d35d5b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "gogaran",
+      "name": "Gogaran",
+      "colour": "#d332ae",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "south_sheria",
+      "name": "South Sheria",
+      "colour": "#b55fb3",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "central_buravetia",
+      "name": "Central Buravetia",
+      "colour": "#cd94d3",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "arrapi",
+      "name": "Arrapi",
+      "colour": "#72bcd3",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "savat_island",
+      "name": "Savat Island",
+      "colour": "#af4b64",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "chamberyan",
+      "name": "Chamberyan",
+      "colour": "#af7764",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "marerdi",
+      "name": "Marerdi",
+      "colour": "#af3343",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "ashti",
+      "name": "Ashti",
+      "colour": "#95af36",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "upper_garcha",
+      "name": "Upper Garcha",
+      "colour": "#af7994",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "garice_island",
+      "name": "Garice Island",
+      "colour": "#72afa8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "aravashun",
+      "name": "Aravashun",
+      "colour": "#afb589",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "sahmanarrad",
+      "name": "Sahmanarrad",
+      "colour": "#af8f62",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "xod",
+      "name": "Xod",
+      "colour": "#b50188",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "uzha",
+      "name": "Uzha",
+      "colour": "#635eb5",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "timak",
+      "name": "Timak",
+      "colour": "#63bf86",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "east_qorgastan",
+      "name": "East Qorgastan",
+      "colour": "#5bb282",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "south_qorgic_desert",
+      "name": "South Qorgic Desert",
+      "colour": "#b55a00",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "karz",
+      "name": "Karz",
+      "colour": "#bf46a5",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "gohar",
+      "name": "Gohar",
+      "colour": "#854fb5",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "south_herravor",
+      "name": "South Herravor",
+      "colour": "#6e99af",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "zalang",
+      "name": "Zalang",
+      "colour": "#6d1c3e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "helage",
+      "name": "Helage",
+      "colour": "#a4c1b8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "east_mijinzeh",
+      "name": "East Mijinzeh",
+      "colour": "#6b3448",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "nikran_islands",
+      "name": "Nikran Islands",
+      "colour": "#701e4f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "dendzy",
+      "name": "Dendzy",
+      "colour": "#6b2c65",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "komcaeh",
+      "name": "Komcaeh",
+      "colour": "#5f2c6d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "west_mijinzeh",
+      "name": "West Mijinzeh",
+      "colour": "#586b58",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "malos",
+      "name": "Malos",
+      "colour": "#147264",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "gaezdanty",
+      "name": "Gaezdanty",
+      "colour": "#c1a95b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "eginia",
+      "name": "Eginia",
+      "colour": "#69724f",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "tumu_island",
+      "name": "Tumu Island",
+      "colour": "#50705f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "north_katina",
+      "name": "North Katina",
+      "colour": "#3f606d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "nastia",
+      "name": "Nastia",
+      "colour": "#6b7034",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "southwest_mijinzeh",
+      "name": "Southwest Mijinzeh",
+      "colour": "#6b5f2f",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "south_gaezdanty",
+      "name": "South Gaezdanty",
+      "colour": "#426d3e",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "north_ithea",
+      "name": "North Ithea",
+      "colour": "#720024",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "south_katina",
+      "name": "South Katina",
+      "colour": "#6d042a",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "eppan",
+      "name": "Eppan",
+      "colour": "#722a00",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "dexens",
+      "name": "Dexens",
+      "colour": "#725472",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "horopyrgos",
+      "name": "Horopyrgos",
+      "colour": "#703d5c",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "zenuzeno",
+      "name": "Zenuzeno",
+      "colour": "#27226b",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "south_ithea",
+      "name": "South Ithea",
+      "colour": "#4d7006",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "EMS"
+    },
+    {
+      "id": "garcha",
+      "name": "Garcha",
+      "colour": "#b56167",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ARY"
+    },
+    {
+      "id": "arrbajar",
+      "name": "Arrbajar",
+      "colour": "#7982b5",
+      "terrain": [
+        "Plains",
+        "Mountains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "kauwu_mountains",
+      "name": "Kauwu Mountains",
+      "colour": "#b5488b",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "northeast_eazima_mountains",
+      "name": "Northeast Eazima Mountains",
+      "colour": "#55619e",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "opul",
+      "name": "Opul",
+      "colour": "#54b542",
+      "terrain": [
+        "Plains",
+        "Mountains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "north_arbus_desert",
+      "name": "North Arbus Desert",
+      "colour": "#99849e",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "hamyan",
+      "name": "Hamyan",
+      "colour": "#9e2a58",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "awmarsa_pass",
+      "name": "Awmarsa Pass",
+      "colour": "#9e5443",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "aridek",
+      "name": "Aridek",
+      "colour": "#b563ac",
+      "terrain": [
+        "Plains",
+        "Mountains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "central_jashastan",
+      "name": "Central Jashastan",
+      "colour": "#96743a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "south_arbus_desert",
+      "name": "South Arbus Desert",
+      "colour": "#a4b52b",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "southeast_eazima_mountains",
+      "name": "Southeast Eazima Mountains",
+      "colour": "#9e8142",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "charah",
+      "name": "Charah",
+      "colour": "#969425",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "atarian_islands",
+      "name": "Atarian Islands",
+      "colour": "#adabad",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "south_kewelat",
+      "name": "South Kewelat",
+      "colour": "#89b582",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "north_lim",
+      "name": "North Lim",
+      "colour": "#9e4932",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "gatred_islands",
+      "name": "Gatred Islands",
+      "colour": "#b55579",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "lim",
+      "name": "Lim",
+      "colour": "#9e5a7c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "angul",
+      "name": "Angul",
+      "colour": "#962725",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "abayeh",
+      "name": "Abayeh",
+      "colour": "#964077",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "idim_delta",
+      "name": "Idim Delta",
+      "colour": "#968054",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "JSH"
+    },
+    {
+      "id": "luana_island",
+      "name": "Luana Island",
+      "colour": "#6cb58e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "katok_island",
+      "name": "Katok Island",
+      "colour": "#b5464f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "yantik_island",
+      "name": "Yantik Island",
+      "colour": "#ad5666",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KWE"
+    },
+    {
+      "id": "east_alittum_highlands",
+      "name": "East Alittum Highlands",
+      "colour": "#252c77",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "central_alittum_highlands",
+      "name": "Central Alittum Highlands",
+      "colour": "#772e2c",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "awbar",
+      "name": "Awbar",
+      "colour": "#422577",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "al_nafura",
+      "name": "Al-Nafura",
+      "colour": "#aa5d1e",
+      "terrain": [
+        "Mountains",
+        "Hills"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "awmarsa",
+      "name": "Awmarsa",
+      "colour": "#775c1b",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "jaran",
+      "name": "Jaran",
+      "colour": "#aa5f9b",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "hadarat",
+      "name": "Hadarat",
+      "colour": "#aa2814",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "alyamin",
+      "name": "Alyamin",
+      "colour": "#58aa29",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "central_mudawar",
+      "name": "Central Mudawar",
+      "colour": "#774750",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "southwest_eazima_mountains",
+      "name": "Southwest Eazima Mountains",
+      "colour": "#7a213b",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "minalulua",
+      "name": "Minalulua",
+      "colour": "#767755",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "south_minalulua",
+      "name": "South Minalulua",
+      "colour": "#7a411d",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ILT"
+    },
+    {
+      "id": "areshi_island",
+      "name": "Areshi Island",
+      "colour": "#4fffe7",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "akka_island",
+      "name": "Akka Island",
+      "colour": "#ffee00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "shajar_islands",
+      "name": "Shajar Islands",
+      "colour": "#007fff",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "nekuah",
+      "name": "Nekuah",
+      "colour": "#a82b5f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "aftaha",
+      "name": "Aftaha",
+      "colour": "#52a86c",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "perskerd",
+      "name": "Perskerd",
+      "colour": "#a85100",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "khomejil",
+      "name": "Khomejil",
+      "colour": "#ff402b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "smutkaw",
+      "name": "Smutkaw",
+      "colour": "#a82a32",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "zakuteh",
+      "name": "Zakuteh",
+      "colour": "#f8cdba",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "abarveh",
+      "name": "Abarveh",
+      "colour": "#c1344e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "liyoveh",
+      "name": "Liyoveh",
+      "colour": "#ff6370",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "BUM"
+    },
+    {
+      "id": "santrich",
+      "name": "Santrich",
+      "colour": "#c1a59e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "kolora",
+      "name": "Kolora",
+      "colour": "#c11347",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "daobo_island",
+      "name": "Daobo Island",
+      "colour": "#c19893",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SIS"
+    },
+    {
+      "id": "borbor",
+      "name": "Borbor",
+      "colour": "#a56a59",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "QRG"
+    },
+    {
+      "id": "coldokol",
+      "name": "Coldokol",
+      "colour": "#771417",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "QRG"
+    },
+    {
+      "id": "bos",
+      "name": "Bos",
+      "colour": "#775c2f",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "QRG"
+    },
+    {
+      "id": "south_qorgastan",
+      "name": "South Qorgastan",
+      "colour": "#9f66a5",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "QRG"
+    },
+    {
+      "id": "qorgmenel",
+      "name": "Qorgmenel",
+      "colour": "#a8376e",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "cakili",
+      "name": "Cakili",
+      "colour": "#2723a8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "west_alittum_highlands",
+      "name": "West Alittum Highlands",
+      "colour": "#2628a8",
+      "terrain": [
+        "Mountains",
+        "Impassable"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "kocayayla",
+      "name": "Kocayayla",
+      "colour": "#74aa99",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "goldere",
+      "name": "Goldere",
+      "colour": "#4b4baa",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "pasanjilm",
+      "name": "Pasanjilm",
+      "colour": "#a8937a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "karuva",
+      "name": "Karuva",
+      "colour": "#a874aa",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "gelenoluk",
+      "name": "Gelenoluk",
+      "colour": "#4caa00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "karacol",
+      "name": "Karaçöl",
+      "colour": "#aa163d",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "bukadar",
+      "name": "Bukadar",
+      "colour": "#7ca883",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "atiran",
+      "name": "Atiran",
+      "colour": "#a84f1f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "hadaya",
+      "name": "Hadaya",
+      "colour": "#9ea864",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "sarniktas",
+      "name": "Sarniktas",
+      "colour": "#40aa2f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "marwi",
+      "name": "Marwi",
+      "colour": "#9e4baa",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "yildizki",
+      "name": "Yildizki",
+      "colour": "#aa534e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "butun_island",
+      "name": "Butun Island",
+      "colour": "#ad4130",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "dusenceli",
+      "name": "Dusenceli",
+      "colour": "#aa4d17",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "katuran_islands",
+      "name": "Katuran Islands",
+      "colour": "#a82656",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "olmak",
+      "name": "Olmak",
+      "colour": "#aa293a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "nehirgolu",
+      "name": "Nehirgölü",
+      "colour": "#a84b89",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "nagpat",
+      "name": "Nagpat",
+      "colour": "#aa7c20",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "denizci",
+      "name": "Denizci",
+      "colour": "#a8802a",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "luktap",
+      "name": "Luktap",
+      "colour": "#a86200",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "AGR"
+    },
+    {
+      "id": "southwest_qorgastan",
+      "name": "Southwest Qorgastan",
+      "colour": "#a83c60",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "QRG"
+    },
+    {
+      "id": "unnamed_01",
+      "name": "Pahalabe",
+      "colour": "#9b3b78",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_02",
+      "name": "Nadhina",
+      "colour": "#9b7f86",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_03",
+      "name": "North Mattidesh",
+      "colour": "#8f4d9e",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_04",
+      "name": "Laala",
+      "colour": "#829b89",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_05",
+      "name": "North Saamarria",
+      "colour": "#6c9b5b",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_06",
+      "name": "West Uttaree",
+      "colour": "#9b9e99",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_07",
+      "name": "East Uttaree",
+      "colour": "#9e329e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_08",
+      "name": "Bhalepatha",
+      "colour": "#9e1734",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_09",
+      "name": "Saamarria",
+      "colour": "#9b2b3a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_10",
+      "name": "Gulaabdesh",
+      "colour": "#326f9e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_11",
+      "name": "Devasmin",
+      "colour": "#409e32",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_12",
+      "name": "Balaada",
+      "colour": "#9e4d83",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_13",
+      "name": "Dbara",
+      "colour": "#e0ce72",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_14",
+      "name": "Ramandesh",
+      "colour": "#9e4069",
+      "terrain": [
+        "Mountains",
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_15",
+      "name": "North Karudesh",
+      "colour": "#45e0b9",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_16",
+      "name": "South Mattidesh",
+      "colour": "#c9bae0",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_17",
+      "name": "Virupa",
+      "colour": "#9e8a65",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_18",
+      "name": "East Karudesa",
+      "colour": "#c596ff",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_19",
+      "name": "Gajja",
+      "colour": "#9e969e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_20",
+      "name": "East Poorvi",
+      "colour": "#e06483",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_21",
+      "name": "South Kendry",
+      "colour": "#9e2a3b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_22",
+      "name": "West Poorvi",
+      "colour": "#e0ae53",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_23",
+      "name": "Maarv",
+      "colour": "#c4ad52",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_24",
+      "name": "West Karudesa",
+      "colour": "#e26868",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_25",
+      "name": "East Bakatt",
+      "colour": "#ccb44b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_26",
+      "name": "Pobnyiaj",
+      "colour": "#ffb584",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_27",
+      "name": "West Bakatt",
+      "colour": "#51cc00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_28",
+      "name": "West Ayyanga",
+      "colour": "#9e6427",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_29",
+      "name": "Bahaast",
+      "colour": "#779e42",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_30",
+      "name": "Vadrisa",
+      "colour": "#e25036",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_31",
+      "name": "East Ayyanga",
+      "colour": "#714d9e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_32",
+      "name": "Chauhan",
+      "colour": "#e28adf",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_33",
+      "name": "Dakar",
+      "colour": "#9b4b26",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_34",
+      "name": "Argela",
+      "colour": "#e0b47b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_35",
+      "name": "South Salwav",
+      "colour": "#47a563",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_36",
+      "name": "Punja",
+      "colour": "#9e7b69",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_37",
+      "name": "Kanjaga",
+      "colour": "#b2e084",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_38",
+      "name": "Renua",
+      "colour": "#e07367",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_39",
+      "name": "Sarma",
+      "colour": "#e03336",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
+    },
+    {
+      "id": "unnamed_40",
+      "name": "Savata Island",
+      "colour": "#d53ee0",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VRP"
     }
   ]
 }
