@@ -34,12 +34,18 @@
  * not. Which one a value is in is noted wherever it is not obvious.
  */
 
-import {
+// Imported dynamically, carrying forward the ?v= token index.html loaded this
+// file with. A static import would resolve to an unversioned URL and could come
+// straight from cache while this file was freshly fetched — leaving half the
+// program old and half new, which is a genuinely baffling thing to debug.
+const VERSION = new URL(import.meta.url).search;
+
+const {
   OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH,
   toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
   indexProvinces,
-} from './mapdata.js';
-import { CACHE_FILE, hashInputs, unpackCache, worldFromCache } from './mapcache.js';
+} = await import(`./mapdata.js${VERSION}`);
+const { CACHE_FILE, hashInputs, unpackCache, worldFromCache } = await import(`./mapcache.js${VERSION}`);
 
 // ============================================================ 1. data loading
 
@@ -47,9 +53,12 @@ import { CACHE_FILE, hashInputs, unpackCache, worldFromCache } from './mapcache.
 // like a bug in the code. Always fetch fresh.
 const noCache = (url) => `${url}?t=${Date.now()}`;
 
-async function loadJSON(url) {
+async function loadJSON(url, optional = false) {
   const res = await fetch(noCache(url), { cache: 'no-store' });
-  if (!res.ok) throw new Error(`could not load ${url} (${res.status})`);
+  if (!res.ok) {
+    if (optional) return null;
+    throw new Error(`could not load ${url} (${res.status})`);
+  }
   return res.json();
 }
 
@@ -1309,6 +1318,7 @@ function drawView() {
     ctx.translate(dx, 0);
 
     drawSelectionRing(ctx, state, 1);
+    if (state.showCities) drawCities(ctx, cssW, cssH, dx);
     if (state.fade) drawSelectionRing(ctx, state.fade, fadeStrength());
 
     if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW);
@@ -1329,6 +1339,163 @@ const OVERLAY_FONT = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif'
 
 // Filled in as the overlays draw, and read back by the Performance readout.
 const debug = { names: 0, tilesDrawn: 0, path: '—' };
+
+
+/* --------------------------------------------------------------- cities
+ *
+ * Two rules, and nothing else:
+ *
+ *   1. A THRESHOLD decides whether a thing is on the map. Zoom is at or past
+ *      it, the thing belongs; below it, it does not.
+ *   2. When that answer changes, its opacity TRANSITIONS between 0 and 1 over a
+ *      fixed number of milliseconds. The transition knows nothing about zoom.
+ *
+ * There are four of them — city icons, capital icons, city names, capital names
+ * — each with its own threshold and its own opacity, and all four run the same
+ * code. Icons are drawn at a fixed size on screen, not scaled with the map: a
+ * city is a point, and a dot that grew to fill a province would read as a region.
+ */
+
+const CITY_AT = 1.30;               // zoom at or above which each is on the map
+const CAPITAL_AT = 0.50;
+const CITY_NAME_AT = 2.25;
+const CAPITAL_NAME_AT = 1.30;
+const CITY_FADE_MS = 150;           // how long the transition takes, always
+
+const CITY_ICON_PX = 11;            // on-screen height of an ordinary city
+const CAPITAL_ICON_PX = 16;         // and of a capital
+const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
+const CAPITAL_NAME_PX = 13;
+const CITY_NAME_GAP = 3;            // clearance between an icon and its name
+const CITY_NAME_PAD = 2;            // breathing room when testing for overlaps
+
+// Index into the four opacities below. Order: icons then names, ordinary then
+// capital, which is also the order they are drawn in.
+const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3;
+const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT];
+
+const cityAlpha = [0, 0, 0, 0];
+let cityClock = null;
+
+/**
+ * Moves each opacity towards where its threshold says it should be.
+ *
+ * `now` is a wall-clock reading taken once at the top of the frame, so the
+ * transition advances by real elapsed time. Timing it off anything measured
+ * around the drawing would run it slow exactly when drawing is slow, which is
+ * while you are scrolling. Returns true while any of them is still moving.
+ */
+function stepCityFades(now) {
+  // On the first call there is no previous reading, so a full step is used and
+  // everything snaps to where it belongs rather than fading up from nothing.
+  const step = cityClock === null ? 1 : (now - cityClock) / CITY_FADE_MS;
+  cityClock = now;
+
+  let moving = false;
+  for (let i = 0; i < 4; i++) {
+    const want = view.scale >= CITY_THRESHOLDS[i] ? 1 : 0;
+    if (cityAlpha[i] === want) continue;
+    cityAlpha[i] = want > cityAlpha[i]
+      ? Math.min(want, cityAlpha[i] + step)
+      : Math.max(want, cityAlpha[i] - step);
+    moving = true;
+  }
+  return moving;
+}
+
+/** Eased, so a transition starts and ends softly rather than stopping dead. */
+const cityFade = (i) => smoothstep(0, 1, cityAlpha[i]);
+
+/**
+ * Where a name may sit relative to its icon, best first: below the dot reads
+ * most naturally, then above, then out to one side, and the diagonals only when
+ * nothing straight will do. Each returns the centre of the name box.
+ */
+const CITY_NAME_SPOTS = [
+  (w, h, half, px) => [0, h / 2 + CITY_NAME_GAP + px / 2],
+  (w, h, half, px) => [0, -(h / 2 + CITY_NAME_GAP + px / 2)],
+  (w, h, half) => [w / 2 + CITY_NAME_GAP + half, 0],
+  (w, h, half) => [-(w / 2 + CITY_NAME_GAP + half), 0],
+  (w, h, half) => [w / 2 + CITY_NAME_GAP + half, h / 2 + CITY_NAME_GAP],
+  (w, h, half) => [-(w / 2 + CITY_NAME_GAP + half), h / 2 + CITY_NAME_GAP],
+  (w, h, half) => [w / 2 + CITY_NAME_GAP + half, -(h / 2 + CITY_NAME_GAP)],
+  (w, h, half) => [-(w / 2 + CITY_NAME_GAP + half), -(h / 2 + CITY_NAME_GAP)],
+];
+
+function drawCities(ctx, cssW, cssH, dx) {
+  const { cities, cityIcons } = state.world;
+  if (!cities?.length) return;
+
+  const iconA = [cityFade(F_CITY), cityFade(F_CAPITAL)];
+  const nameA = [cityFade(F_CITY_NAME), cityFade(F_CAPITAL_NAME)];
+  if (iconA[0] <= 0.004 && iconA[1] <= 0.004) return;
+
+  // Boxes already spoken for. A name may overlap none of them, except its own
+  // city's dot, which it is meant to sit against.
+  const placed = [];
+  const free = (b, own) =>
+    !placed.some((p) => p !== own && b[0] < p[2] && b[2] > p[0] && b[1] < p[3] && b[3] > p[1]);
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+
+  // Pass one: every icon, and every icon's box reserved. Reserving them all
+  // before placing any name is what stops a name being put where a city drawn
+  // later is about to appear.
+  const named = [];
+  for (const c of cities) {
+    const k = c.capital ? 1 : 0;
+    const icon = c.capital ? cityIcons.capital : cityIcons.city;
+    if (!icon || iconA[k] <= 0.004) continue;
+
+    const sx = c.x * view.scale + view.x + dx;
+    const sy = c.y * view.scale + view.y;
+    if (sx < -80 || sy < -80 || sx > cssW + 80 || sy > cssH + 80) continue;   // off screen
+
+    const h = c.capital ? CAPITAL_ICON_PX : CITY_ICON_PX;
+    const w = Math.round(h * (icon.width / icon.height));
+    ctx.globalAlpha = iconA[k];
+    ctx.drawImage(icon, Math.round(sx - w / 2), Math.round(sy - h / 2), w, Math.round(h));
+
+    const own = [sx - w / 2 - CITY_NAME_PAD, sy - h / 2 - CITY_NAME_PAD,
+    sx + w / 2 + CITY_NAME_PAD, sy + h / 2 + CITY_NAME_PAD];
+    placed.push(own);
+    if (nameA[k] > 0.004 && c.name) named.push({ c, k, sx, sy, w, h, own });
+  }
+
+  // Pass two: the names. Capitals first, so where two want the same space the
+  // more important one gets it.
+  named.sort((a, b) => (b.c.capital ? 1 : 0) - (a.c.capital ? 1 : 0));
+
+  for (const { c, k, sx, sy, w, h, own } of named) {
+    const px = c.capital ? CAPITAL_NAME_PX : CITY_NAME_PX;
+    ctx.font = labelFont(px);
+    const half = ctx.measureText(c.name).width / 2;
+
+    let box = null;
+    for (const spot of CITY_NAME_SPOTS) {
+      const [ox, oy] = spot(w, h, half, px);
+      const cx = sx + ox, cy = sy + oy;
+      const b = [cx - half - CITY_NAME_PAD, cy - px / 2 - CITY_NAME_PAD,
+      cx + half + CITY_NAME_PAD, cy + px / 2 + CITY_NAME_PAD];
+      if (free(b, own)) { box = b; b.cx = cx; b.cy = cy; break; }
+    }
+    if (!box) continue;            // hemmed in on every side; the dot stands alone
+    placed.push(box);
+
+    ctx.globalAlpha = nameA[k];
+    ctx.lineWidth = px * LABEL_OUTLINE_WIDTH;
+    ctx.strokeStyle = `rgba(${LABEL_OUTLINE},${LABEL_OUTLINE_ALPHA})`;
+    ctx.fillStyle = `rgba(${LABEL_COLOUR},${LABEL_COLOUR_OPACITY})`;
+    ctx.strokeText(c.name, Math.round(box.cx), Math.round(box.cy));
+    ctx.fillText(c.name, Math.round(box.cx), Math.round(box.cy));
+  }
+  ctx.restore();
+}
+
 
 function drawOverlays(ctx, cssW, cssH, dx) {
   if (state.showCoastal) drawCoastalFlags(ctx, cssW, cssH, dx);
@@ -1531,6 +1698,7 @@ const state = {
   // Overlay switches. Each is driven by a button in the debug menu carrying a
   // matching data-toggle, so adding one is a line of HTML and a draw call.
   satellite: false,       // imagery under the province colours; set true if it loads
+  showCities: true,
   showLabels: true,
   showProvinceNames: false,
   showChunks: false,
@@ -1587,6 +1755,12 @@ function frame() {
       clampPan();
       viewDirty = true;
     }
+
+    // City transitions run on a clock, so they need a tick and a redraw for as
+    // long as one is still going.
+    // City transitions run on a clock, so they get a tick and a redraw for as
+    // long as one is going. Read at the top of the frame, before any drawing.
+    if (stepCityFades(performance.now()) && state.showCities) viewDirty = true;
 
     // A dropped selection is animating, so its provinces need repainting every
     // frame until it is gone. Only those provinces — a handful of small boxes —
@@ -1982,11 +2156,16 @@ async function init() {
 
   // All four fetched together. The imagery is by far the largest, and waiting
   // for it after the others would add its whole download to the load time.
-  const [raw, pngBytes, cacheBytes, satellite] = await Promise.all([
+  const [raw, pngBytes, cacheBytes, satellite, cities, cityIcon, capitalIcon] = await Promise.all([
     loadJSON('./data/provinces.json'),
     loadBytes('./data/provinces.png'),
     loadBytes(`./data/${CACHE_FILE}`, true),
     loadBitmap('./data/satellite.png'),
+    // Extracted from cities.png by the build step, so the page reads a few
+    // kilobytes of JSON rather than decoding a second full-size bitmap.
+    loadJSON('./data/cities.json', true),
+    loadBitmap('./data/icons/city.png'),
+    loadBitmap('./data/icons/capital.png'),
   ]);
 
   // Hashed before normaliseTable(), which rewrites the colours in place — the
@@ -2008,6 +2187,9 @@ async function init() {
   }
 
   world.satellite = satellite;
+  world.cities = cities?.cities ?? [];
+  world.cityIcons = { city: cityIcon, capital: capitalIcon };
+
   // Finishing the labels needs to measure real text, so it always happens here.
   world.labels = buildLabels(world, geometry);
   state.world = world;

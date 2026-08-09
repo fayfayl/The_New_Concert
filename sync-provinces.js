@@ -43,10 +43,21 @@ const WRITE = process.argv.includes('--write');
 const RESLUG = process.argv.includes('--reslug');
 const PRUNE = process.argv.includes('--prune');
 const CACHE = process.argv.includes('--cache');
+const CITIES = process.argv.includes('--cities');
 const DIR = path.join(__dirname, 'data');
 const PNG = path.join(DIR, 'provinces.png');
 const JSON_PATH = path.join(DIR, 'provinces.json');
 const CACHE_PATH = path.join(DIR, CACHE_FILE);
+const CITIES_PNG = path.join(DIR, 'cities.png');
+const CITIES_JSON = path.join(DIR, 'cities.json');
+
+// A city mark is one pixel. Black is a capital, mid-grey an ordinary city.
+const CITY_MARKS = { 0x000000: 'capital', 0x6b6b6b: 'city' };
+
+// How far a mark may move between runs and still be recognised as the same
+// city. Nudging a pixel a little should not lose the name you gave it, but two
+// genuinely different cities are never this close.
+const CITY_MOVE_TOLERANCE = 10;
 
 // Opt-in speck hunt: --min-size=8 warns about anything under 8 px.
 // Off by default, because a small island is a legitimate province.
@@ -60,7 +71,7 @@ function decodePNG(file) {
   const b = fs.readFileSync(file);
   if (b.slice(0, 8).toString('hex') !== '89504e470d0a1a0a') throw new Error('not a PNG');
 
-  let pos = 8, w = 0, h = 0, depth = 8, ctype = 2, plte = null, interlace = 0;
+  let pos = 8, w = 0, h = 0, depth = 8, ctype = 2, plte = null, trns = null, interlace = 0;
   const idat = [];
   while (pos < b.length) {
     const len = b.readUInt32BE(pos);
@@ -70,6 +81,7 @@ function decodePNG(file) {
       w = data.readUInt32BE(0); h = data.readUInt32BE(4);
       depth = data[8]; ctype = data[9]; interlace = data[12];
     } else if (type === 'PLTE') plte = data;
+    else if (type === 'tRNS') trns = data;
     else if (type === 'IDAT') idat.push(data);
     pos += 12 + len;
   }
@@ -101,18 +113,27 @@ function decodePNG(file) {
     }
   }
 
-  // one packed 0xRRGGBB integer per pixel
+  // One packed 0xRRGGBB integer per pixel, plus its opacity.
+  //
+  // Alpha is not decoration here. A palette PNG can hold the same colour twice,
+  // once opaque and once transparent — cities.png does exactly that, with black
+  // as both "capital" and "background". Read without tRNS, every background
+  // pixel on the map would come back as a capital.
   const px = new Int32Array(w * h);
+  const alpha = new Uint8Array(w * h).fill(255);
   for (let i = 0; i < w * h; i++) {
     let r, g, bl;
-    if (ctype === 3) { const k = flat[i]; r = plte[k * 3]; g = plte[k * 3 + 1]; bl = plte[k * 3 + 2]; }
-    else if (ctype === 2) { r = flat[i * 3]; g = flat[i * 3 + 1]; bl = flat[i * 3 + 2]; }
-    else if (ctype === 6) { r = flat[i * 4]; g = flat[i * 4 + 1]; bl = flat[i * 4 + 2]; }
+    if (ctype === 3) {
+      const k = flat[i];
+      r = plte[k * 3]; g = plte[k * 3 + 1]; bl = plte[k * 3 + 2];
+      if (trns && k < trns.length) alpha[i] = trns[k];
+    } else if (ctype === 2) { r = flat[i * 3]; g = flat[i * 3 + 1]; bl = flat[i * 3 + 2]; }
+    else if (ctype === 6) { r = flat[i * 4]; g = flat[i * 4 + 1]; bl = flat[i * 4 + 2]; alpha[i] = flat[i * 4 + 3]; }
     else if (ctype === 0) { r = g = bl = flat[i]; }
-    else { r = g = bl = flat[i * 2]; }
+    else { r = g = bl = flat[i * 2]; alpha[i] = flat[i * 2 + 1]; }
     px[i] = (r << 16) | (g << 8) | bl;
   }
-  return { width: w, height: h, px };
+  return { width: w, height: h, px, alpha };
 }
 
 // ------------------------------------------------------------------ helpers
@@ -404,5 +425,128 @@ if (CACHE) {
     console.log(`  ${mb(packed.length)} packed -> ${mb(gz.length)} deflated, built in ${Date.now() - started} ms`);
     console.log(`  the page skips its own scans while provinces.png and the owners in`);
     console.log(`  provinces.json are unchanged; edit either and it recomputes and warns.`);
+  }
+}
+
+// --------------------------------------------------------------- the cities
+
+/** Makes an id unique within `taken` by appending _2, _3 and so on. */
+function uniqueWithin(base, taken) {
+  let id = base, n = 2;
+  while (taken.has(id)) id = `${base}_${n++}`;
+  taken.add(id);
+  return id;
+}
+
+/**
+ * Turns data/cities.png into data/cities.json.
+ *
+ * The bitmap holds one pixel per city — black for a capital, mid-grey for an
+ * ordinary city — and its position, read against provinces.png, says which
+ * province the city stands in. The browser never sees cities.png: extracting
+ * here means the page loads a few kilobytes of JSON instead of decoding a
+ * second 15.9-million-pixel image, exactly as with the map cache.
+ *
+ * Cities are matched to the existing file BY POSITION, so names and anything
+ * else you have filled in survive a redraw. A mark that has shifted a little is
+ * treated as the same city moving rather than as one vanishing and another
+ * appearing — see CITY_MOVE_TOLERANCE.
+ */
+if (CITIES) {
+  if (!fs.existsSync(CITIES_PNG)) {
+    console.log(`\ncities: ${path.relative(process.cwd(), CITIES_PNG)} not found, skipped.`);
+  } else {
+    const cityImg = decodePNG(CITIES_PNG);
+
+    if (cityImg.width !== img.width || cityImg.height !== img.height) {
+      console.log(`\ncities: cities.png is ${cityImg.width}x${cityImg.height} but provinces.png is ` +
+        `${img.width}x${img.height}. They must match — a mark's position IS its location.`);
+    } else {
+      // --- read the marks. Opacity, not colour, tells a capital from the
+      //     background: a palette PNG can hold black twice, once of each.
+      const marks = [];
+      for (let y = 0; y < cityImg.height; y++) {
+        for (let x = 0; x < cityImg.width; x++) {
+          const i = y * cityImg.width + x;
+          if (cityImg.alpha[i] === 0) continue;
+          const kind = CITY_MARKS[cityImg.px[i]];
+          if (kind) marks.push({ x, y, kind });
+        }
+      }
+
+      // --- which province each one stands in
+      const provinceOf = new Map(table.provinces.map((p) => [parseHex(p.colour), p]));
+      for (const m of marks) {
+        const p = provinceOf.get(img.px[m.y * img.width + m.x]);
+        m.province = p ? p.id : null;
+        m.provinceName = p ? p.name : null;
+        m.owner = p ? p.owner : null;
+      }
+
+      // --- reconcile against what is already on disk
+      const before = fs.existsSync(CITIES_JSON)
+        ? (JSON.parse(fs.readFileSync(CITIES_JSON, 'utf8')).cities || []) : [];
+      const unclaimed = [...before];
+      const claim = (test) => {
+        const i = unclaimed.findIndex(test);
+        return i < 0 ? null : unclaimed.splice(i, 1)[0];
+      };
+
+      // Exact position first, in a pass of its own, so a city that has not moved
+      // always matches itself before a neighbour can be claimed on its behalf.
+      for (const m of marks) m.was = claim((c) => c.x === m.x && c.y === m.y);
+      for (const m of marks) {
+        if (m.was) continue;
+        m.was = claim((c) => Math.abs(c.x - m.x) <= CITY_MOVE_TOLERANCE
+          && Math.abs(c.y - m.y) <= CITY_MOVE_TOLERANCE);
+        if (m.was) m.moved = true;
+      }
+
+      const takenCityIds = new Set();
+      const cities = marks.map((m) => ({
+        // A city new to the bitmap is named after the province it stands in.
+        // Provinces here are named for their city as often as not, so that is
+        // usually right already, and obvious to correct when it is not.
+        id: uniqueWithin(m.was?.id ?? slugify(m.provinceName ?? 'city'), takenCityIds),
+        name: m.was?.name ?? m.provinceName ?? 'Unnamed City',
+        capital: m.kind === 'capital',
+        x: m.x,
+        y: m.y,
+        province: m.province,
+      }));
+
+      const added = marks.filter((m) => !m.was).length;
+      const moved = marks.filter((m) => m.moved).length;
+      const orphans = cities.filter((c) => !c.province);
+
+      console.log(`\ncities        ${cities.length}  (${cities.filter((c) => c.capital).length} capital, ` +
+        `${added} new, ${moved} moved, ${unclaimed.length} gone)`);
+
+      if (orphans.length) {
+        console.log(`  ${orphans.length} mark(s) sit on no known province and will not render:`);
+        for (const c of orphans.slice(0, 8)) console.log(`    ${c.x},${c.y}`);
+      }
+
+      // Two capitals for one polity is legal — a dual monarchy, or a seat of
+      // state apart from a seat of government — so this is reported, not fixed.
+      const capitalsBy = new Map();
+      for (const m of marks.filter((m) => m.kind === 'capital' && m.owner)) {
+        capitalsBy.set(m.owner, [...(capitalsBy.get(m.owner) || []), m.provinceName]);
+      }
+      for (const [owner, names] of capitalsBy) {
+        if (names.length > 1) console.log(`  note: ${owner} has ${names.length} capitals — ${names.join(', ')}`);
+      }
+
+      if (unclaimed.length) {
+        console.log(`  no longer in the bitmap, dropped: ${unclaimed.map((c) => c.name).join(', ')}`);
+      }
+
+      if (WRITE) {
+        fs.writeFileSync(CITIES_JSON, JSON.stringify({ cities }, null, 2));
+        console.log(`  wrote ${path.relative(process.cwd(), CITIES_JSON)}`);
+      } else {
+        console.log(`  (dry run — pass --write to save cities.json)`);
+      }
+    }
   }
 }

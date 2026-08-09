@@ -581,6 +581,7 @@
       <!-- data-repaint marks a toggle that changes the painted map rather than
            just what is drawn over it, so it needs the buffer rebuilt. -->
       <button id="toggle-satellite" data-toggle="satellite" data-repaint>Satellite</button>
+      <button data-toggle="showCities" class="active">Cities</button>
       <button data-toggle="showLabels" class="active">Polity labels</button>
       <button data-toggle="showProvinceNames">Province names</button>
       <button data-toggle="showChunks">Chunk grid</button>
@@ -601,7 +602,15 @@
     <div id="neighbours"></div>
   </div>
 
-  <script type="module" src="./src/main.js"></script>
+  <!--
+    Loaded through a dynamic import carrying a timestamp, so the browser can
+    never serve a stale copy. A plain src= has no version on it, and a cached
+    module looks exactly like a change that silently did not work. main.js
+    passes the same token on to its own imports.
+  -->
+  <script type="module">
+    import(`./src/main.js?v=${Date.now()}`);
+  </script>
 </body>
 
 </html>

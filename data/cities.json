@@ -1,0 +1,116 @@
+{
+  "cities": [
+    {
+      "id": "rodtfjell",
+      "name": "Rodtfjell",
+      "capital": false,
+      "x": 2370,
+      "y": 488,
+      "province": "rodtfjell"
+    },
+    {
+      "id": "askerfjord",
+      "name": "Askerfjord",
+      "capital": false,
+      "x": 2435,
+      "y": 536,
+      "province": "askerfjord"
+    },
+    {
+      "id": "pollenby",
+      "name": "Pollenby",
+      "capital": false,
+      "x": 2538,
+      "y": 542,
+      "province": "pollenby"
+    },
+    {
+      "id": "elkjur",
+      "name": "Elkjur",
+      "capital": false,
+      "x": 2482,
+      "y": 578,
+      "province": "elkjur"
+    },
+    {
+      "id": "vordhus",
+      "name": "Vordhus",
+      "capital": false,
+      "x": 2554,
+      "y": 585,
+      "province": "vordhus"
+    },
+    {
+      "id": "kalvan",
+      "name": "Kalvan",
+      "capital": true,
+      "x": 2546,
+      "y": 603,
+      "province": "kalvan"
+    },
+    {
+      "id": "vollemaar",
+      "name": "Vollemaar",
+      "capital": false,
+      "x": 2407,
+      "y": 610,
+      "province": "vollemaar"
+    },
+    {
+      "id": "meerdorp",
+      "name": "Meerdorp",
+      "capital": false,
+      "x": 2372,
+      "y": 629,
+      "province": "meerdorp"
+    },
+    {
+      "id": "oyestad",
+      "name": "Oyestad",
+      "capital": false,
+      "x": 2504,
+      "y": 649,
+      "province": "oyestad"
+    },
+    {
+      "id": "lyshaven",
+      "name": "Lyshaven",
+      "capital": false,
+      "x": 2453,
+      "y": 654,
+      "province": "lyshaven"
+    },
+    {
+      "id": "mollergard",
+      "name": "Mollergard",
+      "capital": false,
+      "x": 2387,
+      "y": 655,
+      "province": "mollergard"
+    },
+    {
+      "id": "langholt",
+      "name": "Langholt",
+      "capital": false,
+      "x": 2472,
+      "y": 659,
+      "province": "langholt"
+    },
+    {
+      "id": "osterholm",
+      "name": "Osterholm",
+      "capital": false,
+      "x": 2443,
+      "y": 661,
+      "province": "osterholm"
+    },
+    {
+      "id": "nyhaven",
+      "name": "Nyhaven",
+      "capital": true,
+      "x": 2401,
+      "y": 681,
+      "province": "nyhaven"
+    }
+  ]
+}

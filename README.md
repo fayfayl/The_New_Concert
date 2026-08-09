@@ -49,6 +49,7 @@ Opening `index.html` by double-clicking will **not** work. The page reads the ma
 | Console warns about unrecognised colours | You have painted provinces the JSON does not know about. Run `node sync-provinces.js --write`. Until you do, those areas render as ocean. |
 | Console says the cache is out of date | Expected after redrawing the map. Harmless — it recomputes. Rebuild with `--cache`. See *The map cache*. |
 | Port already in use | Something else is on that port. Use `npx serve . -l 4000`. |
+| A change to the code seems to do nothing | The browser is running a cached copy of the module. `serve.json` disables caching for `npx serve`; on any other server, hard-refresh with `Ctrl+Shift+R`. |
 
 ## What you should see
 
