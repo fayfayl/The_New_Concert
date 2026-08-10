@@ -918,15 +918,48 @@ function buildLabels(world, geometry) {
     // hidden until the zoom makes it large enough on screen to read.
     // Dropping it here instead would mean it never gets a name at any zoom.
 
-    labels.push({
+    const L = {
       lines: laid.lines, size: clamp(laid.size, 0.05, 400),
       width: laid.width,          // widest line, in ems — see labelOpacity()
       tMid: (tLo + tHi) / 2,
       cx: g.cx, cy: g.cy, ux: g.ux, uy: g.uy,
       a2: bend, a1, a0: a0Fixed,
-    });
+    };
+    L.bounds = labelBounds(L, span);
+    labels.push(L);
   });
   return labels;
+}
+
+/**
+ * A box in MAP units that the finished label cannot escape.
+ *
+ * Drawing a label is not cheap — a glyph at a time, each one measured, rotated,
+ * stroked and filled — and a label that is nowhere near the window should not
+ * cost any of that. Zoomed in, that is nearly all of them: the type grows with
+ * the land, so every name on the map passes its readability test while two are
+ * actually on screen.
+ *
+ * Everything here is in map units and so is independent of zoom, which is why it
+ * can be worked out once at build time and then only compared against the window.
+ * The spine is sampled rather than solved because it is a parabola through a
+ * rotated frame, and its extremes are easier to sample than to derive. The pad
+ * covers what the sample cannot see: glyphs reach half a text height off the
+ * spine, stacked lines reach further, and the outline sits outside even that.
+ */
+function labelBounds(L, span) {
+  const half = span / 2;
+  const pad = L.size * (L.lines.length * LABEL_LINE_HEIGHT + LABEL_OUTLINE_WIDTH + 1);
+
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (let i = 0; i <= 12; i++) {
+    const { x, y } = spinePoint(L, -half + (span * i) / 12);
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  return { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad };
 }
 
 /**
@@ -1017,13 +1050,217 @@ function curveWiden(L, t, px) {
  * Each glyph is stroked before it is filled, giving the dark outline that keeps
  * white text readable over any province colour.
  */
-function drawLabels(ctx, labels, cssW) {
+/* ------------------------------------------------------- the glyph atlas
+ *
+ * Every character the labels use, drawn once and kept as a picture.
+ *
+ * The reason is what a zoom costs otherwise. Canvas2D cannot reuse anything
+ * across a change of type size: at each new size it rebuilds the glyph's outline
+ * path, and for the halo it STROKES that path, round joins and all, on the CPU.
+ * A label's size is its map size times the zoom, so zooming hands it a size it
+ * has never seen on every single frame, and zoomed out there are ninety-odd
+ * names on screen — measured at 50 to 155ms of blocking work per frame, which is
+ * the stutter. Panning never showed it, because panning does not change the size
+ * and so every frame reuses the last one's work.
+ *
+ * A game engine avoids this by never rasterising text per frame at all: glyphs
+ * live in a texture atlas and each one is drawn as a quad, so scale and rotation
+ * are the GPU's problem. This is that idea in the tools available here. A baked
+ * glyph is a bitmap, and drawImage of a bitmap does not care what size it is
+ * being drawn at.
+ *
+ * Note what is cached and what is not. GLYPHS are cached — 'A' at 24px is always
+ * 'A' at 24px, so nothing about the world can invalidate one. Labels are not:
+ * which names exist, where their spines run and how big the type is are all
+ * still worked out every frame, so a province changing hands changes the map's
+ * labelling exactly as it did before.
+ */
+
+// Sizes are snapped to a ladder, since caching per exact size would mean a fresh
+// bake on every frame of a zoom and no cache at all. 5% steps: the bitmap is
+// then drawn at up to 2.5% off its baked size, which is not a difference anyone
+// can see, and a zoom from end to end of the range touches about 90 rungs.
+const GLYPH_STEP = 1.05;
+const GLYPH_MIN = 3;                // below this the label has faded out anyway
+const GLYPH_MAX = 512;              // device pixels, so this allows for HiDPI
+
+// Glyphs are baked at twice the size they will be shown at, and every blit is
+// therefore a reduction. Blitting at roughly 1:1 sounds cheaper and looks far
+// worse: the letters land on fractional positions and at an angle, so they are
+// resampled whatever their size, and resampling a 12px letter at 1:1 smears the
+// dark body into its own white halo until the word goes grey. Shrinking a larger
+// picture averages several source pixels into each one it puts down, which is
+// what antialiasing is. The cost is four times the area per glyph, paid once.
+const GLYPH_SUPERSAMPLE = 2;
+
+// The ceiling is in PIXELS, not in entries. A bitmap's cost is its area, and
+// these range over more than two orders of magnitude in size — a 200px capital
+// is some fifty thousand pixels where a 3px one is a few dozen. Counting entries
+// would let a few dozen large rungs quietly hold far more memory than several
+// thousand small ones. 8M pixels is around 32MB, next to the 64MB the map tiles
+// already hold.
+const GLYPH_BUDGET_PX = 8e6;
+
+const glyphAtlas = new Map();
+let glyphAtlasPx = 0;
+let glyphMeasure = null;            // scratch context, for metrics only
+
+function glyphSize(devicePx) {
+  const rung = Math.pow(GLYPH_STEP, Math.round(Math.log(devicePx) / Math.log(GLYPH_STEP)));
+  return clamp(rung, GLYPH_MIN, GLYPH_MAX);
+}
+
+/**
+ * One character at one size, halo and body already composited, plus the metrics
+ * needed to place it: `ox`/`oy` locate the drawing origin inside the bitmap, and
+ * `adv` is the advance width. All four are in the bitmap's own pixels, so a
+ * caller scales every one of them by the same factor and the layout holds its
+ * shape exactly — which is what keeps letterspacing even.
+ *
+ * A space has no ink and gets no bitmap, only an advance.
+ */
+function bakedGlyph(ch, size) {
+  const key = `${size}|${ch}`;
+  const had = glyphAtlas.get(key);
+  if (had) return had;
+
+  if (!glyphMeasure) glyphMeasure = document.createElement('canvas').getContext('2d');
+  glyphMeasure.font = labelFont(size);
+  // Alignment has to match how the glyph is DRAWN below, because the bounds
+  // measureText returns are measured from wherever the origin would be under the
+  // current alignment. Measure from the default start/alphabetic origin and draw
+  // from a centre/middle one, and the box describes ink that is no longer there:
+  // the bitmap comes out the wrong size and the letter is cut off in it.
+  glyphMeasure.textAlign = 'center';
+  glyphMeasure.textBaseline = 'middle';
+  const m = glyphMeasure.measureText(ch);
+
+  // Tight ink bounds rather than the em box, so a bitmap is no larger than the
+  // mark it holds. Measured from the drawing origin, with the text centred on it.
+  const left = m.actualBoundingBoxLeft, right = m.actualBoundingBoxRight;
+  const up = m.actualBoundingBoxAscent, down = m.actualBoundingBoxDescent;
+  const pad = Math.ceil(size * LABEL_OUTLINE_WIDTH / 2) + 2;   // room for the halo
+  const w = Math.ceil(left + right) + pad * 2;
+  const h = Math.ceil(up + down) + pad * 2;
+
+  const g = { canvas: null, w, h, ox: left + pad, oy: up + pad, adv: m.width };
+
+  if (w > 0 && h > 0 && (left + right) > 0 && (up + down) > 0) {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const x = c.getContext('2d');
+    x.font = labelFont(size);
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    x.lineJoin = 'round';
+    x.lineWidth = size * LABEL_OUTLINE_WIDTH;
+
+    // Baked at the label's own relative strengths, so the bitmap IS the finished
+    // label at full opacity and a fade is one globalAlpha on the whole thing.
+    // Fading halo and body separately, as this did before, let the body thin out
+    // over its own halo and the two show through each other mid-fade.
+    x.strokeStyle = `rgba(${LABEL_OUTLINE},${LABEL_OUTLINE_ALPHA})`;
+    x.fillStyle = `rgba(${LABEL_COLOUR},${LABEL_COLOUR_OPACITY})`;
+    x.strokeText(ch, g.ox, g.oy);
+    x.fillText(ch, g.ox, g.oy);
+    g.canvas = c;
+  }
+
+  // Dropped wholesale rather than evicted one at a time: the entries a zoom
+  // leaves behind are sizes it will never be asked for again, so there is
+  // nothing worth choosing between. Cleared BEFORE this glyph is added, so the
+  // one being asked for right now survives the sweep.
+  if (glyphAtlasPx + w * h > GLYPH_BUDGET_PX) {
+    glyphAtlas.clear();
+    glyphAtlasPx = 0;
+  }
+  glyphAtlas.set(key, g);
+  glyphAtlasPx += w * h;
+  return g;
+}
+
+/**
+ * The rectangle one glyph occupies, kept TILTED rather than squared off.
+ *
+ * The obvious thing is to return an upright box around the glyph, and it is
+ * wrong. Country names run at an angle, and an upright box around a tilted
+ * rectangle claims the empty triangles at all four corners as well — at 45
+ * degrees it is twice the area of the glyph it stands for. Set in type the size
+ * these names are, those phantom corners reach far enough to block every spot a
+ * city name could take, and the placement gives up on ground that is plainly
+ * empty to look at.
+ *
+ * So the angle is kept and the overlap test does the extra work instead.
+ * `cx`/`cy` are the centre — not the point the glyph was drawn from, since the
+ * bitmap hangs from an origin somewhere inside it, so that offset is turned by
+ * the same angle before being added on. `ax`/`ay` are the direction the glyph's
+ * width runs in.
+ */
+function glyphBox(g, k, atX, atY, angle) {
+  const w = g.w * k, h = g.h * k;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+
+  const offX = w / 2 - g.ox * k;
+  const offY = h / 2 - g.oy * k;
+  return {
+    cx: atX + offX * cos - offY * sin,
+    cy: atY + offX * sin + offY * cos,
+    hw: w / 2,
+    hh: h / 2,
+    ax: cos,
+    ay: sin,
+  };
+}
+
+/**
+ * Does an upright box overlap a tilted one?
+ *
+ * Two convex shapes miss each other exactly when some line can be drawn between
+ * them, and for rectangles it is enough to try the four directions their own
+ * edges face. Along each, both shapes cast a shadow; if the shadows come apart
+ * anywhere, the shapes do not touch. The first two directions are the screen's
+ * own axes, the last two the glyph's.
+ */
+function boxHitsGlyph(b, g) {
+  const bx = (b[0] + b[2]) / 2, by = (b[1] + b[3]) / 2;
+  const bhw = (b[2] - b[0]) / 2, bhh = (b[3] - b[1]) / 2;
+  const dx = g.cx - bx, dy = g.cy - by;
+  const c = Math.abs(g.ax), s = Math.abs(g.ay);
+
+  if (Math.abs(dx) > bhw + g.hw * c + g.hh * s) return false;
+  if (Math.abs(dy) > bhh + g.hw * s + g.hh * c) return false;
+  if (Math.abs(dx * g.ax + dy * g.ay) > g.hw + bhw * c + bhh * s) return false;
+  if (Math.abs(dy * g.ax - dx * g.ay) > g.hh + bhw * s + bhh * c) return false;
+  return true;
+}
+
+/**
+ * Draws the polity names.
+ *
+ * `boxes`, when given, is filled with the screen rectangle of every glyph drawn,
+ * so that the city names placed afterwards can be kept off them. One box per
+ * GLYPH rather than one per name: a country name zoomed in is enormous and
+ * mostly air, and reserving the whole run of it would fence off a swathe of map
+ * that a city name could have sat in quite happily between two letters.
+ */
+function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
   ctx.save();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.lineJoin = 'round';
+  // The glyphs arrive as bitmaps drawn a few percent off their baked size, so
+  // they need smoothing — unlike the map, which drawView deliberately draws with
+  // it off once zoomed past 1:1 to keep province edges as hard pixel steps.
+  ctx.imageSmoothingEnabled = true;
+
+  const s = view.scale;
 
   for (const L of labels) {
+    // Off screen, and so not worth measuring, rotating, stroking or filling a
+    // single glyph of. The caller has already translated by dx for this copy of
+    // the map, so that shift has to be undone to compare against the window.
+    const b = L.bounds;
+    if (b.x1 * s + view.x + dx < 0 || b.x0 * s + view.x + dx > cssW
+      || b.y1 * s + view.y < 0 || b.y0 * s + view.y > cssH) continue;
+
     // L.size is in map units, so scaling by the zoom gives the size on screen.
     // Used directly and uncapped: the text grows with the land it names and keeps
     // covering the same stretch of it. A small country has a real label all
@@ -1032,12 +1269,18 @@ function drawLabels(ctx, labels, cssW) {
     const alpha = labelOpacity(px, (L.width * px) / cssW);
     if (alpha <= 0.004) continue;              // fully faded, or not readable yet
 
-    ctx.font = labelFont(px);
     const gap = px * LABEL_TRACKING;
 
-    ctx.lineWidth = px * LABEL_OUTLINE_WIDTH;
-    ctx.strokeStyle = `rgba(${LABEL_OUTLINE},${(alpha * LABEL_OUTLINE_ALPHA).toFixed(3)})`;
-    ctx.fillStyle = `rgba(${LABEL_COLOUR},${(alpha * LABEL_COLOUR_OPACITY).toFixed(3)})`;
+    // Which rung of the ladder these glyphs are baked on, and the factor that
+    // takes bitmap pixels back to screen pixels. The rung is chosen in DEVICE
+    // pixels so a HiDPI screen bakes proportionally larger and stays sharp,
+    // while k stays in CSS pixels to match the transform the canvas is under.
+    const bake = glyphSize(px * (window.devicePixelRatio || 1) * GLYPH_SUPERSAMPLE);
+    const k = px / bake;
+
+    // The halo and body are already in the bitmap, so the label's opacity is now
+    // one value on the whole mark rather than two on its parts.
+    ctx.globalAlpha = alpha;
 
     const n = L.lines.length;
     for (let li = 0; li < n; li++) {
@@ -1047,7 +1290,13 @@ function drawLabels(ctx, labels, cssW) {
       // view.scale because spinePoint() works in map pixels, not screen pixels.
       const across = (li - (n - 1) / 2) * LABEL_LINE_HEIGHT * px / view.scale;
       const chars = [...L.lines[li]];
-      const widths = chars.map((c) => ctx.measureText(c).width);
+
+      // Metrics come off the baked glyphs rather than from measureText, so the
+      // layout and the pictures being placed agree by construction. Every one is
+      // scaled by the same k, so the line is the baked line at a uniform scale
+      // and the spacing between letters cannot drift.
+      const glyphs = chars.map((c) => bakedGlyph(c, bake));
+      const widths = glyphs.map((g) => g.adv * k);
 
       // Letters have height, so on a curve their inner edges sit closer together
       // than their centres and the word looks cramped on the inside of a bend.
@@ -1084,13 +1333,21 @@ function drawLabels(ctx, labels, cssW) {
       let t = advanceT(L, 0, -total / 2 / view.scale);
       for (let i = 0; i < chars.length; i++) {
         t = advanceT(L, t, widths[i] / 2 / view.scale);
-        const { x, y, angle } = spinePoint(L, t, across);
-        ctx.save();
-        ctx.translate(x * view.scale + view.x, y * view.scale + view.y);
-        ctx.rotate(angle);
-        ctx.strokeText(chars[i], 0, 0);
-        ctx.fillText(chars[i], 0, 0);
-        ctx.restore();
+        const g = glyphs[i];
+        if (g.canvas) {
+          const { x, y, angle } = spinePoint(L, t, across);
+          const atX = x * view.scale + view.x;
+          const atY = y * view.scale + view.y;
+          ctx.save();
+          ctx.translate(atX, atY);
+          ctx.rotate(angle);
+          // One blit of a finished picture, where this used to be a glyph path
+          // built, stroked and filled from scratch at a size never seen before.
+          ctx.drawImage(g.canvas, -g.ox * k, -g.oy * k, g.w * k, g.h * k);
+          ctx.restore();
+
+          if (boxes) boxes.push(glyphBox(g, k, atX, atY, angle));
+        }
         t = advanceT(L, t, (widths[i] / 2 + spacing) / view.scale);
       }
     }
@@ -1421,8 +1678,15 @@ function drawView() {
     // sparse thing spread across a whole territory and can afford to be crossed;
     // a city name is small and pinned to one point, and is unreadable the moment
     // anything lands on it. Where the two meet, the city has to win.
-    if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW);
-    if (state.showCities) drawCities(ctx, cssW, cssH, dx);
+    // Collected only when there are city names to keep off them. Zoomed out
+    // there are dozens of country names on screen and no city names at all, and
+    // measuring every glyph of them for nobody is work worth not doing.
+    const wantBoxes = state.showCities && state.showLabels && state.world.labels
+      && (cityFade(F_CITY_NAME) > 0.004 || cityFade(F_CAPITAL_NAME) > 0.004);
+    const labelBoxes = wantBoxes ? [] : null;
+
+    if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW, cssH, dx, labelBoxes);
+    if (state.showCities) drawCities(ctx, cssW, cssH, dx, labelBoxes);
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -1530,7 +1794,7 @@ const CITY_NAME_SPOTS = [
   (w, h, half) => [-(w / 2 + CITY_NAME_GAP + half), -(h / 2 + CITY_NAME_GAP)],
 ];
 
-function drawCities(ctx, cssW, cssH, dx) {
+function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
   const { cities, cityIcons } = state.world;
   if (!cities?.length) return;
 
@@ -1538,11 +1802,28 @@ function drawCities(ctx, cssW, cssH, dx) {
   const nameA = [cityFade(F_CITY_NAME), cityFade(F_CAPITAL_NAME)];
   if (iconA[0] <= 0.004 && iconA[1] <= 0.004) return;
 
-  // Boxes already spoken for. A name may overlap none of them, except its own
-  // city's dot, which it is meant to sit against.
+  const hits = (b, p) => b[0] < p[2] && b[2] > p[0] && b[1] < p[3] && b[3] > p[1];
+
+  // Two kinds of obstacle, and they are not obeyed equally.
+  //
+  // HARD: the dots and the names already placed. A city can always be moved off
+  // one of these, because the thing it is colliding with was itself placed by
+  // this same pass and the map has room.
+  //
+  // SOFT: the letters of the country names underneath. A city sits where its
+  // city is, and if a country name happens to run straight through that spot
+  // then no amount of shuffling will help. Insisting would mean a city with no
+  // name at all, which is a worse outcome than a name crossing a letter — a
+  // country name is long and can spare one, while a city name is the only thing
+  // identifying the dot it belongs to.
   const placed = [];
-  const free = (b, own) =>
-    !placed.some((p) => p !== own && b[0] < p[2] && b[2] > p[0] && b[1] < p[3] && b[3] > p[1]);
+  const free = (b, own) => !placed.some((p) => p !== own && hits(b, p));
+  const clearOfNames = (b) => !labelBoxes || !labelBoxes.some((g) => boxHitsGlyph(b, g));
+
+  // How badly a spot sits on the country names, for when none of them is clear.
+  // Counted in letters covered, so the least bad spot can be chosen rather than
+  // simply falling back to the first one on the list.
+  const namesHit = (b) => (labelBoxes ? labelBoxes.reduce((n, g) => n + (boxHitsGlyph(b, g) ? 1 : 0), 0) : 0);
 
   ctx.save();
   ctx.imageSmoothingEnabled = true;
@@ -1559,9 +1840,12 @@ function drawCities(ctx, cssW, cssH, dx) {
     const icon = c.capital ? cityIcons.capital : cityIcons.city;
     if (!icon || iconA[k] <= 0.004) continue;
 
-    const sx = c.x * view.scale + view.x + dx;
+    // Positions are in this copy's own space, because the caller has already
+    // translated the context by dx for it. Only the off-screen test adds dx
+    // back, since that one question is about the window and not about the copy.
+    const sx = c.x * view.scale + view.x;
     const sy = c.y * view.scale + view.y;
-    if (sx < -80 || sy < -80 || sx > cssW + 80 || sy > cssH + 80) continue;   // off screen
+    if (sx + dx < -80 || sy < -80 || sx + dx > cssW + 80 || sy > cssH + 80) continue;
 
     const h = c.capital ? CAPITAL_ICON_PX : CITY_ICON_PX;
     const w = Math.round(h * (icon.width / icon.height));
@@ -1583,15 +1867,33 @@ function drawCities(ctx, cssW, cssH, dx) {
     ctx.font = labelFont(px);
     const half = ctx.measureText(c.name).width / 2;
 
-    let box = null;
+    // Every spot that clears the dots and the names already placed, in order of
+    // preference. That much is not negotiable; the country names below are.
+    const open = [];
     for (const spot of CITY_NAME_SPOTS) {
       const [ox, oy] = spot(w, h, half, px);
       const cx = sx + ox, cy = sy + oy;
       const b = [cx - half - CITY_NAME_PAD, cy - px / 2 - CITY_NAME_PAD,
       cx + half + CITY_NAME_PAD, cy + px / 2 + CITY_NAME_PAD];
-      if (free(b, own)) { box = b; b.cx = cx; b.cy = cy; break; }
+      if (!free(b, own)) continue;
+      b.cx = cx;
+      b.cy = cy;
+      open.push(b);
     }
-    if (!box) continue;            // hemmed in on every side; the dot stands alone
+    if (!open.length) continue;    // hemmed in by other cities; the dot stands alone
+
+    // The first spot that also clears the country names, or failing that the one
+    // that covers the fewest letters of them. Taking the first open spot instead
+    // would put the name in its default position over a name it could have
+    // half-missed, which looks like the placement never tried.
+    let box = open.find((b) => clearOfNames(b));
+    if (!box) {
+      let worst = Infinity;
+      for (const b of open) {
+        const n = namesHit(b);
+        if (n < worst) { worst = n; box = b; }
+      }
+    }
     placed.push(box);
 
     ctx.globalAlpha = nameA[k];
@@ -1838,8 +2140,20 @@ function invalidateProvinces(...ids) {
 }
 
 /* Timings and tallies for the debug menu's Performance block. Kept as running
- * averages because a single frame's number is too noisy to read. */
-const perf = { fps: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null };
+ * averages because a single frame's number is too noisy to read.
+ *
+ * Note that the frame figure is stored as an INTERVAL in milliseconds and only
+ * turned into a rate when it is displayed. Averaging rates instead is what the
+ * meter used to do, and it does not work: rAF sometimes delivers two callbacks
+ * inside one display refresh, gaps of well under a millisecond having been
+ * measured here. A rate is the reciprocal of the gap, so a short gap does not
+ * merely nudge the average — a 0.3ms one reads as 3300fps and drags it up by
+ * hundreds, while a long gap can only ever pull it down towards zero. The
+ * reading has nowhere to go but up. And a gap that rounds to exactly zero gives
+ * Infinity, which a running average can never leave: 0.9 x Infinity is still
+ * Infinity, so the meter stays pinned there for the rest of the session.
+ * Averaging the interval keeps a short frame worth no more than a short frame. */
+const perf = { frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null };
 const ease = (was, now) => (was ? was * 0.9 + now * 0.1 : now);
 
 /** True when the canvas's CSS box no longer matches its pixel buffer. */
@@ -1904,7 +2218,7 @@ function frame() {
     }
 
     const now = performance.now();
-    if (perf.lastFrame) perf.fps = ease(perf.fps, 1000 / (now - perf.lastFrame));
+    if (perf.lastFrame) perf.frameMs = ease(perf.frameMs, now - perf.lastFrame);
     perf.lastFrame = now;
     updateReadout(now);
   }
@@ -2085,9 +2399,16 @@ function updateReadout(now) {
 
   els.perf.innerHTML =
     statRow('Build', BUILD) +
-    statRow('Frame', `${perf.fps.toFixed(0)} fps`, perf.fps < 45) +
+    statRow('Frame', `${perf.frameMs ? (1000 / perf.frameMs).toFixed(0) : 0} fps`, perf.frameMs > 22) +
     statRow('Blit', `${perf.draw.toFixed(2)} ms`, perf.draw > 8) +
     statRow('Last paint', `${perf.paint.toFixed(2)} ms`, perf.paint > 16) +
+    // The single number that decides whether a frame can be delivered on time.
+    // Everything above is JavaScript, and it is now small; what costs the rest is
+    // the browser rasterising and compositing a surface of this many pixels every
+    // frame. Display scaling counts twice over — 150% is 2.25x the area.
+    statRow('Canvas', `${els.canvas.width} &times; ${els.canvas.height}`
+      + ` (${(els.canvas.width * els.canvas.height / 1e6).toFixed(1)}M px @ ${(window.devicePixelRatio || 1)}x)`,
+      els.canvas.width * els.canvas.height > 5e6) +
     statRow('Repaints', `${perf.fullRepaints} full / ${perf.partRepaints} part`) +
     statRow('Drawing from', drawing) +
     statRow('Chunks drawn', visible) +
@@ -2257,6 +2578,29 @@ function wireInput() {
     invalidateBuffer();      // a mode change recolours every province at once
   });
 
+  // Catch a reload before it happens, since it throws away the view and costs a
+  // second of loading to get back.
+  //
+  // Three things about this are the browser's call and not ours:
+  //
+  //   - THE WORDING. Every browser shows its own sentence and none of them can
+  //     be replaced; returnValue is set only because the older ones need
+  //     something non-empty there to treat the event as a refusal at all.
+  //   - WHICH ACTION. Reloading, closing the tab and navigating away are one
+  //     event, so a prompt on reload means a prompt on all three.
+  //   - WHETHER IT APPEARS AT ALL. It is ignored until the page has been
+  //     interacted with, which stops a page nobody has touched from trapping
+  //     anyone. Pressing Enter on the start menu satisfies that.
+  //
+  // Only armed once the menu is gone: reloading while it is still up loses
+  // nothing anyone would miss, and being asked to confirm before the game has
+  // even started is just an obstacle.
+  window.addEventListener('beforeunload', (ev) => {
+    if (document.getElementById('start')?.classList.contains('gone') !== true) return;
+    ev.preventDefault();
+    ev.returnValue = '';
+  });
+
   // No resize listener or ResizeObserver here on purpose: frame() compares the
   // canvas box against its pixel buffer on every tick, which catches window
   // resizes and the panel slide alike, and does it in time to draw that frame.
@@ -2332,7 +2676,14 @@ async function init() {
   wireInput();
   fitToView();
   updatePanel();
-  requestAnimationFrame(frame);
+
+  // Draw the map once here rather than leaving it to the first animation frame,
+  // and only then arm the button. That first pass is a full repaint of all 15.9
+  // million pixels — around 250ms — so run after the button goes live it lands
+  // as a quarter-second freeze on the click itself. Run before, it happens
+  // while the menu still says "Loading", where a wait is what it is claiming.
+  // frame() re-arms itself on the way out, so this starts the loop too.
+  frame();
   openStartMenu();
 }
 

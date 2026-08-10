@@ -97,12 +97,28 @@
       "province": "canves"
     },
     {
+      "id": "tornmiaste",
+      "name": "Tornmiaste",
+      "capital": false,
+      "x": 2205,
+      "y": 576,
+      "province": "tornstad"
+    },
+    {
       "id": "elkjur",
       "name": "Elkjur",
       "capital": false,
       "x": 2482,
       "y": 578,
       "province": "elkjur"
+    },
+    {
+      "id": "kybarme",
+      "name": "Kybarme",
+      "capital": false,
+      "x": 2142,
+      "y": 582,
+      "province": "west_siaurija"
     },
     {
       "id": "vordhus",
@@ -129,12 +145,28 @@
       "province": "lerdalien"
     },
     {
+      "id": "vietoji",
+      "name": "Vietoji",
+      "capital": false,
+      "x": 2130,
+      "y": 597,
+      "province": "telgaros_islands"
+    },
+    {
       "id": "kalvan",
       "name": "Kalvan",
       "capital": true,
       "x": 2546,
       "y": 603,
       "province": "kalvan"
+    },
+    {
+      "id": "alginas",
+      "name": "Alginas",
+      "capital": false,
+      "x": 2204,
+      "y": 606,
+      "province": "senoveija"
     },
     {
       "id": "vollemaar",
@@ -169,12 +201,28 @@
       "province": "delfea"
     },
     {
+      "id": "jiezrena",
+      "name": "Jiezrena",
+      "capital": false,
+      "x": 2148,
+      "y": 626,
+      "province": "malonkrontija"
+    },
+    {
       "id": "meerdorp",
       "name": "Meerdorp",
       "capital": false,
       "x": 2372,
       "y": 629,
       "province": "meerdorp"
+    },
+    {
+      "id": "dusetskes",
+      "name": "Dusetskes",
+      "capital": false,
+      "x": 2189,
+      "y": 632,
+      "province": "dusetskes"
     },
     {
       "id": "griesburg",
@@ -209,6 +257,14 @@
       "province": "oyestad"
     },
     {
+      "id": "siemialisz",
+      "name": "Siemialisz",
+      "capital": false,
+      "x": 2211,
+      "y": 651,
+      "province": "north_wielkotwadamskie"
+    },
+    {
       "id": "lyshaven",
       "name": "Lyshaven",
       "capital": false,
@@ -231,6 +287,22 @@
       "x": 2472,
       "y": 659,
       "province": "langholt"
+    },
+    {
+      "id": "koszakary",
+      "name": "Koszakary",
+      "capital": false,
+      "x": 2173,
+      "y": 660,
+      "province": "koszakary"
+    },
+    {
+      "id": "przetow",
+      "name": "Przetow",
+      "capital": false,
+      "x": 2232,
+      "y": 661,
+      "province": "west_podderonskie"
     },
     {
       "id": "osterholm",
@@ -265,6 +337,14 @@
       "province": "fenhaven"
     },
     {
+      "id": "poznice",
+      "name": "Poznice",
+      "capital": true,
+      "x": 2144,
+      "y": 677,
+      "province": "poznice"
+    },
+    {
       "id": "nyhaven",
       "name": "Nyhaven",
       "capital": true,
@@ -273,12 +353,316 @@
       "province": "nyhaven"
     },
     {
+      "id": "rystok",
+      "name": "Rystok",
+      "capital": false,
+      "x": 2182,
+      "y": 684,
+      "province": "blawatskie"
+    },
+    {
+      "id": "henborough",
+      "name": "Henborough",
+      "capital": false,
+      "x": 2322,
+      "y": 687,
+      "province": "west_otterhaven"
+    },
+    {
+      "id": "ostrowalki",
+      "name": "Ostrowalki",
+      "capital": false,
+      "x": 2203,
+      "y": 699,
+      "province": "slawskie"
+    },
+    {
       "id": "dwrcoch",
       "name": "Dwrcoch",
       "capital": false,
       "x": 2653,
       "y": 709,
       "province": "east_gweru"
+    },
+    {
+      "id": "melsko",
+      "name": "Melsko",
+      "capital": false,
+      "x": 2246,
+      "y": 713,
+      "province": "south_colland"
+    },
+    {
+      "id": "teclav",
+      "name": "Teclav",
+      "capital": false,
+      "x": 2213,
+      "y": 714,
+      "province": "south_colland"
+    },
+    {
+      "id": "kingsdale",
+      "name": "Kingsdale",
+      "capital": true,
+      "x": 2331,
+      "y": 724,
+      "province": "great_midlands"
+    },
+    {
+      "id": "litnik",
+      "name": "Litnik",
+      "capital": false,
+      "x": 2183,
+      "y": 726,
+      "province": "litnik"
+    },
+    {
+      "id": "suzovce",
+      "name": "Suzovce",
+      "capital": false,
+      "x": 2267,
+      "y": 728,
+      "province": "east_krevocoll"
+    },
+    {
+      "id": "glankirk",
+      "name": "Glankirk",
+      "capital": false,
+      "x": 2348,
+      "y": 729,
+      "province": "guildkister"
+    },
+    {
+      "id": "krasvicowo",
+      "name": "Krasvicowo",
+      "capital": false,
+      "x": 2203,
+      "y": 744,
+      "province": "krasvicovo"
+    },
+    {
+      "id": "hulldon",
+      "name": "Hulldon",
+      "capital": false,
+      "x": 2372,
+      "y": 749,
+      "province": "hulldon"
+    },
+    {
+      "id": "malane",
+      "name": "Malane",
+      "capital": false,
+      "x": 2236,
+      "y": 750,
+      "province": "south_krevia"
+    },
+    {
+      "id": "mugary",
+      "name": "Mugary",
+      "capital": false,
+      "x": 2358,
+      "y": 751,
+      "province": "guildkister"
+    },
+    {
+      "id": "conasud",
+      "name": "Conasud",
+      "capital": false,
+      "x": 2479,
+      "y": 755,
+      "province": "conasud"
+    },
+    {
+      "id": "vanin",
+      "name": "Vanin",
+      "capital": false,
+      "x": 2395,
+      "y": 757,
+      "province": "vaninterre"
+    },
+    {
+      "id": "hitogne",
+      "name": "Hitogne",
+      "capital": false,
+      "x": 2433,
+      "y": 766,
+      "province": "rouvree"
+    },
+    {
+      "id": "vandamme",
+      "name": "Vandamme",
+      "capital": false,
+      "x": 2508,
+      "y": 768,
+      "province": "vandamme"
+    },
+    {
+      "id": "pelerclore",
+      "name": "Pelerclore",
+      "capital": true,
+      "x": 2374,
+      "y": 772,
+      "province": "pelerclore"
+    },
+    {
+      "id": "herbreaux",
+      "name": "Herbreaux",
+      "capital": false,
+      "x": 2466,
+      "y": 772,
+      "province": "herbreaux"
+    },
+    {
+      "id": "ajaxgalu",
+      "name": "Ajaxgalu",
+      "capital": true,
+      "x": 2268,
+      "y": 775,
+      "province": "east_ajaxgul"
+    },
+    {
+      "id": "chaluire",
+      "name": "Chaluire",
+      "capital": false,
+      "x": 2453,
+      "y": 783,
+      "province": "chaluire"
+    },
+    {
+      "id": "echudeaux",
+      "name": "Echudeaux",
+      "capital": true,
+      "x": 2418,
+      "y": 785,
+      "province": "vallee_de_vosennac"
+    },
+    {
+      "id": "svolograd",
+      "name": "Svolograd",
+      "capital": false,
+      "x": 2196,
+      "y": 786,
+      "province": "svolograd"
+    },
+    {
+      "id": "kostrava",
+      "name": "Kostrava",
+      "capital": true,
+      "x": 2220,
+      "y": 796,
+      "province": "kostrava"
+    },
+    {
+      "id": "serran",
+      "name": "Serran",
+      "capital": false,
+      "x": 2493,
+      "y": 801,
+      "province": "luminara"
+    },
+    {
+      "id": "caitponte",
+      "name": "Caitponte",
+      "capital": true,
+      "x": 2508,
+      "y": 805,
+      "province": "caitponte"
+    },
+    {
+      "id": "patsue",
+      "name": "Patsue",
+      "capital": false,
+      "x": 2407,
+      "y": 807,
+      "province": "patsue"
+    },
+    {
+      "id": "berekoy",
+      "name": "Berekoy",
+      "capital": false,
+      "x": 2256,
+      "y": 817,
+      "province": "berekoy"
+    },
+    {
+      "id": "smotlas",
+      "name": "Smotlas",
+      "capital": false,
+      "x": 2207,
+      "y": 820,
+      "province": "smotlas"
+    },
+    {
+      "id": "cureo",
+      "name": "Cureo",
+      "capital": false,
+      "x": 2489,
+      "y": 825,
+      "province": "albinia"
+    },
+    {
+      "id": "gotim",
+      "name": "Gotim",
+      "capital": false,
+      "x": 2181,
+      "y": 831,
+      "province": "gotim"
+    },
+    {
+      "id": "salarno",
+      "name": "Salarno",
+      "capital": true,
+      "x": 2533,
+      "y": 832,
+      "province": "campania_inferior"
+    },
+    {
+      "id": "odes",
+      "name": "Odes",
+      "capital": false,
+      "x": 2453,
+      "y": 837,
+      "province": "odes"
+    },
+    {
+      "id": "ciniliari",
+      "name": "Ciniliari",
+      "capital": false,
+      "x": 2498,
+      "y": 839,
+      "province": "albinia"
+    },
+    {
+      "id": "santa_rossa",
+      "name": "Santa Rossa",
+      "capital": true,
+      "x": 2431,
+      "y": 842,
+      "province": "santa_rossa"
+    },
+    {
+      "id": "verdonia",
+      "name": "Verdonia",
+      "capital": false,
+      "x": 2524,
+      "y": 856,
+      "province": "south_tarsilia"
+    },
+    {
+      "id": "gatennes",
+      "name": "Gatennes",
+      "capital": false,
+      "x": 2335,
+      "y": 868,
+      "province": "gatennes"
+    },
+    {
+      "id": "harona",
+      "name": "Harona",
+      "capital": true,
+      "x": 2444,
+      "y": 882,
+      "province": "harona"
     }
   ]
 }

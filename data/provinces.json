@@ -99,6 +99,16 @@
       "colour": "#6B2EF7"
     },
     {
+      "id": "VKN",
+      "name": "Voseni Kansilnatu",
+      "colour": "#6B2EF7"
+    },
+    {
+      "id": "SVA",
+      "name": "Sava",
+      "colour": "#6B2EF7"
+    },
+    {
       "id": "SRS",
       "name": "Principality of Santa Rossa",
       "colour": "#D6D3A7"
@@ -287,6 +297,66 @@
       "id": "VRP",
       "name": "Virupan Empire",
       "colour": "#FFEE3D"
+    },
+    {
+      "id": "ZAN",
+      "name": "Zania",
+      "colour": "#73AA70"
+    },
+    {
+      "id": "VKD",
+      "name": "Kingdom of Vokanda",
+      "colour": "#4E8FAD"
+    },
+    {
+      "id": "NKO",
+      "name": "Empire of Nekotistan",
+      "colour": "#AD2E98"
+    },
+    {
+      "id": "QCO",
+      "name": "Monarchic Republic of Quoccao",
+      "colour": "#AD4859"
+    },
+    {
+      "id": "TNA",
+      "name": "Kingdom of Trenia",
+      "colour": "#54AD06"
+    },
+    {
+      "id": "ATN",
+      "name": "United Islands of Atinpania",
+      "colour": "#AD4B35"
+    },
+    {
+      "id": "TNG",
+      "name": "Tangmou Republic",
+      "colour": "#FF898F"
+    },
+    {
+      "id": "TNM",
+      "name": "Kingdom of Tanmoia",
+      "colour": "#FB8CFF"
+    },
+    {
+      "id": "UKH",
+      "name": "State of Ukhiava",
+      "colour": "#436B61"
+    },
+    {
+      "id": "THD",
+      "name": "Kingdom of Thidanook",
+      "colour": "#D1FFBC"
+    },
+    {
+      "id": "LNZ",
+      "name": "Kingdom of Lanizemin",
+      "colour": "#69BBBC"
+    },
+    {
+      "id": "KRF",
+      "name": "Kingdom of Karanfold",
+      "colour": "#A89F00"
     }
   ],
   "provinces": [
@@ -4926,7 +4996,7 @@
       "name": "South Herravor",
       "colour": "#6e99af",
       "terrain": [
-        "Plains"
+        "Hills"
       ],
       "owner": "ARY"
     },
@@ -5847,7 +5917,7 @@
       "owner": "QRG"
     },
     {
-      "id": "unnamed_01",
+      "id": "pahalabe",
       "name": "Pahalabe",
       "colour": "#9b3b78",
       "terrain": [
@@ -5856,7 +5926,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_02",
+      "id": "nadhina",
       "name": "Nadhina",
       "colour": "#9b7f86",
       "terrain": [
@@ -5865,7 +5935,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_03",
+      "id": "north_mattidesh",
       "name": "North Mattidesh",
       "colour": "#8f4d9e",
       "terrain": [
@@ -5874,7 +5944,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_04",
+      "id": "laala",
       "name": "Laala",
       "colour": "#829b89",
       "terrain": [
@@ -5883,7 +5953,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_05",
+      "id": "north_saamarria",
       "name": "North Saamarria",
       "colour": "#6c9b5b",
       "terrain": [
@@ -5892,7 +5962,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_06",
+      "id": "west_uttaree",
       "name": "West Uttaree",
       "colour": "#9b9e99",
       "terrain": [
@@ -5901,7 +5971,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_07",
+      "id": "east_uttaree",
       "name": "East Uttaree",
       "colour": "#9e329e",
       "terrain": [
@@ -5910,7 +5980,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_08",
+      "id": "bhalepatha",
       "name": "Bhalepatha",
       "colour": "#9e1734",
       "terrain": [
@@ -5919,7 +5989,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_09",
+      "id": "saamarria",
       "name": "Saamarria",
       "colour": "#9b2b3a",
       "terrain": [
@@ -5928,7 +5998,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_10",
+      "id": "gulaabdesh",
       "name": "Gulaabdesh",
       "colour": "#326f9e",
       "terrain": [
@@ -5937,7 +6007,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_11",
+      "id": "devasmin",
       "name": "Devasmin",
       "colour": "#409e32",
       "terrain": [
@@ -5946,7 +6016,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_12",
+      "id": "balaada",
       "name": "Balaada",
       "colour": "#9e4d83",
       "terrain": [
@@ -5955,7 +6025,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_13",
+      "id": "dbara",
       "name": "Dbara",
       "colour": "#e0ce72",
       "terrain": [
@@ -5964,7 +6034,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_14",
+      "id": "ramandesh",
       "name": "Ramandesh",
       "colour": "#9e4069",
       "terrain": [
@@ -5974,7 +6044,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_15",
+      "id": "north_karudesh",
       "name": "North Karudesh",
       "colour": "#45e0b9",
       "terrain": [
@@ -5983,7 +6053,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_16",
+      "id": "south_mattidesh",
       "name": "South Mattidesh",
       "colour": "#c9bae0",
       "terrain": [
@@ -5992,7 +6062,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_17",
+      "id": "virupa",
       "name": "Virupa",
       "colour": "#9e8a65",
       "terrain": [
@@ -6001,7 +6071,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_18",
+      "id": "east_karudesa",
       "name": "East Karudesa",
       "colour": "#c596ff",
       "terrain": [
@@ -6010,7 +6080,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_19",
+      "id": "gajja",
       "name": "Gajja",
       "colour": "#9e969e",
       "terrain": [
@@ -6019,7 +6089,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_20",
+      "id": "east_poorvi",
       "name": "East Poorvi",
       "colour": "#e06483",
       "terrain": [
@@ -6028,7 +6098,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_21",
+      "id": "south_kendry",
       "name": "South Kendry",
       "colour": "#9e2a3b",
       "terrain": [
@@ -6037,7 +6107,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_22",
+      "id": "west_poorvi",
       "name": "West Poorvi",
       "colour": "#e0ae53",
       "terrain": [
@@ -6046,7 +6116,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_23",
+      "id": "maarv",
       "name": "Maarv",
       "colour": "#c4ad52",
       "terrain": [
@@ -6055,7 +6125,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_24",
+      "id": "west_karudesa",
       "name": "West Karudesa",
       "colour": "#e26868",
       "terrain": [
@@ -6064,7 +6134,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_25",
+      "id": "east_bakatt",
       "name": "East Bakatt",
       "colour": "#ccb44b",
       "terrain": [
@@ -6073,7 +6143,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_26",
+      "id": "pobnyiaj",
       "name": "Pobnyiaj",
       "colour": "#ffb584",
       "terrain": [
@@ -6082,7 +6152,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_27",
+      "id": "west_bakatt",
       "name": "West Bakatt",
       "colour": "#51cc00",
       "terrain": [
@@ -6091,7 +6161,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_28",
+      "id": "west_ayyanga",
       "name": "West Ayyanga",
       "colour": "#9e6427",
       "terrain": [
@@ -6100,7 +6170,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_29",
+      "id": "bahaast",
       "name": "Bahaast",
       "colour": "#779e42",
       "terrain": [
@@ -6109,7 +6179,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_30",
+      "id": "vadrisa",
       "name": "Vadrisa",
       "colour": "#e25036",
       "terrain": [
@@ -6118,7 +6188,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_31",
+      "id": "east_ayyanga",
       "name": "East Ayyanga",
       "colour": "#714d9e",
       "terrain": [
@@ -6127,7 +6197,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_32",
+      "id": "chauhan",
       "name": "Chauhan",
       "colour": "#e28adf",
       "terrain": [
@@ -6136,7 +6206,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_33",
+      "id": "dakar",
       "name": "Dakar",
       "colour": "#9b4b26",
       "terrain": [
@@ -6145,7 +6215,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_34",
+      "id": "argela",
       "name": "Argela",
       "colour": "#e0b47b",
       "terrain": [
@@ -6154,7 +6224,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_35",
+      "id": "south_salwav",
       "name": "South Salwav",
       "colour": "#47a563",
       "terrain": [
@@ -6163,7 +6233,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_36",
+      "id": "punja",
       "name": "Punja",
       "colour": "#9e7b69",
       "terrain": [
@@ -6172,7 +6242,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_37",
+      "id": "kanjaga",
       "name": "Kanjaga",
       "colour": "#b2e084",
       "terrain": [
@@ -6181,7 +6251,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_38",
+      "id": "renua",
       "name": "Renua",
       "colour": "#e07367",
       "terrain": [
@@ -6190,7 +6260,7 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_39",
+      "id": "sarma",
       "name": "Sarma",
       "colour": "#e03336",
       "terrain": [
@@ -6199,13 +6269,910 @@
       "owner": "VRP"
     },
     {
-      "id": "unnamed_40",
+      "id": "savata_island",
       "name": "Savata Island",
       "colour": "#d53ee0",
       "terrain": [
         "Plains"
       ],
       "owner": "VRP"
+    },
+    {
+      "id": "aluqa",
+      "name": "Aluqa",
+      "colour": "#a05380",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "sukazug",
+      "name": "Sukazug",
+      "colour": "#a05a3e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "cholotal",
+      "name": "Cholotal",
+      "colour": "#a0587c",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "ganura",
+      "name": "Ganura",
+      "colour": "#a05329",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "achituhul",
+      "name": "Achituhul",
+      "colour": "#9853a0",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "ainoir_islands",
+      "name": "Ainoir Islands",
+      "colour": "#a03028",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "harkuri",
+      "name": "Harkuri",
+      "colour": "#a09e35",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "kosunnaran",
+      "name": "Kosunnaran",
+      "colour": "#937aa3",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "geilkan",
+      "name": "Geilkan",
+      "colour": "#a3778d",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "sabu_island",
+      "name": "Sabu Island",
+      "colour": "#5a39a0",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "north_zanyan_mountains",
+      "name": "North Zanyan Mountains",
+      "colour": "#b4e236",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "dabsunger",
+      "name": "Dabsunger",
+      "colour": "#a3872a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "chahonnur",
+      "name": "Chahonnur",
+      "colour": "#e24f60",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "kutalmor",
+      "name": "Kutalmor",
+      "colour": "#77a35d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "lower_boluzalau",
+      "name": "Lower Boluzalau",
+      "colour": "#a3612f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "south_zanyan_mountains",
+      "name": "South Zanyan Mountains",
+      "colour": "#a344a0",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "qalochahon",
+      "name": "Qalochahon",
+      "colour": "#a80032",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "osunhol",
+      "name": "Osunhol",
+      "colour": "#a54274",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "qitsing",
+      "name": "Qitsing",
+      "colour": "#82a850",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "central_boluzalau_basin",
+      "name": "Central Boluzalau Basin",
+      "colour": "#65a85a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "ebasunitola",
+      "name": "Ebasunitola",
+      "colour": "#a56ba8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "southwest_zania",
+      "name": "Southwest Zania",
+      "colour": "#7fa063",
+      "terrain": [
+        "Hills",
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "zalaumadun",
+      "name": "Zalaumadun",
+      "colour": "#a5455a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "east_artinia",
+      "name": "East Artinia",
+      "colour": "#4e8fad",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "west_josunnom",
+      "name": "West Josunnom",
+      "colour": "#a8412a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "east_josunnom",
+      "name": "East Josunnom",
+      "colour": "#a81f61",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "west_artinia",
+      "name": "West Artinia",
+      "colour": "#c1ba55",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "south_zanyan_hills",
+      "name": "South Zanyan Hills",
+      "colour": "#8259a8",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "zardul",
+      "name": "Zardul",
+      "colour": "#c1805d",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "zanian_nekotsi_steppes",
+      "name": "Zanian Nekotsi Steppes",
+      "colour": "#a54b17",
+      "terrain": [
+        "Hills",
+        "Plains"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "qara",
+      "name": "Qara",
+      "colour": "#aa274e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "shirvaz",
+      "name": "Shirvaz",
+      "colour": "#aa1300",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "north_qorgic_desert",
+      "name": "North Qorgic Desert",
+      "colour": "#a16da5",
+      "terrain": [
+        "Desert",
+        "Hills"
+      ],
+      "owner": "ZAN"
+    },
+    {
+      "id": "seralan",
+      "name": "Seralan",
+      "colour": "#aa4647",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "mutor",
+      "name": "Mutor",
+      "colour": "#c13896",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "west_vokanda",
+      "name": "West Vokanda",
+      "colour": "#c1305e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "yoypon",
+      "name": "Yoypon",
+      "colour": "#c4609c",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "sardo",
+      "name": "Sardo",
+      "colour": "#7dc4c1",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "sabirul",
+      "name": "Sabirul",
+      "colour": "#c147b1",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "east_qiziltog",
+      "name": "East Qiziltog",
+      "colour": "#c43b19",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "dasht",
+      "name": "Dasht",
+      "colour": "#c1c481",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "loyshar",
+      "name": "Loyshar",
+      "colour": "#c4a758",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "hanisan",
+      "name": "Hanisan",
+      "colour": "#3aaa72",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "north_sheria",
+      "name": "North Sheria",
+      "colour": "#c13b34",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "VKD"
+    },
+    {
+      "id": "ramol",
+      "name": "Ramol",
+      "colour": "#c45e38",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "aq_quduk",
+      "name": "Aq-quduk",
+      "colour": "#c485b9",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "buston",
+      "name": "Buston",
+      "colour": "#c46ba8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "tortayol",
+      "name": "Tortayol",
+      "colour": "#c4194f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "jasdanya",
+      "name": "Jasdanya",
+      "colour": "#a6aa1d",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "qabas",
+      "name": "Qabas",
+      "colour": "#5652c4",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "janitesik",
+      "name": "Janitesik",
+      "colour": "#8baa85",
+      "terrain": [
+        "Desert"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "south_qoracho_l",
+      "name": "South Qoracho'l",
+      "colour": "#95c4c2",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "south_gotzmenistan",
+      "name": "South Gotzmenistan",
+      "colour": "#aa5573",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "qoramulla",
+      "name": "Qoramulla",
+      "colour": "#c466b9",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "NKO"
+    },
+    {
+      "id": "ranota_islands",
+      "name": "Ranota Islands",
+      "colour": "#ff56e8",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "viyula_nadu",
+      "name": "Viyula Nadu",
+      "colour": "#873760",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "manal_island",
+      "name": "Manal Island",
+      "colour": "#c44052",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "niramvalai",
+      "name": "NIramvalai",
+      "colour": "#87537f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "mithuan",
+      "name": "Mithuan",
+      "colour": "#718779",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "irungakottai",
+      "name": "Irungakottai",
+      "colour": "#aa579c",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "inner_kanchanapalli",
+      "name": "Inner Kanchanapalli",
+      "colour": "#aa3b0b",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "rajulapeta",
+      "name": "Rajulapeta",
+      "colour": "#aa7e77",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "senthamarai",
+      "name": "Senthamarai",
+      "colour": "#6868aa",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "inner_irungakottai",
+      "name": "Inner Irungakottai",
+      "colour": "#aa6742",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "inner_podalanadu",
+      "name": "Inner Podalanadu",
+      "colour": "#aa3359",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "inner_chandanagiri",
+      "name": "Inner Chandanagiri",
+      "colour": "#aa0005",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "kanchanapalli",
+      "name": "Kanchanapalli",
+      "colour": "#52aa42",
+      "terrain": [
+        "Jungle",
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "shankaranadu",
+      "name": "Shankaranadu",
+      "colour": "#7953aa",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "podalanadu",
+      "name": "Podalanadu",
+      "colour": "#aa5a5a",
+      "terrain": [
+        "Jungle",
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "chandanagiri",
+      "name": "Chandanagiri",
+      "colour": "#98aa5d",
+      "terrain": [
+        "Jungle",
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "kamalagiri",
+      "name": "Kamalagiri",
+      "colour": "#aa2716",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "inner_mandharai",
+      "name": "Inner Mandharai",
+      "colour": "#aa3b3a",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "mandharai",
+      "name": "Mandharai",
+      "colour": "#aa4e9d",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "VKN"
+    },
+    {
+      "id": "catcao",
+      "name": "Catcao",
+      "colour": "#647f7b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "QCO"
+    },
+    {
+      "id": "phiadoi",
+      "name": "Phiadoi",
+      "colour": "#7f0f3e",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "QCO"
+    },
+    {
+      "id": "baidai",
+      "name": "Baidai",
+      "colour": "#7f0055",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TNA"
+    },
+    {
+      "id": "bacdao",
+      "name": "Bacdao",
+      "colour": "#7f342a",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TNA"
+    },
+    {
+      "id": "haiben",
+      "name": "Haiben",
+      "colour": "#7f307f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TNA"
+    },
+    {
+      "id": "pasirbiru",
+      "name": "Pasirbiru",
+      "colour": "#9b3386",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "ATN"
+    },
+    {
+      "id": "orangtera",
+      "name": "Orangtera",
+      "colour": "#9b5771",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "ATN"
+    },
+    {
+      "id": "istana_lumpur",
+      "name": "Istana Lumpur",
+      "colour": "#9b3089",
+      "terrain": [
+        "Jungle"
+      ],
+      "owner": "ATN"
+    },
+    {
+      "id": "north_tangmon",
+      "name": "North Tangmon",
+      "colour": "#ce2ba5",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TNG"
+    },
+    {
+      "id": "tanmoia",
+      "name": "Tanmoia",
+      "colour": "#fb8cff",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "TNM"
+    },
+    {
+      "id": "kamdar",
+      "name": "Kamdar",
+      "colour": "#ff3094",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TNG"
+    },
+    {
+      "id": "magiibaataar",
+      "name": "Magiibaataar",
+      "colour": "#e82c64",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "TNM"
+    },
+    {
+      "id": "south_tangmon",
+      "name": "South Tangmon",
+      "colour": "#f06dff",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "TNG"
+    },
+    {
+      "id": "north_ukhiava",
+      "name": "North Ukhiava",
+      "colour": "#cccc55",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "UKH"
+    },
+    {
+      "id": "east_ukhiava",
+      "name": "East Ukhiava",
+      "colour": "#436b61",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "UKH"
+    },
+    {
+      "id": "west_ukhiava",
+      "name": "West Ukhiava",
+      "colour": "#cc687f",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "UKH"
+    },
+    {
+      "id": "east_thidanook",
+      "name": "East Thidanook",
+      "colour": "#e54eb3",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "THD"
+    },
+    {
+      "id": "west_thidanook",
+      "name": "West Thidanook",
+      "colour": "#d1ffbc",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "THD"
+    },
+    {
+      "id": "sava",
+      "name": "Sava",
+      "colour": "#e88974",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "SVA"
+    },
+    {
+      "id": "north_karanfold",
+      "name": "North Karanfold",
+      "colour": "#c1307b",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KRF"
+    },
+    {
+      "id": "west_karanfold",
+      "name": "West Karanfold",
+      "colour": "#c19374",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "KRF"
+    },
+    {
+      "id": "south_karanfold",
+      "name": "South Karanfold",
+      "colour": "#a89f00",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "KRF"
+    },
+    {
+      "id": "north_lanizemin",
+      "name": "North Lanizemin",
+      "colour": "#c46f78",
+      "terrain": [
+        "Plains"
+      ],
+      "owner": "LNZ"
+    },
+    {
+      "id": "asmalewi",
+      "name": "Asmalewi",
+      "colour": "#69bbbc",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "LNZ"
+    },
+    {
+      "id": "olok",
+      "name": "Olok",
+      "colour": "#c41f8a",
+      "terrain": [
+        "Hills"
+      ],
+      "owner": "LNZ"
+    },
+    {
+      "id": "songiki",
+      "name": "Songiki",
+      "colour": "#c4452f",
+      "terrain": [
+        "Mountains"
+      ],
+      "owner": "LNZ"
     }
   ]
 }

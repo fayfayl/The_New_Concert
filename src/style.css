@@ -1,0 +1,863 @@
+/* ============================================================ palette
+   Wartime strategy-map styling. Everything is one family of desaturated
+   steel blues; the only "accent" is a lighter, slightly cooler steel, so
+   emphasis comes from value and not from a second hue. */
+:root {
+  --steel-deepest: #0c1015;
+  --steel-deep: #12171e;
+  --steel: #1a212a;
+  --steel-raised: #222b36;
+  --steel-hover: #2b3644;
+
+  --rule: #313d4c;
+  --rule-bright: #46566a;
+
+  --accent: #7f97b2;
+  /* selected / interactive */
+  --accent-bright: #a8bdd4;
+  --accent-dim: #3f5064;
+
+  --paper: #dfe5ec;
+  /* the brightest text gets */
+  --text: #b9c2cf;
+  --dim: #78849a;
+
+  /* One place, because the panel's slide parks it at exactly minus its width. */
+  --panel-w: 320px;
+
+  --shadow: 0 2px 10px rgba(0, 0, 0, .55);
+  --bevel: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 -1px 0 rgba(0, 0, 0, .35);
+
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ============================================================== texture
+   A photographed surface, laid over every piece of chrome.
+
+   Three things have to hold at once, and they pull against each other:
+
+     - every box owns its texture. Not a shared sheet seen through holes.
+     - the grain is the same size on all of them. So the image is sized in
+       PIXELS, never with `cover`, which would scale it to fit each box and make
+       a small button show a zoomed crop of what the panel shows whole.
+     - no two boxes show the same thing. Each takes its own rotation and its own
+       offset into the sheet.
+
+   Sizing in pixels means tiling, and tiling means the image must be seamless —
+   texture.png is not, its opposite edges differing by around 90 levels. So
+   texture-tile.png is that file mirrored into a 2x2 block: a mirrored edge
+   matches its opposite exactly, so it repeats with no seam whatever the original
+   did. Greyscale 8-bit, the texture having no colour worth keeping.
+   Rebuild it with scratchpad/maketile.cjs if the source changes.
+
+   Being seamless is also what makes rotation safe. The overlay is far larger
+   than the box and centred on it, so any angle still covers the corners, and the
+   tiling means the extra area costs nothing to fill. */
+:root {
+  --texture-img: url('../data/ui/texture-tile.png');
+
+  /* Width the sheet is drawn at, and the one number that sets grain size
+     everywhere. The tile is 1480px across and holds the source twice over, so
+     940px here puts the source at 470 of its native 740 — coarse enough that a
+     26px-tall button still shows structure rather than a flat wash, fine enough
+     that the panel does not read as one large stain. Raise it for a coarser
+     surface, lower it for a finer one; everything moves together. */
+  --texture-size: 940px;
+  --texture-strength: .17;
+}
+
+/* The overlay sits above the box's own background and BELOW its text, which is
+   what z-index -1 inside an isolated stacking context buys.
+
+   It is pinned to the box's TOP-LEFT CORNER, not to its centre. A centred
+   overlay would re-centre whenever the box changed size, and the grain would
+   visibly slide — which is what the toolbar did every time the debug panel took
+   320px off its right edge. A corner is a fixed point under that kind of
+   resize, so the texture stays where it is and only the box's edge moves.
+
+   Square, centred on that corner, and large enough that the inscribed circle
+   still reaches the box's far corner at any angle. Rotating about the centre of
+   a circle that already covers the box cannot uncover anything.
+
+   Which makes --tex-span twice the box's DIAGONAL, and no more. It is set per
+   element for that reason: one shared figure has to satisfy the widest box there
+   is, and a span sized for a full-width toolbar puts an 8000px blended layer
+   behind a 26px button. Each of these is a composited layer carrying a blend
+   mode over whatever sits beneath it, so its area is not free however little of
+   it ends up visible. Per box, the nineteen of them come to 24 million pixels
+   between them instead of 1.2 billion.
+
+   The spans stay in PIXELS, never vw or vh. The overlay is centred on the box's
+   corner, so its own top-left — which is where the background is measured from —
+   sits at minus half the span. Tie that to the viewport and every window resize
+   moves it, and the grain slides across the chrome as the window is dragged.
+   Fixed, they are simply big enough for a display larger than any this will run
+   on, and nothing moves. */
+#toolbar::before,
+#panel::after,
+#tooltip::after,
+#toolbar button::after,
+.toggles button::after,
+#start-enter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--tex-span, 600px);
+  height: var(--tex-span, 600px);
+  transform: translate(-50%, -50%) rotate(var(--tex-turn, 0deg));
+  background: var(--texture-img) var(--tex-at, 0 0) / var(--texture-size) auto repeat;
+  mix-blend-mode: soft-light;
+  opacity: var(--texture-strength);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hosts clip their own overlay, and isolate so its negative z-index cannot fall
+   behind the host itself and vanish. */
+#toolbar,
+#panel,
+#tooltip,
+#toolbar button,
+.toggles button,
+#start-enter {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* A host must also be the overlay's containing block. The tooltip is left out
+   because it is positioned already — it is placed at the cursor, and making it
+   relative would drop it back to wherever it sits in the flow. */
+#toolbar,
+#panel,
+#toolbar button,
+.toggles button,
+#start-enter {
+  position: relative;
+}
+
+/* --- a different piece of the sheet for each box.
+   Two knobs per box: which way the grain runs, and where in the sheet the crop
+   is taken from. Rotation alone would not be enough, since a rotated tiling of
+   the same image still shows the same features in the same places.
+
+   The angles avoid multiples of 90 on purpose. texture-tile.png is a mirrored
+   block, so its two axes of symmetry lie square to the image; turning the grain
+   off-square puts them at an angle to the box and keeps them from reading as
+   symmetry. */
+#toolbar {
+  --tex-span: 8000px;
+  --tex-turn: 7deg;
+  --tex-at: -210px -40px;
+}
+
+#panel {
+  --tex-span: 4400px;
+  --tex-turn: 118deg;
+  --tex-at: -60px -300px;
+}
+
+#start-enter {
+  --tex-span: 560px;
+  --tex-turn: 204deg;
+  --tex-at: -150px -120px;
+}
+
+/* The tooltip is redrawn at the cursor on every move, so its texture travels
+   with it — the same as the panel's does while the panel slides. */
+#tooltip {
+  --tex-span: 760px;
+  --tex-turn: 271deg;
+  --tex-at: -320px -145px;
+}
+
+/* The mode buttons and the debug button — four in a row, so all four differ.
+   nth-of-type counts within a parent, and the zoom buttons sit inside their own
+   span, so they form a second run of their own and are listed separately. */
+#toolbar>button:nth-of-type(1) {
+  --tex-span: 380px;
+  --tex-turn: 27deg;
+  --tex-at: -30px -190px;
+}
+
+#toolbar>button:nth-of-type(2) {
+  --tex-span: 380px;
+  --tex-turn: 143deg;
+  --tex-at: -260px -70px;
+}
+
+#toolbar>button:nth-of-type(3) {
+  --tex-span: 380px;
+  --tex-turn: 236deg;
+  --tex-at: -120px -330px;
+}
+
+#toolbar>button:nth-of-type(4) {
+  --tex-span: 380px;
+  --tex-turn: 311deg;
+  --tex-at: -340px -20px;
+}
+
+#zoom-group button:nth-of-type(1) {
+  --tex-span: 380px;
+  --tex-turn: 84deg;
+  --tex-at: -390px -240px;
+}
+
+#zoom-group button:nth-of-type(2) {
+  --tex-span: 380px;
+  --tex-turn: 168deg;
+  --tex-at: -75px -410px;
+}
+
+#zoom-group button:nth-of-type(3) {
+  --tex-span: 380px;
+  --tex-turn: 253deg;
+  --tex-at: -280px -160px;
+}
+
+/* Eight overlay toggles, eight settings, so nothing repeats down the grid. */
+.toggles button:nth-of-type(1) {
+  --tex-span: 380px;
+  --tex-turn: 62deg;
+  --tex-at: -180px -260px;
+}
+
+.toggles button:nth-of-type(2) {
+  --tex-span: 380px;
+  --tex-turn: 175deg;
+  --tex-at: -95px -35px;
+}
+
+.toggles button:nth-of-type(3) {
+  --tex-span: 380px;
+  --tex-turn: 288deg;
+  --tex-at: -300px -215px;
+}
+
+.toggles button:nth-of-type(4) {
+  --tex-span: 380px;
+  --tex-turn: 341deg;
+  --tex-at: -45px -150px;
+}
+
+.toggles button:nth-of-type(5) {
+  --tex-span: 380px;
+  --tex-turn: 129deg;
+  --tex-at: -355px -95px;
+}
+
+.toggles button:nth-of-type(6) {
+  --tex-span: 380px;
+  --tex-turn: 216deg;
+  --tex-at: -140px -380px;
+}
+
+.toggles button:nth-of-type(7) {
+  --tex-span: 380px;
+  --tex-turn: 33deg;
+  --tex-at: -230px -290px;
+}
+
+.toggles button:nth-of-type(8) {
+  --tex-span: 380px;
+  --tex-turn: 297deg;
+  --tex-at: -400px -55px;
+}
+
+body {
+  margin: 0;
+  background: var(--steel-deepest);
+  color: var(--text);
+  font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ======================================================== start menu */
+#start {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The map's own imagery, standing in until there is real cover art. The
+     scrim over it is what keeps the text readable on top of terrain. */
+  background: linear-gradient(rgba(8, 11, 16, .72), rgba(8, 11, 16, .88)),
+    /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
+       URLs, so moving the CSS into src/ moved the meaning of every path in it. */
+    url('../data/satellite.png') center / cover no-repeat,
+    var(--steel-deepest);
+  transition: opacity .45s ease, visibility 0s .45s;
+}
+
+/* Dismissed rather than deleted, so the fade has something to fade. */
+#start.gone {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.start-panel {
+  max-width: 460px;
+  padding: 0 32px;
+  text-align: center;
+}
+
+.start-panel h1 {
+  margin: 0 0 30px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--paper);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
+}
+
+#start-enter {
+  background: linear-gradient(180deg, #46586e, #2b3746);
+  color: var(--paper);
+  border: 1px solid var(--rule-bright);
+  border-top-color: var(--accent);
+  border-radius: 2px;
+  padding: 13px 54px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 6px 22px rgba(0, 0, 0, .55);
+  transition: background .14s, border-color .14s;
+}
+
+#start-enter:hover:not(:disabled) {
+  background: linear-gradient(180deg, #566b85, #354355);
+  border-top-color: var(--accent-bright);
+}
+
+#start-enter:disabled {
+  opacity: .45;
+  cursor: default;
+  letter-spacing: .18em;
+}
+
+#start-enter:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: 3px;
+}
+
+.start-panel p {
+  margin: 30px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+}
+
+/* =============================================================== map */
+#map-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 14px;
+  height: 52px;
+  flex: none;
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel-deep));
+  border-bottom: 1px solid #000;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 3px 12px rgba(0, 0, 0, .5);
+  position: relative;
+  z-index: 5;
+}
+
+/* Cool hairline under the toolbar, the one horizontal accent in the chrome.
+   Inside the bottom edge rather than straddling it, because the toolbar clips
+   its own overflow to contain the texture overlay — anything hung outside the
+   box would be cut away. */
+#toolbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim) 12%, var(--accent-dim) 88%, transparent);
+}
+
+.wordmark {
+  font-size: 13px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--paper);
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000;
+  padding-right: 4px;
+}
+
+.wordmark b {
+  display: block;
+  font-size: 9px;
+  letter-spacing: .3em;
+  font-weight: 400;
+  color: var(--dim);
+}
+
+.sep {
+  width: 1px;
+  height: 26px;
+  margin: 0 8px;
+  background: linear-gradient(180deg, transparent, var(--rule), transparent);
+  flex: none;
+}
+
+/* --------------------------------------------------------- buttons */
+#toolbar button {
+  /* Grain over the lighting gradient, blended with `soft-light` rather than laid
+     on flat: flat alpha just greys the button, while this lifts and lowers what
+     is already there, so it reads as a surface catching light. soft-light in
+     preference to overlay because these panels are dark, and overlay works on
+     the distance from mid-grey, of which there is almost none down here.
+     No striation layer. A repeating gradient at 1px is a scanline, and one
+     regular enough to see is a CRT rather than a piece of metal. */
+  background: linear-gradient(180deg, var(--steel-raised), #171d25);
+  color: var(--text);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 6px 13px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--bevel);
+  transition: border-color .12s, color .12s, background .12s;
+}
+
+#toolbar button:hover {
+  background: linear-gradient(180deg, var(--steel-hover), #1d242e);
+  border-color: var(--rule-bright);
+  color: #dfe5ee;
+}
+
+#toolbar button:active {
+  background: #12171e;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .6);
+}
+
+/* Active reads as a panel lit from above and pushed forward, rather than as
+   a differently coloured plate — value and a bright top edge, not a hue. */
+#toolbar button.active {
+  background: linear-gradient(180deg, #46586e, #2b3746);
+  border-color: var(--rule-bright);
+  border-top-color: var(--accent);
+  color: var(--paper);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 0 0 1px rgba(0, 0, 0, .3);
+}
+
+#toolbar button.active:hover {
+  background: linear-gradient(180deg, #506480, #313e4f);
+}
+
+#toolbar button:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+/* Shown when the optional data behind a button is missing, e.g. no imagery. */
+#toolbar button:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+  background: linear-gradient(180deg, #1b222b, #151a21);
+}
+
+#toolbar button:disabled:hover {
+  border-color: var(--rule);
+  color: var(--text);
+}
+
+#zoom-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#zoom-group button {
+  width: 32px;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+#zoom-group #zoom-fit {
+  width: auto;
+  padding: 6px 11px;
+  font-size: 12px;
+}
+
+#zoom-level {
+  min-width: 56px;
+  text-align: center;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+/* ---------------------------------------------------------- canvas */
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--steel-deepest);
+}
+
+/* Vignette, so the map reads as lit from the centre. Must not eat clicks. */
+#canvas-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, .38) 100%);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+canvas.panning {
+  cursor: grabbing;
+}
+
+#tooltip {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  /* never let the tooltip sit under the cursor and eat the next event */
+  background: linear-gradient(180deg, rgba(34, 43, 54, .97), rgba(16, 21, 27, .97));
+  border: 1px solid var(--rule-bright);
+  border-top-color: var(--accent-dim);
+  border-radius: 2px;
+  padding: 7px 11px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+#tooltip .sub {
+  color: var(--dim);
+  font-size: 12px;
+}
+
+/* ================================================ side panel (dev only)
+   Closed unless toggled with the backtick key, and it must take up no space
+   at all when closed so the map gets the full width.
+
+   It slides on a negative margin rather than a transform: the margin is what
+   the flex layout measures, so the map grows into the space as the panel
+   leaves, instead of the panel gliding over a map that has already resized.
+   Its own width never changes, so the text inside does not reflow mid-slide.
+   display:none is not usable here — it cannot be transitioned. */
+#panel {
+  width: var(--panel-w);
+  margin-right: calc(-1 * var(--panel-w));
+  /* parked just off the right edge */
+  visibility: hidden;
+  flex: none;
+  transition: margin-right .3s cubic-bezier(.22, .61, .36, 1),
+    visibility 0s .3s;
+  /* stays visible until the slide finishes */
+
+  background: linear-gradient(180deg, var(--steel), var(--steel-deep));
+  border-left: 1px solid #000;
+  box-shadow: -3px 0 14px rgba(0, 0, 0, .5);
+
+  /* A column so the scroller below can claim the leftover height without being
+     told a number. min-height on the child is what lets it shrink and scroll
+     instead of growing the panel. */
+  display: flex;
+  flex-direction: column;
+}
+
+#panel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 18px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) var(--steel-deepest);
+}
+
+#panel.open {
+  margin-right: 0;
+  visibility: visible;
+  transition: margin-right .3s cubic-bezier(.22, .61, .36, 1),
+    visibility 0s 0s;
+  /* but appears immediately on the way in */
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  #panel,
+  #panel.open {
+    transition: none;
+  }
+}
+
+/* Matching hairline down the panel's inner edge. */
+#panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--accent-dim) 8%, var(--accent-dim) 92%, transparent);
+}
+
+/* Section headings: "SELECTED", "ADJACENT PROVINCES". */
+#panel h1 {
+  font-size: 10px;
+  margin: 0 0 6px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+#panel h1::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+/* The selected province's name — the one piece of display type. */
+#panel h2 {
+  font: 400 23px/1.25 Georgia, "Times New Roman", serif;
+  margin: 0 0 16px;
+  color: var(--paper);
+  letter-spacing: .01em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+}
+
+/* ------------------------------------------------ overlay toggles */
+.toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 22px;
+}
+
+.toggles button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(180deg, var(--steel-raised), #171d25);
+  color: var(--dim);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--bevel);
+  transition: border-color .12s, color .12s;
+}
+
+.toggles button:hover {
+  border-color: var(--rule-bright);
+  color: var(--text);
+}
+
+/* A lamp rather than a fill, so a row of them is readable at a glance. */
+.toggles button::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  border: 1px solid var(--rule-bright);
+  flex: none;
+}
+
+.toggles button.active {
+  color: var(--paper);
+  border-color: var(--rule-bright);
+}
+
+.toggles button.active::before {
+  background: var(--accent);
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 5px rgba(127, 151, 178, .7);
+}
+
+.toggles button:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+/* Shown when the data behind a switch is missing, e.g. no satellite.png. */
+.toggles button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.toggles button:disabled:hover {
+  border-color: var(--rule);
+  color: var(--dim);
+}
+
+/* --------------------------------------------------- data readout */
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(49, 61, 76, .5);
+  font-size: 13px;
+}
+
+.row span:first-child {
+  color: var(--dim);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  align-self: center;
+}
+
+.row span:last-child {
+  color: var(--paper);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 1px;
+  margin-right: 7px;
+  vertical-align: baseline;
+  border: 1px solid rgba(0, 0, 0, .55);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .07);
+}
+
+/* ------------------------------------------------ neighbour list */
+#neighbours {
+  margin-top: 22px;
+}
+
+#neighbours ul {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+}
+
+#neighbours li {
+  padding: 6px 10px;
+  margin-bottom: 3px;
+  border-radius: 2px;
+  background: var(--steel-raised);
+  border: 1px solid transparent;
+  border-left: 2px solid var(--rule);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .12s, border-color .12s, color .12s;
+}
+
+#neighbours li:hover {
+  background: var(--steel-hover);
+  border-left-color: var(--accent);
+  color: var(--paper);
+}
+
+.hint {
+  color: var(--dim);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Readout blocks share the .row layout but sit tighter than the main list. */
+#perf,
+#stats {
+  margin-bottom: 22px;
+}
+
+#perf .row,
+#stats .row {
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+#perf .row span:last-child,
+#stats .row span:last-child {
+  color: var(--text);
+}
+
+/* Flags a figure that has gone outside its healthy range. */
+.warn {
+  color: #d98c5f !important;
+}
+
+/* ------------------------------------------------------ scrollbar */
+#panel-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+#panel-scroll::-webkit-scrollbar-track {
+  background: var(--steel-deepest);
+}
+
+#panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--rule);
+  border: 2px solid var(--steel-deepest);
+  border-radius: 5px;
+}
+
+#panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--rule-bright);
+}
+
+/* Narrow windows: the panel would otherwise crowd out the map. */
+@media (max-width: 900px) {
+
+  /* Narrowing the variable keeps the parked position in step with the width. */
+  :root {
+    --panel-w: 250px;
+  }
+
+  #panel-scroll {
+    padding: 14px;
+  }
+
+  .wordmark b {
+    display: none;
+  }
+}
