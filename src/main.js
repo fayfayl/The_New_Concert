@@ -333,7 +333,39 @@ function tilesOver(x0, y0, x1, y1) {
  * reads as a saturated outline enclosing a soft field rather than as a flat
  * colour at varying opacity. The border shades come in the same pair.
  */
+/*
+ * A ceiling on what may be lit up.
+ *
+ * The highlight is baked into the painted map rather than drawn over it, which
+ * is what makes it affordable: lighting a province costs a repaint of its
+ * BOUNDING BOX, and for an ordinary province that is a small box. The bargain
+ * fails completely for one that spans the map. A placeholder blocking out
+ * ground not yet drawn is exactly that shape — its box is the whole world, so
+ * lighting it repaints all 15.9 million pixels, measured at 386ms, and the
+ * selection ring on top of it wants a 6000x2565 canvas of its own.
+ *
+ * So past this size a province is simply not lit. It is still named, still
+ * selectable, still reports its data and still ranks in the panel; only the
+ * fill and the ring are skipped. The alternative is a third of a second of
+ * frozen page every time the cursor crosses it.
+ *
+ * This is a floor under the worst case, not a design. Highlighting without a
+ * repaint is the real answer — province ids as a texture and a palette the
+ * shader reads — and it is in the README under where this goes next.
+ */
+const HIGHLIGHT_MAX_PX = 4e6;      // bounding-box pixels, about a quarter of the map
+
+/** True when lighting this province would cost more than a frame can spare. */
+function tooBigToLight(world, id) {
+  const bb = id && world.bounds.get(id);
+  if (!bb) return false;
+  return (bb.maxX - bb.minX + 1) * (bb.maxY - bb.minY + 1) > HIGHLIGHT_MAX_PX;
+}
+
 function shadeTable(world, mode, selected, hovered) {
+  // Dropped here rather than at the call sites so that every path agrees — a
+  // full repaint and a partial one must shade the map identically, or the two
+  // would disagree about what is lit and leave a patch behind.
   const { atIndex } = world;
   const n = atIndex.length;
   const rim = new Uint8Array(n * 3);      // interior, hard against a frontier
@@ -383,6 +415,22 @@ function shadeTable(world, mode, selected, hovered) {
       if (dropped.id === p.id) { role = 'selected'; strength = k; }
       else if (dropped.neighbours.has(p.id)) { role = 'neighbour'; strength = k; }
     }
+
+    // The size ceiling is applied HERE, after the role is worked out, rather
+    // than to `selected` and `hovered` on the way in. Every way a province can
+    // light up passes through this one line — selected, hovered, neighbour of a
+    // selection, and any of those still fading out — and invalidateProvinces
+    // refuses to repaint exactly these provinces, so the two must agree about
+    // all four or none.
+    //
+    // Missing the neighbour case is what left rectangles across the map: the
+    // shading said a huge province was lit, nothing ever repainted it to match,
+    // and then every ordinary province repainted nearby carried the lift into
+    // whatever slice of the huge one its bounding box happened to cover.
+    //
+    // Refusing the role rather than the selection also keeps the useful half of
+    // selecting one: it is not lit itself, but its neighbours still are.
+    if (role && tooBigToLight(world, p.id)) role = null;
 
     const mix = role ? LIGHTEN[role] * strength : 0;
     if (over && role) lift[ix] = Math.round(255 * SATELLITE_LIFT[role] * strength);
@@ -464,8 +512,11 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
       // Because only right and below are checked, the dark line falls on one side
       // of each boundary rather than being shared, and is always exactly one map
       // pixel wide — so it thins out visually as you zoom in.
+      // Right wraps at the last column to column 0 of the same row, so a border
+      // running down the map's seam is drawn like any other. Below does not:
+      // there is nothing past a pole to share an edge with.
       const x = tile.x + lx;
-      const right = x + 1 < width ? provinceAt[i + 1] : index;
+      const right = provinceAt[x + 1 < width ? i + 1 : y * width];
       const below = y + 1 < height ? provinceAt[i + width] : index;
       const mine = ownerAt[index];
       let edge = 0;                                // 0 interior, 1 internal edge, 2 national edge
@@ -646,6 +697,44 @@ const LABEL_LINE_HEIGHT = 1.1;   // distance between stacked lines, as a multipl
  */
 const LABEL_ALPHA = 0.85;                  // peak opacity, in the band between the two
 
+/* --- standing back while something is selected
+ *
+ * Selecting a province lightens it and its neighbours, and reading that means
+ * comparing shapes. A country name is the one thing on the map large enough to
+ * lie across several of them at once, so it drops to a fifth of its strength
+ * while a selection stands and comes back when it is dropped.
+ *
+ * Country names only. City names are small and pinned to a point, so they sit
+ * beside the shapes rather than across them and cost nothing to leave alone.
+ * Province names are a debug overlay and not part of the map at all, so they
+ * are left to behave like the other overlays rather than dressed to match.
+ *
+ * Faded rather than switched, because the map is never asked to change
+ * instantly anywhere else, and a caption blinking out at the moment of a click
+ * reads as a fault rather than as an answer to it.
+ */
+const LABEL_DIM_TO = 0.2;                  // what a label is worth while selecting
+const LABEL_DIM_MS = 160;
+
+// 0 is full strength, 1 fully dimmed. Kept as progress rather than as the
+// multiplier itself so the transition takes the same time whatever LABEL_DIM_TO
+// is set to.
+let labelDim = 0;
+let labelDimClock = null;
+
+/** Moves the dimming towards where the selection says it should be. */
+function stepLabelDim(now) {
+  const want = state.selected ? 1 : 0;
+  const step = labelDimClock === null ? 1 : (now - labelDimClock) / LABEL_DIM_MS;
+  labelDimClock = now;
+  if (labelDim === want) return false;
+  labelDim = want > labelDim ? Math.min(want, labelDim + step) : Math.max(want, labelDim - step);
+  return true;
+}
+
+/** What every label's opacity is multiplied by right now. */
+const labelDimming = () => 1 - labelDim * (1 - LABEL_DIM_TO);
+
 // The two ends are measured in different units, on purpose.
 //
 // Fading IN is about legibility, which is absolute: text under about eight
@@ -713,7 +802,20 @@ const LABEL_DENSITY_FLOOR = 0.4; // a slice counts as solid ground at this fract
 const LABEL_MIN_DENSITY = 0.3;   // a whole block sparser than this is an archipelago, and gets no label
 
 //change the number to change weight/boldness of text
-const labelFont = (px) => `600 ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+/*
+ * The map's lettering, which is deliberately NOT the interface's.
+ *
+ * The chrome is set in Bahnschrift, a cut of DIN 1451, for atmosphere. The map
+ * is not: names painted across territory are read at every size from six pixels
+ * to hundreds, at any angle, over imagery of any colour, and a plain humanist
+ * sans survives that better than a narrow industrial face. An atlas and the
+ * panel that reads it are two different jobs.
+ *
+ * The whole string is the key to the glyph atlas, not just the family — change
+ * any part of it and every cached glyph is a miss until the atlas refills.
+ */
+const LABEL_FACE = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+const labelFont = (px) => `600 ${px}px ${LABEL_FACE}`;
 
 /**
  * Width of one line of label text, expressed in multiples of its font size —
@@ -1252,6 +1354,7 @@ function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
   ctx.imageSmoothingEnabled = true;
 
   const s = view.scale;
+  const dimming = labelDimming();
 
   for (const L of labels) {
     // Off screen, and so not worth measuring, rotating, stroking or filling a
@@ -1266,7 +1369,7 @@ function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
     // covering the same stretch of it. A small country has a real label all
     // along; it is only skipped while too small on screen to read.
     const px = L.size * view.scale;
-    const alpha = labelOpacity(px, (L.width * px) / cssW);
+    const alpha = labelOpacity(px, (L.width * px) / cssW) * dimming;
     if (alpha <= 0.004) continue;              // fully faded, or not readable yet
 
     const gap = px * LABEL_TRACKING;
@@ -1700,7 +1803,7 @@ function drawView() {
 // to invalidate the view.
 
 const NAME_MIN_PX = 30;        // province must be at least this wide on screen to be named
-const OVERLAY_FONT = '500 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+const OVERLAY_FONT = `500 11px ${LABEL_FACE}`;
 
 // Filled in as the overlays draw, and read back by the Performance readout.
 const debug = { names: 0, tilesDrawn: 0, path: '—' };
@@ -1727,11 +1830,11 @@ const CITY_NAME_AT = 2.25;
 const CAPITAL_NAME_AT = 1.30;
 const CITY_FADE_MS = 150;           // how long the transition takes, always
 
-const CITY_ICON_PX = 11;            // on-screen height of an ordinary city
-const CAPITAL_ICON_PX = 16;         // and of a capital
+const CITY_ICON_PX = 9;            // on-screen height of an ordinary city
+const CAPITAL_ICON_PX = 14;         // and of a capital
 const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
 const CAPITAL_NAME_PX = 13;
-const CITY_NAME_GAP = 3;            // clearance between an icon and its name
+const CITY_NAME_GAP = 2;            // clearance between an icon and its name
 const CITY_NAME_PAD = 2;            // breathing room when testing for overlaps
 
 // Deliberately the inverse of the polity labels: light text on a dark halo,
@@ -2091,6 +2194,18 @@ const els = {
   selName: document.getElementById('sel-name'),
   selBody: document.getElementById('sel-body'),
   neighbours: document.getElementById('neighbours'),
+  card: document.getElementById('card'),
+  cardName: document.getElementById('card-name'),
+  cardPolity: document.getElementById('card-polity'),
+  cardFlag: document.getElementById('card-flag'),
+  cardClaims: document.getElementById('card-claims'),
+  cardPop: document.getElementById('card-pop'),
+  cardArea: document.getElementById('card-area'),
+  cardGrid: document.getElementById('card-grid'),
+  cardSlots: document.getElementById('card-slots'),
+  cardSlotsN: document.getElementById('card-slots-n'),
+  cardCivN: document.getElementById('card-civ-n'),
+  cardMilN: document.getElementById('card-mil-n'),
   stats: document.getElementById('stats'),
   toolbar: document.getElementById('toolbar'),
   zoomLevel: document.getElementById('zoom-level'),
@@ -2135,8 +2250,18 @@ const invalidateView = () => { viewDirty = true; els.zoomLevel.textContent = `${
  * million. Nulls are ignored, so "the province that was selected before" can be
  * passed without checking it first.
  */
+/**
+ * Marks provinces as needing their pixels repainted.
+ *
+ * A province too large to light is dropped here as well as in shadeTable. It
+ * would repaint to exactly what it already shows, since shadeTable refuses to
+ * light it — so the work is not merely expensive, it is guaranteed to change
+ * nothing.
+ */
 function invalidateProvinces(...ids) {
-  for (const id of ids) if (id) dirtyProvinces.add(id);
+  for (const id of ids) {
+    if (id && !tooBigToLight(state.world, id)) dirtyProvinces.add(id);
+  }
 }
 
 /* Timings and tallies for the debug menu's Performance block. Kept as running
@@ -2183,6 +2308,11 @@ function frame() {
     // City transitions run on a clock, so they get a tick and a redraw for as
     // long as one is going. Read at the top of the frame, before any drawing.
     if (stepCityFades(performance.now()) && state.showCities) viewDirty = true;
+
+    // Labels standing back for a selection, or coming back after one. Only the
+    // blit is affected — the painted map is untouched — so this needs a redraw
+    // and nothing more.
+    if (stepLabelDim(performance.now())) viewDirty = true;
 
     // A dropped selection is animating, so its provinces need repainting every
     // frame until it is gone. Only those provinces — a handful of small boxes —
@@ -2274,6 +2404,18 @@ function select(id) {
   for (const q of neighboursOf(was)) invalidateProvinces(q);
   for (const q of neighboursOf(id)) invalidateProvinces(q);
 
+  // A fade already running is about to be thrown away, and its provinces are
+  // sitting in the buffer painted at whatever strength it had reached. Nothing
+  // else will ever come back for them: the lines above invalidate the previous
+  // selection and the new one, but this fade belongs to the selection BEFORE
+  // that, which is no longer named anywhere. Left alone they stay half-lit for
+  // the rest of the session.
+  //
+  // Selecting faster than the fade lasts is the only way to reach this, so it
+  // went unnoticed while a click on a large province took longer than the fade
+  // itself. It is the stale patches on the map.
+  if (state.fade) invalidateProvinces(state.fade.id, ...state.fade.neighbours);
+
   // Hand what was selected over to the fade, along with its traced shape so the
   // ring can keep being drawn while it dies away. Its neighbour set is copied
   // now because the fade outlives the selection that defined it.
@@ -2283,8 +2425,12 @@ function select(id) {
 
   // Trace the shape once here, since that is the costly part. The ring itself is
   // left for drawView() to build, because it depends on the current zoom.
-  state.silhouette = id ? buildSilhouette(state.world, id) : null;
+  // Same ceiling as the fill: the ring is grown from a silhouette the size of
+  // the province's bounding box, so one spanning the map wants a 60MB canvas
+  // and a 15.9 million pixel loop before a single frame can be drawn.
+  state.silhouette = id && !tooBigToLight(state.world, id) ? buildSilhouette(state.world, id) : null;
   state.outline = null;
+  updateCard();
   updatePanel();
 }
 
@@ -2347,6 +2493,135 @@ function togglePanel() {
   // being stretched to fit until the animation ends. Nothing further is needed.
 }
 
+/**
+ * A province's true surface area, as a line of text.
+ *
+ * Written into provinces.json by sync-provinces.js, which needs true_area.png to
+ * work out where the map sits between the poles — so it can legitimately be
+ * absent, and that is worth saying plainly rather than showing a zero that
+ * looks like a measurement. Above a million the figure is given in millions,
+ * since six digits of square kilometres is precision nobody reads.
+ */
+function areaText(p) {
+  if (typeof p.area !== 'number') return '— (run sync-provinces.js)';
+  return p.area >= 1e6
+    ? `${(p.area / 1e6).toFixed(2)}M km²`
+    : `${Math.round(p.area).toLocaleString()} km²`;
+}
+
+/* ------------------------------------------------------ the province card
+ *
+ * What a province HAS, as opposed to what it is. Everything here is read from
+ * data/province-stats.json, which sync-provinces.js keeps an entry in for every
+ * province; the map data itself knows nothing about roads or factories.
+ *
+ * Order matters as much as content. Ownership sits at the top because it is the
+ * one fact that decides what any of the rest is worth, then the two figures that
+ * are counts of people and claims, then the built things in a grid, then the
+ * factories — which get sockets rather than a number because their whole point
+ * is that there is a limited number of places to put one.
+ */
+// Each of these is a PAIR in the stats file, [built, max]: what is there and
+// what the province could hold. Shown as "0/0", so a province that simply has
+// no road reads differently from one that can never have one.
+// Six, so the two columns come out square. Anti-air is here rather than radar
+// because these are the things built ON a province — in Hearts of Iron that is
+// forts, anti-air, radar and supply hubs — and six fills the grid where seven
+// would reopen the gap.
+const CARD_FIELDS = [
+  ['road', 'Road'],
+  ['rail', 'Rail'],
+  ['supplyHub', 'Supply hub'],
+  ['fortification', 'Fortification'],
+  ['electricity', 'Electricity'],
+  ['antiAir', 'Anti-air'],
+];
+
+/** "built / max", tolerating a bare number from a stats file written before. */
+function pair(v) {
+  const [built, max] = Array.isArray(v) ? v : [v ?? 0, 0];
+  return `${built ?? 0}/${max ?? 0}`;
+}
+
+// Sockets drawn when a province has no slots recorded at all. They are shown
+// locked rather than left out, so the panel keeps its height as provinces are
+// filled in and the mechanic is visible before any data exists.
+const CARD_GHOST_SLOTS = 5;
+
+/** Zeroes, for a province the stats file has never heard of. */
+const BLANK_STATS = { claims: [], population: 0, road: [0, 0], rail: [0, 0], supplyHub: [0, 0], fortification: [0, 0], electricity: [0, 0], antiAir: [0, 0], buildingSlots: [0, 0], civilianFactories: 0, militaryFactories: 0 };
+
+const cardOpen = () => els.card.classList.contains('open');
+
+function closeCard() {
+  els.card.classList.remove('open');
+  els.card.setAttribute('aria-hidden', 'true');
+}
+
+/**
+ * Draws the province's building slots: civilian first, then military, then the
+ * ones still empty.
+ *
+ * One strip for both types on purpose. They are not two separate allowances but
+ * a single pool, so every factory built takes a socket the other kind can no
+ * longer have — and a row each would say the opposite.
+ */
+function drawSlots(host, unlocked, civ, mil) {
+  host.innerHTML = '';
+  const ghost = unlocked === 0;
+  const n = ghost ? CARD_GHOST_SLOTS : unlocked;
+  for (let i = 0; i < n; i++) {
+    const box = document.createElement('span');
+    box.className = 'card-slot'
+      + (ghost ? ' locked' : i < civ ? ' civ' : i < civ + mil ? ' mil' : '');
+    host.append(box);
+  }
+}
+
+/**
+ * Fills the card for the current selection, and slides it in or out.
+ *
+ * Called from select(), so it follows the selection exactly: clicking open sea
+ * or pressing Escape closes it, because both clear the selection.
+ */
+function updateCard() {
+  const w = state.world;
+  if (!w || !state.selected) return closeCard();
+
+  const p = w.byId.get(state.selected);
+  const stats = { ...BLANK_STATS, ...(w.stats?.[p.id] || {}) };
+  const polity = polityOf(w, p);
+
+  els.cardName.textContent = p.name;
+  els.cardPolity.textContent = polity.name;
+  els.cardFlag.style.background = `rgb(${polity.colour})`;
+
+  // Claims are polity ids in the file; show the names, since an id is a slug.
+  const claims = (stats.claims || [])
+    .map((id) => w.table.polityById.get(id)?.name || id);
+  els.cardClaims.textContent = claims.length ? claims.join(', ') : 'None';
+
+  els.cardPop.textContent = stats.population.toLocaleString();
+  els.cardArea.textContent = areaText(p);
+
+  els.cardGrid.innerHTML = CARD_FIELDS
+    .map(([key, label]) => `<div class="card-cell"><span>${label}</span><b>${pair(stats[key])}</b></div>`)
+    .join('');
+
+  // Used against unlocked, which is the figure that decides whether anything
+  // more can be built here at all.
+  const [unlocked = 0] = Array.isArray(stats.buildingSlots) ? stats.buildingSlots : [0, 0];
+  const civ = stats.civilianFactories || 0;
+  const mil = stats.militaryFactories || 0;
+  els.cardSlotsN.textContent = `${civ + mil}/${unlocked}`;
+  drawSlots(els.cardSlots, unlocked, civ, mil);
+  els.cardCivN.textContent = civ;
+  els.cardMilN.textContent = mil;
+
+  els.card.classList.add('open');
+  els.card.setAttribute('aria-hidden', 'false');
+}
+
 /** Rewrites the development inspector for the current selection. */
 function updatePanel() {
   if (!panelOpen()) return;                       // nothing to update while it is closed
@@ -2368,6 +2643,8 @@ function updatePanel() {
     <div class="row"><span>Owner</span><span>${swatch(polityOf(w, p).colour)}${polityOf(w, p).name}</span></div>
     <div class="row"><span>Terrain</span><span>${p.terrain.join(' + ') || '—'}</span></div>
     <div class="row"><span>Coastal</span><span>${w.coastal.has(p.id) ? 'yes' : 'no'}</span></div>
+    <div class="row"><span>Area</span><span>${areaText(p)}</span></div>
+    ${tooBigToLight(w, p.id) ? '<div class="row"><span>Highlight</span><span class="warn">off — box over ' + (HIGHLIGHT_MAX_PX / 1e6) + 'M px</span></div>' : ''}
     <div class="row"><span>Pixels</span><span>${w.bounds.get(p.id)?.n ?? 0}</span></div>
     <div class="row"><span>Neighbours</span><span>${nb.length}</span></div>`;
   els.neighbours.innerHTML = `<h1>Adjacent provinces</h1><ul>${nb.map((q) => `<li data-id="${q.id}">${swatch(polityOf(w, q).colour)}${q.name}</li>`).join('')
@@ -2568,6 +2845,10 @@ function wireInput() {
     if (li) select(li.dataset.id);
   });
 
+  // Closing the card leaves the province selected: the ring and the debug panel
+  // are a separate question from whether you want its details in the way.
+  document.getElementById('card-close').addEventListener('click', closeCard);
+
   els.toolbar.addEventListener('click', (ev) => {
     const b = ev.target.closest('button[data-mode]');
     if (!b) return;                                // a click on some other button
@@ -2620,7 +2901,7 @@ async function init() {
 
   // All four fetched together. The imagery is by far the largest, and waiting
   // for it after the others would add its whole download to the load time.
-  const [raw, pngBytes, cacheBytes, satellite, cities, cityIcon, capitalIcon] = await Promise.all([
+  const [raw, pngBytes, cacheBytes, satellite, cities, cityIcon, capitalIcon, stats] = await Promise.all([
     loadJSON('./data/provinces.json'),
     loadBytes('./data/provinces.png'),
     loadBytes(`./data/${CACHE_FILE}`, true),
@@ -2630,6 +2911,9 @@ async function init() {
     loadJSON('./data/cities.json', true),
     loadBitmap('./data/icons/city.png'),
     loadBitmap('./data/icons/capital.png'),
+    // What has been built on each province. Optional: without it the card shows
+    // zeros rather than refusing to open.
+    loadJSON('./data/province-stats.json', true),
   ]);
 
   // Hashed before normaliseTable(), which rewrites the colours in place — the
@@ -2653,6 +2937,7 @@ async function init() {
   world.satellite = satellite;
   world.cities = cities?.cities ?? [];
   world.cityIcons = { city: cityIcon, capital: capitalIcon };
+  world.stats = stats?.provinces ?? null;
 
   // Finishing the labels needs to measure real text, so it always happens here.
   world.labels = buildLabels(world, geometry);

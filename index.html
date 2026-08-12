@@ -59,6 +59,49 @@
     <div id="canvas-wrap">
       <canvas id="map"></canvas>
       <div id="tooltip" hidden></div>
+
+      <!--
+        What a province HAS, as opposed to what it is. Slides up from the bottom
+        left on selection; the debug menu slides in from the right, so the two
+        can be open together without meeting. Rows are filled by updateCard().
+      -->
+      <aside id="card" class="milled" aria-hidden="true">
+        <div class="card-head">
+          <h2 id="card-name">&mdash;</h2>
+          <button id="card-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="card-owner">
+          <span class="card-flag" id="card-flag"></span>
+          <span>
+            <b id="card-polity">&mdash;</b>
+            <i>Province owner</i>
+          </span>
+        </div>
+
+        <div class="card-row"><span>Foreign claims</span><span id="card-claims">&mdash;</span></div>
+        <div class="card-row"><span>Population</span><span id="card-pop">0</span></div>
+        <div class="card-row"><span>Area</span><span id="card-area">&mdash;</span></div>
+
+        <div class="card-grid" id="card-grid"></div>
+
+        <!--
+          One strip, not two. Civilian and military factories compete for the
+          same building slots, so what a province has is a number of sockets and
+          a choice about what goes in each — which only reads correctly if they
+          are drawn sharing a row.
+        -->
+        <div class="card-slots">
+          <div class="card-slot-head">
+            <span id="card-slots-n">0/0</span> building slots
+          </div>
+          <div class="card-slot-boxes" id="card-slots"></div>
+          <div class="card-legend">
+            <span><i class="key civ"></i>Civilian <b id="card-civ-n">0</b></span>
+            <span><i class="key mil"></i>Military <b id="card-mil-n">0</b></span>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 

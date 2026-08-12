@@ -100,12 +100,17 @@ Ids are strings, so events and save data can refer to `"rodtfjell"` rather than 
 `terrain` is a list, since a province can carry more than one type:
 
 ```json
-{ "id": "rodtfjell", "name": "Rodtfjell", "colour": "#bbffb7", "terrain": ["Mountains", "Arctic"], "owner": "NONE" }
+{ "id": "rodtfjell", "name": "Rodtfjell", "colour": "#bbffb7", "terrain": ["Mountains", "Arctic"],
+  "owner": "FNA", "area": 122207, "centre": [54.3829, -39.6923] }
 ```
+
+`area` and `centre` are derived rather than authored — see [Area and distance](#area-and-distance). Everything else is yours to edit.
 
 A bare string is shorthand for a single-element list. In terrain view a province is drawn as the blend of its tags, so Mountains + Arctic renders as pale snowfield rather than as either alone. The tags in use are Arctic, Desert, Hills, Jungle, Mountains and Plains.
 
 `Impassable` is handled separately. It describes a property of a region rather than a landscape, so it is not blended into the average; it is applied over the result as a darkening. A province tagged Mountains + Impassable still reads as mountains.
+
+**`data/true_area.png`** is the whole world on a full 2:1 equirectangular globe, 6000 × 3000, poles included. It holds the same provinces in the same colours as `provinces.png`, which is a band of it cropped short of both poles. Province areas are measured from this file; shapes, adjacency and everything drawn come from `provinces.png`. Without it the build step leaves areas untouched rather than guessing.
 
 **`data/cities.png`** places cities. A `#000000` pixel is a capital and `#6B6B6B` an ordinary city. The build step determines which province each falls in. There are currently 83, of which 17 are capitals. A country with two capitals is intentional.
 
@@ -120,6 +125,29 @@ City markers are drawn at a fixed size on screen rather than scaling with the ma
 City names are placed so as not to overlap each other, the markers, or the country labels beneath them, trying eight positions around the marker and taking the first that is clear. Capitals are placed first. Country labels are a weaker constraint than the rest: a city's position is fixed, so where a country label runs through it no alternative position helps, and the least obstructed position is used rather than the name being dropped.
 
 Details of the geometry — glyph advance along the curve, the curvature limit, the overlap tests — are documented in the code.
+
+### Area and distance
+
+The projection is equirectangular, so a pixel count is not an area: a row at the equator spans a full circumference, a row near a pole almost nothing, and both are drawn the same width. A province at 60° comes out twice its real size.
+
+Area is therefore computed per row. A band of a sphere between two latitudes has area 2πR²(sin φ₁ − sin φ₂), and a pixel is 1/width of that band; the rows sum to 4πR², which the build step prints as a check. Chron is a sphere with Earth's surface area, 510,072,000 km², giving R = 6371.047 km. (Earth's own radius and area cannot both be matched, since Earth is an ellipsoid.)
+
+Areas are measured from `true_area.png` rather than from `provinces.png`. That file is the whole world on a 2:1 globe, so row 0 is the north pole and the last row the south, and a row is a latitude with nothing to line up. `provinces.png` is a band of the same globe cut off short of both poles; it remains the source of every shape the game draws, but land in the polar caps exists only in `true_area.png`.
+
+The two hold the same provinces in the same colours, and currently agree on the pixel count for 832 of 841 — the rest is polar land the cropped file cannot reach. Colours in `true_area.png` that match no province are reported and not counted; a handful is normal export residue, but a lot would mean the export blended province colours together.
+
+Land currently comes to 113.9M km², 22.34% of the surface.
+
+`sync-provinces.js` writes two derived fields per province, rewritten every run:
+
+| Field | |
+|---|---|
+| `area` | surface area in km² |
+| `centre` | `[latitude, longitude]` in degrees |
+
+`centre` is the area-weighted mean of each pixel as a **vector** on the sphere. Averaging longitudes instead would put a province straddling the map's edge on the opposite side of the world, its +180 and −180 cancelling to 0.
+
+Distance is the great circle by haversine, in `src/geo.js`. Working from latitude and longitude it wraps east–west for free. Nothing uses it yet; it is what movement will need.
 
 ### East–west wrapping
 
@@ -258,12 +286,14 @@ src/style.css         styling
 src/main.js           rendering, labels, cities, interaction
 src/mapdata.js        the scans: adjacency, borders, label geometry (shared with the build step)
 src/mapcache.js       the precomputed-map file format (shared)
+src/geo.js            the sphere: latitude, longitude, area per row, distance (shared)
 sync-provinces.js     the build step: reconcile the JSON, extract cities, write the cache
 package.json          marks the folder as ES modules; no dependencies
 serve.json            disables caching for `npx serve`
 
 data/provinces.png    the province bitmap; defines shape
 data/provinces.json   the province table; defines names, owners, terrain
+data/true_area.png    the whole world on a 2:1 globe; areas are measured from this
 data/cities.png       city placement: black is a capital, grey a city
 data/cities.json      extracted city list, rebuilt with --cities
 data/satellite.png    optional imagery

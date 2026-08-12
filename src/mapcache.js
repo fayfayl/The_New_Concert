@@ -29,9 +29,13 @@
 
 // Bump whenever the meaning of what is stored changes — a new field, or a
 // change to how any of it is derived. The hash catches changed INPUTS; this
-// catches changed CODE, which the hash cannot see. Version 2: label blocks now
-// join provinces that come within NEAR_GAP pixels of each other.
-export const CACHE_VERSION = 2;
+// catches changed CODE, which the hash cannot see.
+//
+// 2: label blocks join provinces that come within NEAR_GAP pixels of each other.
+// 3: adjacency and the border distance field wrap east-west, so provinces
+//    meeting at the map's seam are neighbours and the seam is no longer treated
+//    as a frontier.
+export const CACHE_VERSION = 3;
 export const CACHE_FILE = 'map-cache.bin';
 
 const MAGIC = 0x314d4843;      // "CHM1" read as a little-endian uint32

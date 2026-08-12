@@ -182,7 +182,12 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
         bb.n++; bb.sx += x; bb.sy += y;
       }
 
-      if (x + 1 < width) link(index, provinceAt[i + 1]);      // pair to the right
+      // The pair to the right, and at the last column that is column 0 of the
+      // same row: the map is a globe and its left and right edges are the same
+      // meridian. Land drawn to both edges is one landmass, so provinces meeting
+      // there are neighbours, and an army may cross. Nothing wraps vertically,
+      // since the poles are not joined to anything.
+      link(index, provinceAt[x + 1 < width ? i + 1 : y * width]);
       if (y + 1 < height) link(index, provinceAt[i + width]); // pair below
     }
   }
@@ -242,9 +247,14 @@ export function buildBorderDistance(world) {
       const i = y * width + x;
       const index = provinceAt[i];
       if (index === OCEAN) { dist[i] = 0; continue; }
+      // Sideways reads WRAP. Falling back to -1 at the edges, as the vertical
+      // ones do, would seed every pixel of column 0 and of the last column as a
+      // frontier — and a frontier is drawn at full colour, so the map's seam
+      // came out as a hard line down open country that is not divided at all.
+      // Up and down keep the fallback, because a pole really is the end.
       const mine = ownerAt[index];
-      const left = x > 0 ? ownerAt[provinceAt[i - 1]] : -1;
-      const right = x + 1 < width ? ownerAt[provinceAt[i + 1]] : -1;
+      const left = ownerAt[provinceAt[x > 0 ? i - 1 : i + width - 1]];
+      const right = ownerAt[provinceAt[x + 1 < width ? i + 1 : y * width]];
       const up = y > 0 ? ownerAt[provinceAt[i - width]] : -1;
       const down = y + 1 < height ? ownerAt[provinceAt[i + width]] : -1;
       if (left !== mine || right !== mine || up !== mine || down !== mine) dist[i] = 0;

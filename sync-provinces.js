@@ -16,6 +16,12 @@
  *   - entries whose colour is no longer in the bitmap are reported as stale
  *     and KEPT, unless you pass --prune
  *
+ * It also writes each province's true surface area in km2 and the latitude and
+ * longitude of its centre. Those two are DERIVED and rewritten every run, so
+ * editing them by hand achieves nothing. They are measured from
+ * data/true_area.png; without that file they are left alone.
+ * See src/geo.js for why a pixel count is not an area.
+ *
  * Because it matches on colour, you can redraw the map as often as you like
  * and any names and owners you have already filled in survive.
  *
@@ -36,6 +42,7 @@ import {
   normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
 } from './src/mapdata.js';
 import { CACHE_FILE, hashInputs, buildCacheMeta, packCache } from './src/mapcache.js';
+import { makeProjection, toDegrees } from './src/geo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -50,6 +57,10 @@ const JSON_PATH = path.join(DIR, 'provinces.json');
 const CACHE_PATH = path.join(DIR, CACHE_FILE);
 const CITIES_PNG = path.join(DIR, 'cities.png');
 const CITIES_JSON = path.join(DIR, 'cities.json');
+const STATS_JSON = path.join(DIR, 'province-stats.json');
+// The whole world on a 2:1 globe, poles included. Areas are measured from this
+// rather than from provinces.png — see the note at the top of src/geo.js.
+const GLOBE_PNG = path.join(DIR, 'true_area.png');
 
 // A city mark is one pixel. Black is a capital, mid-grey an ordinary city.
 const CITY_MARKS = { 0x000000: 'capital', 0x6b6b6b: 'city' };
@@ -141,6 +152,37 @@ function decodePNG(file) {
 const hex = (k) => '#' + (k >>> 0).toString(16).padStart(6, '0');
 const parseHex = (s) => parseInt(String(s).replace(/^#/, ''), 16);
 
+/**
+ * Writes JSON indented, but with arrays of plain values kept on one line.
+ *
+ * JSON.stringify's indenting is right about objects and wrong about these: a
+ * pair like [0, 0] becomes four lines, and a file of them is unreadable and
+ * unscrollable for no gain. Only arrays holding nothing but scalars are
+ * collapsed, and only while they stay short, so a long list still breaks.
+ *
+ * Done to the text rather than by hand-rolling a serialiser, which means it
+ * could in principle mangle a string containing a bracket — so the result is
+ * parsed back and compared against what went in, and anything that does not
+ * survive that is written the ordinary way instead. The check costs a
+ * millisecond and removes the entire class of worry.
+ */
+function writeJSON(file, value) {
+  const plain = JSON.stringify(value, null, 2);
+
+  const packed = plain.replace(/\[\s*([^[\]{}]*?)\s*\]/g, (whole, inner) => {
+    if (!inner.trim()) return '[]';
+    const flat = inner.split('\n').map((s) => s.trim()).filter(Boolean).join(' ');
+    return flat.length <= 72 ? `[${flat}]` : whole;
+  });
+
+  let text = plain;
+  try {
+    if (JSON.stringify(JSON.parse(packed)) === JSON.stringify(value)) text = packed;
+  } catch { /* fall through to the plain form */ }
+
+  fs.writeFileSync(file, text + '\n');
+}
+
 /** Connected components per colour, 4-way. */
 function analyse(width, height, px, oceanKey) {
   const seen = new Uint8Array(width * height);
@@ -171,6 +213,40 @@ function analyse(width, height, px, oceanKey) {
   return blobs;
 }
 
+/**
+ * True surface area of each province, and where its centre lies on the globe.
+ *
+ * Areas are summed a row at a time, since every pixel in a row is worth the
+ * same and pixels in different rows are not. The centre is the average of each
+ * pixel's position as a VECTOR on the sphere, weighted by that pixel's area,
+ * which puts it where the province's mass actually is and survives a province
+ * straddling the map's east–west seam.
+ */
+function measure(width, height, px, oceanKey, projection) {
+  const out = new Map();
+  for (let y = 0; y < height; y++) {
+    const a = projection.areaOfPixel(y);
+    for (let x = 0; x < width; x++) {
+      const k = px[y * width + x];
+      if (k === oceanKey) continue;
+      let m = out.get(k);
+      // The first pixel seen is kept so that a colour nobody recognises can be
+      // reported with somewhere to go and look at it.
+      if (!m) { m = { area: 0, n: 0, vx: 0, vy: 0, vz: 0, atX: x, atY: y }; out.set(k, m); }
+      const [ux, uy, uz] = projection.toVector(x, y);
+      m.area += a;
+      m.n++;
+      m.vx += ux * a; m.vy += uy * a; m.vz += uz * a;
+    }
+  }
+  for (const m of out.values()) {
+    const { lat, lon } = projection.fromVector([m.vx, m.vy, m.vz]);
+    m.lat = toDegrees(lat);
+    m.lon = toDegrees(lon);
+  }
+  return out;
+}
+
 /** Count shared borders, the same way the game does at load. */
 function countBorders(width, height, px, oceanKey) {
   const edges = new Set();
@@ -187,7 +263,9 @@ function countBorders(width, height, px, oceanKey) {
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const i = y * width + x;
-      if (x + 1 < width) add(px[i], px[i + 1]);
+      // Wraps east-west, as the renderer's own scan does — the count would
+      // otherwise disagree with the adjacency the game actually uses.
+      add(px[i], px[x + 1 < width ? i + 1 : y * width]);
       if (y + 1 < height) add(px[i], px[i + width]);
     }
   }
@@ -214,6 +292,68 @@ if (!counts.has(oceanKey)) {
 
 const blobs = analyse(img.width, img.height, img.px, oceanKey);
 const { borders, coastal } = countBorders(img.width, img.height, img.px, oceanKey);
+
+// ------------------------------------------------------ area on the globe
+//
+// Without true_area.png there is nothing whose rows are latitudes, and an area
+// figure would be a guess. Areas are then left exactly as they are in the JSON
+// rather than being written wrong.
+let projection = null, measured = null, globeNote = '';
+
+if (!fs.existsSync(GLOBE_PNG)) {
+  globeNote = 'true_area.png missing — areas left untouched';
+} else {
+  const globe = decodePNG(GLOBE_PNG);
+
+  // A whole globe, so 360 degrees across and 180 down: twice as wide as it is
+  // tall, or the rows do not carry the latitudes this assumes.
+  if (globe.width !== globe.height * 2) {
+    globeNote = `true_area.png is ${globe.width}x${globe.height}, which is not the 2:1 of a whole globe`;
+  } else {
+    // Measured from true_area.png ITSELF, not from provinces.png placed inside
+    // it. The two hold the same provinces in the same colours, but only this one
+    // is the whole world: provinces.png is cut off short of both poles, so land
+    // in the polar caps exists here and nowhere else. Nothing needs lining up
+    // either — row 0 is the north pole and the last row is the south, so a row
+    // is a latitude directly.
+    //
+    // Shapes, adjacency and everything drawn still come from provinces.png.
+    // This file answers one question, which is how much ground each province
+    // actually covers.
+    projection = makeProjection({
+      width: globe.width,
+      height: globe.height,
+      globeHeight: globe.height,
+    });
+    measured = measure(globe.width, globe.height, globe.px, oceanKey, projection);
+
+    // Colours here that the table has never heard of. A handful is the usual
+    // residue of exporting, and they are simply not counted; a lot of them means
+    // the export resampled and blended province colours together, which would
+    // make every area near a border slightly wrong.
+    const strayColours = [];
+    for (const [k, m] of measured) {
+      if (blobs.has(k)) continue;
+      strayColours.push({ k, n: m.n, atX: m.atX, atY: m.atY });
+      measured.delete(k);
+    }
+    if (strayColours.length) {
+      // Named, and with somewhere to look. "A colour does not match" is not
+      // something anyone can act on; a hex and a pixel to jump to is.
+      strayColours.sort((a, b) => b.n - a.n);
+      const shown = strayColours.slice(0, 5)
+        .map((s) => `${hex(s.k)} ${s.n}px at ${s.atX},${s.atY}`).join('; ');
+      globeNote = `unrecognised colours in true_area.png, not counted — ${shown}`
+        + `${strayColours.length > 5 ? `; and ${strayColours.length - 5} more` : ''}`;
+    }
+
+    const unmeasured = [...blobs.keys()].filter((k) => !measured.has(k));
+    if (unmeasured.length) {
+      globeNote = `${unmeasured.length} province${unmeasured.length > 1 ? 's' : ''} in provinces.png`
+        + ' have no pixels in true_area.png and keep their previous area';
+    }
+  }
+}
 
 // reconcile against the existing table
 const oldByColour = new Map((old.provinces || []).map((p) => [parseHex(p.colour), p]));
@@ -305,6 +445,20 @@ const provinces = present.map((k) => {
   added.push(p);
   return p;
 });
+
+// Area and centre are DERIVED, so they are rewritten from the bitmap every run
+// rather than carried over like names and owners. Editing them by hand would
+// only be undone. Rounded because the last digits are noise from the drawing:
+// a province's outline is worth a pixel or two either way, which at this scale
+// is tens of square kilometres.
+if (measured) {
+  for (const p of provinces) {
+    const m = measured.get(parseHex(p.colour));
+    if (!m) continue;                      // stale entry, no pixels to measure
+    p.area = Math.round(m.area);
+    p.centre = [Number(m.lat.toFixed(4)), Number(m.lon.toFixed(4))];
+  }
+}
 // Entries whose colour is no longer anywhere in the bitmap. These are KEPT by
 // default: painting over a province by accident should not silently destroy the
 // name, owner and terrain you typed in by hand. Pass --prune to delete them.
@@ -327,6 +481,22 @@ console.log(`provinces     ${provinces.length}  (${kept.length} kept, ${added.le
 console.log(`borders       ${borders}`);
 console.log(`coastal       ${coastal}`);
 
+if (projection) {
+  const km = (v) => v.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+  let land = 0;
+  for (const m of measured.values()) land += m.area;
+  const globe = projection.surfaceKm2;
+  // Latitudes of the measured bitmap, which is the whole globe, so pole to pole.
+  const top = toDegrees(projection.latAt(0));
+  const bottom = toDegrees(projection.latAt(projection.height - 1));
+
+  console.log(`globe         ${projection.width} x ${projection.height}, ${top.toFixed(1)}° to ${bottom.toFixed(1)}°`);
+  console.log(`surface       ${km(globe)} km2 total, ${km(land)} km2 land (${(100 * land / globe).toFixed(2)}%)`);
+  if (globeNote) console.log(`note          ${globeNote}`);
+} else if (globeNote) {
+  console.log(`area          skipped: ${globeNote}`);
+}
+
 const nameOf = (k) => {
   const p = provinces.find((q) => parseHex(q.colour) === k);
   return `${String(p.id).padStart(3)} ${String(p.name).padEnd(12)}`;
@@ -347,6 +517,24 @@ const sizes = [...blobs.entries()]
 console.log(`\nsmallest provinces:`);
 for (const s of sizes.slice(0, 5)) {
   console.log(`  ${hex(s.k)} ${nameOf(s.k)} ${String(s.total).padStart(5)} px at (${s.at.cx}, ${s.at.cy})`);
+}
+
+if (measured) {
+  const byArea = [...measured.entries()].sort((a, b) => b[1].area - a[1].area);
+  const km = (v) => v.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+  console.log(`\nlargest provinces by true area:`);
+  for (const [k, m] of byArea.slice(0, 5)) {
+    console.log(`  ${hex(k)} ${nameOf(k)} ${km(m.area).padStart(11)} km2  ${String(m.n).padStart(7)} px  ${m.lat.toFixed(1)}°`);
+  }
+
+  // A pixel near a pole covers far less ground than one at the equator, so the
+  // ranking by area is not the ranking by pixel count. Where the two disagree
+  // the projection was doing the lying, which is the reason for all of this.
+  const byPixels = [...measured.entries()].sort((a, b) => b[1].n - a[1].n);
+  if (byPixels[0][0] !== byArea[0][0]) {
+    const [k, m] = byPixels[0];
+    console.log(`  largest by pixel count is ${nameOf(k).trim()} at ${m.lat.toFixed(1)}°, which the projection stretches`);
+  }
 }
 
 if (MIN_SIZE) {
@@ -373,9 +561,110 @@ if (stale.length) {
   if (!PRUNE) console.log(`  kept so that a mis-stroke cannot lose data you typed in`);
 }
 
+// ------------------------------------------------- what a province HAS
+//
+// Kept apart from provinces.json rather than added to it, because the two are
+// different kinds of fact and change for different reasons. provinces.json says
+// what a province IS — its shape, name, owner, terrain — and is rewritten from
+// the bitmap on every run. This file says what has been BUILT on it, which is
+// authored, and later will be changed by the game as it is played.
+//
+// Entries are added for new provinces and never removed, on the same reasoning
+// as stale entries above: losing numbers somebody typed in because a province
+// was repainted for a moment is not a trade worth making.
+// Infrastructure is a PAIR, [built, max]: how much of it there is, and how much
+// this province could ever hold. Both are needed and neither implies the other —
+// a province with no road may be one that has never had one built, or one that
+// can never have one. The card shows them as "0/0" for that reason.
+const PAIRED = ['road', 'rail', 'supplyHub', 'fortification', 'electricity', 'antiAir', 'buildingSlots'];
+
+const BLANK_STATS = {
+  claims: [],            // polity ids with a claim on this province
+  population: 0,
+  road: [0, 0],
+  rail: [0, 0],
+  supplyHub: [0, 0],
+  fortification: [0, 0],
+  electricity: [0, 0],
+  antiAir: [0, 0],
+  // Factories do NOT get a count each. In Hearts of Iron a state has a pool of
+  // building slots and civilian factories, military factories and dockyards all
+  // compete for it — what a province has is a number of sockets and a decision
+  // about what goes in each. So the SLOTS are the province's property, [unlocked,
+  // maximum], and the two figures below are how the unlocked ones are spent.
+  buildingSlots: [0, 0],
+  civilianFactories: 0,
+  militaryFactories: 0,
+};
+
+const oldStats = fs.existsSync(STATS_JSON) ? JSON.parse(fs.readFileSync(STATS_JSON, 'utf8')) : {};
+const statsById = oldStats.provinces || {};
+
+// --reslug renames ids, and this file is keyed by id, so every entry has to
+// travel with its province. Without this a reslug quietly replaces each renamed
+// province's numbers with a blank set and leaves the originals behind under an
+// id nothing points at any more — which looks like nothing at all until the
+// day the numbers are no longer zeroes.
+const statsMoved = [];
+for (const { from, to } of reslugged) {
+  if (!statsById[from] || statsById[to]) continue;
+  statsById[to] = statsById[from];
+  delete statsById[from];
+  statsMoved.push(`${from} -> ${to}`);
+}
+
+const statsAdded = [];
+for (const p of provinces) {
+  if (statsById[p.id]) {
+    const e = statsById[p.id];
+    // Fill in any field added since the file was written, leaving the rest.
+    for (const [k, v] of Object.entries(BLANK_STATS)) {
+      if (!(k in e)) e[k] = structuredClone(v);
+    }
+    // And carry forward a file written when these were single numbers: the
+    // figure already there is what has been built, with no cap recorded yet.
+    for (const k of PAIRED) if (!Array.isArray(e[k])) e[k] = [Number(e[k]) || 0, 0];
+    continue;
+  }
+  statsById[p.id] = structuredClone(BLANK_STATS);
+  statsAdded.push(p.id);
+}
+// Entries whose province is not in the table any more.
+//
+// A BLANK one is worth nothing, and dropping it is the difference between a
+// file that stays the size of the map and one that accumulates every id the
+// map has ever had. One with figures in it is kept, on the same reasoning as a
+// stale province: somebody typed those, and a province painted over by accident
+// should not take them with it.
+const isEmpty = (v) => (Array.isArray(v) ? v.every(isEmpty) : !v);
+const inTable = new Set(provinces.map((p) => p.id));
+const statsDropped = [];
+const statsKept = [];
+for (const id of Object.keys(statsById)) {
+  if (inTable.has(id)) continue;
+  if (Object.values(statsById[id]).every(isEmpty)) {
+    delete statsById[id];
+    statsDropped.push(id);
+  } else {
+    statsKept.push(id);
+  }
+}
+
+console.log(`\nprovince stats  ${Object.keys(statsById).length} entries`
+  + `${statsAdded.length ? `, ${statsAdded.length} added` : ''}`
+  + `${statsMoved.length ? `, ${statsMoved.length} followed a renamed id` : ''}`
+  + `${statsDropped.length ? `, ${statsDropped.length} blank and orphaned, removed` : ''}`);
+if (statsKept.length) {
+  console.log(`  ${statsKept.length} kept for provinces no longer in the table, because they hold data:`);
+  for (const id of statsKept.slice(0, 8)) console.log(`    ${id}`);
+  if (statsKept.length > 8) console.log(`    ... and ${statsKept.length - 8} more`);
+}
+
 if (WRITE) {
-  fs.writeFileSync(JSON_PATH, JSON.stringify(table, null, 2));
+  writeJSON(JSON_PATH, table);
   console.log(`\nwrote ${path.relative(process.cwd(), JSON_PATH)}`);
+  writeJSON(STATS_JSON, { provinces: statsById });
+  console.log(`wrote ${path.relative(process.cwd(), STATS_JSON)}`);
 } else {
   console.log(`\n(dry run — nothing written. re-run with --write to apply)`);
 }
@@ -553,7 +842,7 @@ if (CITIES) {
       }
 
       if (WRITE) {
-        fs.writeFileSync(CITIES_JSON, JSON.stringify({ cities }, null, 2));
+        writeJSON(CITIES_JSON, { cities });
         console.log(`  wrote ${path.relative(process.cwd(), CITIES_JSON)}`);
       } else {
         console.log(`  (dry run — pass --write to save cities.json)`);

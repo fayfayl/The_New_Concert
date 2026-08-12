@@ -28,6 +28,37 @@
   --shadow: 0 2px 10px rgba(0, 0, 0, .55);
   --bevel: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 -1px 0 rgba(0, 0, 0, .35);
 
+  /* ---------------------------------------------------------- typeface
+     Gill Sans, cut by Eric Gill in 1928 and everywhere in Britain by the
+     war — railway signage, wartime posters, the first Penguin jackets.
+     A humanist sans rather than a geometric one, so it carries the period
+     without the coldness of a signage face, and it costs nothing: it
+     ships with Windows and Office, so there is no file to fetch and
+     nothing to go wrong offline.
+
+     The fallbacks stay with that idea rather than wandering off — Gill
+     Sans proper on macOS, then Lato, the closest humanist in common
+     circulation, then Franklin Gothic, the American newsprint face of the
+     same decade. Only past all of those does it take the system default.
+
+     Two families rather than one: the narrow cut earns its keep on labels
+     and headings, where letter-spacing is doing the work, and is wrong
+     for running text.
+
+     One face was ruled out on evidence rather than taste. Candara sets
+     old-style figures by default, which draws zero at x-height with no
+     flat top — so "0/0" comes out looking like "o/o", and a panel of
+     numbers is the one place that cannot be allowed. */
+  --ui: "Gill Sans MT", "Gill Sans", Lato, "Franklin Gothic Book", system-ui, sans-serif;
+  --ui-narrow: "Gill Sans MT Condensed", "Gill Sans Nova Cond", "Franklin Gothic Medium Cond", var(--ui);
+
+  /* The plain interface sans, kept for the two places atmosphere is not the
+     point: the map's own lettering, and the debug menu. A tool for reading
+     numbers off should be as neutral and as legible as the machine can make
+     it, and should not be dressed to look like part of the game — it is not.
+     Matches the string src/main.js sets on the canvas, so the map and the
+     inspector that describes it are set in one face. */
+  --ui-plain: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * {
@@ -99,6 +130,7 @@
 #toolbar::before,
 #panel::after,
 #tooltip::after,
+#card::after,
 #toolbar button::after,
 .toggles button::after,
 #start-enter::after {
@@ -121,6 +153,7 @@
 #toolbar,
 #panel,
 #tooltip,
+#card,
 #toolbar button,
 .toggles button,
 #start-enter {
@@ -272,7 +305,7 @@ body {
   margin: 0;
   background: var(--steel-deepest);
   color: var(--text);
-  font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  font: 14px/1.5 var(--ui);
   display: flex;
   height: 100vh;
   overflow: hidden;
@@ -303,23 +336,41 @@ body {
   pointer-events: none;
 }
 
+/* Wide enough that the title holds one line at its full size. The paragraph
+   below is kept to a readable measure of its own rather than filling this. */
 .start-panel {
-  max-width: 460px;
+  max-width: 720px;
   padding: 0 32px;
   text-align: center;
 }
 
+.start-panel p {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* The game's name, and nearly the only thing on screen while it is shown, so it
+   is allowed to behave like a title rather than a caption. Tracking comes down
+   as the size goes up: at 15px the wide spacing was what made a small line feel
+   deliberate, and at 40px the same amount would only pull the words apart. */
 .start-panel h1 {
-  margin: 0 0 30px;
-  font-size: 15px;
+  font-family: var(--ui-narrow);
+  margin: 0 0 38px;
+  font-size: 40px;
   font-weight: 600;
-  letter-spacing: .38em;
+  letter-spacing: .2em;
+  /* Letter-spacing adds its space after the LAST letter as well, which drags a
+     centred line visibly left. Indenting by the same amount puts it back. */
+  text-indent: .2em;
+  line-height: 1.15;
   text-transform: uppercase;
   color: var(--paper);
   text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
 }
 
 #start-enter {
+  font-family: var(--ui-narrow);
   background: linear-gradient(180deg, #46586e, #2b3746);
   color: var(--paper);
   border: 1px solid var(--rule-bright);
@@ -397,6 +448,7 @@ body {
 }
 
 .wordmark {
+  font-family: var(--ui-narrow);
   font-size: 13px;
   letter-spacing: .22em;
   text-transform: uppercase;
@@ -459,12 +511,15 @@ body {
 
 /* Active reads as a panel lit from above and pushed forward, rather than as
    a differently coloured plate — value and a bright top edge, not a hue. */
+/* No weight change on the selected button. Bolding the label makes it wider,
+   so the button grows and every button after it shifts along — the toolbar
+   twitches each time a view is picked. The lit background and the brighter
+   border already say which one it is. */
 #toolbar button.active {
   background: linear-gradient(180deg, #46586e, #2b3746);
   border-color: var(--rule-bright);
   border-top-color: var(--accent);
   color: var(--paper);
-  font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 0 0 1px rgba(0, 0, 0, .3);
 }
@@ -579,6 +634,7 @@ canvas.panning {
    Its own width never changes, so the text inside does not reflow mid-slide.
    display:none is not usable here — it cannot be transitioned. */
 #panel {
+  font-family: var(--ui-plain);
   width: var(--panel-w);
   margin-right: calc(-1 * var(--panel-w));
   /* parked just off the right edge */
@@ -860,4 +916,281 @@ canvas.panning {
   .wordmark b {
     display: none;
   }
+}
+
+/* ==================================================== province card
+   What a province HAS. Slides up from the bottom-left corner while the debug
+   menu slides in from the right, so both can stand open without overlapping.
+
+   Parked with transform rather than by moving `bottom`: a transform is composited
+   and does not ask the page to lay out again on every frame of the slide, which
+   matters here because the map is redrawing underneath at the same time. The
+   easing and duration are the debug menu's, so the two read as one mechanism. */
+#card {
+  --tex-span: 900px;
+  --tex-turn: 149deg;
+  --tex-at: -215px -75px;
+
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 20;
+  width: 310px;
+
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel-deep));
+  border: 1px solid #000;
+  border-top-color: var(--rule-bright);
+  border-radius: 2px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .6), var(--bevel);
+
+  font-size: 12px;
+  color: var(--text);
+
+  visibility: hidden;
+  transform: translateY(calc(100% + 16px));
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s .3s;
+}
+
+#card.open {
+  visibility: visible;
+  transform: none;
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  #card,
+  #card.open {
+    transition: none;
+  }
+}
+
+/* --- name plate */
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 11px;
+  background: linear-gradient(180deg, #2b3644, #1b222c);
+  border-bottom: 1px solid #000;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+
+/* Sans, like the rest of the chrome. The serif here was borrowed from the debug
+   panel, where it suits a document-like inspector; on a plate an inch above a
+   grid of sans-serif figures it just read as two typefaces arguing.
+
+   Kept uppercase, since every other label in this interface is, but taken down
+   to the weight and size of a caption rather than a headline. Uppercase gets its
+   force from size and weight far more than from being uppercase, so shedding
+   both is what stops it shouting; the tracking is what keeps it legible once
+   they are gone. */
+/* The regular width, not the condensed cut. A name is the one piece of text on
+   this panel that is read rather than scanned, and the narrow cut is for labels
+   whose job is to take up less room. Slightly larger and a little less tracked
+   to suit the wider letterforms. */
+.card-head h2 {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--paper);
+  /* A long name shortens rather than wrapping the plate onto two lines. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#card-close {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--dim);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#card-close:hover {
+  color: var(--paper);
+  border-color: var(--rule-bright);
+}
+
+/* --- owner, with the polity's own colour standing in for a flag */
+.card-owner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.card-flag {
+  flex: none;
+  width: 30px;
+  height: 20px;
+  border: 1px solid var(--rule-bright);
+  border-radius: 1px;
+  background: var(--steel);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .5);
+}
+
+.card-owner b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--paper);
+}
+
+.card-owner i {
+  display: block;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* --- one-line facts */
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 11px;
+  border-bottom: 1px solid rgba(49, 61, 76, .5);
+}
+
+.card-row span:first-child {
+  color: var(--dim);
+}
+
+.card-row span:last-child {
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the built things, two to a row */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(49, 61, 76, .5);
+  border-bottom: 1px solid var(--rule);
+}
+
+.card-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 11px;
+  background: linear-gradient(180deg, rgba(34, 43, 54, .75), rgba(18, 23, 30, .75));
+}
+
+.card-cell span {
+  color: var(--dim);
+  font-size: 11px;
+}
+
+.card-cell b {
+  font-weight: 600;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- building slots.
+   One strip shared by both factory types, because that is the mechanic: a
+   province has so many sockets and you choose what to put in each. Drawing a
+   separate row per type would say the opposite. */
+.card-slots {
+  padding: 9px 11px 11px;
+}
+
+/* Sized and coloured like the row labels above it rather than as fine print.
+   It names the strip underneath, so it has the same job they do. */
+.card-slot-head {
+  margin-bottom: 7px;
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: .01em;
+}
+
+.card-slot-head span {
+  color: var(--paper);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-slot-boxes {
+  display: flex;
+  gap: 3px;
+}
+
+.card-slot {
+  flex: 1;
+  height: 15px;
+  border: 1px solid var(--rule);
+  border-radius: 1px;
+  background: linear-gradient(180deg, #151b23, #10151b);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, .5);
+}
+
+/* A socket the province does not have yet. Kept on screen rather than hidden so
+   the panel does not change height as provinces are filled in, but plainly
+   emptier than an unlocked one. */
+.card-slot.locked {
+  opacity: .35;
+  border-style: dashed;
+}
+
+.card-slot.civ {
+  border-color: var(--accent-dim);
+  background: linear-gradient(180deg, #46586e, #2b3746);
+}
+
+.card-slot.mil {
+  border-color: #6b5340;
+  background: linear-gradient(180deg, #7a5f45, #4a382a);
+}
+
+.card-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  color: var(--dim);
+  font-size: 11px;
+}
+
+.card-legend b {
+  margin-left: 4px;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-legend .key {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 5px;
+  border: 1px solid var(--rule);
+  border-radius: 1px;
+  vertical-align: -1px;
+}
+
+.card-legend .key.civ {
+  border-color: var(--accent-dim);
+  background: #3a4a5e;
+}
+
+.card-legend .key.mil {
+  border-color: #6b5340;
+  background: #634d39;
 }
