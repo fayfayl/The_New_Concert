@@ -149,22 +149,40 @@ export function mapPixels(image, table, colourToIndex) {
  * The loop works in integer indices for speed but records results against public
  * string ids, so callers never see an index.
  */
+
+/**
+ * How many pixels two provinces must share before they count as neighbours.
+ *
+ * At 2, a single-pixel contact is ignored. That is not a frontier but a drawing
+ * artefact — the pixel where three borders nearly meet, or a coastline a pixel
+ * out of true. Raise it if the map is drawn coarsely and short contacts start
+ * being meaningful; set it to 1 to count every touch as before.
+ */
+export const MIN_BORDER_PX = 2;
+
 export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
   const adjacency = new Map([...byId.keys()].map((id) => [id, new Set()]));
   const coastal = new Set();
   const bounds = new Map();
   const idOf = (index) => atIndex[index].id;
 
-  // Record what one touching pair of pixels means. Same province: nothing. Land
-  // against sea: that province is coastal. Two provinces: they are neighbours.
+  // Touching pixels are COUNTED first and turned into neighbours afterwards,
+  // because how much two provinces touch decides whether they are neighbours at
+  // all — see MIN_BORDER_PX below.
+  //
+  // The key packs both indices into one number rather than a string. This runs
+  // once per pixel along every boundary on the map, and building a string for
+  // each would cost more than the whole scan.
+  const touch = new Map();
+
   const link = (a, b) => {
     if (a === b) return;
     if (a === OCEAN || b === OCEAN) {
       coastal.add(idOf(a === OCEAN ? b : a));
       return;
     }
-    adjacency.get(idOf(a)).add(idOf(b));
-    adjacency.get(idOf(b)).add(idOf(a));
+    const key = a < b ? a * 65536 + b : b * 65536 + a;
+    touch.set(key, (touch.get(key) || 0) + 1);
   };
 
   for (let y = 0; y < height; y++) {
@@ -194,7 +212,27 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
   // Position sums become centroids now the counts are final. Note this is the
   // centre of MASS, not of the box: for an L-shaped province it can fall outside.
   for (const bb of bounds.values()) { bb.cx = bb.sx / bb.n; bb.cy = bb.sy / bb.n; }
-  return { adjacency, coastal, bounds };
+
+  // Now decide which of those contacts are real frontiers.
+  //
+  // Two provinces meeting along a single pixel are not neighbours in any sense
+  // the game should act on. It is what a hand-drawn map produces where three
+  // borders nearly meet, or where a coastline is one pixel out — a place the two
+  // shapes graze rather than adjoin. Treating it as a frontier gives an army a
+  // route through a gap too small to see, and lights a country on the far side
+  // of a mountain range when its neighbour is selected.
+  //
+  // Diagonal contact was already excluded, for the same reason at a smaller
+  // scale. This is that rule carried one step further.
+  let dropped = 0;
+  for (const [key, n] of touch) {
+    if (n < MIN_BORDER_PX) { dropped++; continue; }
+    const a = Math.floor(key / 65536), b = key % 65536;
+    adjacency.get(idOf(a)).add(idOf(b));
+    adjacency.get(idOf(b)).add(idOf(a));
+  }
+
+  return { adjacency, coastal, bounds, contacts: touch.size, dropped };
 }
 
 /**
@@ -217,17 +255,28 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
  * float field would take. The weights bound how far can be measured, at
  * 255/3 = 85 map pixels, which FADE_PX has to stay under.
  *
- * Owners are fixed at load, so this is built once. If provinces ever change
- * hands it has to be rebuilt.
+ * The field depends on who owns what, so a province changing hands invalidates
+ * part of it. It does not have to be rebuilt whole: see refreshBorderDistance,
+ * which redoes a rectangle of it and is what ownership changes use.
  */
 export const CHAMFER_ORTH = 3;
 export const CHAMFER_DIAG = 4;
+export const BORDER_DIST_MAX = 255;
 
-export function buildBorderDistance(world) {
-  const { width, height, provinceAt, atIndex } = world;
+// The furthest a border can make itself felt, in map pixels. A distance is
+// stored pre-scaled by CHAMFER_ORTH and saturates at BORDER_DIST_MAX, so
+// nothing beyond this can be affected by a border appearing or disappearing —
+// which is what bounds the rectangle an ownership change has to redo.
+export const BORDER_DIST_REACH = Math.floor(BORDER_DIST_MAX / CHAMFER_ORTH);
 
-  // Owner per province index, as a small integer. Index 0 is ocean and keeps
-  // -1, which matches no country, so every coastline seeds the transform.
+/**
+ * Owner per province index, as a small integer.
+ *
+ * Index 0 is ocean and keeps -1, which matches no country, so every coastline
+ * counts as a frontier. Rebuilt from the table on every call, so it always
+ * reflects the owners as they stand rather than as they loaded.
+ */
+export function ownerOrdinals(atIndex) {
   const ownerAt = new Int32Array(atIndex.length).fill(-1);
   const ordinal = new Map();
   for (let ix = 1; ix < atIndex.length; ix++) {
@@ -235,15 +284,48 @@ export function buildBorderDistance(world) {
     if (!ordinal.has(owner)) ordinal.set(owner, ordinal.size);
     ownerAt[ix] = ordinal.get(owner);
   }
+  return ownerAt;
+}
 
-  const MAX = 255;
-  const dist = new Uint8Array(width * height).fill(MAX);
+export function buildBorderDistance(world) {
+  const dist = new Uint8Array(world.width * world.height);
+  refreshBorderDistance(world, dist, null);
+  return dist;
+}
+
+/**
+ * Recomputes the distance field over one rectangle of the map, in place.
+ *
+ * `box` is {x0, y0, x1, y1} in map pixels, half-open, or null for the whole
+ * map. Both passes read freely OUTSIDE the box and only ever write inside it,
+ * so a distance owed to a border beyond the rectangle still arrives: the path
+ * from that border crosses the boundary at a pixel whose value is already
+ * right, and the passes carry it in from there.
+ *
+ * That is only true while every pixel outside the box does hold its correct
+ * distance. Which pixels an ownership change can disturb is bounded by
+ * BORDER_DIST_REACH, so a caller that grows the changed province's bounding box
+ * by that much is safe; ownership.js is where that is done.
+ */
+export function refreshBorderDistance(world, dist, box) {
+  const { width, height, provinceAt, atIndex } = world;
+  const ownerAt = ownerOrdinals(atIndex);
+
+  const x0 = box ? Math.max(0, box.x0) : 0;
+  const y0 = box ? Math.max(0, box.y0) : 0;
+  const x1 = box ? Math.min(width, box.x1) : width;
+  const y1 = box ? Math.min(height, box.y1) : height;
+  if (x1 <= x0 || y1 <= y0) return;
+
+  const MAX = BORDER_DIST_MAX;
 
   // Seeds: the sea, and any land pixel with a differently owned neighbour. All
   // four directions are tested, unlike the border drawing which needs only two
   // — a one-sided seed would bias the whole field a pixel in one direction.
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
+  // Everything else in the box is reset to MAX, so a rectangle redone after a
+  // border disappeared is not left holding the distances that border set.
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
       const i = y * width + x;
       const index = provinceAt[i];
       if (index === OCEAN) { dist[i] = 0; continue; }
@@ -257,14 +339,14 @@ export function buildBorderDistance(world) {
       const right = ownerAt[provinceAt[x + 1 < width ? i + 1 : y * width]];
       const up = y > 0 ? ownerAt[provinceAt[i - width]] : -1;
       const down = y + 1 < height ? ownerAt[provinceAt[i + width]] : -1;
-      if (left !== mine || right !== mine || up !== mine || down !== mine) dist[i] = 0;
+      dist[i] = (left !== mine || right !== mine || up !== mine || down !== mine) ? 0 : MAX;
     }
   }
 
   const A = CHAMFER_ORTH, B = CHAMFER_DIAG;
 
-  for (let y = 0; y < height; y++) {              // forward: down and right
-    for (let x = 0; x < width; x++) {
+  for (let y = y0; y < y1; y++) {                 // forward: down and right
+    for (let x = x0; x < x1; x++) {
       const i = y * width + x;
       let d = dist[i];
       if (d === 0) continue;
@@ -276,8 +358,8 @@ export function buildBorderDistance(world) {
     }
   }
 
-  for (let y = height - 1; y >= 0; y--) {         // backward: up and left
-    for (let x = width - 1; x >= 0; x--) {
+  for (let y = y1 - 1; y >= y0; y--) {            // backward: up and left
+    for (let x = x1 - 1; x >= x0; x--) {
       const i = y * width + x;
       let d = dist[i];
       if (d === 0) continue;
@@ -288,7 +370,6 @@ export function buildBorderDistance(world) {
       dist[i] = d > MAX ? MAX : d;
     }
   }
-  return dist;
 }
 
 /**
@@ -408,90 +489,204 @@ export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
   return near;
 }
 
-export function computeLabelGeometry(world) {
-  const { width, provinceAt, atIndex, byId, adjacency } = world;
+/** The owner id that means nobody. Land holding it is never labelled. */
+export const UNOWNED = 'NONE';
 
-  // Provinces that all but touch count as touching for labelling — see above.
-  const height = provinceAt.length / width;
-  const near = nearbyProvinces(provinceAt, width, height);
-  const neighboursOfId = (id) => {
-    const extra = near.get(byId.get(id).index);
-    if (!extra) return adjacency.get(id);
-    return [...adjacency.get(id), ...[...extra].map((ix) => atIndex[ix].id)];
-  };
+/** Whether a province belongs in a label block at all. */
+export const isLabelled = (world, p) => p.owner !== UNOWNED && world.table.polityById.has(p.owner);
 
-  // --- group provinces into blocks: flood fill the adjacency graph, never
-  //     crossing into a different owner. Unowned land gets no label.
+/**
+ * A province's neighbours for LABELLING, which is its real neighbours plus the
+ * ones it comes within NEAR_GAP of across water. Returns ids.
+ */
+export function labelNeighbours(world, near, id) {
+  const extra = near && near.get(world.byId.get(id).index);
+  if (!extra) return world.adjacency.get(id);
+  return [...world.adjacency.get(id), ...[...extra].map((ix) => world.atIndex[ix].id)];
+}
+
+/*
+ * The two accumulators below are shared by the full-map build and by the
+ * per-block rebuild an ownership change runs. One copy of the arithmetic, so a
+ * block recomputed after changing hands is identical to the same block computed
+ * from cold, and a province changing owner cannot make its country's name jump.
+ */
+
+export const newMoments = () => ({ n: 0, sx: 0, sy: 0, sxx: 0, sxy: 0, syy: 0 });
+
+export function addMoment(a, x, y) {
+  a.n++; a.sx += x; a.sy += y; a.sxx += x * x; a.sxy += x * y; a.syy += y * y;
+}
+
+/** Centroid and principal axis, or null for a block too small to have one. */
+export function blockAxis(a) {
+  if (a.n < 12) return null;                  // too few pixels for a meaningful axis
+  const cx = a.sx / a.n, cy = a.sy / a.n;
+  const vxx = a.sxx / a.n - cx * cx;
+  const vxy = a.sxy / a.n - cx * cy;
+  const vyy = a.syy / a.n - cy * cy;
+  const theta = 0.5 * Math.atan2(2 * vxy, vxx - vyy);   // principal eigenvector
+  return { cx, cy, ux: Math.cos(theta), uy: Math.sin(theta), n: a.n };
+}
+
+export const newFit = () => ({
+  tMin: Infinity, tMax: -Infinity, n: 0, pp: 0, hist: new Map(),
+  s0: 0, s1: 0, s2: 0, s3: 0, s4: 0, u0: 0, u1: 0, u2: 0,
+});
+
+/** One pixel measured along the block's axis (t) and across it (u). */
+export function addFitSample(f, g, x, y) {
+  const dx = x - g.cx, dy = y - g.cy;
+  const t = dx * g.ux + dy * g.uy;          // along the axis
+  const u = -dx * g.uy + dy * g.ux;         // perpendicular to it
+  if (t < f.tMin) f.tMin = t; else if (t > f.tMax) f.tMax = t;
+  const bucket = Math.floor(t / LABEL_HIST_BUCKET);      // land per slice along the axis
+  f.hist.set(bucket, (f.hist.get(bucket) || 0) + 1);
+  const t2 = t * t;
+  f.n++; f.pp += u * u;
+  f.s0++; f.s1 += t; f.s2 += t2; f.s3 += t2 * t; f.s4 += t2 * t2;
+  f.u0 += u; f.u1 += u * t; f.u2 += u * t2;
+}
+
+/**
+ * Groups provinces into blocks: flood fill the adjacency graph, never crossing
+ * into a different owner. Unowned land gets no label.
+ *
+ * Each block carries its members as province indices, so a block can be
+ * measured, split or merged later without another pass over the map.
+ */
+export function buildBlocks(world, near) {
+  const { byId, atIndex } = world;
   const blocks = [];
   const blockOf = new Map();
+
   for (const p of byId.values()) {
-    if (blockOf.has(p.id) || !world.table.polityById.has(p.owner) || p.owner === 'NONE') continue;
+    if (blockOf.has(p.id) || !isLabelled(world, p)) continue;
     const n = blocks.length;
     const stack = [p.id];
     blockOf.set(p.id, n);
     while (stack.length) {
       const id = stack.pop();
-      for (const q of neighboursOfId(id)) {
+      for (const q of labelNeighbours(world, near, id)) {
         if (blockOf.has(q) || byId.get(q).owner !== p.owner) continue;
         blockOf.set(q, n);
         stack.push(q);
       }
     }
-    blocks.push({ owner: p.owner });
+    blocks.push({ owner: p.owner, members: [] });
   }
   if (!blocks.length) return null;
 
   const blockAt = new Int32Array(atIndex.length).fill(-1);
-  for (const [id, b] of blockOf) blockAt[byId.get(id).index] = b;
+  for (const [id, b] of blockOf) {
+    const ix = byId.get(id).index;
+    blockAt[ix] = b;
+    blocks[b].members.push(ix);
+  }
+  return { blocks, blockAt };
+}
+
+/** Rebuilds each block's member list from blockAt. For a cache restore. */
+export function attachBlockMembers(geometry) {
+  for (const blk of geometry.blocks) blk.members = [];
+  for (let ix = 1; ix < geometry.blockAt.length; ix++) {
+    const b = geometry.blockAt[ix];
+    if (b >= 0) geometry.blocks[b].members.push(ix);
+  }
+  return geometry;
+}
+
+export function computeLabelGeometry(world) {
+  const { width, provinceAt } = world;
+
+  // Provinces that all but touch count as touching for labelling — see above.
+  const height = provinceAt.length / width;
+  const near = nearbyProvinces(provinceAt, width, height);
+
+  const built = buildBlocks(world, near);
+  if (!built) return null;
+  const { blocks, blockAt } = built;
 
   // --- STEP 1: one pass over the map summing each block's pixel positions, which
   //     gives the centroid and covariance, and from those the principal axis.
   // Both passes below walk x and y as loop counters rather than deriving them
   // from the index. A division and a modulo per pixel is invisible on a small
   // map and tens of millions of operations on a large one.
-  const acc = blocks.map(() => ({ n: 0, sx: 0, sy: 0, sxx: 0, sxy: 0, syy: 0 }));
+  const acc = blocks.map(newMoments);
   for (let y = 0, i = 0; y < height; y++) {
     for (let x = 0; x < width; x++, i++) {
       const b = blockAt[provinceAt[i]];
-      if (b < 0) continue;
-      const a = acc[b];
-      a.n++; a.sx += x; a.sy += y; a.sxx += x * x; a.sxy += x * y; a.syy += y * y;
+      if (b >= 0) addMoment(acc[b], x, y);
     }
   }
-
-  const geo = acc.map((a) => {
-    if (a.n < 12) return null;                  // too few pixels for a meaningful axis
-    const cx = a.sx / a.n, cy = a.sy / a.n;
-    const vxx = a.sxx / a.n - cx * cx;
-    const vxy = a.sxy / a.n - cx * cy;
-    const vyy = a.syy / a.n - cy * cy;
-    const theta = 0.5 * Math.atan2(2 * vxy, vxx - vyy);   // principal eigenvector
-    return { cx, cy, ux: Math.cos(theta), uy: Math.sin(theta), n: a.n };
-  });
+  const geo = acc.map(blockAxis);
 
   // --- STEP 2: a second pass, now that the axis is known. Each pixel is measured
   //     along it (t) and across it (u). The sums feed the least-squares spine,
   //     and the tally of pixels per slice of t feeds denseRange.
-  const fit = geo.map((g) => g && {
-    tMin: Infinity, tMax: -Infinity, n: 0, pp: 0, hist: new Map(),
-    s0: 0, s1: 0, s2: 0, s3: 0, s4: 0, u0: 0, u1: 0, u2: 0,
-  });
+  const fit = geo.map((g) => g && newFit());
   for (let y = 0, i = 0; y < height; y++) {
     for (let x = 0; x < width; x++, i++) {
       const b = blockAt[provinceAt[i]];
-      if (b < 0 || !geo[b]) continue;
-      const g = geo[b], f = fit[b];
-      const dx = x - g.cx, dy = y - g.cy;
-      const t = dx * g.ux + dy * g.uy;          // along the axis
-      const u = -dx * g.uy + dy * g.ux;         // perpendicular to it
-      if (t < f.tMin) f.tMin = t; else if (t > f.tMax) f.tMax = t;
-      const bucket = Math.floor(t / LABEL_HIST_BUCKET);      // land per slice along the axis
-      f.hist.set(bucket, (f.hist.get(bucket) || 0) + 1);
-      const t2 = t * t;
-      f.n++; f.pp += u * u;
-      f.s0++; f.s1 += t; f.s2 += t2; f.s3 += t2 * t; f.s4 += t2 * t2;
-      f.u0 += u; f.u1 += u * t; f.u2 += u * t2;
+      if (b >= 0 && geo[b]) addFitSample(fit[b], geo[b], x, y);
     }
   }
-  return { blocks, blockAt, geo, fit };
+
+  // `near` travels with the geometry. Rebuilding it costs a pass over every
+  // coastal pixel on the map, and an ownership change needs the same graph the
+  // blocks were built from to decide what merges with what.
+  return { blocks, blockAt, geo, fit, near };
+}
+
+/**
+ * Redoes the geometry of named blocks only, by walking their member provinces
+ * rather than the map.
+ *
+ * Cost is the member provinces' bounding boxes, not 15.9 million pixels, which
+ * is what makes recomputing a label affordable when a province changes hands.
+ * Blocks left empty by a change come back as null and lose their label.
+ */
+export function computeBlockGeometry(world, geometry, ids) {
+  const { width, provinceAt, bounds, atIndex } = world;
+
+  for (const b of ids) {
+    const blk = geometry.blocks[b];
+    if (!blk || !blk.members.length) {
+      geometry.geo[b] = null;
+      geometry.fit[b] = null;
+      continue;
+    }
+
+    // Each member is walked over its OWN box and counted only where the pixel
+    // is really its own, so two members with overlapping boxes cannot count the
+    // same pixel twice.
+    const acc = newMoments();
+    for (const ix of blk.members) {
+      const bb = bounds.get(atIndex[ix].id);
+      if (!bb) continue;
+      for (let y = bb.minY; y <= bb.maxY; y++) {
+        const row = y * width;
+        for (let x = bb.minX; x <= bb.maxX; x++) {
+          if (provinceAt[row + x] === ix) addMoment(acc, x, y);
+        }
+      }
+    }
+
+    const g = blockAxis(acc);
+    geometry.geo[b] = g;
+    if (!g) { geometry.fit[b] = null; continue; }
+
+    const f = newFit();
+    for (const ix of blk.members) {
+      const bb = bounds.get(atIndex[ix].id);
+      if (!bb) continue;
+      for (let y = bb.minY; y <= bb.maxY; y++) {
+        const row = y * width;
+        for (let x = bb.minX; x <= bb.maxX; x++) {
+          if (provinceAt[row + x] === ix) addFitSample(f, g, x, y);
+        }
+      }
+    }
+    geometry.fit[b] = f;
+  }
 }

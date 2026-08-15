@@ -39,7 +39,7 @@ import { fileURLToPath } from 'url';
 // The scans below are the renderer's own, imported rather than reimplemented —
 // see the note at the top of src/mapdata.js for why that matters.
 import {
-  normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
+  normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry, MIN_BORDER_PX,
 } from './src/mapdata.js';
 import { CACHE_FILE, hashInputs, buildCacheMeta, packCache } from './src/mapcache.js';
 import { makeProjection, toDegrees } from './src/geo.js';
@@ -247,9 +247,14 @@ function measure(width, height, px, oceanKey, projection) {
   return out;
 }
 
-/** Count shared borders, the same way the game does at load. */
+/**
+ * Count shared borders, the same way the game does at load — including the
+ * MIN_BORDER_PX rule, or this figure would describe a map the game does not
+ * agree it has. Contacts too short to count are reported separately, since a
+ * lot of them means the bitmap is drawn more finely than it can carry.
+ */
 function countBorders(width, height, px, oceanKey) {
-  const edges = new Set();
+  const touch = new Map();
   const coastal = new Set();
   const add = (a, b) => {
     if (a === b) return;
@@ -258,7 +263,8 @@ function countBorders(width, height, px, oceanKey) {
       if (b !== oceanKey) coastal.add(b);
       return;
     }
-    edges.add(a < b ? `${a}|${b}` : `${b}|${a}`);
+    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+    touch.set(key, (touch.get(key) || 0) + 1);
   };
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -269,7 +275,12 @@ function countBorders(width, height, px, oceanKey) {
       if (y + 1 < height) add(px[i], px[i + width]);
     }
   }
-  return { borders: edges.size, coastal: coastal.size };
+  let borders = 0, tooShort = [];
+  for (const [key, n] of touch) {
+    if (n >= MIN_BORDER_PX) borders++;
+    else tooShort.push(key);
+  }
+  return { borders, coastal: coastal.size, tooShort };
 }
 
 // --------------------------------------------------------------------- run
@@ -291,7 +302,7 @@ if (!counts.has(oceanKey)) {
 }
 
 const blobs = analyse(img.width, img.height, img.px, oceanKey);
-const { borders, coastal } = countBorders(img.width, img.height, img.px, oceanKey);
+const { borders, coastal, tooShort } = countBorders(img.width, img.height, img.px, oceanKey);
 
 // ------------------------------------------------------ area on the globe
 //
@@ -478,7 +489,8 @@ const table = {
 console.log(`bitmap        ${img.width}x${img.height}, ${counts.size} distinct colours`);
 console.log(`ocean colour  ${hex(oceanKey)}${oceanChanged ? '  (auto-detected — JSON updated)' : ''}`);
 console.log(`provinces     ${provinces.length}  (${kept.length} kept, ${added.length} added, ${stale.length} stale)`);
-console.log(`borders       ${borders}`);
+console.log(`borders       ${borders}`
+  + `${tooShort.length ? `  (${tooShort.length} contact${tooShort.length > 1 ? 's' : ''} of under ${MIN_BORDER_PX}px ignored)` : ''}`);
 console.log(`coastal       ${coastal}`);
 
 if (projection) {
@@ -501,6 +513,18 @@ const nameOf = (k) => {
   const p = provinces.find((q) => parseHex(q.colour) === k);
   return `${String(p.id).padStart(3)} ${String(p.name).padEnd(12)}`;
 };
+
+if (tooShort.length) {
+  // Worth seeing rather than just counting. A one-pixel contact is usually a
+  // slip — two provinces that were meant to meet properly, or not at all — and
+  // it is invisible at any zoom you would draw at.
+  console.log(`\ncontacts too short to count as a border (${tooShort.length}):`);
+  for (const key of tooShort.slice(0, 12)) {
+    const [a, b] = key.split('|').map(Number);
+    console.log(`  ${nameOf(a).trim()}  —  ${nameOf(b).trim()}`);
+  }
+  if (tooShort.length > 12) console.log(`  ... and ${tooShort.length - 12} more`);
+}
 
 const multi = [...blobs.entries()].filter(([, l]) => l.length > 1);
 if (multi.length) {
@@ -793,7 +817,7 @@ if (CITIES) {
 
       const takenCityIds = new Set();
       const cityReslugged = [];
-      const cities = marks.map((m) => {
+      const built = marks.map((m, at) => {
         // A city new to the bitmap is named after the province it stands in.
         // Provinces here are named for their city as often as not, so that is
         // usually right already, and obvious to correct when it is not.
@@ -806,8 +830,24 @@ if (CITIES) {
         const id = uniqueWithin(m.was && !RESLUG ? m.was.id : slugify(name), takenCityIds);
         if (m.was && id !== m.was.id) cityReslugged.push({ from: m.was.id, to: id });
 
-        return { id, name, capital: m.kind === 'capital', x: m.x, y: m.y, province: m.province };
+        return {
+          at,
+          was: m.was,
+          city: { id, name, capital: m.kind === 'capital', x: m.x, y: m.y, province: m.province },
+        };
       });
+
+      // Output order: the same rule the provinces above follow. A city already
+      // in the file keeps its position, and new ones go at the end.
+      //
+      // The marks are read off the bitmap top to bottom, so writing them in that
+      // order puts every new city wherever it happens to fall geographically,
+      // and the ones still carrying their province's name as a placeholder are
+      // scattered through the file. Appending puts the entries that need naming
+      // together at the bottom, and leaves the diff to just those lines.
+      const wasAt = new Map(before.map((c, i) => [c, i]));
+      const rank = (e) => (e.was ? wasAt.get(e.was) : before.length + e.at);
+      const cities = built.sort((a, b) => rank(a) - rank(b)).map((e) => e.city);
 
       const added = marks.filter((m) => !m.was).length;
       const moved = marks.filter((m) => m.moved).length;

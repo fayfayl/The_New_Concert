@@ -23,12 +23,113 @@
   <div id="start">
     <div class="start-panel">
       <h1>Hearts of Iron Chron</h1>
-      <button id="start-enter" disabled>Loading&hellip;</button>
+
+      <!-- data-dialog names the panel a button opens, so a new one is a button
+           and a panel with no wiring of its own. -->
+      <div class="start-buttons">
+        <button id="start-enter" disabled>Loading&hellip;</button>
+        <button class="start-secondary" data-dialog="changelog">Changelog</button>
+        <button class="start-secondary" data-dialog="about">About</button>
+      </div>
+
       <p>
         Hearts of Iron Chron is the placeholder name of this in-development game.
         Currently, there is no game to speak of so have fun looking at an
         incomplete map.
       </p>
+    </div>
+
+    <!--
+      Inside the start screen rather than beside it, so these are carried away by
+      the same fade when the menu is dismissed and cannot be left hanging over
+      the map. Closed until a button opens one; Esc closes it, and while one is
+      open Esc and Enter no longer dismiss the menu behind it.
+    -->
+    <div id="changelog" class="start-dialog" aria-hidden="true">
+      <div class="dialog-panel milled" role="dialog" aria-label="Changelog">
+        <div class="dialog-head">
+          <h2>Changelog</h2>
+          <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.5 <span>15 Aug 2026</span></h3>
+            <ul>
+              <li>Finished Sakan in terms of countries.</li>
+              <li>Added all cities to Meridon.</li>
+              <li>Half of Sakan now has cities.</li>
+              <li>Added the first few countries to Panathra.</li>
+              <li>Reworked city labels a bit so they now try to avoid country labels.</li>
+              <li>Added Changelog and About tabs in the start menu.</li>
+              <li>Changed main font to Cabin.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3>Indev v0.4 <span>12 Aug 2026</span></h3>
+            <ul>
+              <li>Sakan is almost finished in terms of countries.</li>
+              <li>Added info panel for provinces (no info yet because I'm not doing statistics
+                and game mechanics at the moment).</li>
+              <li>Adopted Gill Sans MT as the main font.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3>Indev v0.3.a <span>10 Aug 2026</span></h3>
+            <ul>
+              <li>Fixed typo in start menu.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3>Indev v0.3 <span>10 Aug 2026</span></h3>
+            <ul>
+              <li>Added several more countries in Sakan.</li>
+              <li>Gave UI texture.</li>
+              <li>Overhauled country label generation system so it stops lagging so much.</li>
+              <li>Added more cities.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3>Indev v0.2 <span>9 Aug 2026</span></h3>
+            <ul>
+              <li>Added a few more countries to the map</li>
+              <li>Added bare-bones menu screen</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3>Indev v0.1 <span>9 Aug 2026</span></h3>
+            <p>The first formal release. Nothing is playable, have fun looking at an
+              incomplete map.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="about" class="start-dialog" aria-hidden="true">
+      <div class="dialog-panel milled" role="dialog" aria-label="About">
+        <div class="dialog-head">
+          <h2>About</h2>
+          <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="dialog-body about-body">
+          <img class="about-seal" src="./data/Seal.png" width="2300" height="2300"
+            alt="Seal of the Chronic Worldbuilding Authority">
+          <p>
+            This game is part of the Chron Project, created by
+            <a href="https://weltenzyklopadie.miraheze.org/wiki/User:Philimania_and_Sovaland" target="_blank"
+              rel="noopener noreferrer">Philimania</a>
+            run by the Chronic Worldbuilding Authority. You can find us
+            <a href="https://weltenzyklopadie.miraheze.org/wiki/Weltenzyklop%C3%A4die:About" target="_blank"
+              rel="noopener noreferrer">here</a>.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -19,6 +19,11 @@
       "colour": "#019E4F"
     },
     {
+      "id": "RGC",
+      "name": "Ragcul Territory",
+      "colour": "#019E4F"
+    },
+    {
       "id": "GDV",
       "name": "Colony of Godvind",
       "colour": "#019E4F"
@@ -47,6 +52,11 @@
       "id": "GWR",
       "name": "Combine of Gwerinlur",
       "colour": "#595772"
+    },
+    {
+      "id": "SPK",
+      "name": "Spinekland",
+      "colour": "#393660"
     },
     {
       "id": "VUG",
@@ -156,6 +166,11 @@
     {
       "id": "SAN",
       "name": "United States of Sanata",
+      "colour": "#18F949"
+    },
+    {
+      "id": "DAG",
+      "name": "Colony of Dagislaterra",
       "colour": "#18F949"
     },
     {
@@ -437,6 +452,56 @@
       "id": "AMY",
       "name": "Amryn Empire",
       "colour": "#44ABFF"
+    },
+    {
+      "id": "HNM",
+      "name": "Kingdom of Hunmea",
+      "colour": "#FFCEA3"
+    },
+    {
+      "id": "AKA",
+      "name": "Empire of Akasora",
+      "colour": "#C6B5FF"
+    },
+    {
+      "id": "MRD",
+      "name": "Land of Moradzar",
+      "colour": "#FFEED3"
+    },
+    {
+      "id": "JNI",
+      "name": "Holy Kingdom of Jenisia",
+      "colour": "#FF630A"
+    },
+    {
+      "id": "WRK",
+      "name": "Kingdom of Werikia",
+      "colour": "#D8C1BC"
+    },
+    {
+      "id": "AJB",
+      "name": "Kingdom of Anjab",
+      "colour": "#D2FFB5"
+    },
+    {
+      "id": "RKO",
+      "name": "Kingdom of Rorkoth",
+      "colour": "#D6A062"
+    },
+    {
+      "id": "AGL",
+      "name": "Republic of Greater Agalur",
+      "colour": "#509522"
+    },
+    {
+      "id": "CDM",
+      "name": "Republic of Cidiama",
+      "colour": "#CCCCCC"
+    },
+    {
+      "id": "URT",
+      "name": "State of Uratia",
+      "colour": "#8BA0B7"
     }
   ],
   "provinces": [
@@ -770,8 +835,8 @@
       "colour": "#8834b5",
       "terrain": "Plains",
       "owner": "GWR",
-      "area": 3833,
-      "centre": [48.1596, -10.215]
+      "area": 2959,
+      "centre": [48.3934, -10.8687]
     },
     {
       "id": "meerdorp",
@@ -1040,8 +1105,8 @@
       "colour": "#b5672b",
       "terrain": "Plains",
       "owner": "GWR",
-      "area": 849,
-      "centre": [40.3019, -15.846]
+      "area": 102,
+      "centre": [40.25, -15.85]
     },
     {
       "id": "gethin_island",
@@ -2678,8 +2743,8 @@
       "colour": "#b080f7",
       "terrain": ["Plains"],
       "owner": "AUS",
-      "area": 1411,
-      "centre": [21.1694, -40.8705]
+      "area": 747,
+      "centre": [21.1733, -40.87]
     },
     {
       "id": "huneasca",
@@ -2768,8 +2833,8 @@
       "colour": "#9b62f7",
       "terrain": ["Plains"],
       "owner": "AUS",
-      "area": 1137,
-      "centre": [18.8344, -26.2122]
+      "area": 211,
+      "centre": [18.858, -26.214]
     },
     {
       "id": "halios",
@@ -3101,8 +3166,8 @@
       "colour": "#ff775b",
       "terrain": ["Plains"],
       "owner": "NNT",
-      "area": 2660,
-      "centre": [65.1654, 28.5329]
+      "area": 1766,
+      "centre": [64.8298, 27.8225]
     },
     {
       "id": "hjortsager",
@@ -3200,8 +3265,8 @@
       "colour": "#ff5bd6",
       "terrain": ["Plains"],
       "owner": "NNT",
-      "area": 2801,
-      "centre": [57.6462, 9.1761]
+      "area": 1969,
+      "centre": [58.0589, 9.4656]
     },
     {
       "id": "prince_ingvar",
@@ -3299,8 +3364,8 @@
       "colour": "#b2399c",
       "terrain": ["Plains"],
       "owner": "GWR",
-      "area": 3504,
-      "centre": [52.3105, 1.7461]
+      "area": 2918,
+      "centre": [52.5434, 1.8876]
     },
     {
       "id": "north_kisisaka",
@@ -3380,8 +3445,8 @@
       "colour": "#ff89c4",
       "terrain": ["Plains"],
       "owner": "HEL",
-      "area": 2605,
-      "centre": [52.4389, 16.7755]
+      "area": 570,
+      "centre": [52.4358, 16.7755]
     },
     {
       "id": "helsingdal_island",
@@ -3389,8 +3454,8 @@
       "colour": "#b5618b",
       "terrain": ["Plains"],
       "owner": "HEL",
-      "area": 1079,
-      "centre": [49.0661, 21.3999]
+      "area": 421,
+      "centre": [43.5904, 1.4262]
     },
     {
       "id": "north_vaughan_islands",
@@ -3398,8 +3463,8 @@
       "colour": "#87ffeb",
       "terrain": ["Plains"],
       "owner": "VUG",
-      "area": 3610,
-      "centre": [35.7954, 17.5606]
+      "area": 687,
+      "centre": [35.6823, 17.6182]
     },
     {
       "id": "south_vaughan_islands",
@@ -3614,8 +3679,8 @@
       "colour": "#af7fe2",
       "terrain": ["Plains"],
       "owner": "SNE",
-      "area": 1142,
-      "centre": [9.4706, 105.5334]
+      "area": 351,
+      "centre": [9.4425, 105.5551]
     },
     {
       "id": "vackero",
@@ -3623,8 +3688,8 @@
       "colour": "#e0644c",
       "terrain": ["Plains"],
       "owner": "VAK",
-      "area": 1281,
-      "centre": [7.1079, 106.5528]
+      "area": 309,
+      "centre": [7.1271, 106.5729]
     },
     {
       "id": "rosombe",
@@ -3632,8 +3697,8 @@
       "colour": "#cb70e0",
       "terrain": ["Plains"],
       "owner": "ROS",
-      "area": 1686,
-      "centre": [4.4637, 106.4621]
+      "area": 666,
+      "centre": [4.47, 106.47]
     },
     {
       "id": "hapartuna",
@@ -3848,8 +3913,8 @@
       "colour": "#998c00",
       "terrain": ["Plains"],
       "owner": "SUK",
-      "area": 2026,
-      "centre": [-8.3413, 121.7165]
+      "area": 573,
+      "centre": [-10.2055, 120.7324]
     },
     {
       "id": "tokvero",
@@ -3875,8 +3940,8 @@
       "colour": "#1c0099",
       "terrain": ["Plains"],
       "owner": "SUK",
-      "area": 2768,
-      "centre": [-9.2643, 122.3127]
+      "area": 923,
+      "centre": [-9.2757, 122.31]
     },
     {
       "id": "novo_sletanje",
@@ -3947,8 +4012,8 @@
       "colour": "#b2884c",
       "terrain": ["Plains"],
       "owner": "NAH",
-      "area": 1414,
-      "centre": [-6.825, 120.6825]
+      "area": 177,
+      "centre": [-6.795, 120.69]
     },
     {
       "id": "god_vind_islands",
@@ -3956,8 +4021,8 @@
       "colour": "#923e9b",
       "terrain": ["Plains"],
       "owner": "GDV",
-      "area": 5287,
-      "centre": [3.4316, 49.998]
+      "area": 3314,
+      "centre": [14.7784, 39.2132]
     },
     {
       "id": "inner_costa_auro",
@@ -4109,8 +4174,8 @@
       "colour": "#9b0913",
       "terrain": ["Plains"],
       "owner": "HTL",
-      "area": 5520,
-      "centre": [-23.2819, 82.4038]
+      "area": 1063,
+      "centre": [-23.28, 82.4192]
     },
     {
       "id": "santa_alberta",
@@ -5477,8 +5542,8 @@
       "colour": "#6cb58e",
       "terrain": ["Plains"],
       "owner": "KWE",
-      "area": 977,
-      "centre": [4.1291, -32.3727]
+      "area": 400,
+      "centre": [4.13, -32.37]
     },
     {
       "id": "katok_island",
@@ -5495,8 +5560,8 @@
       "colour": "#ad5666",
       "terrain": ["Plains"],
       "owner": "KWE",
-      "area": 1548,
-      "centre": [14.9716, -28.0283]
+      "area": 258,
+      "centre": [14.97, -28.04]
     },
     {
       "id": "east_alittum_highlands",
@@ -6836,8 +6901,8 @@
       "colour": "#ff56e8",
       "terrain": ["Plains"],
       "owner": "VKN",
-      "area": 1191,
-      "centre": [7.5234, -63.3833]
+      "area": 530,
+      "centre": [7.505, -63.355]
     },
     {
       "id": "viyula_nadu",
@@ -6859,7 +6924,7 @@
     },
     {
       "id": "niramvalai",
-      "name": "NIramvalai",
+      "name": "Niramvalai",
       "colour": "#87537f",
       "terrain": ["Plains"],
       "owner": "VKN",
@@ -7025,8 +7090,8 @@
       "colour": "#7f0055",
       "terrain": ["Plains"],
       "owner": "TNA",
-      "area": 4576,
-      "centre": [8.7231, -84.9236]
+      "area": 4532,
+      "centre": [8.7149, -84.9201]
     },
     {
       "id": "bacdao",
@@ -7034,8 +7099,8 @@
       "colour": "#7f342a",
       "terrain": ["Plains"],
       "owner": "TNA",
-      "area": 19845,
-      "centre": [7.7867, -87.053]
+      "area": 19801,
+      "centre": [7.7842, -87.0523]
     },
     {
       "id": "haiben",
@@ -7052,8 +7117,8 @@
       "colour": "#9b3386",
       "terrain": ["Jungle"],
       "owner": "ATN",
-      "area": 6627,
-      "centre": [-2.3298, -91.892]
+      "area": 2935,
+      "centre": [-2.3637, -91.9379]
     },
     {
       "id": "orangtera",
@@ -7061,8 +7126,8 @@
       "colour": "#9b5771",
       "terrain": ["Jungle"],
       "owner": "ATN",
-      "area": 3725,
-      "centre": [-4.7644, -82.2909]
+      "area": 1464,
+      "centre": [-4.3873, -84.0311]
     },
     {
       "id": "istana_lumpur",
@@ -7070,8 +7135,8 @@
       "colour": "#9b3089",
       "terrain": ["Jungle"],
       "owner": "ATN",
-      "area": 4506,
-      "centre": [-10.611, -77.4509]
+      "area": 1182,
+      "centre": [-10.4114, -79.5858]
     },
     {
       "id": "north_tangmon",
@@ -7543,7 +7608,7 @@
     },
     {
       "id": "south_mantyjarvi",
-      "name": "South Mantyjarvi",
+      "name": "South Mäntyjärvi",
       "colour": "#cc4f5c",
       "terrain": ["Plains"],
       "owner": "MRI",
@@ -8006,8 +8071,8 @@
       "colour": "#1bba4b",
       "terrain": ["Plains"],
       "owner": "NONE",
-      "area": 50612109,
-      "centre": [-54.3689, -30.3692]
+      "area": 45802716,
+      "centre": [-58.7946, -29.1905]
     },
     {
       "id": "muangsing",
@@ -9851,8 +9916,8 @@
       "colour": "#8c392b",
       "terrain": ["Plains"],
       "owner": "AMY",
-      "area": 72806,
-      "centre": [48.153, -156.5463]
+      "area": 72837,
+      "centre": [48.1524, -156.546]
     },
     {
       "id": "imponta",
@@ -9950,8 +10015,1070 @@
       "colour": "#b56a82",
       "terrain": ["Mountains"],
       "owner": "AMY",
-      "area": 19338,
-      "centre": [47.8104, -154.5243]
+      "area": 19277,
+      "centre": [47.8142, -154.5205]
+    },
+    {
+      "id": "north_namcheon",
+      "name": "North Namcheon",
+      "colour": "#cc685f",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 30962,
+      "centre": [49.5449, -148.5174]
+    },
+    {
+      "id": "north_gwanghui",
+      "name": "North Gwanghui",
+      "colour": "#ff72cb",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 7568,
+      "centre": [49.3501, -146.2477]
+    },
+    {
+      "id": "north_pyonghak",
+      "name": "North Pyonghak",
+      "colour": "#cc8c55",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 13672,
+      "centre": [49.2934, -150.9213]
+    },
+    {
+      "id": "namcheon",
+      "name": "Namcheon",
+      "colour": "#cccc4b",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 52974,
+      "centre": [48.0369, -148.8379]
+    },
+    {
+      "id": "south_gwanghui",
+      "name": "South Gwanghui",
+      "colour": "#5bfcff",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 25296,
+      "centre": [47.9682, -146.5383]
+    },
+    {
+      "id": "jik_ye",
+      "name": "Jik-ye",
+      "colour": "#cc2c7c",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 21328,
+      "centre": [47.321, -151.0318]
+    },
+    {
+      "id": "jangsan",
+      "name": "Jangsan",
+      "colour": "#cc304f",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 45916,
+      "centre": [46.8792, -153.8627]
+    },
+    {
+      "id": "pyonghak",
+      "name": "Pyonghak",
+      "colour": "#8ccc90",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 42071,
+      "centre": [46.4082, -152.8641]
+    },
+    {
+      "id": "mawuna",
+      "name": "Mawuna",
+      "colour": "#cc4f81",
+      "terrain": ["Hills"],
+      "owner": "AKA",
+      "area": 53755,
+      "centre": [45.5166, -156.953]
+    },
+    {
+      "id": "east_mawuna",
+      "name": "East Mawuna",
+      "colour": "#7dcc2e",
+      "terrain": ["Mountains"],
+      "owner": "AKA",
+      "area": 14400,
+      "centre": [45.0402, -155.5459]
+    },
+    {
+      "id": "yeongye",
+      "name": "Yeongye",
+      "colour": "#cc3b94",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 56192,
+      "centre": [43.7521, -153.163]
+    },
+    {
+      "id": "tumutursat",
+      "name": "Tumutursat",
+      "colour": "#cc9172",
+      "terrain": ["Hills"],
+      "owner": "AKA",
+      "area": 81567,
+      "centre": [43.6884, -158.2372]
+    },
+    {
+      "id": "hanmag",
+      "name": "Hanmag",
+      "colour": "#cc8cc4",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 19359,
+      "centre": [43.6341, -154.8654]
+    },
+    {
+      "id": "east_tumutursat",
+      "name": "East Tumutursat",
+      "colour": "#cc517e",
+      "terrain": ["Mountains"],
+      "owner": "AKA",
+      "area": 10096,
+      "centre": [42.7702, -155.9918]
+    },
+    {
+      "id": "south_hanmag",
+      "name": "South Hanmag",
+      "colour": "#cc5c20",
+      "terrain": ["Mountains"],
+      "owner": "HNM",
+      "area": 1539,
+      "centre": [42.6247, -155.2153]
+    },
+    {
+      "id": "south_jeonggu",
+      "name": "South Jeonggu",
+      "colour": "#62cc4d",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 14283,
+      "centre": [42.1795, -152.6898]
+    },
+    {
+      "id": "kewsiri",
+      "name": "Kewsiri",
+      "colour": "#cc652a",
+      "terrain": ["Hills"],
+      "owner": "AKA",
+      "area": 38507,
+      "centre": [41.8195, -159.849]
+    },
+    {
+      "id": "west_shamochasi",
+      "name": "West Shamochasi",
+      "colour": "#cca95d",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 28368,
+      "centre": [41.192, -153.5348]
+    },
+    {
+      "id": "hanha",
+      "name": "Hanha",
+      "colour": "#ccb9c9",
+      "terrain": ["Plains"],
+      "owner": "HNM",
+      "area": 25239,
+      "centre": [41.1432, -151.7039]
+    },
+    {
+      "id": "central_jugmunics",
+      "name": "Central Jugmunics",
+      "colour": "#cc8c49",
+      "terrain": ["Mountains"],
+      "owner": "AKA",
+      "area": 36661,
+      "centre": [40.9642, -155.126]
+    },
+    {
+      "id": "emusnipkat",
+      "name": "Emusnipkat",
+      "colour": "#c92ecc",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 82639,
+      "centre": [40.7745, -157.3757]
+    },
+    {
+      "id": "menaskar",
+      "name": "Menaskar",
+      "colour": "#60a593",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 91392,
+      "centre": [39.2089, -152.4495]
+    },
+    {
+      "id": "koraru",
+      "name": "Koraru",
+      "colour": "#a0cc6c",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 34027,
+      "centre": [39.1538, -159.6746]
+    },
+    {
+      "id": "aripecan",
+      "name": "Aripecan",
+      "colour": "#cc5a4b",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 53067,
+      "centre": [38.0918, -157.8145]
+    },
+    {
+      "id": "south_jugmunics",
+      "name": "South Jugmunics",
+      "colour": "#cc497b",
+      "terrain": ["Mountains"],
+      "owner": "AKA",
+      "area": 72916,
+      "centre": [37.3876, -155.718]
+    },
+    {
+      "id": "turnama",
+      "name": "Turnama",
+      "colour": "#8f0ea5",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 84748,
+      "centre": [37.02, -152.8638]
+    },
+    {
+      "id": "hicucini",
+      "name": "Hicucini",
+      "colour": "#ccb83b",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 27400,
+      "centre": [35.6876, -156.803]
+    },
+    {
+      "id": "pirkamaw",
+      "name": "Pirkamaw",
+      "colour": "#c2cc5d",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 29678,
+      "centre": [35.6942, -154.2471]
+    },
+    {
+      "id": "sinekiraw",
+      "name": "Sinekiraw",
+      "colour": "#cc7878",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 15732,
+      "centre": [34.7154, -152.6996]
+    },
+    {
+      "id": "seseksuma",
+      "name": "Seseksuma",
+      "colour": "#cc4bb4",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 19740,
+      "centre": [34.1609, -154.7118]
+    },
+    {
+      "id": "retarkotan",
+      "name": "Retarkotan",
+      "colour": "#cc686e",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 31929,
+      "centre": [33.7758, -156.1003]
+    },
+    {
+      "id": "north_konmoni",
+      "name": "North Konmoni",
+      "colour": "#d879d0",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 2380,
+      "centre": [31.9454, -137.9532]
+    },
+    {
+      "id": "tucikur",
+      "name": "Tucikur",
+      "colour": "#66cc89",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 40028,
+      "centre": [31.7824, -153.4431]
+    },
+    {
+      "id": "faakubi",
+      "name": "Faakubi",
+      "colour": "#d8c638",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 21821,
+      "centre": [31.1822, -134.8008]
+    },
+    {
+      "id": "mannakubi",
+      "name": "Mannakubi",
+      "colour": "#d647d8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 10315,
+      "centre": [30.8734, -139.3792]
+    },
+    {
+      "id": "kuugayaa",
+      "name": "Kuugayaa",
+      "colour": "#d888d8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 32194,
+      "centre": [30.6858, -131.6212]
+    },
+    {
+      "id": "kijiridinaga",
+      "name": "Kijiridinaga",
+      "colour": "#63d85d",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 33890,
+      "centre": [30.4344, -135.158]
+    },
+    {
+      "id": "iibijima",
+      "name": "Iibijima",
+      "colour": "#d84e54",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 23401,
+      "centre": [30.1495, -129.3428]
+    },
+    {
+      "id": "uraijima",
+      "name": "Uraijima",
+      "colour": "#d870b4",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 21005,
+      "centre": [29.8351, -131.2337]
+    },
+    {
+      "id": "yamayama_island",
+      "name": "Yamayama Island",
+      "colour": "#a55554",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 930,
+      "centre": [29.4925, -150.7174]
+    },
+    {
+      "id": "akasanijima",
+      "name": "Akasanijima",
+      "colour": "#d8300a",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 2481,
+      "centre": [29.4545, -137.3034]
+    },
+    {
+      "id": "north_iijinoutashi",
+      "name": "North Iijinoutashi",
+      "colour": "#a32f52",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 2212,
+      "centre": [29.3102, -147.9336]
+    },
+    {
+      "id": "koyo_island",
+      "name": "Koyo Island",
+      "colour": "#7bd88f",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 1286,
+      "centre": [28.8809, -124.5246]
+    },
+    {
+      "id": "chiimui",
+      "name": "Chiimui",
+      "colour": "#a56674",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 23627,
+      "centre": [28.8459, -145.9943]
+    },
+    {
+      "id": "surutii",
+      "name": "Surutii",
+      "colour": "#6158d8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 14780,
+      "centre": [28.823, -128.5161]
+    },
+    {
+      "id": "uikeifa",
+      "name": "Uikeifa",
+      "colour": "#4e9cd8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 14990,
+      "centre": [28.7193, -142.0871]
+    },
+    {
+      "id": "gusukunaichi",
+      "name": "Gusukunaichi",
+      "colour": "#a56826",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 25682,
+      "centre": [28.4161, -148.1161]
+    },
+    {
+      "id": "kiotsukeijima",
+      "name": "Kiotsukeijima",
+      "colour": "#d8ab9c",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 14056,
+      "centre": [28.4075, -144.0573]
+    },
+    {
+      "id": "hagiijima",
+      "name": "Hagiijima",
+      "colour": "#5bd838",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 25452,
+      "centre": [27.9033, -145.0865]
+    },
+    {
+      "id": "funasaki",
+      "name": "Funasaki",
+      "colour": "#d8ab52",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 4689,
+      "centre": [27.7209, -125.6665]
+    },
+    {
+      "id": "furusato",
+      "name": "Furusato",
+      "colour": "#d86aa8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 22591,
+      "centre": [25.8507, -124.4219]
+    },
+    {
+      "id": "fujikumo",
+      "name": "Fujikumo",
+      "colour": "#a2a4d8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 15970,
+      "centre": [24.4084, -122.7745]
+    },
+    {
+      "id": "kiyostukawa",
+      "name": "Kiyostukawa",
+      "colour": "#c8d849",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 10878,
+      "centre": [24.2288, -123.7796]
+    },
+    {
+      "id": "matsubiro",
+      "name": "Matsubiro",
+      "colour": "#d87950",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 7833,
+      "centre": [23.5821, -122.2018]
+    },
+    {
+      "id": "junkou",
+      "name": "Junkou",
+      "colour": "#c6ff82",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 12966,
+      "centre": [23.229, -121.0218]
+    },
+    {
+      "id": "midoriyama",
+      "name": "Midoriyama",
+      "colour": "#2fd83d",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 1234,
+      "centre": [22.492, -120.9558]
+    },
+    {
+      "id": "north_utoshima_islands",
+      "name": "North Utoshima Islands",
+      "colour": "#93ffde",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 5036,
+      "centre": [21.8801, -127.0907]
+    },
+    {
+      "id": "toriyama",
+      "name": "Toriyama",
+      "colour": "#d863af",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 823,
+      "centre": [22.3625, -117.3284]
+    },
+    {
+      "id": "kenwara",
+      "name": "Kenwara",
+      "colour": "#61d8b2",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 19674,
+      "centre": [21.1666, -119.3831]
+    },
+    {
+      "id": "iwamoto",
+      "name": "Iwamoto",
+      "colour": "#6aa3d8",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 11791,
+      "centre": [20.5988, -118.0829]
+    },
+    {
+      "id": "inuisuna",
+      "name": "Inuisuna",
+      "colour": "#d89934",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 4765,
+      "centre": [20.0933, -116.1402]
+    },
+    {
+      "id": "kuronagi",
+      "name": "Kuronagi",
+      "colour": "#93d824",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 12624,
+      "centre": [19.5597, -118.1769]
+    },
+    {
+      "id": "yokoshiri",
+      "name": "Yokoshiri",
+      "colour": "#d82b73",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 18221,
+      "centre": [18.2281, -117.6335]
+    },
+    {
+      "id": "funa_islands",
+      "name": "Funa Islands",
+      "colour": "#d8d772",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 764,
+      "centre": [17.4665, -115.3837]
+    },
+    {
+      "id": "nanpowan",
+      "name": "Nanpowan",
+      "colour": "#ff596c",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 685,
+      "centre": [15.93, -115.0875]
+    },
+    {
+      "id": "nerabetsu",
+      "name": "Nerabetsu",
+      "colour": "#d8805d",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 8436,
+      "centre": [15.8282, -115.9289]
+    },
+    {
+      "id": "south_nanpo",
+      "name": "South Nanpo",
+      "colour": "#ffd344",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 14225,
+      "centre": [15.0999, -115.3735]
+    },
+    {
+      "id": "central_utoshima_islands",
+      "name": "Central Utoshima Islands",
+      "colour": "#ffb951",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 2774,
+      "centre": [13.058, -127.7999]
+    },
+    {
+      "id": "south_utoshima_islands",
+      "name": "South Utoshima Islands",
+      "colour": "#5ece5c",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 4710,
+      "centre": [8.3006, -128.2464]
+    },
+    {
+      "id": "kasagar",
+      "name": "Kasagar",
+      "colour": "#2577ce",
+      "terrain": ["Jungle"],
+      "owner": "DAG",
+      "area": 1201,
+      "centre": [-0.8224, -130.6779]
+    },
+    {
+      "id": "bagongmataw",
+      "name": "Bagongmataw",
+      "colour": "#ea79b0",
+      "terrain": ["Jungle"],
+      "owner": "DAG",
+      "area": 1857,
+      "centre": [-6.4197, -132.3367]
+    },
+    {
+      "id": "enkita",
+      "name": "Enkita",
+      "colour": "#896223",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 6497,
+      "centre": [19.6702, -117.371]
+    },
+    {
+      "id": "okukonai",
+      "name": "Okukonai",
+      "colour": "#d8709a",
+      "terrain": ["Plains"],
+      "owner": "AKA",
+      "area": 3616,
+      "centre": [17.1061, -116.6472]
+    },
+    {
+      "id": "besu_islands",
+      "name": "Besu Islands",
+      "colour": "#ffeed3",
+      "terrain": ["Desert"],
+      "owner": "MRD",
+      "area": 621,
+      "centre": [21.5183, -19.6262]
+    },
+    {
+      "id": "ganaan_heartlands",
+      "name": "Ganaan Heartlands",
+      "colour": "#9e8658",
+      "terrain": ["Plains"],
+      "owner": "MRD",
+      "area": 140047,
+      "centre": [20.0797, -14.0037]
+    },
+    {
+      "id": "gallamitri",
+      "name": "Gallamitri",
+      "colour": "#9b2b5c",
+      "terrain": ["Desert"],
+      "owner": "MRD",
+      "area": 63835,
+      "centre": [18.0878, -18.0506]
+    },
+    {
+      "id": "inner_moradzar",
+      "name": "Inner Moradzar",
+      "colour": "#996161",
+      "terrain": ["Desert", "Hills"],
+      "owner": "MRD",
+      "area": 86210,
+      "centre": [17.8611, -11.9892]
+    },
+    {
+      "id": "egen_island",
+      "name": "Egen Island",
+      "colour": "#239b9b",
+      "terrain": ["Plains"],
+      "owner": "MRD",
+      "area": 466,
+      "centre": [17.6973, -20.4518]
+    },
+    {
+      "id": "temisef",
+      "name": "Temisef",
+      "colour": "#73993e",
+      "terrain": ["Desert"],
+      "owner": "MRD",
+      "area": 115193,
+      "centre": [17.5161, -15.8704]
+    },
+    {
+      "id": "tibski",
+      "name": "Tibski",
+      "colour": "#39992f",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 29672,
+      "centre": [15.8581, -20.2081]
+    },
+    {
+      "id": "janees",
+      "name": "Janees",
+      "colour": "#994f6f",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 26825,
+      "centre": [15.6908, -18.8939]
+    },
+    {
+      "id": "seti_islands",
+      "name": "Seti Islands",
+      "colour": "#99588c",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 344,
+      "centre": [15.1427, -23.7375]
+    },
+    {
+      "id": "chuma",
+      "name": "Chuma",
+      "colour": "#52996f",
+      "terrain": ["Desert"],
+      "owner": "JNI",
+      "area": 137128,
+      "centre": [14.1039, -16.0525]
+    },
+    {
+      "id": "sept",
+      "name": "Sept",
+      "colour": "#998157",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 90520,
+      "centre": [13.7828, -19.6694]
+    },
+    {
+      "id": "itsanpo_islands",
+      "name": "Itsanpo Islands",
+      "colour": "#992c8c",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 1172,
+      "centre": [12.8431, -23.7231]
+    },
+    {
+      "id": "ufre",
+      "name": "Ufre",
+      "colour": "#994071",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 50477,
+      "centre": [12.3698, -17.3434]
+    },
+    {
+      "id": "sete",
+      "name": "Sete",
+      "colour": "#99384d",
+      "terrain": ["Hills"],
+      "owner": "JNI",
+      "area": 84196,
+      "centre": [11.5834, -20.2314]
+    },
+    {
+      "id": "mater_island",
+      "name": "Mater Island",
+      "colour": "#85994f",
+      "terrain": ["Plains"],
+      "owner": "JNI",
+      "area": 1047,
+      "centre": [11.3524, -22.4251]
+    },
+    {
+      "id": "adondi",
+      "name": "Adondi",
+      "colour": "#c48d40",
+      "terrain": ["Mountains"],
+      "owner": "WRK",
+      "area": 4310,
+      "centre": [16.5061, -9.9602]
+    },
+    {
+      "id": "north_werikia",
+      "name": "North Werikia",
+      "colour": "#87439e",
+      "terrain": ["Desert", "Hills"],
+      "owner": "WRK",
+      "area": 150994,
+      "centre": [15.584, -13.0002]
+    },
+    {
+      "id": "mountainous_werikia",
+      "name": "Mountainous Werikia",
+      "colour": "#9e9186",
+      "terrain": ["Mountains"],
+      "owner": "WRK",
+      "area": 42030,
+      "centre": [14.3758, -9.8214]
+    },
+    {
+      "id": "urban_werikia",
+      "name": "Urban Werikia",
+      "colour": "#9e5859",
+      "terrain": ["Desert"],
+      "owner": "WRK",
+      "area": 147000,
+      "centre": [12.6387, -12.2614]
+    },
+    {
+      "id": "dagax",
+      "name": "Dagax",
+      "colour": "#83aac4",
+      "terrain": ["Plains"],
+      "owner": "AJB",
+      "area": 20037,
+      "centre": [11.2678, -16.595]
+    },
+    {
+      "id": "dhallacabo",
+      "name": "Dhallacabo",
+      "colour": "#c4954a",
+      "terrain": ["Plains"],
+      "owner": "AJB",
+      "area": 33016,
+      "centre": [9.9005, -16.8316]
+    },
+    {
+      "id": "layinti",
+      "name": "Layinti",
+      "colour": "#ff59b1",
+      "terrain": ["Plains"],
+      "owner": "AJB",
+      "area": 84736,
+      "centre": [9.7537, -15.2281]
+    },
+    {
+      "id": "aqalbari",
+      "name": "Aqalbari",
+      "colour": "#ce895a",
+      "terrain": ["Plains"],
+      "owner": "RGC",
+      "area": 78049,
+      "centre": [9.6918, -18.5331]
+    },
+    {
+      "id": "ramenka_estuary",
+      "name": "Ramenka Estuary",
+      "colour": "#cead8a",
+      "terrain": ["Plains"],
+      "owner": "RGC",
+      "area": 37891,
+      "centre": [9.0334, -20.621]
+    },
+    {
+      "id": "kursidah",
+      "name": "Kursidah",
+      "colour": "#ccb7ce",
+      "terrain": ["Plains"],
+      "owner": "RGC",
+      "area": 30507,
+      "centre": [7.3055, -21.3185]
+    },
+    {
+      "id": "xarbaxa",
+      "name": "Xarbaxa",
+      "colour": "#ce586e",
+      "terrain": ["Plains"],
+      "owner": "RGC",
+      "area": 79124,
+      "centre": [7.2342, -18.9607]
+    },
+    {
+      "id": "lafa",
+      "name": "Lafa",
+      "colour": "#a044ce",
+      "terrain": ["Plains"],
+      "owner": "RGC",
+      "area": 49542,
+      "centre": [6.7941, -17.0618]
+    },
+    {
+      "id": "wauwau",
+      "name": "Wauwau",
+      "colour": "#ccb09b",
+      "terrain": ["Mountains"],
+      "owner": "RKO",
+      "area": 77131,
+      "centre": [9.1891, -9.1994]
+    },
+    {
+      "id": "rorkoth",
+      "name": "Rorkoth",
+      "colour": "#ccbd5f",
+      "terrain": ["Desert"],
+      "owner": "RKO",
+      "area": 257310,
+      "centre": [8.63, -11.4614]
+    },
+    {
+      "id": "mountainous_kattikime_strip",
+      "name": "Mountainous Kattikime Strip",
+      "colour": "#cc6e74",
+      "terrain": ["Desert", "Mountains"],
+      "owner": "CDM",
+      "area": 4291,
+      "centre": [6.3213, -7.6513]
+    },
+    {
+      "id": "wamimal",
+      "name": "Wamimal",
+      "colour": "#ccb382",
+      "terrain": ["Plains"],
+      "owner": "AGL",
+      "area": 97753,
+      "centre": [6.0939, -15.3989]
+    },
+    {
+      "id": "agalur",
+      "name": "Agalur",
+      "colour": "#79cc53",
+      "terrain": ["Plains"],
+      "owner": "AGL",
+      "area": 184105,
+      "centre": [5.1816, -12.9511]
+    },
+    {
+      "id": "kattikime_strip",
+      "name": "Kattikime Strip",
+      "colour": "#7899cc",
+      "terrain": ["Desert"],
+      "owner": "CDM",
+      "area": 23056,
+      "centre": [5.0277, -9.9596]
+    },
+    {
+      "id": "east_cidiama",
+      "name": "East Cidiama",
+      "colour": "#cca866",
+      "terrain": ["Desert", "Hills"],
+      "owner": "CDM",
+      "area": 45248,
+      "centre": [4.607, -7.3006]
+    },
+    {
+      "id": "west_cidiama",
+      "name": "West Cidiama",
+      "colour": "#cc6043",
+      "terrain": ["Desert"],
+      "owner": "CDM",
+      "area": 99642,
+      "centre": [3.93, -9.229]
+    },
+    {
+      "id": "avemul",
+      "name": "Avemul",
+      "colour": "#cc5128",
+      "terrain": ["Plains"],
+      "owner": "URT",
+      "area": 34429,
+      "centre": [5.424, -22.0732]
+    },
+    {
+      "id": "wiirtuu",
+      "name": "Wiirtuu",
+      "colour": "#ccc73d",
+      "terrain": ["Hills"],
+      "owner": "URT",
+      "area": 66038,
+      "centre": [5.2521, -19.7545]
+    },
+    {
+      "id": "lafaadii",
+      "name": "Lafaadii",
+      "colour": "#cc7a7e",
+      "terrain": ["Mountains"],
+      "owner": "URT",
+      "area": 54167,
+      "centre": [4.027, -21.3936]
+    },
+    {
+      "id": "dallaa",
+      "name": "Dallaa",
+      "colour": "#cc1eb7",
+      "terrain": ["Hills"],
+      "owner": "URT",
+      "area": 111186,
+      "centre": [3.5095, -17.1427]
+    },
+    {
+      "id": "didu",
+      "name": "Didu",
+      "colour": "#bd74cc",
+      "terrain": ["Plains"],
+      "owner": "SPK",
+      "area": 50387,
+      "centre": [3.3583, -24.327]
+    },
+    {
+      "id": "gaasu",
+      "name": "Gaasu",
+      "colour": "#7a7dcc",
+      "terrain": ["Mountains"],
+      "owner": "URT",
+      "area": 78166,
+      "centre": [2.6433, -19.814]
+    },
+    {
+      "id": "mukadiimaa",
+      "name": "Mukadiimaa",
+      "colour": "#cc8a9d",
+      "terrain": ["Mountains"],
+      "owner": "URT",
+      "area": 54086,
+      "centre": [2.1502, -23.6413]
+    },
+    {
+      "id": "kubaba",
+      "name": "Kubaba",
+      "colour": "#808ecc",
+      "terrain": ["Plains"],
+      "owner": "SPK",
+      "area": 73379,
+      "centre": [1.1746, -25.367]
+    },
+    {
+      "id": "mulo",
+      "name": "Mulo",
+      "colour": "#cc848f",
+      "terrain": ["Jungle"],
+      "owner": "SPK",
+      "area": 123056,
+      "centre": [0.2147, -22.2563]
+    },
+    {
+      "id": "asmel",
+      "name": "Asmel",
+      "colour": "#cc41a0",
+      "terrain": ["Jungle"],
+      "owner": "SPK",
+      "area": 123591,
+      "centre": [0.2215, -18.7202]
     }
   ]
 }

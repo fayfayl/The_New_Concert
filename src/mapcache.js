@@ -35,7 +35,12 @@
 // 3: adjacency and the border distance field wrap east-west, so provinces
 //    meeting at the map's seam are neighbours and the seam is no longer treated
 //    as a frontier.
-export const CACHE_VERSION = 3;
+// 4: a contact shorter than MIN_BORDER_PX no longer makes two provinces
+//    neighbours, so the adjacency graph is smaller than it was.
+// 5: the label geometry carries the near-links as well. Provinces changing
+//    hands re-block themselves against that graph, and deriving it again at
+//    runtime would mean a pass over every coastal pixel on the map.
+export const CACHE_VERSION = 5;
 export const CACHE_FILE = 'map-cache.bin';
 
 const MAGIC = 0x314d4843;      // "CHM1" read as a little-endian uint32
@@ -112,6 +117,9 @@ export function buildCacheMeta(world, geometry, hash) {
       geo: geometry.geo,
       // A Map does not survive JSON, so the histograms go as entry pairs.
       fit: geometry.fit.map((f) => f && { ...f, hist: [...f.hist] }),
+      // Likewise the near-links, which are a Map of Sets. Province indices, so
+      // they cost a couple of numbers per island rather than a string each.
+      near: [...(geometry.near || [])].map(([ix, set]) => [ix, [...set]]),
     };
   }
   return meta;
@@ -184,11 +192,14 @@ export function worldFromCache(table, cache, indexProvinces) {
     bounds.set(id, { minX, minY, maxX, maxY, n, sx: cx * n, sy: cy * n, cx, cy });
   }
 
+  // Members are left empty here and filled by attachBlockMembers(), so the
+  // restored geometry matches what buildBlocks() would have produced.
   const geometry = meta.labels && {
-    blocks: meta.labels.blocks.map((owner) => ({ owner })),
+    blocks: meta.labels.blocks.map((owner) => ({ owner, members: [] })),
     blockAt: Int32Array.from(meta.labels.blockAt),
     geo: meta.labels.geo,
     fit: meta.labels.fit.map((f) => f && { ...f, hist: new Map(f.hist) }),
+    near: new Map((meta.labels.near || []).map(([ix, list]) => [ix, new Set(list)])),
   };
 
   return {

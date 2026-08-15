@@ -43,9 +43,10 @@ const VERSION = new URL(import.meta.url).search;
 const {
   OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH,
   toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
-  indexProvinces,
+  indexProvinces, attachBlockMembers,
 } = await import(`./mapdata.js${VERSION}`);
 const { CACHE_FILE, hashInputs, unpackCache, worldFromCache } = await import(`./mapcache.js${VERSION}`);
+const { setOwners } = await import(`./ownership.js${VERSION}`);
 
 // ============================================================ 1. data loading
 
@@ -630,7 +631,7 @@ function renderBuffer(world, mode, selected, hovered) {
  * can be affected. Other provinces caught inside the same box are simply
  * recomputed to the values they already had.
  */
-function repaintProvinces(world, mode, selected, hovered, ids) {
+function repaintProvinces(world, mode, selected, hovered, ids, boxes = []) {
   if (!tiles) return renderBuffer(world, mode, selected, hovered);
 
   const t = shadeTable(world, mode, selected, hovered);
@@ -640,14 +641,23 @@ function repaintProvinces(world, mode, selected, hovered, ids) {
 
     // One box at a time rather than one box around them all: two provinces on
     // opposite sides of the map would otherwise union into the whole thing.
-    const x0 = bb.minX, y0 = bb.minY, x1 = bb.maxX + 1, y1 = bb.maxY + 1;
-    for (const tile of tilesOver(x0, y0, x1, y1)) {
-      const lx0 = Math.max(0, x0 - tile.x), ly0 = Math.max(0, y0 - tile.y);
-      const lx1 = Math.min(tile.w, x1 - tile.x), ly1 = Math.min(tile.h, y1 - tile.y);
-      if (lx1 > lx0 && ly1 > ly0) paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1);
-    }
-    refreshOverview(world, x0, y0, x1, y1);
+    repaintBox(world, t, bb.minX, bb.minY, bb.maxX + 1, bb.maxY + 1);
   }
+
+  // Rectangles rather than provinces, for changes that are not one province's
+  // own pixels: an ownership change moves the inland fade for everything within
+  // reach of the border it made or unmade. See ownership.js.
+  for (const box of boxes) repaintBox(world, t, box.x0, box.y0, box.x1, box.y1);
+}
+
+/** Repaints one map rectangle, half-open, and copies it into the overview. */
+function repaintBox(world, t, x0, y0, x1, y1) {
+  for (const tile of tilesOver(x0, y0, x1, y1)) {
+    const lx0 = Math.max(0, x0 - tile.x), ly0 = Math.max(0, y0 - tile.y);
+    const lx1 = Math.min(tile.w, x1 - tile.x), ly1 = Math.min(tile.h, y1 - tile.y);
+    if (lx1 > lx0 && ly1 > ly0) paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1);
+  }
+  refreshOverview(world, x0, y0, x1, y1);
 }
 
 // =================================================================== 4. labels
@@ -949,88 +959,97 @@ function denseRange(f, floor) {
 }
 
 /**
- * Builds every label once, at load. See the four steps at the top of section 4.
+ * Builds every label, at load. See the four steps at the top of section 4.
  *
  * One label per contiguous block, so a polity split across an enclave or an
- * island group gets its name written on each piece separately.
+ * island group gets its name written on each piece separately. The array is
+ * indexed BY BLOCK and holds nulls for blocks with no name, so an ownership
+ * change can replace the entries it affects and leave the rest alone.
  */
 function buildLabels(world, geometry) {
   if (!geometry) return [];
+  return geometry.blocks.map((_, b) => buildLabel(world, geometry, b));
+}
+
+/**
+ * One block's label, or null if it should not have one.
+ *
+ * Indexed by block, and returned one at a time, so a province changing hands
+ * rebuilds the labels of the blocks it touched instead of all of them. Blocks
+ * left empty by such a change have no geometry and land here as null.
+ */
+function buildLabel(world, geometry, b) {
   const { blocks, geo, fit } = geometry;
+  const blk = blocks[b];
+  const g = geo[b], f = fit[b];
+  if (!blk || !g || !f) return null;
 
-  const labels = [];
-  blocks.forEach((blk, b) => {
-    const g = geo[b], f = fit[b];
-    if (!g || !f) return;
+  const text = world.table.polityById.get(blk.owner).name.toUpperCase();
+  const extent = f.tMax - f.tMin;
+  const thickness = 2 * Math.sqrt(f.pp / f.n);          // ~2 sigma across
+  if (extent <= 0 || thickness <= 0) return null;
 
-    const text = world.table.polityById.get(blk.owner).name.toUpperCase();
-    const extent = f.tMax - f.tMin;
-    const thickness = 2 * Math.sqrt(f.pp / f.n);          // ~2 sigma across
-    if (extent <= 0 || thickness <= 0) return;
+  // Skip archipelagos. Scattered islands cover a huge extent with very little
+  // land, so the spine runs mostly over open sea and the name ends up floating
+  // on water. Land per unit of extent tells them apart from real territory.
+  if (g.n / (extent * thickness) < LABEL_MIN_DENSITY) return null;
 
-    // Skip archipelagos. Scattered islands cover a huge extent with very little
-    // land, so the spine runs mostly over open sea and the name ends up floating
-    // on water. Land per unit of extent tells them apart from real territory.
-    if (g.n / (extent * thickness) < LABEL_MIN_DENSITY) return;
+  // STEP 3: the stretch of solid ground the name will cover.
+  const range = denseRange(f, LABEL_DENSITY_FLOOR);
+  if (!range) return null;
+  const [tLo, tHi] = range;
+  const span = tHi - tLo;
+  if (span <= 0) return null;
 
-    // STEP 3: the stretch of solid ground the name will cover.
-    const range = denseRange(f, LABEL_DENSITY_FLOOR);
-    if (!range) return;
-    const [tLo, tHi] = range;
-    const span = tHi - tLo;
-    if (span <= 0) return;
+  // STEP 2: solve the 3x3 normal equations for u = a*t^2 + b*t + c by Cramer's
+  // rule. That quadratic is the spine — the curve the text is set along.
+  const [a2, a1, a0] = solveQuadratic(f) || [0, 0, 0];
 
-    // STEP 2: solve the 3x3 normal equations for u = a*t^2 + b*t + c by Cramer's
-    // rule. That quadratic is the spine — the curve the text is set along.
-    const [a2, a1, a0] = solveQuadratic(f) || [0, 0, 0];
+  // STEP 4. Note which measurement each argument gets: whether stacking is
+  // allowed is judged on `extent`, the block's real shape, while the type is
+  // sized to `span`, the solid part. Judging on `span` would misread a long
+  // thin country as round once denseRange had cut its capes off.
+  const maxLines = extent / thickness < LABEL_WRAP_ASPECT ? LABEL_MAX_LINES : 1;
+  const laid = fitLabel(text, span, thickness, maxLines);
+  if (!laid) return null;
 
-    // STEP 4. Note which measurement each argument gets: whether stacking is
-    // allowed is judged on `extent`, the block's real shape, while the type is
-    // sized to `span`, the solid part. Judging on `span` would misread a long
-    // thin country as round once denseRange had cut its capes off.
-    const maxLines = extent / thickness < LABEL_WRAP_ASPECT ? LABEL_MAX_LINES : 1;
-    const laid = fitLabel(text, span, thickness, maxLines);
-    if (!laid) return;
+  // Only now can the curvature be limited, because the thing that limits it is
+  // the size of the type.
+  //
+  // A curve of radius R crowds the letters on its inner side; they collide once
+  // R approaches the height of the text. So the spine may bend as tightly as
+  // BEND_RADIUS text-heights and no tighter — which on a strongly curved
+  // country usually means no limit at all, and the spine simply follows the
+  // land. Capping it by any fixed fraction of the label's length instead, as
+  // this did before, straightened out exactly the curved countries that most
+  // needed to bend.
+  const radius = BEND_RADIUS * laid.size;
+  const bendLimit = 1 / (2 * Math.max(radius, 1));
+  const bend = clamp(a2, -bendLimit, bendLimit);
 
-    // Only now can the curvature be limited, because the thing that limits it is
-    // the size of the type.
-    //
-    // A curve of radius R crowds the letters on its inner side; they collide once
-    // R approaches the height of the text. So the spine may bend as tightly as
-    // BEND_RADIUS text-heights and no tighter — which on a strongly curved
-    // country usually means no limit at all, and the spine simply follows the
-    // land. Capping it by any fixed fraction of the label's length instead, as
-    // this did before, straightened out exactly the curved countries that most
-    // needed to bend.
-    const radius = BEND_RADIUS * laid.size;
-    const bendLimit = 1 / (2 * Math.max(radius, 1));
-    const bend = clamp(a2, -bendLimit, bendLimit);
+  // Flattening the curve means re-deriving the constant with it.
+  //
+  // t and u are both measured from the block's centre of mass, so the fit has
+  // mean zero, which pins the constant to the curvature: a0 = -a2 * E[t^2].
+  // A parabola bending downwards therefore sits ABOVE the centre at its vertex
+  // and below at its ends — correct, and how it tracks a curved country. But
+  // clamp the curvature and leave a0 alone and the spine keeps an offset only
+  // the original, steeper curve justified: flat AND pushed off the land.
+  const a0Fixed = a0 + (f.s0 ? (a2 - bend) * (f.s2 / f.s0) : 0);
 
-    // Flattening the curve means re-deriving the constant with it.
-    //
-    // t and u are both measured from the block's centre of mass, so the fit has
-    // mean zero, which pins the constant to the curvature: a0 = -a2 * E[t^2].
-    // A parabola bending downwards therefore sits ABOVE the centre at its vertex
-    // and below at its ends — correct, and how it tracks a curved country. But
-    // clamp the curvature and leave a0 alone and the spine keeps an offset only
-    // the original, steeper curve justified: flat AND pushed off the land.
-    const a0Fixed = a0 + (f.s0 ? (a2 - bend) * (f.s2 / f.s0) : 0);
+  // Deliberately no minimum size. A small block just gets small type and stays
+  // hidden until the zoom makes it large enough on screen to read.
+  // Dropping it here instead would mean it never gets a name at any zoom.
 
-    // Deliberately no minimum size. A small block just gets small type and stays
-    // hidden until the zoom makes it large enough on screen to read.
-    // Dropping it here instead would mean it never gets a name at any zoom.
-
-    const L = {
-      lines: laid.lines, size: clamp(laid.size, 0.05, 400),
-      width: laid.width,          // widest line, in ems — see labelOpacity()
-      tMid: (tLo + tHi) / 2,
-      cx: g.cx, cy: g.cy, ux: g.ux, uy: g.uy,
-      a2: bend, a1, a0: a0Fixed,
-    };
-    L.bounds = labelBounds(L, span);
-    labels.push(L);
-  });
-  return labels;
+  const L = {
+    lines: laid.lines, size: clamp(laid.size, 0.05, 400),
+    width: laid.width,          // widest line, in ems — see labelOpacity()
+    tMid: (tLo + tHi) / 2,
+    cx: g.cx, cy: g.cy, ux: g.ux, uy: g.uy,
+    a2: bend, a1, a0: a0Fixed,
+  };
+  L.bounds = labelBounds(L, span);
+  return L;
 }
 
 /**
@@ -1324,6 +1343,91 @@ function glyphBox(g, k, atX, atY, angle) {
  * anywhere, the shapes do not touch. The first two directions are the screen's
  * own axes, the last two the glyph's.
  */
+/**
+ * How much area an upright box and a tilted one share, in square screen pixels.
+ *
+ * Whether they touch at all is not enough to choose a spot by. A name laid
+ * across the middle of one large letter touches exactly as many letters as one
+ * clipping the corner of a single small one, so counting them calls those two
+ * equally good and the first position on the list wins by default — which is
+ * how a name ends up sitting squarely on a letter with clear ground beside it.
+ *
+ * The glyph's four corners are clipped against the box's four edges, one at a
+ * time, and the shoelace formula measures whatever is left. Both shapes are
+ * convex, so the clip is exact.
+ */
+function glyphOverlapArea(b, g) {
+  const ux = g.ax * g.hw, uy = g.ay * g.hw;      // half-width vector, along the glyph
+  const vx = -g.ay * g.hh, vy = g.ax * g.hh;     // half-height vector, across it
+  let poly = [
+    [g.cx - ux - vx, g.cy - uy - vy],
+    [g.cx + ux - vx, g.cy + uy - vy],
+    [g.cx + ux + vx, g.cy + uy + vy],
+    [g.cx - ux + vx, g.cy - uy + vy],
+  ];
+
+  // Signed distance into the box for each of its four edges. Positive is inside.
+  const edges = [
+    (p) => p[0] - b[0], (p) => b[2] - p[0],
+    (p) => p[1] - b[1], (p) => b[3] - p[1],
+  ];
+  for (const depth of edges) {
+    if (poly.length < 3) return 0;
+    const next = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], c = poly[(i + 1) % poly.length];
+      const da = depth(a), dc = depth(c);
+      if (da >= 0) next.push(a);
+      if ((da >= 0) !== (dc >= 0)) {
+        const t = da / (da - dc);                // where the edge crosses
+        next.push([a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t]);
+      }
+    }
+    poly = next;
+  }
+  if (poly.length < 3) return 0;
+
+  let twice = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], c = poly[(i + 1) % poly.length];
+    twice += a[0] * c[1] - c[0] * a[1];
+  }
+  return Math.abs(twice) / 2;
+}
+
+/** Is this screen point inside a tilted glyph box? */
+function pointInGlyph(x, y, g) {
+  const dx = x - g.cx, dy = y - g.cy;
+  return Math.abs(dx * g.ax + dy * g.ay) <= g.hw && Math.abs(dy * g.ax - dx * g.ay) <= g.hh;
+}
+
+/**
+ * What fraction of an upright box the glyphs cover, 0 to 1.
+ *
+ * Sampled on a grid, so glyph boxes overlapping each other are counted once.
+ * The glyphs are filtered to the ones that reach the box before any sampling,
+ * which is what keeps this affordable with every letter on screen to consider.
+ */
+function coveredFraction(b, glyphs) {
+  if (!glyphs || !glyphs.length) return 0;
+  const w = b[2] - b[0], h = b[3] - b[1];
+  if (w <= 0 || h <= 0) return 0;
+
+  const near = glyphs.filter((g) => boxHitsGlyph(b, g));
+  if (!near.length) return 0;
+
+  const N = COVERAGE_SAMPLES;
+  let inside = 0;
+  for (let iy = 0; iy < N; iy++) {
+    const y = b[1] + h * (iy + 0.5) / N;
+    for (let ix = 0; ix < N; ix++) {
+      const x = b[0] + w * (ix + 0.5) / N;
+      if (near.some((g) => pointInGlyph(x, y, g))) inside++;
+    }
+  }
+  return inside / (N * N);
+}
+
 function boxHitsGlyph(b, g) {
   const bx = (b[0] + b[2]) / 2, by = (b[1] + b[3]) / 2;
   const bhw = (b[2] - b[0]) / 2, bhh = (b[3] - b[1]) / 2;
@@ -1338,25 +1442,31 @@ function boxHitsGlyph(b, g) {
 }
 
 /**
- * Draws the polity names.
+ * Draws the polity names, or with `measure` set, works out where they would go
+ * without drawing any of it.
  *
- * `boxes`, when given, is filled with the screen rectangle of every glyph drawn,
- * so that the city names placed afterwards can be kept off them. One box per
- * GLYPH rather than one per name: a country name zoomed in is enormous and
+ * `boxes`, when given, is filled with the screen rectangle of every glyph, so
+ * that the cities drawn UNDERNEATH can see what is about to cross them. One box
+ * per GLYPH rather than one per name: a country name zoomed in is enormous and
  * mostly air, and reserving the whole run of it would fence off a swathe of map
  * that a city name could have sat in quite happily between two letters.
  */
-function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
-  ctx.save();
+function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null, measure = false) {
+  // In measure mode nothing is rasterised: the same walk runs, every glyph is
+  // placed exactly as it will be, and only the boxes come out. That is what
+  // lets the cities be drawn underneath and still know what is coming.
+  if (!measure) ctx.save();
   // The glyphs arrive as bitmaps drawn a few percent off their baked size, so
   // they need smoothing — unlike the map, which drawView deliberately draws with
   // it off once zoomed past 1:1 to keep province edges as hard pixel steps.
-  ctx.imageSmoothingEnabled = true;
+  if (!measure) ctx.imageSmoothingEnabled = true;
 
   const s = view.scale;
   const dimming = labelDimming();
 
   for (const L of labels) {
+    if (!L) continue;              // a block with no name, or one emptied by a change
+
     // Off screen, and so not worth measuring, rotating, stroking or filling a
     // single glyph of. The caller has already translated by dx for this copy of
     // the map, so that shift has to be undone to compare against the window.
@@ -1383,7 +1493,7 @@ function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
 
     // The halo and body are already in the bitmap, so the label's opacity is now
     // one value on the whole mark rather than two on its parts.
-    ctx.globalAlpha = alpha;
+    if (!measure) ctx.globalAlpha = alpha;
 
     const n = L.lines.length;
     for (let li = 0; li < n; li++) {
@@ -1441,13 +1551,15 @@ function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
           const { x, y, angle } = spinePoint(L, t, across);
           const atX = x * view.scale + view.x;
           const atY = y * view.scale + view.y;
-          ctx.save();
-          ctx.translate(atX, atY);
-          ctx.rotate(angle);
-          // One blit of a finished picture, where this used to be a glyph path
-          // built, stroked and filled from scratch at a size never seen before.
-          ctx.drawImage(g.canvas, -g.ox * k, -g.oy * k, g.w * k, g.h * k);
-          ctx.restore();
+          if (!measure) {
+            ctx.save();
+            ctx.translate(atX, atY);
+            ctx.rotate(angle);
+            // One blit of a finished picture, where this used to be a glyph path
+            // built, stroked and filled from scratch at a size never seen before.
+            ctx.drawImage(g.canvas, -g.ox * k, -g.oy * k, g.w * k, g.h * k);
+            ctx.restore();
+          }
 
           if (boxes) boxes.push(glyphBox(g, k, atX, atY, angle));
         }
@@ -1455,7 +1567,7 @@ function drawLabels(ctx, labels, cssW, cssH, dx, boxes = null) {
       }
     }
   }
-  ctx.restore();
+  if (!measure) ctx.restore();
 }
 
 /**
@@ -1777,19 +1889,29 @@ function drawView() {
     drawSelectionRing(ctx, state, 1);
     if (state.fade) drawSelectionRing(ctx, state.fade, fadeStrength());
 
-    // Country names first, then cities over them. A country name is a huge,
-    // sparse thing spread across a whole territory and can afford to be crossed;
-    // a city name is small and pinned to one point, and is unreadable the moment
-    // anything lands on it. Where the two meet, the city has to win.
-    // Collected only when there are city names to keep off them. Zoomed out
-    // there are dozens of country names on screen and no city names at all, and
-    // measuring every glyph of them for nobody is work worth not doing.
-    const wantBoxes = state.showCities && state.showLabels && state.world.labels
+    // Cities UNDER the country names. A country name belongs to the land it is
+    // written across, and a city sits on that land, so the name passing over it
+    // is the right way round. A city buried by one leaves the map rather than
+    // fighting for the space: see CITY_BLOCKED_AT.
+    //
+    // Drawing them in that order means the country names have to be MEASURED
+    // before the cities are drawn and DRAWN after, so drawLabels runs twice: the
+    // first pass rasterises nothing and only reports where the glyphs land.
+    //
+    // A selection turns all of that around. The country names stand back to a
+    // fifth of their strength, and the order goes with them: the cities come out
+    // on top, keep their names, and take their natural positions, because the
+    // whole reason for standing the names back is to read what is under them.
+    const showNames = state.showLabels && state.world.labels;
+    const wantBoxes = state.showCities && showNames && !state.selected
       && (cityFade(F_CITY_NAME) > 0.004 || cityFade(F_CAPITAL_NAME) > 0.004);
     const labelBoxes = wantBoxes ? [] : null;
 
-    if (state.showLabels && state.world.labels) drawLabels(ctx, state.world.labels, cssW, cssH, dx, labelBoxes);
-    if (state.showCities) drawCities(ctx, cssW, cssH, dx, labelBoxes);
+    if (labelBoxes) drawLabels(ctx, state.world.labels, cssW, cssH, dx, labelBoxes, true);
+
+    const cityLayer = () => { if (state.showCities) drawCities(ctx, cssW, cssH, dx, labelBoxes); };
+    const nameLayer = () => { if (showNames) drawLabels(ctx, state.world.labels, cssW, cssH, dx, null); };
+    if (state.selected) { nameLayer(); cityLayer(); } else { cityLayer(); nameLayer(); }
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -1836,6 +1958,29 @@ const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
 const CAPITAL_NAME_PX = 13;
 const CITY_NAME_GAP = 2;            // clearance between an icon and its name
 const CITY_NAME_PAD = 2;            // breathing room when testing for overlaps
+
+// How much of a city's ICON a country name may cover before the city drops off
+// the map entirely, dot and name together.
+//
+// The country names are drawn over the cities, so past some point the dot is no
+// longer really on the map: it is under a letter, showing as a few stray pixels
+// around the edges of one. That reads as dirt on the letter rather than as a
+// city, so it goes, and the name with it. The icon is what is tested rather
+// than the name, because the icon is the thing that is fixed in place — a name
+// has eight positions to try and can usually find one, while a dot in the
+// middle of a letter is stuck there.
+//
+// Nothing is lost by it. Selecting the province stands the country names back,
+// and everything under them returns.
+const CITY_BLOCKED_AT = 0.85;
+
+// Resolution of that test, per side. Coverage is SAMPLED rather than summed
+// from the glyph rectangles because those overlap each other: two letters
+// crossing the same dot would each report their share of it and the total would
+// come out over the true figure, which on a threshold matters. 8x8 puts the
+// answer within about a percent and a half, and only the glyphs that reach the
+// icon at all are ever sampled.
+const COVERAGE_SAMPLES = 8;
 
 // Deliberately the inverse of the polity labels: light text on a dark halo,
 // where a country name is dark text on a light one. Two kinds of name on the
@@ -1913,20 +2058,24 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
   // one of these, because the thing it is colliding with was itself placed by
   // this same pass and the map has room.
   //
-  // SOFT: the letters of the country names underneath. A city sits where its
-  // city is, and if a country name happens to run straight through that spot
-  // then no amount of shuffling will help. Insisting would mean a city with no
-  // name at all, which is a worse outcome than a name crossing a letter — a
-  // country name is long and can spare one, while a city name is the only thing
-  // identifying the dot it belongs to.
+  // SOFT: the letters of the country names, which are drawn over all of this.
+  // A city sits where its city is, so if a country name runs straight through
+  // that spot no amount of shuffling will help, and the least covered position
+  // is taken instead. The city that is genuinely buried has already dropped out
+  // above, at CITY_BLOCKED_AT, so anything still here is worth naming.
   const placed = [];
   const free = (b, own) => !placed.some((p) => p !== own && hits(b, p));
   const clearOfNames = (b) => !labelBoxes || !labelBoxes.some((g) => boxHitsGlyph(b, g));
 
   // How badly a spot sits on the country names, for when none of them is clear.
-  // Counted in letters covered, so the least bad spot can be chosen rather than
-  // simply falling back to the first one on the list.
-  const namesHit = (b) => (labelBoxes ? labelBoxes.reduce((n, g) => n + (boxHitsGlyph(b, g) ? 1 : 0), 0) : 0);
+  // Measured as the AREA covered, not the number of letters touched: those are
+  // very different questions once the letters are large, and the second one
+  // cannot tell a name laid across the middle of a letter from one clipping its
+  // corner. The cheap hit test comes first, so the area is only worked out for
+  // the few glyphs a spot actually reaches.
+  const namesHit = (b) => (labelBoxes
+    ? labelBoxes.reduce((a, g) => a + (boxHitsGlyph(b, g) ? glyphOverlapArea(b, g) : 0), 0)
+    : 0);
 
   ctx.save();
   ctx.imageSmoothingEnabled = true;
@@ -1952,12 +2101,21 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
 
     const h = c.capital ? CAPITAL_ICON_PX : CITY_ICON_PX;
     const w = Math.round(h * (icon.width / icon.height));
+
+    // Buried under a country name, so it is not on the map at all: no dot, no
+    // name, and no space reserved, since a marker that is not drawn is not
+    // something another city's name has to keep clear of. The icon's own
+    // rectangle is measured, without the padding below, because the question is
+    // about the mark itself and not the room around it.
+    if (coveredFraction([sx - w / 2, sy - h / 2, sx + w / 2, sy + h / 2], labelBoxes) >= CITY_BLOCKED_AT) continue;
+
     ctx.globalAlpha = iconA[k];
     ctx.drawImage(icon, Math.round(sx - w / 2), Math.round(sy - h / 2), w, Math.round(h));
 
     const own = [sx - w / 2 - CITY_NAME_PAD, sy - h / 2 - CITY_NAME_PAD,
     sx + w / 2 + CITY_NAME_PAD, sy + h / 2 + CITY_NAME_PAD];
     placed.push(own);
+
     if (nameA[k] > 0.004 && c.name) named.push({ c, k, sx, sy, w, h, own });
   }
 
@@ -1971,7 +2129,7 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
     const half = ctx.measureText(c.name).width / 2;
 
     // Every spot that clears the dots and the names already placed, in order of
-    // preference. That much is not negotiable; the country names below are.
+    // preference. That much is not negotiable; the country names over them are.
     const open = [];
     for (const spot of CITY_NAME_SPOTS) {
       const [ox, oy] = spot(w, h, half, px);
@@ -2238,6 +2396,8 @@ const state = {
 let bufferDirty = true;               // EVERY province changed: repaint the whole buffer
 let viewDirty = true;                 // only the pan/zoom changed: re-blit alone will do
 const dirtyProvinces = new Set();     // just these changed: repaint their boxes only
+const dirtyBoxes = [];                // and these map rectangles, for changes that are not
+// one province's own pixels — see changeOwners()
 
 const invalidateBuffer = () => { bufferDirty = true; };
 const invalidateView = () => { viewDirty = true; els.zoomLevel.textContent = `${Math.round(view.scale * 100)}%`; };
@@ -2331,13 +2491,15 @@ function frame() {
       perf.fullRepaints++;
       bufferDirty = false;
       dirtyProvinces.clear();   // the full repaint covered them
+      dirtyBoxes.length = 0;
       viewDirty = true;         // new buffer contents always need putting on screen
-    } else if (dirtyProvinces.size) {
+    } else if (dirtyProvinces.size || dirtyBoxes.length) {
       const t0 = performance.now();
-      repaintProvinces(state.world, state.mode, state.selected, state.hovered, dirtyProvinces);
+      repaintProvinces(state.world, state.mode, state.selected, state.hovered, dirtyProvinces, dirtyBoxes);
       perf.paint = ease(perf.paint, performance.now() - t0);
       perf.partRepaints++;
       dirtyProvinces.clear();
+      dirtyBoxes.length = 0;
       viewDirty = true;
     }
     if (viewDirty) {
@@ -2436,6 +2598,42 @@ function select(id) {
 
 /** A province's neighbour ids, or nothing at all when `id` is null. */
 const neighboursOf = (id) => (id && state.world.adjacency.get(id)) || [];
+
+/* ------------------------------------------- provinces changing hands
+ *
+ * ownership.js does the work and reports what it disturbed. Two parts are left
+ * here because they need the page: a label has to be fitted against measured
+ * type, and a repaint has to go through the dirty flags so that a hundred
+ * provinces changing at once still costs one repaint on the next frame.
+ */
+
+/**
+ * Hands provinces to new owners.
+ *
+ * `changes` is an iterable of [provinceId, polityId]. Returns true if anything
+ * actually moved. Events and the AI will call this; for now the console does,
+ * through window.game.
+ */
+function changeOwners(changes) {
+  const w = state.world;
+  if (!w) return false;
+
+  const result = setOwners(w, w.geometry, changes);
+  if (!result) return false;
+
+  // Only the blocks that were regrouped. Every other name on the map keeps the
+  // label it already had, down to the glyph.
+  for (const b of result.blocks) w.labels[b] = buildLabel(w, w.geometry, b);
+  dirtyBoxes.push(...result.boxes);
+
+  // Both of these show the owner, so they are stale if what they are describing
+  // is one of the provinces that moved.
+  if (state.selected && result.changed.includes(state.selected)) {
+    updateCard();
+    updatePanel();
+  }
+  return true;
+}
 
 const swatch = (rgb) => `<span class="swatch" style="background: rgb(${rgb})"></span>`;
 
@@ -2653,7 +2851,7 @@ function updatePanel() {
 
 // Bumped whenever this file is edited, and shown in the debug menu. If what is
 // on screen does not match what is in the file, this is how you find out.
-const BUILD = 'arc-spacing';
+const BUILD = 'v0.5-indev';
 
 const READOUT_MS = 250;    // refresh rate of the live numbers; per-frame DOM writes are wasteful
 let readoutAt = 0;
@@ -2713,7 +2911,7 @@ function showStats(w) {
     statRow('Borders', edges / 2) +
     statRow('Coastal', w.coastal.size) +
     statRow('Polities', w.table.polities.length - 1) +
-    statRow('Labels', w.labels.length) +
+    statRow('Labels', `${w.labels.filter(Boolean).length} / ${w.labels.length} blocks`) +
     statRow('Chunks', `${tiles.cols} &times; ${tiles.rows} @ ${TILE}px`) +
     statRow('Overview', `${overview.canvas.width} &times; ${overview.canvas.height}`) +
     statRow('Cities', w.cities.length
@@ -2934,6 +3132,12 @@ async function init() {
     geometry = computeLabelGeometry(world);
   }
 
+  // Which provinces are in which block, listed per block. A cache restore has
+  // the mapping but not the lists, so both paths are finished here rather than
+  // in either branch. Ownership changes regroup blocks from these.
+  if (geometry) attachBlockMembers(geometry);
+  world.geometry = geometry;
+
   world.satellite = satellite;
   world.cities = cities?.cities ?? [];
   world.cityIcons = { city: cityIcon, capital: capitalIcon };
@@ -2970,6 +3174,16 @@ async function init() {
   // frame() re-arms itself on the way out, so this starts the loop too.
   frame();
   openStartMenu();
+
+  // The only way to move a province at the moment. Events and the AI will call
+  // changeOwners() directly; this is the same thing from the console:
+  //   game.setOwner('norrhus', 'FNA')
+  //   game.setOwners([['norrhus', 'FNA'], ['rodtfjell', 'FNA']])
+  window.game = {
+    setOwner: (province, owner) => changeOwners([[province, owner]]),
+    setOwners: changeOwners,
+    world: () => state.world,
+  };
 }
 
 /**
@@ -2994,14 +3208,63 @@ function openStartMenu() {
   };
   enter.addEventListener('click', dismiss);
 
+  /* The panels inside the menu: the changelog and the about box, closed until
+   * asked for. A button names the one it opens with data-dialog, so another
+   * panel is a button and some markup and needs nothing here.
+   */
+  let openedBy = null;                    // the button to give the focus back to
+  const openDialog = () => menu.querySelector('.start-dialog.open');
+
+  const setDialog = (dialog, open) => {
+    if (!dialog) return;
+    dialog.classList.toggle('open', open);
+    dialog.setAttribute('aria-hidden', String(!open));
+    // Focus follows what is on top, so the keys below act on the thing being
+    // looked at, and closing puts it back where it came from.
+    if (open) dialog.querySelector('.dialog-close')?.focus();
+    else openedBy?.focus();
+  };
+
+  for (const button of menu.querySelectorAll('button[data-dialog]')) {
+    button.addEventListener('click', () => {
+      openedBy = button;
+      setDialog(document.getElementById(button.dataset.dialog), true);
+    });
+  }
+
+  for (const dialog of menu.querySelectorAll('.start-dialog')) {
+    dialog.querySelector('.dialog-close')?.addEventListener('click', () => setDialog(dialog, false));
+    // Anywhere off the panel. The panel stops the click reaching the scrim, so
+    // a click inside it does nothing.
+    dialog.addEventListener('click', (ev) => { if (ev.target === dialog) setDialog(dialog, false); });
+  }
+
   // Enter and Escape both work, but only while the menu is up — afterwards
   // Escape belongs to clearing the selection.
+  //
+  // While a panel is open they belong to IT, and Escape closes the panel rather
+  // than dismissing the menu underneath. Otherwise reading the changelog and
+  // pressing Escape to put it away would drop you into the map.
   window.addEventListener('keydown', (ev) => {
     if (menu.classList.contains('gone')) return;
-    if (ev.key === 'Enter' || ev.key === 'Escape' || ev.key === ' ') {
+    if (ev.key !== 'Enter' && ev.key !== 'Escape' && ev.key !== ' ') return;
+
+    const dialog = openDialog();
+    if (dialog) {
+      if (ev.key !== 'Escape') return;      // leave Enter and Space to whatever has the focus
       ev.preventDefault();
-      dismiss();
+      setDialog(dialog, false);
+      return;
     }
+
+    // A focused button keeps its own keys, or Enter on the Changelog button
+    // would open the changelog and start the game in the same press. Escape is
+    // not a button's key, so it still dismisses whatever has the focus.
+    if (ev.key !== 'Escape' && document.activeElement?.tagName === 'BUTTON'
+      && document.activeElement !== enter) return;
+
+    ev.preventDefault();
+    dismiss();
   });
 }
 
