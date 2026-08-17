@@ -40,7 +40,12 @@
 // 5: the label geometry carries the near-links as well. Provinces changing
 //    hands re-block themselves against that graph, and deriving it again at
 //    runtime would mean a pass over every coastal pixel on the map.
-export const CACHE_VERSION = 5;
+// 6: provinces can carry an occupier, and everything drawn reads that in place
+//    of the owner, so the label blocks and the distance field are built from a
+//    different partition than before.
+// 7: the distance field separates occupied ground from the occupier's own, so
+//    the front between them is a frontier. See frontierKeyOf in mapdata.js.
+export const CACHE_VERSION = 7;
 export const CACHE_FILE = 'map-cache.bin';
 
 const MAGIC = 0x314d4843;      // "CHM1" read as a little-endian uint32
@@ -70,7 +75,9 @@ export function hashBytes(bytes, seed = 0x811c9dc5) {
  */
 export function hashInputs(pngBytes, raw) {
   const parts = [String(raw.oceanColour)];
-  for (const p of raw.provinces || []) parts.push(`${p.id}|${p.colour}|${p.owner}`);
+  // Occupier is in here because it decides what the map is coloured, so a change
+  // to it has to invalidate a cache built before it.
+  for (const p of raw.provinces || []) parts.push(`${p.id}|${p.colour}|${p.owner}|${p.occupier ?? ''}`);
   const text = new TextEncoder().encode(parts.join(';'));
   return hashBytes(text, hashBytes(pngBytes));
 }

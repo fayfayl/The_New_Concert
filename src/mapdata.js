@@ -280,7 +280,7 @@ export function ownerOrdinals(atIndex) {
   const ownerAt = new Int32Array(atIndex.length).fill(-1);
   const ordinal = new Map();
   for (let ix = 1; ix < atIndex.length; ix++) {
-    const owner = atIndex[ix].owner;
+    const owner = frontierKeyOf(atIndex[ix]);
     if (!ordinal.has(owner)) ordinal.set(owner, ordinal.size);
     ownerAt[ix] = ordinal.get(owner);
   }
@@ -492,8 +492,93 @@ export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
 /** The owner id that means nobody. Land holding it is never labelled. */
 export const UNOWNED = 'NONE';
 
+/**
+ * Who holds the ground: the occupier where there is one, the owner otherwise.
+ *
+ * `owner` is the de jure owner and stays put under occupation, since it is what a
+ * peace treaty transfers and what a claim is measured against. Everything DRAWN
+ * reads this instead, because a political map shows who is in control. So an
+ * occupied province takes the occupier's colour, sits inside the occupier's
+ * border, and counts toward the occupier's name.
+ */
+export const controllerOf = (p) => p.occupier || p.owner;
+
+/**
+ * What decides whether two touching provinces are separated by a frontier.
+ *
+ * Not the same question as who holds the ground. Fatiras is held by Vosennac and
+ * so is Marche de Fatiras, so `controllerOf` gives both the same answer and the
+ * line between them would be drawn as an internal subdivision. It is not one:
+ * one is Voseni soil and the other is Cunarian soil under occupation, and the
+ * front between them is exactly where the map should show a border.
+ *
+ * So occupied ground keys on the pair, occupier and owner both. Two occupations
+ * by the same power over different countries separate for the same reason.
+ */
+export const frontierKeyOf = (p) => (p.occupier && p.occupier !== p.owner
+  ? `${p.occupier}>${p.owner}`
+  : controllerOf(p));
+
 /** Whether a province belongs in a label block at all. */
-export const isLabelled = (world, p) => p.owner !== UNOWNED && world.table.polityById.has(p.owner);
+export const isLabelled = (world, p) => {
+  const held = controllerOf(p);
+  return held !== UNOWNED && world.table.polityById.has(held);
+};
+
+/**
+ * The polity at the top of a chain of `parent` links, which is the country a
+ * province is really part of.
+ *
+ * `parent` means a constituent of one realm: Fellnor and Avanta are two halves
+ * of one empire, so no frontier runs between them and one name covers both.
+ * `suzerain` is deliberately NOT followed, being the looser hold a power has
+ * over a colony — a colony is its own country on the map, drawn with its own
+ * frontier and its own name, whoever it answers to.
+ *
+ * The walk is bounded rather than trusting the data, since a parent loop
+ * written by hand would otherwise hang the page at load.
+ */
+export function realmOf(table, id) {
+  let at = id;
+  for (let step = 0; step < 8; step++) {
+    const parent = table.polityById.get(at)?.parent;
+    if (!parent || parent === at || !table.polityById.has(parent)) return at;
+    at = parent;
+  }
+  console.warn(`polity "${id}" sits in a parent loop; treating "${at}" as its realm`);
+  return at;
+}
+
+/**
+ * Connected pieces of a set of province indices, over the labelling graph.
+ *
+ * Shared by the label blocks, by a realm's blocks, and by ownership.js when a
+ * province leaving a block cuts what is left in two — all the same question.
+ */
+export function componentsOf(world, near, members) {
+  const inSet = new Set(members);
+  const seen = new Set();
+  const parts = [];
+
+  for (const start of members) {
+    if (seen.has(start)) continue;
+    seen.add(start);
+    const part = [];
+    const stack = [start];
+    while (stack.length) {
+      const ix = stack.pop();
+      part.push(ix);
+      for (const id of labelNeighbours(world, near, world.atIndex[ix].id)) {
+        const q = world.byId.get(id);
+        if (!q || seen.has(q.index) || !inSet.has(q.index)) continue;
+        seen.add(q.index);
+        stack.push(q.index);
+      }
+    }
+    parts.push(part);
+  }
+  return parts;
+}
 
 /**
  * A province's neighbours for LABELLING, which is its real neighbours plus the
@@ -568,12 +653,12 @@ export function buildBlocks(world, near) {
     while (stack.length) {
       const id = stack.pop();
       for (const q of labelNeighbours(world, near, id)) {
-        if (blockOf.has(q) || byId.get(q).owner !== p.owner) continue;
+        if (blockOf.has(q) || controllerOf(byId.get(q)) !== controllerOf(p)) continue;
         blockOf.set(q, n);
         stack.push(q);
       }
     }
-    blocks.push({ owner: p.owner, members: [] });
+    blocks.push({ owner: controllerOf(p), members: [] });
   }
   if (!blocks.length) return null;
 
@@ -636,6 +721,103 @@ export function computeLabelGeometry(world) {
   // coastal pixel on the map, and an ownership change needs the same graph the
   // blocks were built from to decide what merges with what.
   return { blocks, blockAt, geo, fit, near };
+}
+
+/**
+ * Blocks for the REALMS, alongside the blocks for their members.
+ *
+ * A realm made of several polities has two names that could be written across
+ * it — the empire's, and each kingdom's — and which one belongs on the map
+ * depends on how much of the screen the country fills. So both are built, and
+ * §4 of main.js decides between them by size, the same measure that decides
+ * whether any label is worth drawing at all.
+ *
+ * Blocks are only added for a realm that HAS members below it. A country whose
+ * polity is its own realm, which is nearly all of them, already had its label.
+ *
+ * Cheap despite adding a second layer: the geometry is measured over the member
+ * provinces' bounding boxes rather than over the map, and only a handful of
+ * countries on the map are composite.
+ *
+ * Rebuilt rather than updated when provinces change hands, since which provinces
+ * a realm holds is exactly what changes then. Returns the blocks touched.
+ */
+export function addRealmBlocks(world, geometry) {
+  if (!geometry) return [];
+
+  // Empty the ones from last time and keep their slots. A block id indexes into
+  // three arrays and into the caller's labels, so growing the arrays on every
+  // ownership change would leak a slot each time.
+  const spare = [];
+  geometry.blocks.forEach((blk, b) => {
+    if (!blk) return;
+    if (blk.level === 'realm') {
+      blk.members = [];
+      geometry.geo[b] = null;
+      geometry.fit[b] = null;
+      spare.push(b);
+    } else {
+      blk.realmBlock = undefined;
+    }
+  });
+
+  const byRealm = new Map();
+  for (const p of world.byId.values()) {
+    if (!isLabelled(world, p)) continue;
+    const held = controllerOf(p);
+    const realm = realmOf(world.table, held);
+    if (realm === held) continue;                 // answers to nobody
+    if (!byRealm.has(realm)) byRealm.set(realm, []);
+    byRealm.get(realm).push(p.index);
+  }
+
+  const touched = [];
+  const realmBlockAt = new Map();
+  for (const [realm, members] of byRealm) {
+    // One block per contiguous piece, as for any other block: a realm split
+    // across a sea gets its name written on each half.
+    for (const part of componentsOf(world, geometry.near, members)) {
+      let b;
+      if (spare.length) b = spare.pop();
+      else {
+        b = geometry.blocks.length;
+        geometry.blocks.push(null);
+        geometry.geo.push(null);
+        geometry.fit.push(null);
+      }
+      geometry.blocks[b] = { owner: realm, members: part, level: 'realm' };
+      for (const ix of part) realmBlockAt.set(ix, b);
+      touched.push(b);
+    }
+  }
+
+  // Each member block is pointed at the realm block covering it, so its label
+  // knows whose name is standing in for its own.
+  for (const blk of geometry.blocks) {
+    if (!blk || blk.level === 'realm' || !blk.members.length) continue;
+    const b = realmBlockAt.get(blk.members[0]);
+    if (b !== undefined) blk.realmBlock = b;
+  }
+
+  computeBlockGeometry(world, geometry, touched);
+
+  // How tall the realm's ground is, in map pixels, which is what decides when
+  // its name gives way to its members'. Taken over the member provinces only,
+  // so a colony half a world away does not stretch it: colonies hang off
+  // `suzerain` and are never in a realm block to begin with.
+  for (const b of touched) {
+    const blk = geometry.blocks[b];
+    let top = Infinity, bottom = -Infinity;
+    for (const ix of blk.members) {
+      const bb = world.bounds.get(world.atIndex[ix].id);
+      if (!bb) continue;
+      if (bb.minY < top) top = bb.minY;
+      if (bb.maxY > bottom) bottom = bb.maxY;
+    }
+    blk.spanY = bottom >= top ? bottom - top + 1 : 0;
+  }
+
+  return touched.concat(spare);          // the leftovers lose their labels
 }
 
 /**

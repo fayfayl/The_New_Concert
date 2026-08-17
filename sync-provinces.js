@@ -600,13 +600,15 @@ if (stale.length) {
 // this province could ever hold. Both are needed and neither implies the other —
 // a province with no road may be one that has never had one built, or one that
 // can never have one. The card shows them as "0/0" for that reason.
-const PAIRED = ['road', 'rail', 'supplyHub', 'fortification', 'electricity', 'antiAir', 'buildingSlots'];
+const PAIRED = ['road', 'airBase', 'supplyHub', 'fortification', 'electricity', 'antiAir', 'buildingSlots'];
 
+// Rail is not here. It is built county by county and has no level, so it lives
+// with the counties rather than as a province pair.
 const BLANK_STATS = {
   claims: [],            // polity ids with a claim on this province
   population: 0,
   road: [0, 0],
-  rail: [0, 0],
+  airBase: [0, 0],
   supplyHub: [0, 0],
   fortification: [0, 0],
   electricity: [0, 0],

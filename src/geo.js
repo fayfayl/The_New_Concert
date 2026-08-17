@@ -144,3 +144,87 @@ export function distanceKm(a, b, radius = EARTH_RADIUS_KM) {
 }
 
 export const toDegrees = (rad) => (rad * 180) / Math.PI;
+
+// ================================================================ where the sun is
+//
+// Chron matches Earth in every planetary respect that bears on this: the same
+// axial tilt and the same year. Its landmass differs and its Bond albedo is
+// 0.363 rather than Earth's 0.306, and neither moves the terminator. Albedo
+// changes how much of the light is thrown back, not where the light falls.
+
+export const AXIAL_TILT = (23.44 * Math.PI) / 180;
+export const YEAR_DAYS = 365.2422;
+
+/**
+ * Where the drawn map sits on the globe.
+ *
+ * `provinces.png` is a band of a 6000 by 3000 equirectangular globe and it is
+ * NOT centred on it. Measured by matching province colours between
+ * `provinces.png` and `true_area.png`: all 1079 provinces present in both put
+ * the band's first row exactly 100 rows below the north pole.
+ *
+ * So the drawn map runs from 84.00 degrees north to 74.94 degrees south, and the
+ * equator falls on drawn row 1400. Nothing else in the code knew this, because
+ * nothing else needed a latitude for a drawn row.
+ */
+export const MAP_NORTH_ROW = 100;
+export const MAP_GLOBE_HEIGHT = 3000;
+
+/** Latitude of a drawn row of `provinces.png`, in radians. */
+export const mapLatAt = (y) =>
+  Math.PI / 2 - Math.PI * ((y + MAP_NORTH_ROW) / MAP_GLOBE_HEIGHT);
+
+/** Longitude of a drawn column, in radians, -π at the left edge. */
+export const mapLonAt = (x, width) => -Math.PI + TAU * (x / width);
+
+/**
+ * The sun's declination on a given day of the year, in radians.
+ *
+ * The tilted-axis approximation: the sun tracks between the tropics as a cosine
+ * over the year, zero at the equinoxes and ±23.44 degrees at the solstices. Good
+ * to about a third of a degree, which on this map is five pixels of terminator
+ * and nothing anybody will measure.
+ *
+ * The +10 puts the minimum near 21 December, where the solstice is.
+ */
+export const solarDeclination = (dayOfYear) =>
+  -AXIAL_TILT * Math.cos((TAU * (dayOfYear + 10)) / YEAR_DAYS);
+
+/**
+ * The column Chron keeps time by, which is NOT the middle of the map.
+ *
+ * The prime meridian, longitude zero, is the map's centre at x = 3000. The
+ * meridian UTC is reckoned from is a different line, falling between x = 2376
+ * and x = 2377, which puts it at 37.41 degrees west. The two are separate facts
+ * about the world and conflating them puts every sunrise two and a half hours
+ * out.
+ */
+export const UTC_MERIDIAN_X = 2376.5;
+
+/** Longitude of the timekeeping meridian, in radians. */
+export const utcMeridianLon = (width) => mapLonAt(UTC_MERIDIAN_X, width);
+
+/**
+ * The longitude the sun is directly over, in radians, for a UTC hour.
+ *
+ * The sun stands over the UTC meridian at noon and moves west at 15 degrees an
+ * hour, so at midnight it is over the far side of that line rather than over the
+ * map's antimeridian.
+ */
+export const subsolarLongitude = (utcHours, width) =>
+  utcMeridianLon(width) + ((12 - utcHours) * 15 * Math.PI) / 180;
+
+/** Local solar time at a longitude, in hours, for a UTC hour. */
+export const localHours = (lon, utcHours, width) =>
+  (utcHours + toDegrees(lon - utcMeridianLon(width)) / 15 + 24) % 24;
+
+/**
+ * The sine of the sun's elevation above the horizon at a point.
+ *
+ * Negative is below the horizon, which is night. This is the whole day and night
+ * calculation in one line, and it separates: for a fixed row `sin(lat)sin(dec)`
+ * and `cos(lat)cos(dec)` are constants, and `cos(lon - sunLon)` depends only on
+ * the column, so a whole map costs one multiply and one add per pixel.
+ */
+export const sinSolarElevation = (lat, lon, dec, sunLon) =>
+  Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(lon - sunLon);

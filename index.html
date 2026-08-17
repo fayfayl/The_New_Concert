@@ -10,24 +10,31 @@
     nothing, and puts a 404 in the server log on every reload.
   -->
   <link rel="icon" href="./data/icons/capital.png">
+  <!--
+    Preloaded because it is a CSS background, and a background is not fetched
+    until the stylesheet has been parsed and the element styled. The loading
+    screen is the first thing drawn and this is what it is drawn on, so the fetch
+    has to start while the HTML is still being read.
+  -->
+  <link rel="preload" as="image" href="./data/start_menu_bg.jpg">
   <link rel="stylesheet" href="./src/style.css">
 </head>
 
 <body>
 
   <!--
-    Shown first, over everything. The map loads behind it, and the button stays
-    disabled until it is ready — so pressing Enter always lands on a finished
-    map rather than a half-drawn one.
+    The menu waits behind the loading screen and carries `pending` until the map
+    is built, at which point main.js takes the class off and this fades in. So
+    Enter is never offered before it leads anywhere.
   -->
-  <div id="start">
+  <div id="start" class="pending" aria-hidden="true">
     <div class="start-panel">
       <h1>Hearts of Iron Chron</h1>
 
       <!-- data-dialog names the panel a button opens, so a new one is a button
            and a panel with no wiring of its own. -->
       <div class="start-buttons">
-        <button id="start-enter" disabled>Loading&hellip;</button>
+        <button id="start-enter">Enter</button>
         <button class="start-secondary" data-dialog="changelog">Changelog</button>
         <button class="start-secondary" data-dialog="about">About</button>
       </div>
@@ -53,6 +60,19 @@
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.6 <span>17 Aug 2026</span></h3>
+            <ul>
+              <li>Finished Sakan, Vaseta, and most of Keronsar in terms of countries.</li>
+              <li>Added all Sakanese cities, and half of Panathran cities.</li>
+              <li>Added barebones version of 'occupation and core territories' mechanic so Vosennac now
+                actually occupies part of Cunaria, and the Fuinamese Civil War now looks like a war.</li>
+              <li>Added new start menu background image.</li>
+              <li>Added loading screen with quotes from in-universe figures.</li>
+              <li>Added barebones day-night divide with no way to move forward currently.</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.5 <span>15 Aug 2026</span></h3>
             <ul>
@@ -133,6 +153,45 @@
     </div>
   </div>
 
+  <!--
+    The first thing on screen, before the menu. It holds the window while the map
+    is read and drawn, and hands over to the start menu when that is finished, so
+    the only wait in the whole sequence happens here and Enter always lands on a
+    map that already exists.
+  -->
+  <div id="loading">
+    <div class="loading-panel">
+      <!--
+        The gauge and the quote share this box and cross-fade in it. The quote is
+        written in as soon as data/quotes.json is read, while still transparent,
+        so it is holding its own height before it is visible and nothing on the
+        screen moves when the two swap over. The gauge sits centred on top of it.
+      -->
+      <div class="loading-stage">
+        <figure id="loading-quote">
+          <blockquote id="loading-quote-text"></blockquote>
+          <figcaption id="loading-quote-by"></figcaption>
+        </figure>
+
+        <div class="loading-bar"><i></i></div>
+
+        <!-- Inside the stage and hung off its centre line, which is where the
+             gauge is. Placed after the stage it would sit below the whole box,
+             and the box is as tall as the quote it is holding room for, which
+             pushed this well clear of the gauge it belongs to. -->
+        <p id="loading-note">Loading&hellip;</p>
+      </div>
+    </div>
+
+    <!--
+      Separate from the note above, and not in the panel's flow. The note reports
+      the stage of the load and belongs under the gauge; this asks for a keypress
+      and belongs at the foot of the window. One element doing both put the
+      loading text at the bottom of the screen.
+    -->
+    <p id="loading-prompt">Press any key to continue</p>
+  </div>
+
   <div id="map-area">
     <div id="toolbar" class="milled">
       <span class="wordmark">Hearts of Iron Chron<b>Third Sapient War</b></span>
@@ -176,7 +235,9 @@
           <span class="card-flag" id="card-flag"></span>
           <span>
             <b id="card-polity">&mdash;</b>
-            <i>Province owner</i>
+            <i id="card-role">Province owner</i>
+            <!-- Only shown when the two differ, which is to say under occupation. -->
+            <i id="card-owner" hidden></i>
           </span>
         </div>
 
@@ -217,6 +278,7 @@
         <!-- data-repaint marks a toggle that changes the painted map rather than
              just what is drawn over it, so it needs the buffer rebuilt. -->
         <button id="toggle-satellite" data-toggle="satellite" data-repaint>Satellite</button>
+        <button data-toggle="showNight" data-repaint class="active">Day and night</button>
         <button data-toggle="showCities" class="active">Cities</button>
         <button data-toggle="showLabels" class="active">Polity labels</button>
         <button data-toggle="showProvinceNames">Province names</button>

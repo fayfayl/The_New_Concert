@@ -36,7 +36,7 @@ const VERSION = new URL(import.meta.url).search;
 
 const {
   BORDER_DIST_REACH, refreshBorderDistance,
-  computeBlockGeometry, labelNeighbours, isLabelled,
+  computeBlockGeometry, labelNeighbours, isLabelled, componentsOf,
 } = await import(`./mapdata.js${VERSION}`);
 
 // How far outside a changed province the distance field has to be redone. A
@@ -113,7 +113,7 @@ function leaveBlock(world, geometry, p, touched) {
   touched.add(b);
   if (blk.members.length < 2) return;      // nothing left that could be split
 
-  const parts = components(world, geometry, blk.members);
+  const parts = componentsOf(world, geometry.near, blk.members);
   if (parts.length < 2) return;
 
   blk.members = parts[0];
@@ -176,32 +176,6 @@ function addBlock(geometry, owner) {
   geometry.geo.push(null);
   geometry.fit.push(null);
   return b;
-}
-
-/** Connected pieces of a set of province indices, over the labelling graph. */
-function components(world, geometry, members) {
-  const inBlock = new Set(members);
-  const seen = new Set();
-  const parts = [];
-
-  for (const start of members) {
-    if (seen.has(start)) continue;
-    seen.add(start);
-    const part = [];
-    const stack = [start];
-    while (stack.length) {
-      const ix = stack.pop();
-      part.push(ix);
-      for (const id of labelNeighbours(world, geometry.near, world.atIndex[ix].id)) {
-        const q = world.byId.get(id);
-        if (!q || seen.has(q.index) || !inBlock.has(q.index)) continue;
-        seen.add(q.index);
-        stack.push(q.index);
-      }
-    }
-    parts.push(part);
-  }
-  return parts;
 }
 
 // ----------------------------------------------------------------- regions

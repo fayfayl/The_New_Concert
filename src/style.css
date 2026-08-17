@@ -65,25 +65,28 @@
 
   /* ---------------------------------------------------------- typeface
      A humanist sans rather than a geometric one, which is what carries the
-     period — Gill Sans and its relatives were everywhere in Britain by the
+     period. Gill Sans and its relatives were everywhere in Britain by the
      war, on railway signage, posters and the first Penguin jackets, and a
      signage face reads cold beside them.
 
-     Cabin, shipped with the repo, is the one that actually renders; see
-     the @font-face at the top of this file for why it is not Gill Sans
-     itself. The named faces after it are what shows for the moment before
-     the webfont lands, and on the rare machine that never gets it: Gill
-     Sans where it exists, then Franklin Gothic, the American newsprint
-     face of the same decade.
+     Cabin, shipped with the repo, is the one that renders. See the
+     @font-face at the top of this file for why it is not Gill Sans itself.
+
+     Nothing but generics after it. Naming local faces as fallbacks meant
+     the page asked the system for "Gill Sans MT", "Gill Sans" and
+     "Franklin Gothic Book" on every load, which a browser resisting
+     fingerprinting refuses and logs: "Request for font Gill Sans blocked
+     at visibility level 3". Cabin ships with the code precisely so that
+     there is nothing to ask for, and system-ui already resolves to a
+     humanist sans on every platform that has one.
 
      One face was ruled out on evidence rather than taste. Candara sets
      old-style figures by default, which draws zero at x-height with no
-     flat top — so "0/0" comes out looking like "o/o", and a panel of
+     flat top, so "0/0" comes out looking like "o/o", and a panel of
      numbers is the one place that cannot be allowed. */
-  --ui: Cabin, "Gill Sans MT", "Gill Sans", "Franklin Gothic Book", system-ui, sans-serif;
+  --ui: Cabin, system-ui, sans-serif;
   /* Not a second family. Cabin's width axis IS the condensed cut, reached
-     with font-stretch below; the named faces after it are only there for
-     the moment before the webfont lands, or if it never does. */
+     with font-stretch at each use. */
   --ui-narrow: var(--ui);
 
   /* The plain interface sans, kept for the two places atmosphere is not the
@@ -362,21 +365,35 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* The map's own imagery, standing in until there is real cover art. The
-     scrim over it is what keeps the text readable on top of terrain. */
-  background: linear-gradient(rgba(8, 11, 16, .72), rgba(8, 11, 16, .88)),
+  /* Cover art. The scrim over it is what keeps the text readable whatever the
+     image is doing underneath. */
+  background: linear-gradient(rgba(8, 11, 16, .62), rgba(8, 11, 16, .82)),
     /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
        URLs, so moving the CSS into src/ moved the meaning of every path in it. */
-    url('../data/satellite.png') center / cover no-repeat,
+    url('../data/start_menu_bg.jpg') center / cover no-repeat,
     var(--steel-deepest);
-  transition: opacity .45s ease, visibility 0s .45s;
+  transition: opacity .45s ease;
 }
 
-/* Dismissed rather than deleted, so the fade has something to fade. */
+/* Two ways of being out of the way, and they are not the same. `gone` is after,
+   and it fades, because a fade is what dismissing the menu should look like.
+
+   `pending` is before, and it must NOT fade. Two screens fading in opposite
+   directions at once are both semi-transparent in the middle of it, and the map
+   behind shows through for a frame or two — which is exactly what it did.
+
+   So `pending` uses display, which cannot be transitioned. The menu appears at
+   full strength underneath the instant the class comes off, and the loading
+   screen over it dissolves into a finished menu rather than into the map. */
+#start.pending {
+  display: none;
+}
+
 #start.gone {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transition: opacity .45s ease, visibility 0s .45s;
 }
 
 /* Wide enough that the title holds one line at its full size. The paragraph
@@ -495,6 +512,242 @@ body {
   line-height: 1.65;
   color: var(--text);
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+}
+
+/* ==================================================== loading screen
+   The first thing on screen. It holds the window while the map is read and drawn
+   and then hands over to the start menu, so it is visible by default and the
+   only state it needs is the one that takes it away.
+
+   Above the menu rather than below it, since the menu is what it uncovers. */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The same art as the menu, so the handover between the two screens does not
+     change the picture underneath. Darker, because a quote has to be read on it. */
+  background: linear-gradient(rgba(8, 11, 16, .76), rgba(8, 11, 16, .9)),
+    url('../data/start_menu_bg.jpg') center / cover no-repeat,
+    var(--steel-deepest);
+  transition: opacity .45s ease;
+}
+
+/* Over the same .45s the menu uses, so one screen replacing another always
+   takes the same time however you arrived at it. */
+#loading.gone {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .45s ease, visibility 0s .45s;
+}
+
+/* A definite width, not a shrink-to-fit one. As a flex item this box takes the
+   width of its widest child, and until the quote text is written that is the
+   194px gauge, which wrapped "Loading data" onto two lines. */
+.loading-panel {
+  width: 100%;
+  max-width: 684px;
+  padding: 0 32px;
+  text-align: center;
+}
+
+/* A twelve cell gauge rather than a filling bar. Indeterminate on purpose: the
+   work behind it is a fetch, a distance transform and a full repaint, none of
+   which report progress, so a bar filling to a number would be inventing one.
+
+   The cells are cut from the background rather than being twelve elements, and
+   the lit one is a single block stepped across them. Square corners, hairline
+   frame, and a jump per cell rather than a slide — an instrument reading, not a
+   progress bar. */
+.loading-bar {
+  /* content-box on purpose, against the border-box everything else uses. The
+     192px has to be the INNER width, since it is twelve 16px cells and the
+     stepping below moves in 16px jumps. Under border-box the frame would eat
+     two of those pixels and the light would drift out of its cells. */
+  box-sizing: content-box;
+  position: relative;
+  width: 192px;
+  height: 13px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--rule-bright);
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, .16) 0 12px,
+      transparent 12px 16px),
+    rgba(0, 0, 0, .62);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .05);
+}
+
+.loading-bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  background: var(--accent-bright);
+  box-shadow: 0 0 6px rgba(120, 170, 255, .45);
+  /* steps() is what makes it mechanical. The same movement without it slides,
+     and a sliding light is the thing being avoided here. */
+  animation: loading-tick 1.9s steps(12) infinite;
+}
+
+@keyframes loading-tick {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(192px);
+  }
+}
+
+/* Set by main.js as init() moves through its stages, so whatever it says when
+   the screen appears is where the load actually is.
+
+   Hung 30px off the stage's centre line, which is where the gauge sits, so it
+   stays with the gauge whatever height the quote behind it is reserving. */
+#loading-note {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 30px 0 0;
+  font-family: var(--ui-narrow);
+  font-stretch: 82%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+}
+
+/* The box the gauge and the quote cross-fade in. It takes its height from the
+   quote, which is present and transparent from the start, so the swap moves
+   nothing on the screen. */
+.loading-stage {
+  position: relative;
+  min-height: 60px;
+}
+
+/* Centred over the quote rather than stacked above it, so there is one thing in
+   this box at a time and no gap left behind when the gauge goes. */
+.loading-bar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity .3s ease;
+}
+
+#loading.ready .loading-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Held to a reading measure of its own rather than the panel's, which is only
+   as wide as the gauge. */
+#loading-quote {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 0 24px;
+  opacity: 0;
+  /* Starts a little after the gauge begins to go, so the two are not both at
+     half strength at the same moment. */
+  transition: opacity .7s ease .2s;
+}
+
+#loading.ready #loading-quote {
+  opacity: 1;
+}
+
+#loading-quote blockquote {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.62;
+  color: var(--paper);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .9);
+}
+
+#loading-quote figcaption {
+  margin-top: 14px;
+  font-family: var(--ui-narrow);
+  font-stretch: 82%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  /* Letter-spacing adds its space after the last letter too, which drags a
+     centred line left. Indenting by the same amount puts it back. */
+  text-indent: .22em;
+  color: var(--text);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+}
+
+/* The stage report has nothing left to say once the map is built. */
+#loading.ready #loading-note {
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+/* Anchored to the foot of the window, and out of the flow in both states so that
+   appearing does not resize the panel above it. */
+#loading-prompt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 13%;
+  margin: 0;
+  font-family: var(--ui-narrow);
+  font-stretch: 82%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-indent: .22em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--paper);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease .3s;
+}
+
+/* Fades in first, then the blink takes over. The delay is what keeps the two
+   from fighting over the same property. */
+#loading.ready #loading-prompt {
+  opacity: 1;
+  animation: loading-prompt 1.7s ease-in-out .9s infinite;
+}
+
+@keyframes loading-prompt {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .38;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .loading-bar i {
+    animation: none;
+    width: calc(100% - 6px);
+    background: var(--accent);
+    box-shadow: none;
+  }
+
+  #loading.ready #loading-prompt {
+    animation: none;
+  }
 }
 
 /* =================================================== start dialogs

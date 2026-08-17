@@ -1089,8 +1089,8 @@
       "province": "harkuri"
     },
     {
-      "id": "farholmshire",
-      "name": "Farholmshire",
+      "id": "farholm",
+      "name": "Farholm",
       "capital": false,
       "x": 2273,
       "y": 700,
@@ -1321,8 +1321,8 @@
       "province": "herbreaux"
     },
     {
-      "id": "lower_kazanland",
-      "name": "Lower Kazanland",
+      "id": "birchmere",
+      "name": "Birchmere",
       "capital": false,
       "x": 2342,
       "y": 773,
@@ -5335,6 +5335,2102 @@
       "x": 1183,
       "y": 743,
       "province": "yuanhua"
+    },
+    {
+      "id": "eyentalman",
+      "name": "Eyentalman",
+      "capital": false,
+      "x": 1005,
+      "y": 569,
+      "province": "huwesibira"
+    },
+    {
+      "id": "tuwaalin",
+      "name": "Tuwaalin",
+      "capital": false,
+      "x": 887,
+      "y": 580,
+      "province": "eldenwehe"
+    },
+    {
+      "id": "taqalin",
+      "name": "Taqalin",
+      "capital": false,
+      "x": 836,
+      "y": 595,
+      "province": "taqalin"
+    },
+    {
+      "id": "dubeelhe",
+      "name": "Dubeelhe",
+      "capital": false,
+      "x": 876,
+      "y": 612,
+      "province": "diradolo"
+    },
+    {
+      "id": "ambagaijas",
+      "name": "Ambagaijas",
+      "capital": true,
+      "x": 917,
+      "y": 615,
+      "province": "niyaman"
+    },
+    {
+      "id": "sidenhecen",
+      "name": "Sidenhecen",
+      "capital": false,
+      "x": 885,
+      "y": 637,
+      "province": "oyyongo"
+    },
+    {
+      "id": "dulimaira",
+      "name": "Dulimaira",
+      "capital": false,
+      "x": 953,
+      "y": 639,
+      "province": "gucugurun"
+    },
+    {
+      "id": "galmboo",
+      "name": "Galmboo",
+      "capital": false,
+      "x": 831,
+      "y": 647,
+      "province": "galmboo"
+    },
+    {
+      "id": "chiansau",
+      "name": "Chiansau",
+      "capital": false,
+      "x": 977,
+      "y": 663,
+      "province": "chiansau"
+    },
+    {
+      "id": "mukefulgiyan",
+      "name": "Mukefulgiyan",
+      "capital": false,
+      "x": 846,
+      "y": 668,
+      "province": "susu"
+    },
+    {
+      "id": "syanusin",
+      "name": "Syanusin",
+      "capital": false,
+      "x": 924,
+      "y": 670,
+      "province": "orhousin"
+    },
+    {
+      "id": "julesiangga",
+      "name": "Julesiangga",
+      "capital": false,
+      "x": 868,
+      "y": 683,
+      "province": "julergiduka"
+    },
+    {
+      "id": "toakhang",
+      "name": "Toakhang",
+      "capital": false,
+      "x": 938,
+      "y": 704,
+      "province": "toakhang"
+    },
+    {
+      "id": "nikang",
+      "name": "Nikang",
+      "capital": false,
+      "x": 868,
+      "y": 705,
+      "province": "nikang"
+    },
+    {
+      "id": "semng",
+      "name": "Semng",
+      "capital": false,
+      "x": 957,
+      "y": 719,
+      "province": "toakhang"
+    },
+    {
+      "id": "ialam",
+      "name": "Ialam",
+      "capital": false,
+      "x": 889,
+      "y": 729,
+      "province": "ialam"
+    },
+    {
+      "id": "chhianchui",
+      "name": "Chhianchui",
+      "capital": false,
+      "x": 956,
+      "y": 754,
+      "province": "chhianchui"
+    },
+    {
+      "id": "poelo",
+      "name": "Poelo",
+      "capital": false,
+      "x": 907,
+      "y": 760,
+      "province": "poelo"
+    },
+    {
+      "id": "chuhai",
+      "name": "Chuhai",
+      "capital": false,
+      "x": 857,
+      "y": 769,
+      "province": "chuhai"
+    },
+    {
+      "id": "gekte",
+      "name": "Gekte",
+      "capital": true,
+      "x": 893,
+      "y": 798,
+      "province": "gekte"
+    },
+    {
+      "id": "tiongkui",
+      "name": "Tiongkui",
+      "capital": false,
+      "x": 939,
+      "y": 834,
+      "province": "tiongkui"
+    },
+    {
+      "id": "international_chuhai",
+      "name": "International Chuhai",
+      "capital": false,
+      "x": 856,
+      "y": 766,
+      "province": "international_chuhai"
+    },
+    {
+      "id": "international_gekte",
+      "name": "International Gekte",
+      "capital": false,
+      "x": 894,
+      "y": 803,
+      "province": "international_gekte"
+    },
+    {
+      "id": "zhongtou",
+      "name": "Zhongtou",
+      "capital": false,
+      "x": 955,
+      "y": 844,
+      "province": "zhongtou"
+    },
+    {
+      "id": "international_nazhou",
+      "name": "International Nazhou",
+      "capital": false,
+      "x": 973,
+      "y": 866,
+      "province": "international_nazhou"
+    },
+    {
+      "id": "international_zhaodong",
+      "name": "International Zhaodong",
+      "capital": false,
+      "x": 1007,
+      "y": 901,
+      "province": "international_zhaodong"
+    },
+    {
+      "id": "international_jiayao",
+      "name": "International Jiayao",
+      "capital": false,
+      "x": 1038,
+      "y": 920,
+      "province": "international_jiayao"
+    },
+    {
+      "id": "jiumen",
+      "name": "Jiumen",
+      "capital": false,
+      "x": 1081,
+      "y": 956,
+      "province": "jiumen"
+    },
+    {
+      "id": "international_longxue",
+      "name": "International Longxue",
+      "capital": true,
+      "x": 1103,
+      "y": 967,
+      "province": "international_longxue"
+    },
+    {
+      "id": "daojian",
+      "name": "Daojian",
+      "capital": false,
+      "x": 1094,
+      "y": 974,
+      "province": "daojian"
+    },
+    {
+      "id": "international_yinkou",
+      "name": "International Yinkou",
+      "capital": false,
+      "x": 1127,
+      "y": 997,
+      "province": "international_yinkou"
+    },
+    {
+      "id": "international_huaqing",
+      "name": "International Huaqing",
+      "capital": false,
+      "x": 1117,
+      "y": 1067,
+      "province": "international_huaqing"
+    },
+    {
+      "id": "kergettak",
+      "name": "Kergettak",
+      "capital": false,
+      "x": 365,
+      "y": 193,
+      "province": "kergettak"
+    },
+    {
+      "id": "borongkhomoto",
+      "name": "Borongkhomoto",
+      "capital": false,
+      "x": 1376,
+      "y": 269,
+      "province": "borongkhomoto"
+    },
+    {
+      "id": "mevalik",
+      "name": "Mevalik",
+      "capital": false,
+      "x": 921,
+      "y": 277,
+      "province": "mevalik"
+    },
+    {
+      "id": "contav",
+      "name": "Contav",
+      "capital": false,
+      "x": 433,
+      "y": 294,
+      "province": "contav"
+    },
+    {
+      "id": "ilinggavan",
+      "name": "Ilinggavan",
+      "capital": false,
+      "x": 1585,
+      "y": 304,
+      "province": "ilinggavan"
+    },
+    {
+      "id": "atekerti",
+      "name": "Atekerti",
+      "capital": false,
+      "x": 156,
+      "y": 310,
+      "province": "atekerti"
+    },
+    {
+      "id": "ulu",
+      "name": "Ulu",
+      "capital": false,
+      "x": 861,
+      "y": 328,
+      "province": "ulu"
+    },
+    {
+      "id": "vyrepata",
+      "name": "Vyrepata",
+      "capital": false,
+      "x": 782,
+      "y": 348,
+      "province": "vyrepata"
+    },
+    {
+      "id": "kyhylkuol",
+      "name": "Kyhylkuol",
+      "capital": false,
+      "x": 1456,
+      "y": 370,
+      "province": "kyhylkuol"
+    },
+    {
+      "id": "puyut",
+      "name": "Puyut",
+      "capital": false,
+      "x": 277,
+      "y": 418,
+      "province": "puyut"
+    },
+    {
+      "id": "ankannen",
+      "name": "Ankannen",
+      "capital": false,
+      "x": 816,
+      "y": 431,
+      "province": "ankannen"
+    },
+    {
+      "id": "nirak",
+      "name": "Nirak",
+      "capital": false,
+      "x": 947,
+      "y": 438,
+      "province": "south_kuohhaja"
+    },
+    {
+      "id": "rezkymco",
+      "name": "Rezkymco",
+      "capital": false,
+      "x": 196,
+      "y": 445,
+      "province": "rezkymco"
+    },
+    {
+      "id": "ajmalkyl",
+      "name": "Ajmalkyl",
+      "capital": false,
+      "x": 318,
+      "y": 450,
+      "province": "puyut"
+    },
+    {
+      "id": "taranyk",
+      "name": "Taranyk",
+      "capital": false,
+      "x": 521,
+      "y": 450,
+      "province": "taranyk"
+    },
+    {
+      "id": "utuunirek",
+      "name": "Utuunirek",
+      "capital": false,
+      "x": 383,
+      "y": 457,
+      "province": "myngentyn"
+    },
+    {
+      "id": "epatyk",
+      "name": "Epatyk",
+      "capital": false,
+      "x": 802,
+      "y": 457,
+      "province": "epatyk"
+    },
+    {
+      "id": "rarer",
+      "name": "Rarer",
+      "capital": false,
+      "x": 274,
+      "y": 477,
+      "province": "rarer"
+    },
+    {
+      "id": "ymmegek",
+      "name": "Ymmegek",
+      "capital": false,
+      "x": 547,
+      "y": 477,
+      "province": "ymmegek"
+    },
+    {
+      "id": "nejcymce",
+      "name": "Nejcymce",
+      "capital": false,
+      "x": 653,
+      "y": 479,
+      "province": "nejcymce"
+    },
+    {
+      "id": "myngentyn",
+      "name": "Myngentyn",
+      "capital": false,
+      "x": 348,
+      "y": 486,
+      "province": "myngentyn"
+    },
+    {
+      "id": "kergetta",
+      "name": "Kergetta",
+      "capital": false,
+      "x": 841,
+      "y": 486,
+      "province": "epatyk"
+    },
+    {
+      "id": "yitshygejaxxa",
+      "name": "Yitshygejaxxa",
+      "capital": false,
+      "x": 1482,
+      "y": 487,
+      "province": "yitshygejaxxa"
+    },
+    {
+      "id": "vareponty",
+      "name": "Vareponty",
+      "capital": false,
+      "x": 199,
+      "y": 491,
+      "province": "vareponty"
+    },
+    {
+      "id": "cajaty",
+      "name": "Cajaty",
+      "capital": false,
+      "x": 492,
+      "y": 491,
+      "province": "cajaty"
+    },
+    {
+      "id": "levyntyk",
+      "name": "Levyntyk",
+      "capital": false,
+      "x": 453,
+      "y": 498,
+      "province": "levyntyk"
+    },
+    {
+      "id": "angajyn",
+      "name": "Angajyn",
+      "capital": false,
+      "x": 787,
+      "y": 505,
+      "province": "angajyn"
+    },
+    {
+      "id": "ravkergatyk",
+      "name": "Ravkergatyk",
+      "capital": false,
+      "x": 357,
+      "y": 512,
+      "province": "mygrony"
+    },
+    {
+      "id": "tykekyk",
+      "name": "Tykekyk",
+      "capital": false,
+      "x": 261,
+      "y": 513,
+      "province": "tykekyk"
+    },
+    {
+      "id": "urahy",
+      "name": "Urahy",
+      "capital": false,
+      "x": 574,
+      "y": 519,
+      "province": "urahy"
+    },
+    {
+      "id": "mygrony",
+      "name": "Mygrony",
+      "capital": false,
+      "x": 303,
+      "y": 521,
+      "province": "mygrony"
+    },
+    {
+      "id": "abacu",
+      "name": "Abacu",
+      "capital": false,
+      "x": 1095,
+      "y": 529,
+      "province": "abacu"
+    },
+    {
+      "id": "oksonbanjim",
+      "name": "Oksonbanjim",
+      "capital": false,
+      "x": 1120,
+      "y": 530,
+      "province": "oksonbanjim"
+    },
+    {
+      "id": "meletal",
+      "name": "Meletal",
+      "capital": false,
+      "x": 486,
+      "y": 531,
+      "province": "gytork"
+    },
+    {
+      "id": "ecivtyk",
+      "name": "Ecivtyk",
+      "capital": false,
+      "x": 672,
+      "y": 532,
+      "province": "ecivtyk"
+    },
+    {
+      "id": "tacannyk",
+      "name": "Tacannyk",
+      "capital": false,
+      "x": 407,
+      "y": 533,
+      "province": "tacannyk"
+    },
+    {
+      "id": "rilkyry",
+      "name": "Rilkyry",
+      "capital": false,
+      "x": 740,
+      "y": 533,
+      "province": "rilkyry"
+    },
+    {
+      "id": "yiliyl",
+      "name": "Yiliyl",
+      "capital": false,
+      "x": 826,
+      "y": 538,
+      "province": "inynewry"
+    },
+    {
+      "id": "inynewry",
+      "name": "Inynewry",
+      "capital": false,
+      "x": 790,
+      "y": 539,
+      "province": "inynewry"
+    },
+    {
+      "id": "saikhorin",
+      "name": "Saikhorin",
+      "capital": false,
+      "x": 1369,
+      "y": 539,
+      "province": "saikhorin"
+    },
+    {
+      "id": "giteklyla",
+      "name": "Giteklyla",
+      "capital": false,
+      "x": 590,
+      "y": 546,
+      "province": "giteklyla"
+    },
+    {
+      "id": "kytloka",
+      "name": "Kytloka",
+      "capital": false,
+      "x": 321,
+      "y": 551,
+      "province": "kytloka"
+    },
+    {
+      "id": "gytork",
+      "name": "Gytork",
+      "capital": false,
+      "x": 458,
+      "y": 552,
+      "province": "gytork"
+    },
+    {
+      "id": "atyngytyn",
+      "name": "Atyngytyn",
+      "capital": true,
+      "x": 709,
+      "y": 559,
+      "province": "atyngytyn"
+    },
+    {
+      "id": "gytylkyn",
+      "name": "Gytylkyn",
+      "capital": false,
+      "x": 643,
+      "y": 570,
+      "province": "gytylkyn"
+    },
+    {
+      "id": "bugai",
+      "name": "Bugai",
+      "capital": false,
+      "x": 1318,
+      "y": 570,
+      "province": "bugai"
+    },
+    {
+      "id": "lyletlyk",
+      "name": "Lyletlyk",
+      "capital": false,
+      "x": 712,
+      "y": 574,
+      "province": "atyngytyn"
+    },
+    {
+      "id": "ankany",
+      "name": "Ankany",
+      "capital": false,
+      "x": 350,
+      "y": 578,
+      "province": "ankany"
+    },
+    {
+      "id": "velivel",
+      "name": "Velivel",
+      "capital": false,
+      "x": 801,
+      "y": 585,
+      "province": "velivel"
+    },
+    {
+      "id": "cinkihetap",
+      "name": "Cinkihetap",
+      "capital": false,
+      "x": 394,
+      "y": 589,
+      "province": "oyaitak"
+    },
+    {
+      "id": "rycepjaret",
+      "name": "Rycepjaret",
+      "capital": false,
+      "x": 684,
+      "y": 589,
+      "province": "rycepjaret"
+    },
+    {
+      "id": "tukapu",
+      "name": "Tukapu",
+      "capital": false,
+      "x": 333,
+      "y": 591,
+      "province": "tukapu"
+    },
+    {
+      "id": "umimng",
+      "name": "Umimng",
+      "capital": false,
+      "x": 754,
+      "y": 592,
+      "province": "velivel"
+    },
+    {
+      "id": "imponta",
+      "name": "Imponta",
+      "capital": false,
+      "x": 636,
+      "y": 604,
+      "province": "imponta"
+    },
+    {
+      "id": "oyaitak",
+      "name": "Oyaitak",
+      "capital": false,
+      "x": 364,
+      "y": 615,
+      "province": "oyaitak"
+    },
+    {
+      "id": "mimenin",
+      "name": "Mimenin",
+      "capital": false,
+      "x": 712,
+      "y": 615,
+      "province": "mimenin"
+    },
+    {
+      "id": "vagryn",
+      "name": "Vagryn",
+      "capital": false,
+      "x": 761,
+      "y": 617,
+      "province": "vagryn"
+    },
+    {
+      "id": "nuteejmik",
+      "name": "Nuteejmik",
+      "capital": false,
+      "x": 614,
+      "y": 618,
+      "province": "nuteejmik"
+    },
+    {
+      "id": "ravkern",
+      "name": "Ravkern",
+      "capital": false,
+      "x": 788,
+      "y": 619,
+      "province": "ravkern"
+    },
+    {
+      "id": "ileretke",
+      "name": "Ileretke",
+      "capital": false,
+      "x": 683,
+      "y": 621,
+      "province": "ileretke"
+    },
+    {
+      "id": "gycurmvyn",
+      "name": "Gycurmvyn",
+      "capital": false,
+      "x": 580,
+      "y": 628,
+      "province": "gycurmvyn"
+    },
+    {
+      "id": "namsan",
+      "name": "Namsan",
+      "capital": false,
+      "x": 495,
+      "y": 591,
+      "province": "namcheon"
+    },
+    {
+      "id": "gwangho",
+      "name": "Gwangho",
+      "capital": false,
+      "x": 558,
+      "y": 597,
+      "province": "south_gwanghui"
+    },
+    {
+      "id": "saebyeog",
+      "name": "Saebyeog",
+      "capital": true,
+      "x": 486,
+      "y": 614,
+      "province": "jik_ye"
+    },
+    {
+      "id": "jindal",
+      "name": "Jindal",
+      "capital": false,
+      "x": 525,
+      "y": 615,
+      "province": "namcheon"
+    },
+    {
+      "id": "pyongmul",
+      "name": "Pyongmul",
+      "capital": false,
+      "x": 469,
+      "y": 622,
+      "province": "pyonghak"
+    },
+    {
+      "id": "mawuna",
+      "name": "Mawuna",
+      "capital": false,
+      "x": 365,
+      "y": 628,
+      "province": "mawuna"
+    },
+    {
+      "id": "jangheung",
+      "name": "Jangheung",
+      "capital": false,
+      "x": 427,
+      "y": 642,
+      "province": "jangsan"
+    },
+    {
+      "id": "ninkari",
+      "name": "Ninkari",
+      "capital": false,
+      "x": 358,
+      "y": 648,
+      "province": "tumutursat"
+    },
+    {
+      "id": "yeonwol",
+      "name": "Yeonwol",
+      "capital": false,
+      "x": 454,
+      "y": 652,
+      "province": "yeongye"
+    },
+    {
+      "id": "tumutursat",
+      "name": "Tumutursat",
+      "capital": false,
+      "x": 363,
+      "y": 677,
+      "province": "tumutursat"
+    },
+    {
+      "id": "jeongsil",
+      "name": "Jeongsil",
+      "capital": false,
+      "x": 465,
+      "y": 683,
+      "province": "yeongye"
+    },
+    {
+      "id": "yakutek",
+      "name": "Yakutek",
+      "capital": false,
+      "x": 333,
+      "y": 687,
+      "province": "kewsiri"
+    },
+    {
+      "id": "kewsiri",
+      "name": "Kewsiri",
+      "capital": false,
+      "x": 330,
+      "y": 711,
+      "province": "kewsiri"
+    },
+    {
+      "id": "hanhang",
+      "name": "Hanhang",
+      "capital": false,
+      "x": 479,
+      "y": 720,
+      "province": "hanha"
+    },
+    {
+      "id": "emusnipkat",
+      "name": "Emusnipkat",
+      "capital": false,
+      "x": 366,
+      "y": 729,
+      "province": "emusnipkat"
+    },
+    {
+      "id": "koraru",
+      "name": "Koraru",
+      "capital": false,
+      "x": 328,
+      "y": 734,
+      "province": "koraru"
+    },
+    {
+      "id": "akkakira",
+      "name": "Akkakira",
+      "capital": false,
+      "x": 488,
+      "y": 747,
+      "province": "menaskar"
+    },
+    {
+      "id": "aripecan",
+      "name": "Aripecan",
+      "capital": false,
+      "x": 371,
+      "y": 749,
+      "province": "aripecan"
+    },
+    {
+      "id": "menaskar",
+      "name": "Menaskar",
+      "capital": false,
+      "x": 447,
+      "y": 750,
+      "province": "menaskar"
+    },
+    {
+      "id": "nispacup",
+      "name": "Nispacup",
+      "capital": false,
+      "x": 332,
+      "y": 756,
+      "province": "koraru"
+    },
+    {
+      "id": "tuyram",
+      "name": "Tuyram",
+      "capital": false,
+      "x": 428,
+      "y": 769,
+      "province": "turnamna"
+    },
+    {
+      "id": "hurekim",
+      "name": "Hurekim",
+      "capital": false,
+      "x": 355,
+      "y": 773,
+      "province": "aripecan"
+    },
+    {
+      "id": "turnamna",
+      "name": "Turnamna",
+      "capital": false,
+      "x": 468,
+      "y": 792,
+      "province": "turnamna"
+    },
+    {
+      "id": "yonoray",
+      "name": "Yonoray",
+      "capital": false,
+      "x": 378,
+      "y": 795,
+      "province": "hicucini"
+    },
+    {
+      "id": "hicucini",
+      "name": "Hicucini",
+      "capital": false,
+      "x": 379,
+      "y": 809,
+      "province": "hicucini"
+    },
+    {
+      "id": "pirkamaw",
+      "name": "Pirkamaw",
+      "capital": false,
+      "x": 431,
+      "y": 815,
+      "province": "pirkamaw"
+    },
+    {
+      "id": "sinekiraw",
+      "name": "Sinekiraw",
+      "capital": false,
+      "x": 451,
+      "y": 826,
+      "province": "sinekiraw"
+    },
+    {
+      "id": "retarkotan",
+      "name": "Retarkotan",
+      "capital": false,
+      "x": 387,
+      "y": 836,
+      "province": "retarkotan"
+    },
+    {
+      "id": "seseksuma",
+      "name": "Seseksuma",
+      "capital": false,
+      "x": 426,
+      "y": 836,
+      "province": "seseksuma"
+    },
+    {
+      "id": "aptouyna",
+      "name": "Aptouyna",
+      "capital": false,
+      "x": 459,
+      "y": 876,
+      "province": "tucikur"
+    },
+    {
+      "id": "faakubi",
+      "name": "Faakubi",
+      "capital": false,
+      "x": 745,
+      "y": 872,
+      "province": "faakubi"
+    },
+    {
+      "id": "mannakubi",
+      "name": "Mannakubi",
+      "capital": false,
+      "x": 669,
+      "y": 879,
+      "province": "mannakubi"
+    },
+    {
+      "id": "kuugayaa",
+      "name": "Kuugayaa",
+      "capital": false,
+      "x": 817,
+      "y": 881,
+      "province": "kuugayaa"
+    },
+    {
+      "id": "kuugayaa_2",
+      "name": "Kuugayaa",
+      "capital": false,
+      "x": 787,
+      "y": 888,
+      "province": "kuugayaa"
+    },
+    {
+      "id": "kijiridinaga",
+      "name": "Kijiridinaga",
+      "capital": false,
+      "x": 735,
+      "y": 893,
+      "province": "kijiridinaga"
+    },
+    {
+      "id": "iibijima",
+      "name": "Iibijima",
+      "capital": false,
+      "x": 846,
+      "y": 895,
+      "province": "iibijima"
+    },
+    {
+      "id": "uraijima",
+      "name": "Uraijima",
+      "capital": false,
+      "x": 817,
+      "y": 904,
+      "province": "uraijima"
+    },
+    {
+      "id": "akasanijima",
+      "name": "Akasanijima",
+      "capital": false,
+      "x": 713,
+      "y": 907,
+      "province": "akasanijima"
+    },
+    {
+      "id": "chiimui",
+      "name": "Chiimui",
+      "capital": false,
+      "x": 555,
+      "y": 914,
+      "province": "chiimui"
+    },
+    {
+      "id": "uikeifa",
+      "name": "Uikeifa",
+      "capital": false,
+      "x": 641,
+      "y": 918,
+      "province": "uikeifa"
+    },
+    {
+      "id": "kwajikaara",
+      "name": "Kwajikaara",
+      "capital": false,
+      "x": 849,
+      "y": 918,
+      "province": "surutii"
+    },
+    {
+      "id": "surutii",
+      "name": "Surutii",
+      "capital": false,
+      "x": 865,
+      "y": 920,
+      "province": "surutii"
+    },
+    {
+      "id": "gusukunaichi",
+      "name": "Gusukunaichi",
+      "capital": false,
+      "x": 537,
+      "y": 921,
+      "province": "gusukunaichi"
+    },
+    {
+      "id": "kiotsukeijima",
+      "name": "Kiotsukeijima",
+      "capital": false,
+      "x": 596,
+      "y": 921,
+      "province": "kiotsukeijima"
+    },
+    {
+      "id": "funasaki",
+      "name": "Funasaki",
+      "capital": false,
+      "x": 908,
+      "y": 936,
+      "province": "funasaki"
+    },
+    {
+      "id": "hagiijima",
+      "name": "Hagiijima",
+      "capital": false,
+      "x": 570,
+      "y": 938,
+      "province": "hagiijima"
+    },
+    {
+      "id": "furusato",
+      "name": "Furusato",
+      "capital": false,
+      "x": 934,
+      "y": 971,
+      "province": "furusato"
+    },
+    {
+      "id": "fujikumo",
+      "name": "Fujikumo",
+      "capital": false,
+      "x": 948,
+      "y": 990,
+      "province": "fujikumo"
+    },
+    {
+      "id": "kiyostukawa",
+      "name": "Kiyostukawa",
+      "capital": false,
+      "x": 931,
+      "y": 992,
+      "province": "kiyostukawa"
+    },
+    {
+      "id": "matsubiro",
+      "name": "Matsubiro",
+      "capital": false,
+      "x": 960,
+      "y": 1003,
+      "province": "matsubiro"
+    },
+    {
+      "id": "junkou",
+      "name": "Junkou",
+      "capital": true,
+      "x": 985,
+      "y": 1019,
+      "province": "junkou"
+    },
+    {
+      "id": "gunno",
+      "name": "Gunno",
+      "capital": false,
+      "x": 883,
+      "y": 1032,
+      "province": "north_utoshima_islands"
+    },
+    {
+      "id": "iwamoto",
+      "name": "Iwamoto",
+      "capital": false,
+      "x": 1029,
+      "y": 1055,
+      "province": "iwamoto"
+    },
+    {
+      "id": "kenwara",
+      "name": "Kenwara",
+      "capital": false,
+      "x": 1016,
+      "y": 1060,
+      "province": "kenwara"
+    },
+    {
+      "id": "enkita",
+      "name": "Enkita",
+      "capital": false,
+      "x": 1047,
+      "y": 1065,
+      "province": "enkita"
+    },
+    {
+      "id": "yokoshiri",
+      "name": "Yokoshiri",
+      "capital": false,
+      "x": 1039,
+      "y": 1083,
+      "province": "yokoshiri"
+    },
+    {
+      "id": "okukonai",
+      "name": "Okukonai",
+      "capital": false,
+      "x": 1053,
+      "y": 1113,
+      "province": "okukonai"
+    },
+    {
+      "id": "nanpowan",
+      "name": "Nanpowan",
+      "capital": true,
+      "x": 1081,
+      "y": 1133,
+      "province": "nanpowan"
+    },
+    {
+      "id": "nerabetsu",
+      "name": "Nerabetsu",
+      "capital": false,
+      "x": 1067,
+      "y": 1141,
+      "province": "nerabetsu"
+    },
+    {
+      "id": "kasagar",
+      "name": "Kasagar",
+      "capital": true,
+      "x": 831,
+      "y": 1392,
+      "province": "kasagar"
+    },
+    {
+      "id": "bagongmataw",
+      "name": "Bagongmataw",
+      "capital": false,
+      "x": 801,
+      "y": 1481,
+      "province": "bagongmataw"
+    },
+    {
+      "id": "pasa",
+      "name": "Pasa",
+      "capital": false,
+      "x": 2783,
+      "y": 1045,
+      "province": "ganaan_heartlands"
+    },
+    {
+      "id": "azef",
+      "name": "Azef",
+      "capital": false,
+      "x": 2738,
+      "y": 1048,
+      "province": "ganaan_heartlands"
+    },
+    {
+      "id": "reneru",
+      "name": "Reneru",
+      "capital": true,
+      "x": 2761,
+      "y": 1058,
+      "province": "ganaan_heartlands"
+    },
+    {
+      "id": "abas",
+      "name": "Abas",
+      "capital": false,
+      "x": 2729,
+      "y": 1065,
+      "province": "ganaan_heartlands"
+    },
+    {
+      "id": "hamira",
+      "name": "Hamira",
+      "capital": false,
+      "x": 2770,
+      "y": 1076,
+      "province": "ganaan_heartlands"
+    },
+    {
+      "id": "gallamitri",
+      "name": "Gallamitri",
+      "capital": false,
+      "x": 2694,
+      "y": 1093,
+      "province": "gallamitri"
+    },
+    {
+      "id": "muna",
+      "name": "Muna",
+      "capital": false,
+      "x": 2793,
+      "y": 1094,
+      "province": "inner_moradzar"
+    },
+    {
+      "id": "temisef",
+      "name": "Temisef",
+      "capital": false,
+      "x": 2732,
+      "y": 1095,
+      "province": "temisef"
+    },
+    {
+      "id": "akamad",
+      "name": "Akamad",
+      "capital": false,
+      "x": 2675,
+      "y": 1112,
+      "province": "gallamitri"
+    },
+    {
+      "id": "azgaw",
+      "name": "Azgaw",
+      "capital": false,
+      "x": 2806,
+      "y": 1115,
+      "province": "inner_moradzar"
+    },
+    {
+      "id": "kalome",
+      "name": "Kalome",
+      "capital": false,
+      "x": 2832,
+      "y": 1130,
+      "province": "mountainous_werikia"
+    },
+    {
+      "id": "tibski",
+      "name": "Tibski",
+      "capital": true,
+      "x": 2662,
+      "y": 1139,
+      "province": "tibski"
+    },
+    {
+      "id": "janees",
+      "name": "Janees",
+      "capital": false,
+      "x": 2680,
+      "y": 1142,
+      "province": "janees"
+    },
+    {
+      "id": "chuma",
+      "name": "Chuma",
+      "capital": false,
+      "x": 2707,
+      "y": 1156,
+      "province": "chuma"
+    },
+    {
+      "id": "sept",
+      "name": "Sept",
+      "capital": false,
+      "x": 2647,
+      "y": 1171,
+      "province": "sept"
+    },
+    {
+      "id": "euthel",
+      "name": "Euthel",
+      "capital": false,
+      "x": 2700,
+      "y": 1173,
+      "province": "sept"
+    },
+    {
+      "id": "amankul",
+      "name": "Amankul",
+      "capital": false,
+      "x": 2826,
+      "y": 1181,
+      "province": "urban_werikia"
+    },
+    {
+      "id": "mondo",
+      "name": "Mondo",
+      "capital": true,
+      "x": 2791,
+      "y": 1187,
+      "province": "urban_werikia"
+    },
+    {
+      "id": "itsanpo",
+      "name": "Itsanpo",
+      "capital": false,
+      "x": 2608,
+      "y": 1190,
+      "province": "itsanpo_islands"
+    },
+    {
+      "id": "ufre",
+      "name": "Ufre",
+      "capital": false,
+      "x": 2711,
+      "y": 1192,
+      "province": "ufre"
+    },
+    {
+      "id": "piproberi",
+      "name": "Piproberi",
+      "capital": false,
+      "x": 2641,
+      "y": 1199,
+      "province": "sete"
+    },
+    {
+      "id": "dagax",
+      "name": "Dagax",
+      "capital": false,
+      "x": 2716,
+      "y": 1214,
+      "province": "dagax"
+    },
+    {
+      "id": "sete",
+      "name": "Sete",
+      "capital": false,
+      "x": 2654,
+      "y": 1215,
+      "province": "sete"
+    },
+    {
+      "id": "dhallacabo",
+      "name": "Dhallacabo",
+      "capital": false,
+      "x": 2715,
+      "y": 1235,
+      "province": "dhallacabo"
+    },
+    {
+      "id": "ramenka",
+      "name": "Ramenka",
+      "capital": true,
+      "x": 2648,
+      "y": 1248,
+      "province": "ramenka_estuary"
+    },
+    {
+      "id": "layinti",
+      "name": "Layinti",
+      "capital": true,
+      "x": 2735,
+      "y": 1249,
+      "province": "layinti"
+    },
+    {
+      "id": "akalbar",
+      "name": "Akalbar",
+      "capital": false,
+      "x": 2702,
+      "y": 1251,
+      "province": "aqalbari"
+    },
+    {
+      "id": "sarbasa",
+      "name": "Sarbasa",
+      "capital": false,
+      "x": 2681,
+      "y": 1269,
+      "province": "xarbaxa"
+    },
+    {
+      "id": "new_osterholm",
+      "name": "New Osterholm",
+      "capital": false,
+      "x": 2633,
+      "y": 1278,
+      "province": "kursidah"
+    },
+    {
+      "id": "lafa",
+      "name": "Lafa",
+      "capital": false,
+      "x": 2727,
+      "y": 1281,
+      "province": "lafa"
+    },
+    {
+      "id": "wauwau",
+      "name": "Wauwau",
+      "capital": true,
+      "x": 2846,
+      "y": 1261,
+      "province": "wauwau"
+    },
+    {
+      "id": "acuuic",
+      "name": "Acuuic",
+      "capital": false,
+      "x": 2756,
+      "y": 1282,
+      "province": "wamimal"
+    },
+    {
+      "id": "akocgon",
+      "name": "Akocgon",
+      "capital": false,
+      "x": 2779,
+      "y": 1284,
+      "province": "agalur"
+    },
+    {
+      "id": "avemul",
+      "name": "Avemul",
+      "capital": false,
+      "x": 2626,
+      "y": 1309,
+      "province": "avemul"
+    },
+    {
+      "id": "dakec",
+      "name": "Dakec",
+      "capital": true,
+      "x": 2773,
+      "y": 1309,
+      "province": "agalur"
+    },
+    {
+      "id": "kuluwukura",
+      "name": "Kuluwukura",
+      "capital": true,
+      "x": 2868,
+      "y": 1323,
+      "province": "west_cidiama"
+    },
+    {
+      "id": "nokwel",
+      "name": "Nokwel",
+      "capital": false,
+      "x": 2780,
+      "y": 1327,
+      "province": "agalur"
+    },
+    {
+      "id": "lafaadii",
+      "name": "Lafaadii",
+      "capital": true,
+      "x": 2657,
+      "y": 1334,
+      "province": "lafaadii"
+    },
+    {
+      "id": "wiirtuu",
+      "name": "Wiirtuu",
+      "capital": false,
+      "x": 2678,
+      "y": 1336,
+      "province": "wiirtuu"
+    },
+    {
+      "id": "bona",
+      "name": "Bona",
+      "capital": false,
+      "x": 2635,
+      "y": 1346,
+      "province": "lafaadii"
+    },
+    {
+      "id": "dallaa",
+      "name": "Dallaa",
+      "capital": false,
+      "x": 2727,
+      "y": 1347,
+      "province": "dallaa"
+    },
+    {
+      "id": "gaasu",
+      "name": "Gaasu",
+      "capital": false,
+      "x": 2666,
+      "y": 1369,
+      "province": "gaasu"
+    },
+    {
+      "id": "didu",
+      "name": "Didu",
+      "capital": true,
+      "x": 2606,
+      "y": 1336,
+      "province": "didu"
+    },
+    {
+      "id": "karamtafkin",
+      "name": "Karamtafkin",
+      "capital": false,
+      "x": 2912,
+      "y": 1342,
+      "province": "karamtafkin"
+    },
+    {
+      "id": "dugese",
+      "name": "Dugese",
+      "capital": false,
+      "x": 2572,
+      "y": 1348,
+      "province": "didu"
+    },
+    {
+      "id": "kamparu",
+      "name": "Kamparu",
+      "capital": false,
+      "x": 2786,
+      "y": 1367,
+      "province": "kamparu"
+    },
+    {
+      "id": "abinabi",
+      "name": "Abinabi",
+      "capital": false,
+      "x": 2869,
+      "y": 1367,
+      "province": "abinabi"
+    },
+    {
+      "id": "kubaba",
+      "name": "Kubaba",
+      "capital": false,
+      "x": 2553,
+      "y": 1375,
+      "province": "kubaba"
+    },
+    {
+      "id": "mulo",
+      "name": "Mulo",
+      "capital": false,
+      "x": 2628,
+      "y": 1378,
+      "province": "mulo"
+    },
+    {
+      "id": "muhorosi",
+      "name": "Muhorosi",
+      "capital": false,
+      "x": 2756,
+      "y": 1382,
+      "province": "muhorosi"
+    },
+    {
+      "id": "asmel",
+      "name": "Asmel",
+      "capital": false,
+      "x": 2659,
+      "y": 1397,
+      "province": "asmel"
+    },
+    {
+      "id": "igantia",
+      "name": "Igantia",
+      "capital": true,
+      "x": 2785,
+      "y": 1409,
+      "province": "igantia"
+    },
+    {
+      "id": "hitdmi",
+      "name": "Hitdmi",
+      "capital": false,
+      "x": 2606,
+      "y": 1423,
+      "province": "mulo"
+    },
+    {
+      "id": "mibya",
+      "name": "Mibya",
+      "capital": false,
+      "x": 2729,
+      "y": 1423,
+      "province": "mibya"
+    },
+    {
+      "id": "sili",
+      "name": "Sili",
+      "capital": false,
+      "x": 2760,
+      "y": 1429,
+      "province": "sili"
+    },
+    {
+      "id": "bundiroro",
+      "name": "Bundiroro",
+      "capital": false,
+      "x": 2781,
+      "y": 1438,
+      "province": "upper_grey_ramenka_basin"
+    },
+    {
+      "id": "orienton",
+      "name": "Orienton",
+      "capital": false,
+      "x": 2718,
+      "y": 1454,
+      "province": "orienton"
+    },
+    {
+      "id": "kigoti",
+      "name": "Kigoti",
+      "capital": false,
+      "x": 2793,
+      "y": 1470,
+      "province": "kigoti"
+    },
+    {
+      "id": "umujikera",
+      "name": "Umujikera",
+      "capital": true,
+      "x": 2794,
+      "y": 1512,
+      "province": "akhan"
+    },
+    {
+      "id": "cuedolid",
+      "name": "Cuedolid",
+      "capital": false,
+      "x": 2842,
+      "y": 1047,
+      "province": "north_costa_acero"
+    },
+    {
+      "id": "aguja_del_valle",
+      "name": "Aguja del Valle",
+      "capital": false,
+      "x": 2873,
+      "y": 1074,
+      "province": "north_costa_acero"
+    },
+    {
+      "id": "los_caminos",
+      "name": "Los Caminos",
+      "capital": true,
+      "x": 2886,
+      "y": 1094,
+      "province": "south_costa_acero"
+    },
+    {
+      "id": "ballamanas",
+      "name": "Ballamanas",
+      "capital": true,
+      "x": 2906,
+      "y": 1107,
+      "province": "ballamanas"
+    },
+    {
+      "id": "trefnewydd",
+      "name": "Trefnewydd",
+      "capital": false,
+      "x": 2906,
+      "y": 1170,
+      "province": "trefnewydd"
+    },
+    {
+      "id": "villalibre",
+      "name": "VIllalibre",
+      "capital": false,
+      "x": 2908,
+      "y": 1190,
+      "province": "north_lavosuma"
+    },
+    {
+      "id": "talsem",
+      "name": "Talsem",
+      "capital": true,
+      "x": 2892,
+      "y": 1195,
+      "province": "north_lavosuma"
+    },
+    {
+      "id": "tojvor",
+      "name": "Tojvor",
+      "capital": true,
+      "x": 2917,
+      "y": 1218,
+      "province": "tojvor"
+    },
+    {
+      "id": "curapan",
+      "name": "Curapan",
+      "capital": false,
+      "x": 2898,
+      "y": 1253,
+      "province": "south_lavosuma"
+    },
+    {
+      "id": "eniya",
+      "name": "Eniya",
+      "capital": true,
+      "x": 2911,
+      "y": 1272,
+      "province": "eniya"
+    },
+    {
+      "id": "castro_gioioso",
+      "name": "Castro Gioioso",
+      "capital": false,
+      "x": 2956,
+      "y": 1290,
+      "province": "north_nuova_campania"
+    },
+    {
+      "id": "villevaldo",
+      "name": "Villevaldo",
+      "capital": true,
+      "x": 2939,
+      "y": 1306,
+      "province": "north_nuova_campania"
+    },
+    {
+      "id": "pesagnola",
+      "name": "Pesagnola",
+      "capital": false,
+      "x": 2942,
+      "y": 1341,
+      "province": "central_nuova_campania"
+    },
+    {
+      "id": "cerbella",
+      "name": "Cerbella",
+      "capital": false,
+      "x": 2924,
+      "y": 1398,
+      "province": "south_nuova_campania"
+    },
+    {
+      "id": "chowanyama",
+      "name": "Chowanyama",
+      "capital": false,
+      "x": 2879,
+      "y": 1484,
+      "province": "oyobala"
+    },
+    {
+      "id": "esikliba",
+      "name": "Esikliba",
+      "capital": false,
+      "x": 2905,
+      "y": 1485,
+      "province": "esikliba"
+    },
+    {
+      "id": "nkaso",
+      "name": "Nkaso",
+      "capital": false,
+      "x": 2832,
+      "y": 1494,
+      "province": "nkaso"
+    },
+    {
+      "id": "maysea",
+      "name": "Maysea",
+      "capital": false,
+      "x": 2959,
+      "y": 1511,
+      "province": "senga_island"
+    },
+    {
+      "id": "oyobala",
+      "name": "Oyobala",
+      "capital": false,
+      "x": 2852,
+      "y": 1517,
+      "province": "oyobala"
+    },
+    {
+      "id": "kingstown",
+      "name": "Kingstown",
+      "capital": true,
+      "x": 2904,
+      "y": 1523,
+      "province": "kingstown"
+    },
+    {
+      "id": "arasca",
+      "name": "Arasca",
+      "capital": false,
+      "x": 2889,
+      "y": 1559,
+      "province": "arasca"
+    },
+    {
+      "id": "ilhares",
+      "name": "Ilhares",
+      "capital": true,
+      "x": 2843,
+      "y": 1562,
+      "province": "abahodia"
+    },
+    {
+      "id": "santa_mariona",
+      "name": "Santa Mariona",
+      "capital": false,
+      "x": 2865,
+      "y": 1586,
+      "province": "abahodia"
+    },
+    {
+      "id": "port_oliver",
+      "name": "Port Oliver",
+      "capital": false,
+      "x": 2658,
+      "y": 1453,
+      "province": "highfield"
+    },
+    {
+      "id": "highfield",
+      "name": "Highfield",
+      "capital": true,
+      "x": 2672,
+      "y": 1480,
+      "province": "highfield"
+    },
+    {
+      "id": "bechlandsby",
+      "name": "Bechlandsby",
+      "capital": true,
+      "x": 2617,
+      "y": 1493,
+      "province": "bechlandsby"
+    },
+    {
+      "id": "pumwani",
+      "name": "Pumwani",
+      "capital": false,
+      "x": 2699,
+      "y": 1507,
+      "province": "pumwani"
+    },
+    {
+      "id": "hellev",
+      "name": "Hellev",
+      "capital": false,
+      "x": 2609,
+      "y": 1520,
+      "province": "bechlandsby"
+    },
+    {
+      "id": "ostlundvegg",
+      "name": "Ostlundvegg",
+      "capital": false,
+      "x": 2541,
+      "y": 1556,
+      "province": "west_noyinha"
+    },
+    {
+      "id": "asker",
+      "name": "Asker",
+      "capital": true,
+      "x": 2612,
+      "y": 1559,
+      "province": "east_noyinha"
+    },
+    {
+      "id": "tarnet",
+      "name": "Tarnet",
+      "capital": false,
+      "x": 2682,
+      "y": 1563,
+      "province": "tarnet"
+    },
+    {
+      "id": "bijahijan",
+      "name": "Bijahijan",
+      "capital": false,
+      "x": 2520,
+      "y": 1568,
+      "province": "bijahijan"
+    },
+    {
+      "id": "moyana",
+      "name": "Moyana",
+      "capital": false,
+      "x": 2658,
+      "y": 1576,
+      "province": "east_noyinha"
+    },
+    {
+      "id": "bogenbakke",
+      "name": "Bogenbakke",
+      "capital": true,
+      "x": 2682,
+      "y": 1580,
+      "province": "kwanza"
+    },
+    {
+      "id": "enno",
+      "name": "Enno",
+      "capital": false,
+      "x": 2605,
+      "y": 1624,
+      "province": "south_noyinha"
+    },
+    {
+      "id": "majo",
+      "name": "Majo",
+      "capital": true,
+      "x": 2670,
+      "y": 1630,
+      "province": "bwanai"
+    },
+    {
+      "id": "south_meyafo",
+      "name": "Bukiruzi",
+      "capital": false,
+      "x": 2732,
+      "y": 1552,
+      "province": "south_meyafo"
+    },
+    {
+      "id": "south_meyafo_2",
+      "name": "Cigara",
+      "capital": true,
+      "x": 2803,
+      "y": 1571,
+      "province": "south_meyafo"
+    },
+    {
+      "id": "north_sorovera",
+      "name": "Kileti",
+      "capital": true,
+      "x": 2720,
+      "y": 1603,
+      "province": "north_sorovera"
+    },
+    {
+      "id": "south_sorovera",
+      "name": "Toroto",
+      "capital": false,
+      "x": 2727,
+      "y": 1636,
+      "province": "south_sorovera"
+    },
+    {
+      "id": "nhovorus",
+      "name": "Nhovorus",
+      "capital": true,
+      "x": 2543,
+      "y": 1661,
+      "province": "nhovorus"
+    },
+    {
+      "id": "nhovorus_2",
+      "name": "New Vodhus",
+      "capital": false,
+      "x": 2526,
+      "y": 1686,
+      "province": "nhovorus"
+    },
+    {
+      "id": "west_kumabvazuva",
+      "name": "Kakops",
+      "capital": false,
+      "x": 2595,
+      "y": 1694,
+      "province": "west_kumabvazuva"
+    },
+    {
+      "id": "sandesnes",
+      "name": "Sandesnes",
+      "capital": false,
+      "x": 2532,
+      "y": 1704,
+      "province": "sandesnes"
+    },
+    {
+      "id": "east_kumabvazuva",
+      "name": "Vilund",
+      "capital": false,
+      "x": 2663,
+      "y": 1716,
+      "province": "east_kumabvazuva"
+    },
+    {
+      "id": "sharone",
+      "name": "Norgard",
+      "capital": true,
+      "x": 2616,
+      "y": 1731,
+      "province": "sharone"
+    },
+    {
+      "id": "nyhatten",
+      "name": "Nyhatten",
+      "capital": false,
+      "x": 2548,
+      "y": 1742,
+      "province": "nyhatten"
+    },
+    {
+      "id": "ringager",
+      "name": "Ringager",
+      "capital": false,
+      "x": 2549,
+      "y": 1788,
+      "province": "ringager"
+    },
+    {
+      "id": "guldhus",
+      "name": "Guldhus",
+      "capital": false,
+      "x": 2546,
+      "y": 1819,
+      "province": "guldhus"
     }
   ]
 }
