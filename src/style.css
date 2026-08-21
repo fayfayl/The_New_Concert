@@ -60,6 +60,14 @@
   /* One place, because the panel's slide parks it at exactly minus its width. */
   --panel-w: 320px;
 
+  /* The instant the loading screen's handover lands on, measured from the
+     moment `ready` is set. The quote finishes arriving here, the prompt
+     finishes arriving here, and the prompt's blink starts here — three
+     timings that have to be the same number, so they are one number. The
+     gauge and its note are on their way out before it and are written
+     plainly, since they only have to be gone by the time this arrives. */
+  --loading-settle: 1.45s;
+
   --shadow: 0 2px 10px rgba(0, 0, 0, .55);
   --bevel: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 -1px 0 rgba(0, 0, 0, .35);
 
@@ -77,14 +85,14 @@
      "Franklin Gothic Book" on every load, which a browser resisting
      fingerprinting refuses and logs: "Request for font Gill Sans blocked
      at visibility level 3". Cabin ships with the code precisely so that
-     there is nothing to ask for, and system-ui already resolves to a
-     humanist sans on every platform that has one.
+     there is nothing to ask for. Segoe UI is named directly as the fallback,
+     not reached through system-ui.
 
      One face was ruled out on evidence rather than taste. Candara sets
      old-style figures by default, which draws zero at x-height with no
      flat top, so "0/0" comes out looking like "o/o", and a panel of
      numbers is the one place that cannot be allowed. */
-  --ui: Cabin, system-ui, sans-serif;
+  --ui: Cabin, "Segoe UI", sans-serif;
   /* Not a second family. Cabin's width axis IS the condensed cut, reached
      with font-stretch at each use. */
   --ui-narrow: var(--ui);
@@ -95,7 +103,7 @@
      it, and should not be dressed to look like part of the game — it is not.
      Matches the string src/main.js sets on the canvas, so the map and the
      inspector that describes it are set in one face. */
-  --ui-plain: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui-plain: "Segoe UI", sans-serif;
 }
 
 * {
@@ -168,6 +176,7 @@
 #panel::after,
 #tooltip::after,
 #card::after,
+#county-card::after,
 #toolbar button::after,
 .toggles button::after,
 .dialog-panel::after,
@@ -192,6 +201,7 @@
 #panel,
 #tooltip,
 #card,
+#county-card,
 #toolbar button,
 .toggles button,
 .dialog-panel,
@@ -253,7 +263,7 @@
   --tex-at: -320px -145px;
 }
 
-/* The mode buttons and the debug button — four in a row, so all four differ.
+/* The mode buttons and the debug button — six in a row, so all six differ.
    nth-of-type counts within a parent, and the zoom buttons sit inside their own
    span, so they form a second run of their own and are listed separately. */
 #toolbar>button:nth-of-type(1) {
@@ -280,6 +290,18 @@
   --tex-at: -340px -20px;
 }
 
+#toolbar>button:nth-of-type(5) {
+  --tex-span: 380px;
+  --tex-turn: 198deg;
+  --tex-at: -215px -285px;
+}
+
+#toolbar>button:nth-of-type(6) {
+  --tex-span: 380px;
+  --tex-turn: 76deg;
+  --tex-at: -55px -365px;
+}
+
 #zoom-group button:nth-of-type(1) {
   --tex-span: 380px;
   --tex-turn: 84deg;
@@ -298,7 +320,7 @@
   --tex-at: -280px -160px;
 }
 
-/* Eight overlay toggles, eight settings, so nothing repeats down the grid. */
+/* Twelve overlay toggles, twelve settings, so nothing repeats down the grid. */
 .toggles button:nth-of-type(1) {
   --tex-span: 380px;
   --tex-turn: 62deg;
@@ -347,6 +369,30 @@
   --tex-at: -400px -55px;
 }
 
+.toggles button:nth-of-type(9) {
+  --tex-span: 380px;
+  --tex-turn: 108deg;
+  --tex-at: -65px -320px;
+}
+
+.toggles button:nth-of-type(10) {
+  --tex-span: 380px;
+  --tex-turn: 251deg;
+  --tex-at: -285px -125px;
+}
+
+.toggles button:nth-of-type(11) {
+  --tex-span: 380px;
+  --tex-turn: 14deg;
+  --tex-at: -160px -400px;
+}
+
+.toggles button:nth-of-type(12) {
+  --tex-span: 380px;
+  --tex-turn: 231deg;
+  --tex-at: -310px -95px;
+}
+
 body {
   margin: 0;
   background: var(--steel-deepest);
@@ -357,6 +403,87 @@ body {
   overflow: hidden;
 }
 
+/* ============================================== the drifting backdrop
+   The artwork behind the loading screen and the start menu, as a layer of its
+   own rather than a background on those screens, so that it can be moved
+   without moving anything written over it. startParallax() in main.js is what
+   writes the two variables; everything about where the layer sits is here.
+
+   Both screens read the same variables, so they drift together and the
+   handover between them still does not change the picture underneath.
+
+   THREE LAYERS, arranged by the painting order and nothing else. A z-index of
+   -1 puts a pseudo-element above its host's own background and below the
+   host's content, so the ground colour, the photograph, the scrim and finally
+   the panel stack in that order with no z-index on the panel at all. Between
+   the two pseudo-elements it is tree order that decides, which is why the
+   photograph is ::before and the scrim is ::after. Neither can escape its
+   screen: both screens are positioned and carry a z-index, so each is already
+   a stacking context of its own and there is nothing for -1 to fall behind.
+
+   Absolutely positioned, which also takes them out of the flex flow. Both
+   screens are flex containers, and a pseudo-element left in the flow would be
+   laid out as a child beside the panel rather than as a layer behind it.
+
+   TRANSFORMED, not repositioned. Moving a background-position repaints a
+   screen-sized image on every frame of the drift; a transform is handed to the
+   compositor and costs nothing per frame. translate3d rather than translate,
+   so the layer is promoted whether or not the browser judges it worth
+   promoting on its own.
+
+   The 40px of slack is what the movement runs into. PARALLAX_PX in main.js is
+   the furthest the layer ever travels and has to stay under this figure, or
+   the edge of the photograph comes into view at the extremes. Fixed pixels
+   rather than a percentage or a scale, so the slack is the same on a small
+   window as on a large one and that one comparison holds everywhere. */
+#loading::before,
+#start::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  z-index: -1;
+  pointer-events: none;
+  /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
+     URLs, so moving the CSS into src/ moved the meaning of every path in it. */
+  background: url('../data/img/start_menu_bg.jpg') center / cover no-repeat;
+  transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0);
+}
+
+/* The scrim, which is what keeps the text readable whatever the picture is
+   doing underneath. It does NOT drift. It is doing a job for the words in
+   front of it rather than for the image behind it, and a scrim that slid off
+   its own text would stop doing that job exactly at the edges, which is where
+   the drift takes it. */
+#loading::after,
+#start::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#start::after {
+  background: linear-gradient(rgba(8, 11, 16, .62), rgba(8, 11, 16, .82));
+}
+
+/* Darker than the menu's, because a quote has to be read on this one. */
+#loading::after {
+  background: linear-gradient(rgba(8, 11, 16, .76), rgba(8, 11, 16, .9));
+}
+
+/* startParallax() refuses to run under this preference and never attaches its
+   listener, so this is not what normally stops the drift. It is here for the
+   case that check cannot cover: the preference being turned on part way
+   through a session, after the listener is already attached. */
+@media (prefers-reduced-motion: reduce) {
+
+  #loading::before,
+  #start::before {
+    transform: none;
+  }
+}
+
 /* ======================================================== start menu */
 #start {
   position: fixed;
@@ -365,13 +492,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Cover art. The scrim over it is what keeps the text readable whatever the
-     image is doing underneath. */
-  background: linear-gradient(rgba(8, 11, 16, .62), rgba(8, 11, 16, .82)),
-    /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
-       URLs, so moving the CSS into src/ moved the meaning of every path in it. */
-    url('../data/start_menu_bg.jpg') center / cover no-repeat,
-    var(--steel-deepest);
+  /* Only the ground colour. The cover art and the scrim over it are two layers
+     of their own, further down, because the art moves with the pointer and
+     nothing written over it may move with it. */
+  background: var(--steel-deepest);
   transition: opacity .45s ease;
 }
 
@@ -434,7 +558,15 @@ body {
   gap: 11px;
 }
 
-#start-enter {
+/* The primary action on a screen that has stopped to ask something, wherever
+   that screen is. Enter on the start menu and Resume on the pause menu are the
+   same button doing the same job, so they are one rule rather than two that
+   have to be kept in step. The texture overlay above is deliberately not
+   extended to the second of them: the start screen's buttons sit on bare
+   photography and need the grain to read as objects, while the pause menu's
+   sit inside a panel that is already carrying it. */
+#start-enter,
+#pause-resume {
   font-family: var(--ui-narrow);
   font-stretch: 82%;
   background: linear-gradient(180deg, #46586e, #2b3746);
@@ -453,7 +585,8 @@ body {
   transition: background .14s, border-color .14s;
 }
 
-#start-enter:hover:not(:disabled) {
+#start-enter:hover:not(:disabled),
+#pause-resume:hover:not(:disabled) {
   background: linear-gradient(180deg, #566b85, #354355);
   border-top-color: var(--accent-bright);
 }
@@ -464,7 +597,8 @@ body {
   letter-spacing: .18em;
 }
 
-#start-enter:focus-visible {
+#start-enter:focus-visible,
+#pause-resume:focus-visible {
   outline: 1px solid var(--accent-bright);
   outline-offset: 3px;
 }
@@ -527,11 +661,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* The same art as the menu, so the handover between the two screens does not
-     change the picture underneath. Darker, because a quote has to be read on it. */
-  background: linear-gradient(rgba(8, 11, 16, .76), rgba(8, 11, 16, .9)),
-    url('../data/start_menu_bg.jpg') center / cover no-repeat,
-    var(--steel-deepest);
+  /* Ground colour only, as on the menu. The art itself is the shared layer
+     below, which is what keeps the handover between the two screens from
+     changing the picture underneath — including how far it has drifted. */
+  background: var(--steel-deepest);
   transition: opacity .45s ease;
 }
 
@@ -641,7 +774,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  transition: opacity .3s ease;
+  transition: opacity .5s ease;
 }
 
 #loading.ready .loading-bar {
@@ -657,8 +790,10 @@ body {
   padding: 0 24px;
   opacity: 0;
   /* Starts a little after the gauge begins to go, so the two are not both at
-     half strength at the same moment. */
-  transition: opacity .7s ease .2s;
+     half strength at the same moment, and finishes on the settle instant. The
+     duration is the remainder of that figure rather than a number of its own,
+     so the delay can be adjusted without the arrival moving with it. */
+  transition: opacity calc(var(--loading-settle) - .35s) ease .35s;
 }
 
 #loading.ready #loading-quote {
@@ -688,10 +823,11 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
 }
 
-/* The stage report has nothing left to say once the map is built. */
+/* The stage report has nothing left to say once the map is built. It leaves
+   with the gauge it belongs to, so it carries the gauge's timing. */
 #loading.ready #loading-note {
   opacity: 0;
-  transition: opacity .3s ease;
+  transition: opacity .5s ease;
 }
 
 /* Anchored to the foot of the window, and out of the flow in both states so that
@@ -714,14 +850,18 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .6s ease .3s;
+  /* Later off the mark than the quote and arriving with it, so the screen
+     settles as one moment rather than in two instalments. Same arithmetic as
+     the quote: the remainder of the settle figure after its own delay. */
+  transition: opacity calc(var(--loading-settle) - .5s) ease .5s;
 }
 
 /* Fades in first, then the blink takes over. The delay is what keeps the two
-   from fighting over the same property. */
+   from fighting over the same property, so it is the moment the fade lands
+   and not a figure of its own. */
 #loading.ready #loading-prompt {
   opacity: 1;
-  animation: loading-prompt 1.7s ease-in-out .9s infinite;
+  animation: loading-prompt 1.7s ease-in-out var(--loading-settle) infinite;
 }
 
 @keyframes loading-prompt {
@@ -950,6 +1090,62 @@ body {
   outline-offset: 2px;
 }
 
+/* ====================================================== pause menu
+   Esc from the map, once there is nothing left to deselect.
+
+   Fixed rather than absolute, and a sibling of the map rather than a child of
+   the start screen. The start dialogs above can be absolute because #start is
+   itself fixed and they only ever exist inside it; this one outlives that
+   screen, so it positions itself against the viewport directly.
+
+   Below #start's z-index of 100 and above every piece of map chrome, so it
+   covers the toolbar, the card and the debug panel while it is up, and the
+   start screen covers IT the moment quitting brings that screen back. */
+#pause {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: rgba(6, 9, 13, .62);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .16s ease, visibility 0s .16s;
+}
+
+#pause.open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .16s ease;
+}
+
+/* Its own crop of the sheet, on the same reasoning as every other box: the
+   panel inherits .dialog-panel's texture settings otherwise, and would be the
+   identical patch of grain the changelog shows. */
+#pause .dialog-panel {
+  --tex-span: 1100px;
+  --tex-turn: 96deg;
+  --tex-at: -270px -330px;
+
+  /* Narrower than the changelog, which is a column of text. This is two
+     buttons, and a wide box around them reads as a dialog missing its
+     contents. The height cap .dialog-panel carries is irrelevant here and
+     does no harm. */
+  width: min(320px, 100%);
+}
+
+/* Stretched rather than centred, so the two buttons share one edge and read as
+   a pair of alternatives. Sized to the panel, which is what makes the padding
+   #start-enter carries for a button standing on its own irrelevant here. */
+.pause-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+}
+
 /* =============================================================== map */
 #map-area {
   flex: 1;
@@ -1114,6 +1310,135 @@ body {
   letter-spacing: .06em;
 }
 
+/* ------------------------------------------------------------- clock
+   A plate at the right-hand end of the toolbar: slower, run state, date,
+   faster. `margin-left: auto` is what puts it there, so the toolbar needs no
+   spacer element standing in the markup purely to take up room.
+
+   TWO WARM COLOURS on a palette whose whole premise is that there are none.
+   The rule at the top of this file is that emphasis comes from value rather
+   than from a second hue, and it holds for chrome, which is furniture. This is
+   not furniture: it is the one control that says whether the world is moving,
+   and it has to be readable from the far side of the screen without being
+   looked for. Both hues are already in the project rather than invented for
+   it — the gold is OUTLINE_COLOUR, the ring drawn around a selected province,
+   and the green is only ever the running state. Nothing else may use either. */
+#clock {
+  --gold: #cea35e;
+  --go: #6fbf73;
+
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 5px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #171d25, #0f141a);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .6), 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+/* The face is sunk into the plate rather than raised off it, so the two
+   buttons either side read as the things you press and this reads as the thing
+   they act on. Tabular figures, because every one of them is changing several
+   times a second and proportional digits would make the whole line jitter as
+   they went by. */
+#clock-face {
+  min-width: 172px;
+  padding: 3px 9px;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  background: rgba(0, 0, 0, .38);
+  border: 1px solid #000;
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .7);
+  white-space: nowrap;
+}
+
+#clock button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex: none;
+  background: linear-gradient(180deg, var(--steel-raised), #171d25);
+  border: 1px solid var(--rule-bright);
+  border-radius: 2px;
+  color: var(--gold);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--bevel);
+  transition: border-color .12s, color .12s, background .12s;
+}
+
+#clock button:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--steel-hover), #1d242e);
+  border-color: var(--gold);
+}
+
+#clock button:active:not(:disabled) {
+  background: #0f141a;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .6);
+}
+
+#clock button:focus-visible {
+  outline: 1px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+/* At the ends of the speed range. Dimmed rather than hidden, so the control
+   keeps its shape and it is plain that there is nothing further that way. */
+#clock button:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
+/* Both marks are in the button and one of them is shown, so pressing it cannot
+   change the button's width and shunt the date along by a pixel. */
+#clock-play .play,
+#clock-play .halt {
+  display: block;
+}
+
+#clock.running .play,
+#clock:not(.running) .halt {
+  display: none;
+}
+
+/* Drawn from borders rather than set as glyphs. A triangle and two bars at
+   this size are shapes, not letters, and asking a font for them means taking
+   whatever that font has and hoping it is centred. */
+#clock-play .play {
+  width: 0;
+  height: 0;
+  border-left: 9px solid var(--go);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  /* The optical centre of a triangle is behind its own point, so a triangle
+     centred by its bounding box looks pushed to the right. */
+  margin-left: 2px;
+}
+
+#clock-play .halt {
+  width: 10px;
+  height: 12px;
+  border-left: 3px solid var(--go);
+  border-right: 3px solid var(--go);
+}
+
+/* Running is the state worth seeing at a glance, so the plate itself carries
+   it rather than only the mark inside the button. */
+#clock.running #clock-play {
+  border-color: var(--go);
+}
+
 /* ---------------------------------------------------------- canvas */
 #canvas-wrap {
   flex: 1;
@@ -1136,6 +1461,11 @@ canvas {
   width: 100%;
   height: 100%;
   cursor: crosshair;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
 }
 
 canvas.panning {
@@ -1268,6 +1598,16 @@ canvas.panning {
   grid-template-columns: 1fr 1fr;
   gap: 5px;
   margin-bottom: 22px;
+}
+
+/* An author rule beats the browser's own [hidden] whatever their specificity,
+   so anything given a display of its own goes on showing after hidden is set.
+   This was found twice: a toggle with nothing to show stayed on the grid, and
+   the card said a province was occupied because .card-owner i sets display and
+   the line from the LAST province was never taken down. One rule for both, and
+   for the next one. */
+[hidden] {
+  display: none !important;
 }
 
 .toggles button {
@@ -1456,6 +1796,15 @@ canvas.panning {
   .wordmark b {
     display: none;
   }
+
+  /* The month names are written out in full and are the longest thing in the
+     toolbar, so the face gives up its reserve width first. It still holds the
+     longest date it can produce; what goes is the room kept for it. */
+  #clock-face {
+    min-width: 0;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
 }
 
 /* ==================================================== province card
@@ -1490,6 +1839,42 @@ canvas.panning {
   transform: translateY(calc(100% + 16px));
   transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s .3s;
 }
+
+/* The same panel as #card, in the same corner. The two never show at once — a
+   left click puts the county away and a right click puts the province away — so
+   they can share the spot rather than each needing one of their own. */
+#county-card {
+  --tex-span: 900px;
+  --tex-turn: 149deg;
+  --tex-at: -215px -75px;
+
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 20;
+  width: 260px;
+
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel-deep));
+  border: 1px solid #000;
+  border-top-color: var(--rule-bright);
+  border-radius: 2px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .6), var(--bevel);
+
+  font-size: 12px;
+  color: var(--text);
+
+  visibility: hidden;
+  transform: translateY(calc(100% + 16px));
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s .3s;
+}
+
+#county-card.open {
+  visibility: visible;
+  transform: none;
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s 0s;
+}
+
+#county-card .card-row:last-child { border-bottom: 0; }
 
 #card.open {
   visibility: visible;
@@ -1544,7 +1929,8 @@ canvas.panning {
   white-space: nowrap;
 }
 
-#card-close {
+#card-close,
+#county-close {
   flex: none;
   width: 20px;
   height: 20px;
@@ -1559,7 +1945,8 @@ canvas.panning {
   cursor: pointer;
 }
 
-#card-close:hover {
+#card-close:hover,
+#county-close:hover {
   color: var(--paper);
   border-color: var(--rule-bright);
 }

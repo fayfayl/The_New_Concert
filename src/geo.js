@@ -11,7 +11,7 @@
  * So area is not a pixel count. Each ROW carries its own area per pixel, and
  * every real measurement here starts from that.
  *
- * Areas are measured from `data/true_area.png`, which holds the whole world on a
+ * Areas are measured from `data/img/true_area.png`, which holds the whole world on a
  * 2:1 equirectangular globe: row 0 is the north pole and the last row the south,
  * so a row is a latitude and there is nothing to line up.
  *

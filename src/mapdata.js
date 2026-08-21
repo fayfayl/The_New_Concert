@@ -32,7 +32,8 @@ export function toRgb(value) {
  * Puts the raw JSON into the shape the rest of the file expects, so nothing
  * downstream has to handle more than one form of anything:
  *   - every colour becomes [r,g,b], whatever it was written as
- *   - `terrain` becomes a list, so a bare string works as shorthand for one tag
+ *   - `terrain` and `climate` become lists, so a bare string works as shorthand
+ *     for one tag and a province with neither still answers with an empty list
  *   - polities get a Map by id, since they are looked up per province per repaint
  * Mutates and returns the same object.
  */
@@ -42,6 +43,7 @@ export function normaliseTable(table) {
   for (const p of table.provinces) {
     p.colour = toRgb(p.colour);
     p.terrain = Array.isArray(p.terrain) ? p.terrain : (p.terrain ? [p.terrain] : []);
+    p.climate = Array.isArray(p.climate) ? p.climate : (p.climate ? [p.climate] : []);
   }
   table.polityById = new Map(table.polities.map((q) => [q.id, q]));
   return table;
@@ -161,6 +163,7 @@ export function mapPixels(image, table, colourToIndex) {
 export const MIN_BORDER_PX = 2;
 
 export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
+  const half = width / 2;
   const adjacency = new Map([...byId.keys()].map((id) => [id, new Set()]));
   const coastal = new Set();
   const bounds = new Map();
@@ -194,10 +197,20 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
       if (index !== OCEAN) {
         const id = idOf(index);
         let bb = bounds.get(id);
-        if (!bb) bounds.set(id, (bb = { minX: x, minY: y, maxX: x, maxY: y, n: 0, sx: 0, sy: 0 }));
+        if (!bb) {
+          bounds.set(id, (bb = {
+            minX: x, minY: y, maxX: x, maxY: y, n: 0, sx: 0, sy: 0,
+            // The two halves of the map, kept apart so that a province holding
+            // ground on both sides of the seam can be given a box that describes
+            // where it is. See resolveWrap.
+            maxLeft: -1, minRight: width, nLeft: 0, sxLeft: 0,
+          }));
+        }
         if (x < bb.minX) bb.minX = x; else if (x > bb.maxX) bb.maxX = x;
         if (y < bb.minY) bb.minY = y; else if (y > bb.maxY) bb.maxY = y;
         bb.n++; bb.sx += x; bb.sy += y;
+        if (x < half) { if (x > bb.maxLeft) bb.maxLeft = x; bb.nLeft++; bb.sxLeft += x; }
+        else if (x < bb.minRight) bb.minRight = x;
       }
 
       // The pair to the right, and at the last column that is column 0 of the
@@ -211,7 +224,7 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
   }
   // Position sums become centroids now the counts are final. Note this is the
   // centre of MASS, not of the box: for an L-shaped province it can fall outside.
-  for (const bb of bounds.values()) { bb.cx = bb.sx / bb.n; bb.cy = bb.sy / bb.n; }
+  for (const bb of bounds.values()) resolveWrap(bb, width);
 
   // Now decide which of those contacts are real frontiers.
   //
@@ -259,6 +272,253 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
  * part of it. It does not have to be rebuilt whole: see refreshBorderDistance,
  * which redoes a rectangle of it and is what ownership changes use.
  */
+/**
+ * Settles a province box, and its centroid, against the map wrapping.
+ *
+ * A box is one rectangle and the map has no left or right edge, so a province
+ * holding ground on both sides of the seam gets a box spanning the whole map.
+ * Verley-Maret occupies column 5999 and columns 0 to 381, which is 383 columns
+ * of map, and its plain box is 6000 wide.
+ *
+ * Every pixel below the midpoint is at or before `maxLeft`, and every pixel at
+ * or above it is at or after `minRight`, so nothing lies between the two. The
+ * wrapped box therefore runs from `minRight` to `maxLeft + width` and holds
+ * every pixel the province has, whatever its shape.
+ *
+ * Whichever box is narrower wins. A province spanning the middle of the map
+ * rather than the seam keeps its plain box, since the wrapped one comes out
+ * wider. `maxX` may therefore be at or past `width`, and every reader of it
+ * takes x modulo width.
+ */
+export function resolveWrap(bb, width) {
+  bb.cy = bb.sy / bb.n;
+
+  const plain = bb.maxX - bb.minX + 1;
+  const wrapped = bb.maxLeft < 0 || bb.minRight >= width
+    ? Infinity
+    : (width - bb.minRight) + bb.maxLeft + 1;
+
+  if (wrapped >= plain) {
+    bb.cx = bb.sx / bb.n;
+    return bb;
+  }
+
+  bb.minX = bb.minRight;
+  bb.maxX = bb.maxLeft + width;
+  // The left-hand pixels sit a map width further along in this frame, so the
+  // centroid is summed there and brought back into the map afterwards. Averaging
+  // the raw x instead puts the centre of a seam province in the far hemisphere.
+  bb.cx = ((bb.sx + bb.nLeft * width) / bb.n) % width;
+  return bb;
+}
+
+/**
+ * The sea equivalent of normaliseTable. Colours become [r,g,b] and the tag list
+ * is made a list, so nothing downstream handles more than one form of either.
+ */
+export function normaliseSeaTable(table) {
+  table.landColour = toRgb(table.landColour);
+  for (const r of table.regions) {
+    r.colour = toRgb(r.colour);
+    r.tags = Array.isArray(r.tags) ? r.tags : (r.tags ? [r.tags] : []);
+  }
+  table.regionById = new Map(table.regions.map((r) => [r.id, r]));
+  return table;
+}
+
+/**
+ * sea.png read the way provinces.png is: one flat colour per region, the same
+ * size, and the background colour standing for land.
+ *
+ * Index 0 means LAND here, where in the province world it means sea. The two
+ * arrays are therefore complements of each other, and a pixel is in exactly one
+ * of them.
+ *
+ * scanAdjacency does the second half unchanged. It was written against a
+ * per-pixel index array and a table of things with ids, which is what this is,
+ * so sea regions get the same wrapped bounds, the same centroids and the same
+ * MIN_BORDER_PX rule about what counts as a border. Its `coastal` set comes back
+ * meaning regions that touch land, which is all of them, and is discarded.
+ */
+/** indexProvinces for the sea. Slot 0 is land, so real regions start at 1. */
+export function indexSea(table) {
+  const byId = new Map();
+  const atIndex = [null];
+  const colourToIndex = new Map();
+
+  for (const r of table.regions) {
+    if (r.id === undefined || r.id === null || r.id === '') {
+      console.warn('sea region with no id, skipped:', r);
+    } else if (byId.has(r.id)) {
+      console.warn(`duplicate sea region id "${r.id}" — the second is ignored`, r);
+    } else {
+      r.index = atIndex.length;
+      atIndex.push(r);
+      byId.set(r.id, r);
+      colourToIndex.set(rgbKey(...r.colour), r.index);
+    }
+  }
+  return { byId, atIndex, colourToIndex };
+}
+
+export function buildSeaWorld(table, image) {
+  const { width, height } = image;
+  const { byId, atIndex, colourToIndex } = indexSea(table);
+
+  const Store = table.regions.length < 65535 ? Uint16Array : Int32Array;
+  const seaAt = new Store(width * height);
+  const landKey = rgbKey(...table.landColour);
+  const px = image.data;
+  const unknown = new Map();
+
+  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+    const k = rgbKey(px[i], px[i + 1], px[i + 2]);
+    if (k === landKey) continue;           // the array is already 0
+    const index = colourToIndex.get(k);
+    if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
+    else seaAt[p] = index;
+  }
+  if (unknown.size) {
+    console.warn(`${unknown.size} colour(s) in sea.png are not in sea.json and read as land.`,
+      [...unknown].slice(0, 8).map(([k, n]) => ({ found: `#${(k >>> 0).toString(16).padStart(6, '0')}`, pixels: n })));
+  }
+
+  const { adjacency, bounds } = scanAdjacency(seaAt, width, height, byId, atIndex);
+  return { width, height, seaAt, atIndex, byId, adjacency, bounds, table, unknown: unknown.size };
+}
+
+/**
+ * counties.json, on the same terms as the province and sea tables: colours
+ * become [r,g,b] and the terrain list is made a list.
+ */
+/**
+ * The sea subregions, which live in sea.json beside the regions they came from.
+ *
+ * One table, because a subregion is meaningless without its region and the two
+ * are edited together. `landColour` is the sea table's, so this normalises what
+ * normaliseSeaTable has not already.
+ */
+export function normaliseSubTable(table) {
+  for (const s of table.subregions || []) {
+    s.colour = toRgb(s.colour);
+    s.tags = Array.isArray(s.tags) ? s.tags : (s.tags ? [s.tags] : []);
+  }
+  table.subById = new Map((table.subregions || []).map((s) => [s.id, s]));
+  return table;
+}
+
+/** Index -> subregion, colour -> index, id -> subregion. As indexCounties. */
+export function indexSubs(table) {
+  const byId = new Map();
+  const atIndex = [null];
+  const colourToIndex = new Map();
+
+  for (const s of table.subregions || []) {
+    if (s.id === undefined || s.id === null || s.id === '') {
+      console.warn('sea subregion with no id, skipped:', s);
+    } else if (byId.has(s.id)) {
+      console.warn(`duplicate sea subregion id "${s.id}" — the second is ignored`, s);
+    } else {
+      s.index = atIndex.length;
+      atIndex.push(s);
+      byId.set(s.id, s);
+      colourToIndex.set(rgbKey(...s.colour), s.index);
+    }
+  }
+  return { byId, atIndex, colourToIndex };
+}
+
+/** The per-pixel subregion index, from sea_subregions.png. As buildCountyWorld. */
+export function buildSubWorld(table, image) {
+  const { width, height } = image;
+  const { byId, atIndex, colourToIndex } = indexSubs(table);
+
+  const subAt = new Uint16Array(width * height);
+  const landKey = rgbKey(...toRgb(table.landColour));
+  const px = image.data;
+  const unknown = new Map();
+
+  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+    const k = rgbKey(px[i], px[i + 1], px[i + 2]);
+    if (k === landKey) continue;
+    const index = colourToIndex.get(k);
+    if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
+    else subAt[p] = index;
+  }
+  if (unknown.size) {
+    console.warn(`${unknown.size} colour(s) in sea_subregions.png are not in sea.json.`,
+      [...unknown].slice(0, 8).map(([k, n]) => ({ found: `#${(k >>> 0).toString(16).padStart(6, '0')}`, pixels: n })));
+  }
+
+  const { adjacency, bounds } = scanAdjacency(subAt, width, height, byId, atIndex);
+  return { width, height, subAt, atIndex, byId, adjacency, bounds, table, unknown: unknown.size };
+}
+
+export function normaliseCountyTable(table) {
+  table.oceanColour = toRgb(table.oceanColour);
+  for (const c of table.counties) {
+    c.colour = toRgb(c.colour);
+    c.terrain = Array.isArray(c.terrain) ? c.terrain : (c.terrain ? [c.terrain] : []);
+  }
+  table.countyById = new Map(table.counties.map((c) => [c.id, c]));
+  return table;
+}
+
+/** indexProvinces for the counties. Slot 0 is sea, so real counties start at 1. */
+export function indexCounties(table) {
+  const byId = new Map();
+  const atIndex = [null];
+  const colourToIndex = new Map();
+
+  for (const c of table.counties) {
+    if (c.id === undefined || c.id === null || c.id === '') {
+      console.warn('county with no id, skipped:', c);
+    } else if (byId.has(c.id)) {
+      console.warn(`duplicate county id "${c.id}" — the second is ignored`, c);
+    } else {
+      c.index = atIndex.length;
+      atIndex.push(c);
+      byId.set(c.id, c);
+      colourToIndex.set(rgbKey(...c.colour), c.index);
+    }
+  }
+  return { byId, atIndex, colourToIndex };
+}
+
+/**
+ * counties.png read the way provinces.png is: one flat colour per county, the
+ * same size, with the ocean colour standing for water.
+ *
+ * The adjacency this produces is the one armies move on, so it uses the same
+ * scanAdjacency as the provinces do: edges only, no diagonals, wrapping east to
+ * west, and a contact shorter than MIN_BORDER_PX read as a drawing artefact
+ * rather than a frontier.
+ */
+export function buildCountyWorld(table, image) {
+  const { width, height } = image;
+  const { byId, atIndex, colourToIndex } = indexCounties(table);
+
+  const countyAt = new Uint16Array(width * height);
+  const oceanKey = rgbKey(...table.oceanColour);
+  const px = image.data;
+  const unknown = new Map();
+
+  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+    const k = rgbKey(px[i], px[i + 1], px[i + 2]);
+    if (k === oceanKey) continue;
+    const index = colourToIndex.get(k);
+    if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
+    else countyAt[p] = index;
+  }
+  if (unknown.size) {
+    console.warn(`${unknown.size} colour(s) in counties.png are not in counties.json.`,
+      [...unknown].slice(0, 8).map(([k, n]) => ({ found: `#${(k >>> 0).toString(16).padStart(6, '0')}`, pixels: n })));
+  }
+
+  const { adjacency, bounds } = scanAdjacency(countyAt, width, height, byId, atIndex);
+  return { width, height, countyAt, atIndex, byId, adjacency, bounds, table, unknown: unknown.size };
+}
+
 export const CHAMFER_ORTH = 3;
 export const CHAMFER_DIAG = 4;
 export const BORDER_DIST_MAX = 255;
@@ -329,46 +589,88 @@ export function refreshBorderDistance(world, dist, box) {
       const i = y * width + x;
       const index = provinceAt[i];
       if (index === OCEAN) { dist[i] = 0; continue; }
-      // Sideways reads WRAP. Falling back to -1 at the edges, as the vertical
-      // ones do, would seed every pixel of column 0 and of the last column as a
-      // frontier — and a frontier is drawn at full colour, so the map's seam
-      // came out as a hard line down open country that is not divided at all.
-      // Up and down keep the fallback, because a pole really is the end.
+      // NO DIRECTION FALLS BACK TO -1, in any of the four. Sideways it wraps,
+      // because the map does. Up and down fall back to the pixel's own owner,
+      // which is the same as not testing that direction at all.
+      //
+      // -1 means "somebody else is there", and there is nobody on the other side
+      // of either edge. Sideways it made column 0 and the last column a frontier
+      // down open country that is not divided at all. Vertically it did the same
+      // to the first and last row: 100% of the 4,246 land pixels in row 2649 came
+      // out as frontier against 0.1% one row in, and a frontier is drawn at full
+      // strength, so it was a solid line straight across the bottom of the map
+      // where Kontaria runs off the edge.
+      //
+      // The map is a band cut out of the globe. A cut is not a border.
+      // See test/borderdist-map.mjs, which measures all four edges.
       const mine = ownerAt[index];
       const left = ownerAt[provinceAt[x > 0 ? i - 1 : i + width - 1]];
       const right = ownerAt[provinceAt[x + 1 < width ? i + 1 : y * width]];
-      const up = y > 0 ? ownerAt[provinceAt[i - width]] : -1;
-      const down = y + 1 < height ? ownerAt[provinceAt[i + width]] : -1;
+      const up = y > 0 ? ownerAt[provinceAt[i - width]] : mine;
+      const down = y + 1 < height ? ownerAt[provinceAt[i + width]] : mine;
       dist[i] = (left !== mine || right !== mine || up !== mine || down !== mine) ? 0 : MAX;
     }
   }
 
   const A = CHAMFER_ORTH, B = CHAMFER_DIAG;
 
+  // The SEEDS wrap, as the note above says, so a frontier crossing the map seam is
+  // marked on both sides of it. The distances that spread out from those seeds did
+  // not, and that is the other half of the same problem: a pixel in the last column
+  // could not be told how far it was from a frontier just east of the first column,
+  // so it kept MAX while its neighbour across the seam held a small number. The
+  // shading is read straight off this field, and a step from MAX to nearly zero in
+  // the space of one column draws as a hard line down open country. On the map that
+  // is x 5999, the antimeridian.
+  //
+  // Only a pass over the whole width can wrap. A partial box that stops short of
+  // either edge has no seam in it to cross.
+  const wrapX = x0 === 0 && x1 === width;
+
+  // How far a distance can travel before it saturates, which is as far as anything
+  // needs to reach around the seam. Anything past this is already MAX on both
+  // sides and has nothing to say to the other.
+  const tail = wrapX ? Math.min(BORDER_DIST_REACH + 1, width >> 1) : 0;
+
+  const left = (i, x, y) => (x > 0 ? dist[i - 1] : wrapX ? dist[y * width + width - 1] : MAX) + A;
+  const right = (i, x, y) => (x + 1 < width ? dist[i + 1] : wrapX ? dist[y * width] : MAX) + A;
+  const upLeft = (i, x, y) => (x > 0 ? dist[i - width - 1] : wrapX ? dist[(y - 1) * width + width - 1] : MAX) + B;
+  const upRight = (i, x, y) => (x + 1 < width ? dist[i - width + 1] : wrapX ? dist[(y - 1) * width] : MAX) + B;
+  const downLeft = (i, x, y) => (x > 0 ? dist[i + width - 1] : wrapX ? dist[(y + 1) * width + width - 1] : MAX) + B;
+  const downRight = (i, x, y) => (x + 1 < width ? dist[i + width + 1] : wrapX ? dist[(y + 1) * width] : MAX) + B;
+
   for (let y = y0; y < y1; y++) {                 // forward: down and right
-    for (let x = x0; x < x1; x++) {
+    const step = (x) => {
       const i = y * width + x;
       let d = dist[i];
-      if (d === 0) continue;
-      if (x > 0) d = Math.min(d, dist[i - 1] + A);
-      if (y > 0) d = Math.min(d, dist[i - width] + A);
-      if (y > 0 && x > 0) d = Math.min(d, dist[i - width - 1] + B);
-      if (y > 0 && x + 1 < width) d = Math.min(d, dist[i - width + 1] + B);
+      if (d === 0) return;
+      d = Math.min(d, left(i, x, y));
+      if (y > 0) {
+        d = Math.min(d, dist[i - width] + A, upLeft(i, x, y), upRight(i, x, y));
+      }
       dist[i] = d > MAX ? MAX : d;      // clamp by hand: Uint8Array wraps, it does not saturate
-    }
+    };
+    for (let x = x0; x < x1; x++) step(x);
+
+    // The row again, over its first few columns. The reads above the row were
+    // final when they were taken, but the one to the LEFT of column 0 is the last
+    // column of this same row, which the sweep had not reached yet. Now it has.
+    for (let x = 0; x < tail; x++) step(x);
   }
 
   for (let y = y1 - 1; y >= y0; y--) {            // backward: up and left
-    for (let x = x1 - 1; x >= x0; x--) {
+    const step = (x) => {
       const i = y * width + x;
       let d = dist[i];
-      if (d === 0) continue;
-      if (x + 1 < width) d = Math.min(d, dist[i + 1] + A);
-      if (y + 1 < height) d = Math.min(d, dist[i + width] + A);
-      if (y + 1 < height && x + 1 < width) d = Math.min(d, dist[i + width + 1] + B);
-      if (y + 1 < height && x > 0) d = Math.min(d, dist[i + width - 1] + B);
+      if (d === 0) return;
+      d = Math.min(d, right(i, x, y));
+      if (y + 1 < height) {
+        d = Math.min(d, dist[i + width] + A, downRight(i, x, y), downLeft(i, x, y));
+      }
       dist[i] = d > MAX ? MAX : d;
-    }
+    };
+    for (let x = x1 - 1; x >= x0; x--) step(x);
+    for (let x = width - 1; x >= width - tail; x--) step(x);   // the same, at the other end
   }
 }
 
@@ -742,6 +1044,51 @@ export function computeLabelGeometry(world) {
  * Rebuilt rather than updated when provinces change hands, since which provinces
  * a realm holds is exactly what changes then. Returns the blocks touched.
  */
+/**
+ * One block per country listed, holding every province it owns whether or not
+ * the pieces touch.
+ *
+ * Ordinary blocks are contiguous by construction, which is what a name written
+ * along a landmass needs and is no use to a country that has no landmass. An
+ * island country is several blocks of one province each, none of them able to
+ * carry the name, and naming the largest leaves the rest of the country bare.
+ * This is the other shape: one block for the whole country, so a name can run
+ * across islands buildBlocks would never have joined.
+ *
+ * `plan` maps a polity id to the province indices its block should hold. Slots
+ * are recycled the way realm blocks recycle them, so calling this on every
+ * ownership change does not grow the arrays. Returns the blocks now holding a
+ * country and the slots left over, whose labels the caller drops.
+ */
+export function setIslandBlocks(world, geometry, plan) {
+  const spare = [];
+  geometry.blocks.forEach((blk, b) => {
+    if (!blk || blk.level !== 'islands') return;
+    blk.members = [];
+    geometry.geo[b] = null;
+    geometry.fit[b] = null;
+    spare.push(b);
+  });
+
+  const touched = [];
+  for (const [owner, members] of plan) {
+    if (!members.length) continue;
+    let b;
+    if (spare.length) b = spare.pop();
+    else {
+      b = geometry.blocks.length;
+      geometry.blocks.push(null);
+      geometry.geo.push(null);
+      geometry.fit.push(null);
+    }
+    geometry.blocks[b] = { owner, members: [...members], level: 'islands' };
+    touched.push(b);
+  }
+
+  computeBlockGeometry(world, geometry, touched);
+  return { touched, spare };
+}
+
 export function addRealmBlocks(world, geometry) {
   if (!geometry) return [];
 
@@ -849,7 +1196,8 @@ export function computeBlockGeometry(world, geometry, ids) {
       for (let y = bb.minY; y <= bb.maxY; y++) {
         const row = y * width;
         for (let x = bb.minX; x <= bb.maxX; x++) {
-          if (provinceAt[row + x] === ix) addMoment(acc, x, y);
+          const wx = x < width ? x : x - width;
+          if (provinceAt[row + wx] === ix) addMoment(acc, x, y);
         }
       }
     }
@@ -865,7 +1213,8 @@ export function computeBlockGeometry(world, geometry, ids) {
       for (let y = bb.minY; y <= bb.maxY; y++) {
         const row = y * width;
         for (let x = bb.minX; x <= bb.maxX; x++) {
-          if (provinceAt[row + x] === ix) addFitSample(f, g, x, y);
+          const wx = x < width ? x : x - width;
+          if (provinceAt[row + wx] === ix) addFitSample(f, g, x, y);
         }
       }
     }

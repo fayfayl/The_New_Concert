@@ -44,11 +44,15 @@ const {
   OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH, controllerOf, frontierKeyOf,
   toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
   indexProvinces, attachBlockMembers, addRealmBlocks,
+  normaliseSeaTable, buildSeaWorld, indexSea,
+  normaliseCountyTable, buildCountyWorld, indexCounties,
+  normaliseSubTable, buildSubWorld, indexSubs,
+  setIslandBlocks, computeBlockGeometry,
 } = await import(`./mapdata.js${VERSION}`);
-const { CACHE_FILE, hashInputs, unpackCache, worldFromCache } = await import(`./mapcache.js${VERSION}`);
+const { CACHE_FILE, hashInputs, unpackCache, worldFromCache, seaFromCache, countiesFromCache, subsFromCache } = await import(`./mapcache.js${VERSION}`);
 const { setOwners } = await import(`./ownership.js${VERSION}`);
 const {
-  mapLatAt, mapLonAt, solarDeclination, subsolarLongitude, localHours,
+  mapLatAt, mapLonAt, solarDeclination, subsolarLongitude, localHours, sinSolarElevation,
 } = await import(`./geo.js${VERSION}`);
 
 // ============================================================ 1. data loading
@@ -156,44 +160,188 @@ const UNKNOWN_POLITY = { id: '?', name: 'Unknown', colour: [90, 90, 96] };
 // Everything here paints into the OFFSCREEN buffer, at map resolution and with
 // no notion of pan or zoom. Putting it on screen is §5's job.
 
-// The landscape tags. Impassable is deliberately absent: the rules make it a
-// property a region carries rather than a landscape of its own, so averaging it
-// in would wash out the terrain underneath it.
+// The shape of the ground, in four tiers. Alpine is the high mountain above the
+// tree line: bare rock and snow, so it reads paler and colder than the mountains
+// below it. It is not painted in terrain.png; counties.js carries it down from
+// the province tag.
 const TERRAIN_COLOURS = Object.fromEntries(Object.entries({
   Plains: '#7c945c',
   Hills: '#968454',
   Mountains: '#808086',
-  Desert: '#ceb876',
-  Jungle: '#487a4a',
-  Arctic: '#ced8e0',
+  Alpine: '#aeb3bd',
 }).map(([k, v]) => [k, toRgb(v)]));
 
+// And what falls on it. These used to be three tags mixed in among the terrain —
+// Desert, Jungle and Arctic — carried in the same list and averaged the same way.
+// The province table now names the Köppen group the ground actually is, all
+// twelve of them, so the map can say subarctic where it used to say cold.
+//
+// Kept in the register the three of them set rather than the published Köppen
+// palette, which is a legend and reads like one: this is a landscape map, and
+// scarlet and violet countryside would say nothing about what it is like to
+// stand there. The three that had a colour keep it.
+const CLIMATE_COLOURS = Object.fromEntries(Object.entries({
+  'Ice cap': '#ced8e0',            // was Arctic
+  Tundra: '#b9c3c4',
+  Subarctic: '#6e8a72',
+  'Humid continental': '#8aa165',
+  Oceanic: '#7fa679',
+  Mediterranean: '#a8a765',
+  'Humid subtropical': '#789a5e',
+  Monsoon: '#5f8f57',
+  Rainforest: '#487a4a',           // was Jungle
+  Savanna: '#b3a869',
+  Steppe: '#c0b57e',
+  Desert: '#ceb876',               // unchanged
+}).map(([k, v]) => [k, toRgb(v)]));
+
+/** The mean of a list of colours, or null when the list is empty. */
+const meanColour = (cols) => (cols.length
+  ? [0, 1, 2].map((c) => cols.reduce((s, q) => s + q[c], 0) / cols.length)
+  : null);
+
+// Water only. There is no impassable ground: the hardest land is Alpine, which
+// is crossed slowly and at a cost rather than refused. An ice shelf is refused,
+// because a ship that meets one is aground.
 const IMPASSABLE = 'Impassable';
 const IMPASSABLE_COLOUR = toRgb('#23262c');
-const IMPASSABLE_MIX = 0.45;    // how far toward that near-black the landscape is pulled
+const IMPASSABLE_MIX = 0.45;    // how far toward that near-black the water is pulled
+
+// Where each resource sits on data/icons/resources.png. The sheet is six cells
+// across and three down at 64px a cell, filled left to right and top to bottom,
+// so the number here is the cell and the row and column fall out of it.
+const RESOURCE_ICON = {
+  fertileLand: 0, coal: 1, timber: 2, iron: 3, fish: 4, textiles: 5,
+  oil: 6, baseMetals: 7, copper: 8, aluminium: 9, naturalGas: 10, rareMetals: 11,
+  rubber: 12, gold: 13, nitrates: 14, tungsten: 15, tazkuri: 16, uranium: 17,
+};
+
+// What a resource is called. Only the layer hover uses this; the icon says
+// which one it is at a glance and this is for when a glance is not enough.
+const RESOURCE_NAME = {
+  fertileLand: 'Fertile land', coal: 'Coal', timber: 'Timber', iron: 'Iron',
+  fish: 'Fish', textiles: 'Textiles', oil: 'Oil', baseMetals: 'Base metals',
+  copper: 'Copper', aluminium: 'Aluminium', naturalGas: 'Natural gas',
+  rareMetals: 'Rare metals', rubber: 'Rubber', gold: 'Gold', nitrates: 'Nitrates',
+  tungsten: 'Tungsten', tazkuri: 'Tazkuri', uranium: 'Uranium',
+};
+
+const RESOURCE_SHEET_COLS = 6;
+const RESOURCE_SHEET_CELL = 64;
+
+// What a row says when there is no sheet to draw from. loadBitmap returns null
+// on a miss and the rest of the map carries on, so this does too.
+const RESOURCE_MARK = {
+  fertileLand: 'Food', timber: 'Wood', fish: 'Fish', textiles: 'Cloth',
+  rubber: 'Rubber', coal: 'Coal', oil: 'Oil', naturalGas: 'Gas', iron: 'Iron',
+  copper: 'Copper', aluminium: 'Alum', baseMetals: 'Base', rareMetals: 'Rare',
+  tungsten: 'Tungsten', gold: 'Gold', nitrates: 'Nitre', uranium: 'Uranium',
+  tazkuri: 'Tazkuri',
+};
+
+// A province has to be at least this many pixels across on screen before its
+// figures are drawn. Below it the writing is unreadable and there is a lot of
+// it: fifteen hundred provinces of stacked text at world zoom is a grey smear
+// and a slow frame.
+const RESOURCE_LINE = 8.5;      // css pixels per line, before zoom
+const RESOURCE_OVERHANG = 0.5;  // how much of a line may hang past the province
+// How big an icon is drawn when the text is at its ceiling, and in proportion
+// below that. Larger than the letters beside it, because a word is read and an
+// icon is recognised, and recognition wants the shape.
+const RESOURCE_ICON_PX = 15;
+// How much larger the selected province writes its stack. Picking a province is
+// asking about that one, so its figures come forward and the rest stay as they
+// were.
+const RESOURCE_SELECTED = 1.6;
+const RESOURCE_MIN_LINE = 6;
+const RESOURCE_MAX_LINE = 13;
+
 
 // A province whose owner is not in the polity table still has to draw as
 // something, so it falls back to a neutral grey rather than crashing the repaint.
 const polityOf = (w, p) => w.table.polityById.get(controllerOf(p)) || UNKNOWN_POLITY;
 
-// The three map modes. Each is just "province -> base [r,g,b]"; highlighting,
-// borders and everything else is applied on top by renderBuffer().
+// The five map modes. Each is just "province -> base [r,g,b]"; highlighting,
+// borders and everything else is applied on top by the shade table.
 const MODES = {
   political: (w, p) => polityOf(w, p).colour,
   province: (w, p) => p.colour,
-  // Landscape tags average together, so Mountains + Arctic reads as snowfield
-  // rather than as either one. Impassable is excluded from that average and
-  // darkens the result instead — it is a property, not a landscape, so a
-  // province should still read as the terrain it is while looking shut.
+  // Landscape tags average together, so Alpine + Tundra reads as snowfield
+  // rather than as either one. All four landforms average alike; none of them
+  // is a property sitting on top of another.
+  // The county map. Every county takes its own colour in paintTileRegion, which
+  // is a level below anything this table knows about, so what it answers here is
+  // only what shows through: the sea, and any land the county bitmap does not
+  // cover. The political colour is the right thing for that.
+  county: (w, p) => polityOf(w, p).colour,
+
+  // The naval chart. Land is pushed back to a flat slate so that the water,
+  // which is the subject here, carries every distinction on the screen. The sea
+  // itself is coloured per region in paintTileRegion rather than through this
+  // table, which is indexed by province and knows nothing about water.
+  navy: () => NAVY_LAND,
+
+  // The resource map. Every province keeps its political colour, because what
+  // is being read here is the writing over it and the ground only has to say
+  // whose it is. The figures are drawn in drawResources, a level above this.
+  resources: (w, p) => polityOf(w, p).colour,
   terrain: (w, p) => {
-    const cols = p.terrain.map((t) => TERRAIN_COLOURS[t]).filter(Boolean);
-    const base = cols.length
-      ? [0, 1, 2].map((c) => cols.reduce((s, q) => s + q[c], 0) / cols.length)
-      : [120, 120, 120];
-    if (!p.terrain.includes(IMPASSABLE)) return base.map(Math.round);
-    return base.map((v, c) => Math.round(v + (IMPASSABLE_COLOUR[c] - v) * IMPASSABLE_MIX));
+    // Ground and climate weigh the same, whatever number of each a province has.
+    // Averaging all the tags together in one list would let a province that is
+    // subarctic AND humid continental outvote the mountains it is made of.
+    // Alpine is one of the four landforms and averages with the rest.
+    const land = meanColour(p.terrain.map((t) => TERRAIN_COLOURS[t]).filter(Boolean));
+    const air = meanColour(p.climate.map((k) => CLIMATE_COLOURS[k]).filter(Boolean));
+    const base = land && air
+      ? [0, 1, 2].map((c) => (land[c] + air[c]) / 2)
+      : land || air || [120, 120, 120];
+    return base.map(Math.round);
   },
 };
+
+// The county map.
+//
+// Colours in counties.json are spread by a hash so that neighbours are far apart
+// in hue, which is what the generator wanted: a mistake shows as a patch of the
+// wrong colour instead of hiding in a gradient. That is right for checking the
+// output and wrong for looking at, so they are muted here toward a common grey
+// and lightened, which leaves every county distinguishable from the ones around
+// it without the map reading as confetti.
+const COUNTY_MIX = 0.45;           // how far a county moves toward the wash
+const COUNTY_WASH = [214, 208, 196];
+const COUNTY_EDGE = 0.82;          // the line between two counties of one province
+const COUNTY_PROVINCE = 0.34;      // and the province border over the top of them
+
+// The sea's own palette, used only by the Navy mode.
+//
+// Region colours in sea.json are whatever was convenient to paint sea.png with,
+// and reading them raw gives a chart in ninety-three unrelated hues, half of
+// them the colour of farmland. Mixing them all toward one blue fixes that and
+// costs the thing the colours were for, which is telling one region from the
+// next.
+//
+// So only the hue is kept, and it is compressed into an arc that reads as
+// water: teal through blue to indigo for the sea, and a green arc for lakes,
+// which is fresh water told from salt without a legend. Saturation and
+// lightness are then fixed, so nothing comes out pale or muddy, with a little
+// of the original lightness left in as a second axis of separation for two
+// regions that landed on the same hue.
+const NAVY_LAND = [64, 68, 76];
+
+// How far a subregion's shade may wander from its region's, and how much
+// darker its own borders are drawn. The region border stays NAVY_EDGE, which
+// is darker still, so the two levels are told apart by weight rather than by
+// colour — the same way a province border reads over the county map.
+const NAVY_SUB_SPREAD = 0.13;
+const NAVY_SUB_EDGE = 0.86;
+const NAVY_SEA_ARC = [170, 264];   // degrees: cyan, through blue, to violet
+const NAVY_LAKE_ARC = [92, 158];   // and the arc a lake may take: green to teal
+const NAVY_SAT = 0.46;
+const NAVY_LIGHT = 0.33;
+const NAVY_LAKE_LIGHT = 0.40;
+const NAVY_LIGHT_SPREAD = 0.13;    // how much of the source lightness survives
+const NAVY_EDGE = 0.58;            // the line between two sea regions, as a multiplier
+const NAVY_LIGHTEN = { selected: 0.26, hovered: 0.12 };
 
 // Border darkness, as a multiplier on the province's own colour. Subdivisions
 // inside one country stay quiet; national borders and coastlines read strongly.
@@ -243,6 +391,12 @@ const DESELECT_FADE_MS = 60;
 // The ring drawn around the selected province. Its width is in SCREEN pixels, so
 // buildOutline() rebuilds it whenever the zoom changes. See §4 for how.
 const OUTLINE_COLOUR = '#cea35eff';
+
+// The county ring, cool against the province ring’s gold. The two mean
+// different things and are held at the same time, so they must not be told
+// apart only by which is on top.
+const COUNTY_RING_COLOUR = '#e6eef7ff';
+const COUNTY_RING_ALPHA = 0.85;
 const OUTLINE_WIDTH = 2.5;
 const OUTLINE_MAX_PIXELS = 4e6;     // ceiling on the offscreen canvas the ring is built in
 
@@ -265,49 +419,155 @@ const OUTLINE_MAX_PIXELS = 4e6;     // ceiling on the offscreen canvas the ring 
  * down into the overview.
  */
 const TILE = 512;             // chunk edge, in map pixels
-const OVERVIEW_MAX = 2048;    // longest edge of the zoomed-out copy
+// Longest edge of the zoomed-out copy.
+//
+// This decides the zoom at which the renderer stops using the overview and
+// starts reading full-resolution tiles, and getting it wrong is expensive in
+// one direction only. Just above the threshold the whole visible map is drawn
+// tile by tile: at 0.42 on a 1600x895 canvas that is 45 tiles, 10.5M source
+// pixels downscaled with smoothing into a canvas holding 1.4M. Seven times more
+// source than the destination can show, every frame.
+//
+// At 3072 the overview covers zooms up to 0.51 instead of 0.34, which is the
+// band a whole continent is looked at in. It costs 3070 x 1356, about 17MB
+// beside the 64MB the tiles already hold.
+const OVERVIEW_MAX = 3072;
+
+// How far past its own scale the overview may be stretched before the tiles are
+// worth their cost. Above 1 it is being drawn larger than it was rendered, which
+// softens it, and the alternative at that zoom is reading several times the
+// canvas in source pixels. A quarter over is not visible on a map whose borders
+// are already below one screen pixel wide at these zooms.
+const OVERVIEW_STRETCH = 1.25;
+
+/** Whether the overview is the cheaper source at this scale. */
+// False before the overview is assembled, so nothing can cover anything yet.
+const overviewCovers = (s) => !!overview && s <= overview.scale * OVERVIEW_STRETCH;
 
 let tiles = null;             // { cols, rows, list: [{ x, y, w, h, canvas, ctx }] }
 let overview = null;          // { canvas, ctx, scale }
 let scratch = null;           // one reusable TILE x TILE ImageData, shared by every tile
 let scratchCanvas = null;     // and a canvas of the same size, for compositing over imagery
 let scratchCtx = null;
-let nightCanvas = null;       // a second one, for cutting the city lights to the night side
-let nightCtx = null;
+/* Window-sized offscreen layers, kept between frames and handed back cleared.
+ *
+ * The night layer needs two of them at once and both are the size of the
+ * window, so they are held rather than made: allocating and throwing away a
+ * canvas of several million pixels sixty times a second is not something to do.
+ * Keyed by name so that adding a third later cannot accidentally share one.
+ */
+const scratchLayers = new Map();
+
+function viewportLayer(name, cssW, cssH, scale = 1) {
+  const pw = Math.max(1, Math.round(cssW * pixelRatio * scale));
+  const ph = Math.max(1, Math.round(cssH * pixelRatio * scale));
+
+  let layer = scratchLayers.get(name);
+  if (!layer) {
+    const canvas = document.createElement('canvas');
+    layer = { canvas, ctx: canvas.getContext('2d'), w: 0, h: 0 };
+    scratchLayers.set(name, layer);
+  }
+
+  // Resized only when the window has actually changed. Assigning to width or
+  // height clears the canvas whatever the value, so doing it unconditionally
+  // would be a second full clear on top of the one below.
+  if (layer.canvas.width !== pw || layer.canvas.height !== ph) {
+    layer.canvas.width = pw;
+    layer.canvas.height = ph;
+  }
+  layer.w = pw;
+  layer.h = ph;
+
+  layer.ctx.setTransform(pixelRatio * scale, 0, 0, pixelRatio * scale, 0, 0);
+  layer.ctx.globalCompositeOperation = 'source-over';
+  layer.ctx.clearRect(0, 0, cssW, cssH);
+  return layer;
+}
 
 // ------------------------------------------------------------- day and night
 //
-// The terminator is baked into the tiles rather than drawn over the map every
-// frame. The clock does not exist yet, so the date is fixed at the start date
-// and the mask never changes; when the clock arrives this becomes a per-frame
-// layer instead and the mask is rebuilt as the sun moves.
+// The terminator is a LAYER, drawn over the finished map every frame. It was
+// baked into the tiles while the sun stood still, which cost nothing per frame
+// and was affordable only because nothing ever invalidated it. The clock moves
+// the sun 5 degrees a tick and 30 ticks a second at the fastest speed, and
+// rebaking 15.9 million pixels for each of those is not a thing that can be
+// done at all — a single full repaint is around 250ms.
 //
 // The mask is held at an eighth of map scale. The terminator is a smooth curve
 // hundreds of pixels wide at its softest, so 750 by 332 carries it with room to
 // spare, and the twilight gradient hides the interpolation on the way back up.
+//
+// THE MASK DOES NOT MOVE WITH THE HOUR, which is what makes this cheap. Read
+// the identity in geo.js: longitude enters it only as cos(lon - subsolar), and
+// longitude is linear in x on an equirectangular map, so changing the hour
+// SLIDES the whole pattern sideways without altering its shape. Only the
+// declination term changes it, and that is a function of the day. So the mask
+// is built once per day and the hour is a horizontal offset applied when it is
+// drawn — a blit rather than a quarter of a million pixels of trigonometry
+// thirty times a second.
 
 const NIGHT_MASK_SCALE = 1 / 8;
+
+// Resolution the city lights are composited at, as a fraction of the window.
+// The lights are small blurred glows and the cut between them and the night side
+// is a soft gradient, so neither carries detail that survives being drawn at
+// full resolution. Halving it quarters the pixels in the four window-sized
+// operations the light pass costs.
+const NIGHT_LIGHT_SCALE = 0.5;
+
+// Longest the terminator may go without being redrawn, in real milliseconds.
+// The sun moves 5 degrees a tick and the clock runs up to 30 ticks a second, and
+// redrawing a soft gradient thirty times a second is work nobody can see. At 15
+// it still slides smoothly.
+const NIGHT_MIN_MS = 66;
+let nightDrawnAt = 0;
 const NIGHT_DAY_START = Math.sin((6 * Math.PI) / 180);    // full daylight above this elevation
 const NIGHT_FULL_DARK = Math.sin((-12 * Math.PI) / 180);  // and full night below this one
 
-// 10 June 1926, the start date, at 00:00 UTC. Day 161 of the year, eleven days
-// short of the solstice, so the sun is at +23.0 degrees and the far north is in
-// midnight sun.
+// Where the sun is. Day 161 of 1926 at 00:00 UTC is the start date, 10
+// Ungerbruni, eleven days short of the solstice, so the sun is at +23.0 degrees
+// and the far north is in midnight sun.
 //
-// Held in variables rather than constants because the season is already in the
-// arithmetic: the declination term moves the terminator through the year on its
-// own. Nothing advances these yet, so in practice the overlay is fixed, but the
-// clock will set them and `game.setSun()` sets them from the console meanwhile.
+// Both are driven by the clock, which writes them on every tick it advances.
+// They are also what `game.setSun()` sets from the console, and tick 0
+// reproduces exactly the fixed sky the map had before the clock existed.
 let sunDayOfYear = 161;
 let sunUtcHour = 0;
+
+/**
+ * How far east the mask has slid, in map pixels, for the current hour.
+ *
+ * The mask is built with the sun over the map's centre, so this is the whole
+ * of the difference between that and where the sun actually is. Wrapped into
+ * one map width, since the pattern repeats with exactly that period.
+ */
+function sunShiftPx(world) {
+  const lon = subsolarLongitude(sunUtcHour, world.width);
+  const px = (lon * world.width) / (Math.PI * 2);
+  return ((px % world.width) + world.width) % world.width;
+}
 
 // How hard the night reads, per map mode. The satellite view wants the real
 // thing. The political map is carrying country colours that a heavy wash would
 // bury, so it takes about half, which is enough to see where the line falls
 // without losing which country is which.
-const NIGHT_DARKEN = { political: 0.22, province: 0.31, terrain: 0.33, default: 0.42 };
+const NIGHT_DARKEN = { political: 0.28, province: 0.31, terrain: 0.33, default: 0.32 };
 const NIGHT_LIGHTS = { political: 0.55, province: 0.75, terrain: 0.75, default: 0.8 };
 const nightStrength = (table) => table[state.mode] ?? table.default;
+
+/* The mask, its pixel buffer, and the trigonometry that depends only on the
+ * map. Held across rebuilds rather than made fresh each time.
+ *
+ * This is rebuilt once per GAME DAY, which at the fastest speed is every 2.4
+ * seconds. Allocating a canvas and an ImageData each time discarded about 2MB
+ * on each rebuild — some 48MB a minute — and a detached canvas keeps its
+ * backing store outside the JavaScript heap, where the collector feels little
+ * pressure from it and is in no hurry to reclaim it. The page therefore grew
+ * steadily heavier the longer the clock ran, which is exactly the shape of
+ * "it gets laggier the further time goes".
+ */
+let nightMask = null;
 
 /**
  * Black, with the alpha of each pixel being how much night it is.
@@ -316,73 +576,80 @@ const nightStrength = (table) => table[state.mode] ?? table.default;
  * it cuts anything down to the night side. Both are wanted, so it is built once
  * and used twice.
  */
-function buildNightMask(world) {
+function buildNightMask(world, dayOfYear) {
   const w = Math.ceil(world.width * NIGHT_MASK_SCALE);
   const h = Math.ceil(world.height * NIGHT_MASK_SCALE);
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  const img = ctx.createImageData(w, h);
 
-  const dec = solarDeclination(sunDayOfYear);
-  const sunLon = subsolarLongitude(sunUtcHour, world.width);
+  // Built once and kept. Everything below depends only on the map, not on the
+  // day: the cosine of each column's longitude and the sine and cosine of each
+  // row's latitude are the same on every date there will ever be.
+  // One column of BLEED at each end, holding the column from the opposite edge.
+  //
+  // The mask is drawn at eight times its own size and the map wraps, so two
+  // copies of it meet on screen. Sampling clamps at the edge of the source
+  // rectangle, which at an eight times upscale holds the gradient flat for the
+  // last few map pixels of each copy. Two copies meeting put two of those flat
+  // bands side by side, and a terminator that is a smooth gradient everywhere
+  // else shows the join as a line. The mask is periodic in longitude, so the
+  // column beyond each edge is the column at the other edge, and with it there
+  // the sampler always has somewhere to read.
+  const cw = w + 2;
+
+  if (!nightMask || nightMask.canvas.width !== cw || nightMask.canvas.height !== h) {
+    const canvas = document.createElement('canvas');
+    canvas.width = cw;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    const cosLon = new Float64Array(w);
+    for (let x = 0; x < w; x++) cosLon[x] = Math.cos(mapLonAt(x / NIGHT_MASK_SCALE, world.width));
+
+    const sinLat = new Float64Array(h);
+    const cosLat = new Float64Array(h);
+    for (let y = 0; y < h; y++) {
+      const lat = mapLatAt(y / NIGHT_MASK_SCALE);
+      sinLat[y] = Math.sin(lat);
+      cosLat[y] = Math.cos(lat);
+    }
+
+    nightMask = {
+      canvas, ctx, img: ctx.createImageData(cw, h),
+      cosLon, sinLat, cosLat, bleed: 1, period: w,
+      scale: NIGHT_MASK_SCALE, dayOfYear: null,
+      strip: null, stripCtx: null, reps: 0, stripDay: null,
+    };
+  }
+
+  const { img, cosLon, sinLat, cosLat } = nightMask;
+  const data = img.data;
+  const dec = solarDeclination(dayOfYear);
+  const sinDec = Math.sin(dec), cosDec = Math.cos(dec);
   const span = NIGHT_DAY_START - NIGHT_FULL_DARK;
 
-  // Per row and per column terms, so the inner loop is one multiply and one add.
-  const cosH = new Float64Array(w);
-  for (let x = 0; x < w; x++) cosH[x] = Math.cos(mapLonAt(x / NIGHT_MASK_SCALE, world.width) - sunLon);
-
+  // Only the ALPHA channel is written, here and anywhere else. The mask is
+  // black throughout at varying opacity, so red, green and blue keep the zero
+  // they were allocated with — which stays true across reuse precisely because
+  // nothing ever touches them.
   for (let y = 0; y < h; y++) {
-    const lat = mapLatAt(y / NIGHT_MASK_SCALE);
-    const a = Math.sin(lat) * Math.sin(dec);
-    const b = Math.cos(lat) * Math.cos(dec);
-    for (let x = 0; x < w; x++) {
-      let t = (a + b * cosH[x] - NIGHT_FULL_DARK) / span;      // 0 night, 1 day
+    const a = sinLat[y] * sinDec;
+    const b = cosLat[y] * cosDec;
+    const row = y * cw;
+    let o = (row + 1) * 4 + 3;                                // column 0 is bleed
+    for (let x = 0; x < w; x++, o += 4) {
+      let t = (a + b * cosLon[x] - NIGHT_FULL_DARK) / span;   // 0 night, 1 day
       t = t < 0 ? 0 : t > 1 ? 1 : t;
-      t = t * t * (3 - 2 * t);                                 // ease the twilight band
-      img.data[(y * w + x) * 4 + 3] = Math.round(255 * (1 - t));
+      t = t * t * (3 - 2 * t);                                // ease the twilight band
+      data[o] = Math.round(255 * (1 - t));
     }
+    // The two bleed columns, each copied from the far edge.
+    data[row * 4 + 3] = data[(row + w) * 4 + 3];
+    data[(row + cw - 1) * 4 + 3] = data[(row + 1) * 4 + 3];
   }
-  ctx.putImageData(img, 0, 0);
-  return { canvas, scale: NIGHT_MASK_SCALE };
-}
 
-/**
- * Darkens one tile's night side and adds the city lights over it.
- *
- * Called with a map rectangle already painted, so this only ever composites on
- * top of finished pixels. `lighter` for the lights, since a lit city adds to
- * what is under it rather than replacing it.
- */
-function paintNight(world, tile, lx0, ly0, w, h) {
-  const mask = world.nightMask;
-  if (!mask) return;
-
-  const sx = (tile.x + lx0) * mask.scale, sy = (tile.y + ly0) * mask.scale;
-  const sw = w * mask.scale, sh = h * mask.scale;
-
-  tile.ctx.save();
-  tile.ctx.imageSmoothingEnabled = true;
-  tile.ctx.globalAlpha = nightStrength(NIGHT_DARKEN);
-  tile.ctx.drawImage(mask.canvas, sx, sy, sw, sh, lx0, ly0, w, h);
-  tile.ctx.restore();
-
-  if (!world.night) return;
-
-  nightCtx.globalCompositeOperation = 'source-over';
-  nightCtx.clearRect(0, 0, w, h);
-  nightCtx.drawImage(world.night, tile.x + lx0, tile.y + ly0, w, h, 0, 0, w, h);
-  nightCtx.globalCompositeOperation = 'destination-in';
-  nightCtx.imageSmoothingEnabled = true;
-  nightCtx.drawImage(mask.canvas, sx, sy, sw, sh, 0, 0, w, h);
-  nightCtx.globalCompositeOperation = 'source-over';
-
-  tile.ctx.save();
-  tile.ctx.globalCompositeOperation = 'lighter';
-  tile.ctx.globalAlpha = nightStrength(NIGHT_LIGHTS);
-  tile.ctx.drawImage(nightCanvas, 0, 0, w, h, lx0, ly0, w, h);
-  tile.ctx.restore();
+  nightMask.ctx.putImageData(img, 0, 0);
+  nightMask.dayOfYear = dayOfYear;
+  perf.maskBuilds++;
+  return nightMask;
 }
 
 /** Builds the tile grid and the overview. Once per world. */
@@ -405,10 +672,6 @@ function buildTiles(world) {
   scratchCanvas.width = TILE;
   scratchCanvas.height = TILE;
   scratchCtx = scratchCanvas.getContext('2d');
-  nightCanvas = document.createElement('canvas');
-  nightCanvas.width = TILE;
-  nightCanvas.height = TILE;
-  nightCtx = nightCanvas.getContext('2d');
 
   // The overview is assembled tile by tile, so its scale is chosen to make one
   // tile land on a WHOLE number of overview pixels. At an arbitrary scale a tile
@@ -420,10 +683,32 @@ function buildTiles(world) {
   const tileDest = Math.max(1, Math.round(TILE * wanted));
   const scale = tileDest / TILE;
 
+  // CEIL, not round.
+  //
+  // drawMapLayer asks for the source rectangle [0, world.width * scale], and that
+  // figure is fractional for most scales. Round it down and the rectangle is
+  // wider than the canvas holding it, so the last fraction of a pixel is drawn
+  // from outside the image, which is transparent. The page background then shows
+  // through as a hairline down the join between two drawn copies of the map,
+  // over open ocean as much as over land.
+  //
+  // At an OVERVIEW_MAX of 2048 the figure was 2050.78 and rounded up, so the
+  // rectangle happened to fit and nothing showed. At 3072 it is 3070.3125 and
+  // rounds down. The scale is what changed, not the rule, which is why one extra
+  // row and column had never been needed before.
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(world.width * scale));
-  canvas.height = Math.max(1, Math.round(world.height * scale));
+  canvas.width = Math.max(1, Math.ceil(world.width * scale));
+  canvas.height = Math.max(1, Math.ceil(world.height * scale));
   overview = { canvas, ctx: canvas.getContext('2d'), scale };
+
+  // A floor of ocean, laid once. The overview is assembled chunk by chunk and
+  // each copy lands on fractional coordinates, so a sub-pixel sliver can escape
+  // between two of them; with this under it that sliver shows sea rather than the
+  // page. It used to be repainted before every full pass, which is no longer
+  // possible now that a pass is spread over frames: clearing it at the start
+  // would blank the minimap and fill it in again while the player watched.
+  overview.ctx.fillStyle = `rgb(${world.table.oceanColour})`;
+  overview.ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 /** Every tile overlapping the half-open map rect [x0,x1) by [y0,y1). */
@@ -459,30 +744,199 @@ function tilesOver(x0, y0, x1, y1) {
  * The highlight is baked into the painted map rather than drawn over it, which
  * is what makes it affordable: lighting a province costs a repaint of its
  * BOUNDING BOX, and for an ordinary province that is a small box. The bargain
- * fails completely for one that spans the map. A placeholder blocking out
- * ground not yet drawn is exactly that shape — its box is the whole world, so
- * lighting it repaints all 15.9 million pixels, measured at 386ms, and the
- * selection ring on top of it wants a 6000x2565 canvas of its own.
+ * fails for a box that is not describing where the province is. A placeholder
+ * blocking out ground not yet drawn holds 1,409 pixels scattered through a box
+ * of 1,178,070, so lighting it repaints eight hundred times more map than it
+ * changes, and the selection ring on top of it wants a canvas the same size.
+ *
+ * A box spanning the map is no longer one of these cases. resolveWrap in
+ * mapdata.js settles a box against the east-west wrapping, so a province
+ * holding ground either side of the seam gets a box describing where it is.
  *
  * So past this size a province is simply not lit. It is still named, still
  * selectable, still reports its data and still ranks in the panel; only the
  * fill and the ring are skipped. The alternative is a third of a second of
  * frozen page every time the cursor crosses it.
  *
- * This is a floor under the worst case, not a design. Highlighting without a
- * repaint is the real answer — province ids as a texture and a palette the
- * shader reads — and it is in the README under where this goes next.
+ * This is a floor under the worst case. Highlighting a province without
+ * repainting it would remove the need for the ceiling, and nothing here does
+ * that yet.
  */
 const STRIPE_PERIOD = 14;   // map pixels between the start of one stripe and the next
 const STRIPE_WIDTH = 3;     // how many of those the stripe itself covers
 
 const HIGHLIGHT_MAX_PX = 4e6;      // bounding-box pixels, about a quarter of the map
 
+// How long a frame may spend repainting chunks before handing the frame back.
+// Short enough that a repaint never costs a dropped frame at 60Hz, which leaves
+// the map filling in over two or three of them instead of freezing for one.
+const REPAINT_BUDGET_MS = 6;
+
 /** True when lighting this province would cost more than a frame can spare. */
 function tooBigToLight(world, id) {
-  const bb = id && world.bounds.get(id);
+  return tooBigToLightBox(id && world.bounds.get(id));
+}
+
+/** The ceiling itself, on a box rather than an id, so the sea can share it. */
+function tooBigToLightBox(bb) {
   if (!bb) return false;
   return (bb.maxX - bb.minX + 1) * (bb.maxY - bb.minY + 1) > HIGHLIGHT_MAX_PX;
+}
+
+/**
+ * shadeTable for the water: one fill colour and one border colour per sea
+ * region, indexed the way the province tables are so the pixel loop can read
+ * both with the same arithmetic.
+ *
+ * Built only for the Navy mode. Every other mode paints the sea flat, so there
+ * is nothing for these arrays to say.
+ */
+/** Hue in degrees and lightness in 0..1, which is all the palette above needs. */
+function hueLightness([r, g, b]) {
+  const R = r / 255, G = g / 255, B = b / 255;
+  const max = Math.max(R, G, B), min = Math.min(R, G, B);
+  const d = max - min;
+  let h = 0;
+  if (d) {
+    if (max === R) h = ((G - B) / d + (G < B ? 6 : 0));
+    else if (max === G) h = (B - R) / d + 2;
+    else h = (R - G) / d + 4;
+    h *= 60;
+  }
+  return [h, (max + min) / 2];
+}
+
+function hslToRgb(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+    : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return [r, g, b].map((v) => Math.round((v + m) * 255));
+}
+
+const navyColour = (r) => {
+  const [h, l] = hueLightness(r.colour);
+  const [lo, hi] = r.lake ? NAVY_LAKE_ARC : NAVY_SEA_ARC;
+  const base = r.lake ? NAVY_LAKE_LIGHT : NAVY_LIGHT;
+  const rgb = hslToRgb(lo + (h / 360) * (hi - lo), NAVY_SAT,
+    base + (l - 0.5) * NAVY_LIGHT_SPREAD);
+
+  // Impassable water is pulled toward the
+  // same near-black by the same amount. It is not a kind of sea, it is sea that
+  // is not there, and it should read as shut on the chart as it does on the
+  // terrain map.
+  if (!r.tags.includes(IMPASSABLE)) return rgb;
+  return rgb.map((v, c) => Math.round(v + (IMPASSABLE_COLOUR[c] - v) * IMPASSABLE_MIX));
+};
+
+/**
+ * One fill colour and one border colour per county, indexed the way the province
+ * tables are so the pixel loop reads both with the same arithmetic.
+ *
+ * KEPT between calls, and rebuilt only when the highlighted province changes.
+ *
+ * shadeTable() runs on every partial repaint, and a partial repaint happens every
+ * time the cursor crosses from one province to the next. Building this each time
+ * would be a fourteen-thousand pass and eighty-four kilobytes of fresh typed array
+ * per mouse movement, thrown away immediately: not slow in itself, but the same
+ * shape of mistake as the one that made the night mask leak forty megabytes a
+ * minute. Nothing in it depends on the hover, so nothing in it needs redoing.
+ */
+let countyShade = { counties: null, province: undefined, base: null, edge: null };
+
+function countyShadeTable(counties, selectedProvince) {
+  if (countyShade.counties === counties && countyShade.province === selectedProvince) {
+    return countyShade;
+  }
+  const n = counties.atIndex.length;
+  const base = countyShade.base && countyShade.base.length === n * 3
+    ? countyShade.base : new Uint8Array(n * 3);
+  const edge = countyShade.edge && countyShade.edge.length === n * 3
+    ? countyShade.edge : new Uint8Array(n * 3);
+
+  for (let ix = 1; ix < n; ix++) {
+    const c = counties.atIndex[ix];
+    const lit = c.province === selectedProvince ? LIGHTEN.selected : 0;
+    for (let k = 0; k < 3; k++) {
+      let v = c.colour[k] + (COUNTY_WASH[k] - c.colour[k]) * COUNTY_MIX;
+      v += (255 - v) * lit;
+      base[ix * 3 + k] = Math.round(v);
+      edge[ix * 3 + k] = Math.round(v * COUNTY_EDGE);
+    }
+  }
+  countyShade = { counties, province: selectedProvince, base, edge };
+  return countyShade;
+}
+
+/**
+ * One fill and one border colour per sea SUBREGION.
+ *
+ * A subregion takes its region's colour and shifts it a little, so the whole
+ * of one sea still reads as one sea while the pieces a fleet moves between are
+ * visible inside it. The shift is a hash of the subregion's own index, which
+ * keeps neighbours from landing on the same shade and never changes between
+ * runs.
+ *
+ * The tags are the region's, so an impassable or a lake subregion is already
+ * drawn as one: navyColour has applied all of that before this touches it.
+ */
+function subShadeTable(sea, subs, selected, hovered) {
+  const n = subs.atIndex.length;
+  const base = new Uint8Array(n * 3);
+  const edge = new Uint8Array(n * 3);
+
+  for (let ix = 1; ix < n; ix++) {
+    const u = subs.atIndex[ix];
+    const region = sea.byId.get(u.region);
+    const tone = region ? navyColour(region) : NAVY_LAND;
+
+    // A repeatable wobble in the region's own colour, between -1 and 1.
+    const k = Math.imul(ix, 2654435761) >>> 0;
+    const wobble = ((k % 2001) / 1000 - 1) * NAVY_SUB_SPREAD;
+    const lit = selected === u.id ? NAVY_LIGHTEN.selected
+      : hovered === u.id ? NAVY_LIGHTEN.hovered : 0;
+
+    for (let c = 0; c < 3; c++) {
+      let v = tone[c] * (1 + wobble);
+      v += (255 - v) * lit;
+      v = v < 0 ? 0 : v > 255 ? 255 : v;
+      base[ix * 3 + c] = Math.round(v);
+      edge[ix * 3 + c] = Math.round(v * NAVY_SUB_EDGE);
+    }
+  }
+  return { base, edge };
+}
+
+function seaShadeTable(sea, selected, hovered) {
+  const n = sea.atIndex.length;
+  const base = new Uint8Array(n * 3);
+  const edge = new Uint8Array(n * 3);
+
+  for (let ix = 1; ix < n; ix++) {
+    const r = sea.atIndex[ix];
+    const tone = navyColour(r);
+
+    // The same size ceiling the provinces use, applied here for the same reason:
+    // invalidateSea refuses to repaint a region this large, so if the table lit
+    // one anyway the highlight would appear only where some other repaint
+    // happened to cross it. No region on the map reaches it today.
+    const big = tooBigToLightBox(sea.bounds.get(r.id));
+    const lit = big ? 0
+      : selected === r.id ? NAVY_LIGHTEN.selected
+        : hovered === r.id ? NAVY_LIGHTEN.hovered : 0;
+
+    for (let c = 0; c < 3; c++) {
+      // Toward white for the highlight, by the same proportional mix the
+      // provinces use: a share of the headroom left in each channel, so
+      // lightening never clips one and shifts the hue.
+      const v = tone[c] + (255 - tone[c]) * lit;
+      base[ix * 3 + c] = Math.round(v);
+      edge[ix * 3 + c] = Math.round(v * NAVY_EDGE);
+    }
+  }
+  return { base, edge };
 }
 
 function shadeTable(world, mode, selected, hovered) {
@@ -517,6 +971,8 @@ function shadeTable(world, mode, selected, hovered) {
   // modes fill evenly, so that a province or a terrain type reads the same in
   // the middle of a country as it does at the edge.
   const shaped = over && mode === 'political';
+  const navy = mode === 'navy' && !!world.sea;
+  const county = mode === 'county' && !!world.counties;
   const lift = new Uint8Array(n);       // extra opacity for a highlighted province
 
   for (let ix = 1; ix < n; ix++) {
@@ -609,11 +1065,37 @@ function shadeTable(world, mode, selected, hovered) {
   const flat = over ? Math.round(255 * SATELLITE_FLAT) : 255;
   return {
     rim, core, softRim, softCore, hard, stripe, striped, ownerAt, over, fade, lift,
+
+    // The water, for the Navy mode only. seaAt is null on every other mode and
+    // whenever sea.png or sea.json is missing, and the painter falls back to the
+    // one flat ocean colour it has always used.
+    seaAt: navy ? world.sea.seaAt : null,
+    ...(navy ? seaShadeTable(world.sea, state.selectedSea, state.hoveredSea) : {}),
+
+    // And the subregions inside them, which is the level a fleet is actually
+    // ordered to. Null when the bitmap is missing, and the Navy mode then draws
+    // regions alone exactly as it did before they existed.
+    subAt: navy && world.subs ? world.subs.subAt : null,
+    ...(navy && world.subs ? (() => {
+      const t = subShadeTable(world.sea, world.subs, state.selectedSub, state.hoveredSub);
+      return { subBase: t.base, subEdge: t.edge };
+    })() : {}),
+
+    // The counties, for the County mode only. Null everywhere else, and the
+    // painter then draws the province map it has always drawn.
+    countyAt: county ? world.counties.countyAt : null,
+    ...(county ? (() => {
+      const t = countyShadeTable(world.counties, selected);
+      return { countyBase: t.base, countyEdge: t.edge };
+    })() : {}),
     aRim: shaped ? Math.round(255 * SATELLITE_RIM) : flat,
     aCore: shaped ? Math.round(255 * SATELLITE_CORE) : flat,
     aInternal: over ? Math.round(255 * SATELLITE_INTERNAL) : 0,   // added to the local fill alpha
     aNational: over ? Math.round(255 * SATELLITE_NATIONAL) : 255,
-    aSea: over ? 0 : 255,          // let the imagery's own sea show through
+    // The Navy mode has something to say about the water and must be seen to say
+    // it, so its sea is drawn nearly solid even over the imagery. Every other
+    // mode leaves the water alone and lets the imagery show through.
+    aSea: !over ? 255 : navy ? Math.round(255 * SATELLITE_FLAT) : 0,
   };
 }
 
@@ -628,6 +1110,10 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
   const { width, height, provinceAt, borderDist } = world;
   const { rim, core, softRim, softCore, hard, stripe, striped, ownerAt, over, fade, lift } = t;
   const { aRim, aCore, aInternal, aNational, aSea } = t;
+  const { seaAt, base: seaBase, edge: seaEdge, subAt, subBase, subEdge } = t;
+  const { countyAt, countyBase, countyEdge } = t;
+  // One value for the whole pass rather than a rounding per pixel.
+  const countyAlpha = over ? Math.round(255 * SATELLITE_FLAT) : 255;
   const d = scratch.data;
   const [or_, og, ob] = world.table.oceanColour;   // trailing _ only to avoid shadowing `or`
 
@@ -638,7 +1124,53 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
     for (let lx = lx0; lx < lx1; lx++, i++, o += 4) {
       const index = provinceAt[i];
       if (index === OCEAN) {
-        d[o] = or_; d[o + 1] = og; d[o + 2] = ob;
+        // Water. seaAt is a second index over the same pixels, built from its own
+        // bitmap, and is only consulted here: where the two bitmaps disagree the
+        // land one wins, so a stray pixel in sea.png can never erase a coastline.
+        //
+        // Slot 0 there means land, which is what an ocean pixel outside every
+        // drawn region reads as. It falls through to the flat colour, as does
+        // every pixel of water when the Navy mode is not showing.
+        const region = seaAt ? seaAt[i] : 0;
+        if (region === 0) {
+          d[o] = or_; d[o + 1] = og; d[o + 2] = ob;
+          d[o + 3] = aSea;
+          continue;
+        }
+
+        // The same right-and-below rule the land uses, wrapping east to west at
+        // the last column. Land is skipped as a neighbour: a coastline already
+        // has its dark line drawn from the province side, and drawing a second
+        // one from the water would double its width.
+        const sx = tile.x + lx;
+        const right = sx + 1 < width ? i + 1 : y * width;
+        const below = y + 1 < height ? i + width : i;
+        const sRight = seaAt[right];
+        const sBelow = y + 1 < height ? seaAt[below] : region;
+        const onEdge = (sRight !== region && sRight !== 0)
+          || (sBelow !== region && sBelow !== 0);
+
+        // TWO LEVELS, drawn in one pass. The fill and the light border come
+        // from the subregion, which is what a fleet occupies; the region border
+        // is drawn over the top in the darker tone, so a sea still reads as one
+        // sea while its divisions are visible inside it. Exactly the way the
+        // County mode draws a province border over its counties.
+        const sub = subAt ? subAt[i] : 0;
+        if (sub !== 0 && !onEdge) {
+          const uRight = subAt[right];
+          const uBelow = y + 1 < height ? subAt[below] : sub;
+          const subOnEdge = (uRight !== sub && uRight !== 0)
+            || (uBelow !== sub && uBelow !== 0);
+          const uc = sub * 3;
+          const usrc = subOnEdge ? subEdge : subBase;
+          d[o] = usrc[uc]; d[o + 1] = usrc[uc + 1]; d[o + 2] = usrc[uc + 2];
+          d[o + 3] = aSea;
+          continue;
+        }
+
+        const sc = region * 3;
+        const src = onEdge ? seaEdge : seaBase;
+        d[o] = src[sc]; d[o + 1] = src[sc + 1]; d[o + 2] = src[sc + 2];
         d[o + 3] = aSea;
         continue;
       }
@@ -667,6 +1199,30 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
       if (below !== index && edge < 2) edge = Math.max(edge, ownerAt[below] === mine ? 1 : 2);
 
       const c = index * 3;
+
+      // The county map. It reads the same right-and-below rule twice: once for
+      // the counties, which draw a light line, and once for the provinces above
+      // them, which draw a dark one over it. Two levels on one map, and the
+      // county line has to be the quieter of the two or the provinces disappear
+      // into fourteen thousand subdivisions.
+      if (countyAt) {
+        const ci = countyAt[i];
+        if (ci) {
+          const cc = ci * 3;
+          const cRight = countyAt[x + 1 < width ? i + 1 : y * width];
+          const cBelow = y + 1 < height ? countyAt[i + width] : ci;
+          const src = cRight !== ci || cBelow !== ci ? countyEdge : countyBase;
+          if (edge === 2) {
+            d[o] = Math.round(src[cc] * COUNTY_PROVINCE);
+            d[o + 1] = Math.round(src[cc + 1] * COUNTY_PROVINCE);
+            d[o + 2] = Math.round(src[cc + 2] * COUNTY_PROVINCE);
+          } else {
+            d[o] = src[cc]; d[o + 1] = src[cc + 1]; d[o + 2] = src[cc + 2];
+          }
+          d[o + 3] = countyAlpha;
+          continue;
+        }
+      }
 
       // A frontier is drawn at full strength wherever it runs; it never fades.
       if (edge === 2) {
@@ -718,9 +1274,9 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
     tile.ctx.drawImage(scratchCanvas, lx0, ly0, w, h, lx0, ly0, w, h);
   }
 
-  // Night goes on last, over whichever of those two produced the pixels, so it
-  // darkens the finished map rather than one layer of it.
-  if (state.showNight) paintNight(world, tile, lx0, ly0, w, h);
+  // Night is deliberately not applied here. It belongs to the hour rather than
+  // to the ground, so it is drawn over the finished map in §5 instead of being
+  // baked into it — see the note above buildNightMask.
 }
 
 /** Copies a map rectangle from the tiles down into the overview. */
@@ -758,18 +1314,85 @@ function refreshOverview(world, x0, y0, x1, y1) {
  * Repaints every tile. Only needed on load and on a change of map mode, since
  * those are the only things that alter every province at once.
  */
-function renderBuffer(world, mode, selected, hovered) {
+/**
+ * Repaints every tile, a few at a time, over as many frames as it takes.
+ *
+ * A full repaint is 15.9 million pixels across 72 chunks. Done in one go it holds
+ * the main thread for long enough to be a freeze rather than a pause, and every
+ * change of map mode did exactly that. So it is spread: each frame paints chunks
+ * until REPAINT_BUDGET_MS is up and then hands the frame back, and the map fills
+ * in over two or three frames instead of stopping for one long one.
+ *
+ * VISIBLE CHUNKS GO FIRST, which is what makes it feel instant rather than merely
+ * be shorter. What is on screen is right on the first frame and the rest of the
+ * world catches up behind it, unseen.
+ *
+ * The shade table is built once at the start and held for the whole pass, so every
+ * chunk is painted from the same one and no seam appears between the part painted
+ * this frame and the part painted last.
+ */
+function startRepaint(world, mode, selected, hovered) {
   if (!tiles) buildTiles(world);
-  const t = shadeTable(world, mode, selected, hovered);
-  for (const tile of tiles.list) paintTileRegion(world, t, tile, 0, 0, tile.w, tile.h);
+  return { t: shadeTable(world, mode, selected, hovered), todo: new Set(tiles.list) };
+}
 
-  // Lay down ocean before assembling the overview. The copies below should cover
-  // it completely, but if a sub-pixel sliver ever escapes them it now shows sea
-  // rather than the page behind the canvas.
-  overview.ctx.fillStyle = `rgb(${world.table.oceanColour})`;
-  overview.ctx.fillRect(0, 0, overview.canvas.width, overview.canvas.height);
+/**
+ * Paints as much of a pass as the budget allows. True when it is finished.
+ *
+ * What is on screen is chosen again on every frame rather than once at the start,
+ * so panning into ground the pass has not reached yet moves it to the front of the
+ * queue. Otherwise a pan during a repaint would show the old map until the pass
+ * happened to arrive there, which is exactly when it would be noticed.
+ *
+ * Picking that order costs a walk over 72 chunks, which is nothing beside painting
+ * even one of them.
+ */
+function stepRepaint(world, pass) {
+  const t0 = performance.now();
+  // ONCE PER COPY OF THE MAP, the way drawMapLayer does it. visibleRect clamps
+  // to the map, so at the antimeridian a single call sees only the tiles at one
+  // end and the other half of the window is left to the general sweep below.
+  // That is what made a selection there paint one half at once and the half past
+  // the meridian seconds later.
+  const cssW = els.canvas.clientWidth, cssH = els.canvas.clientHeight;
+  const first = [];
+  for (const dx of wrapOffsets(cssW)) {
+    const rect = visibleRect(view.x + dx, cssW, cssH);
+    if (rect) first.push(...tilesOver(rect.x0, rect.y0, rect.x1, rect.y1));
+  }
 
-  refreshOverview(world, 0, 0, world.width, world.height);
+  // The chunk is painted; the OVERVIEW is left alone until the pass is done.
+  //
+  // Refreshing it per chunk is what made a change of mode wipe across the map
+  // from the top left. Zoomed out the overview is the whole of what is drawn, so
+  // every chunk copied into it showed at once, and the visible-chunks-first order
+  // could do nothing about it because at that zoom every chunk is visible.
+  //
+  // Held back, the overview keeps the old map until the new one is complete and
+  // then changes in a single frame. It costs one pass of 72 drawImage calls at
+  // the end, which is a few milliseconds, and no extra memory: the alternative is
+  // a second overview to draw from while this one fills, at 17MB.
+  const paint = (tile) => {
+    pass.todo.delete(tile);
+    paintTileRegion(world, pass.t, tile, 0, 0, tile.w, tile.h);
+  };
+
+  for (const tile of first) {
+    if (!pass.todo.has(tile)) continue;
+    paint(tile);
+    if (performance.now() - t0 >= REPAINT_BUDGET_MS) break;
+  }
+  if (performance.now() - t0 < REPAINT_BUDGET_MS) {
+    for (const tile of pass.todo) {
+      paint(tile);
+      if (performance.now() - t0 >= REPAINT_BUDGET_MS) break;
+    }
+  }
+
+  const done = pass.todo.size === 0;
+  if (done) refreshOverview(world, 0, 0, world.width, world.height);
+  perf.paint = ease(perf.paint, performance.now() - t0);
+  return done;
 }
 
 /**
@@ -786,7 +1409,9 @@ function renderBuffer(world, mode, selected, hovered) {
  * recomputed to the values they already had.
  */
 function repaintProvinces(world, mode, selected, hovered, ids, boxes = []) {
-  if (!tiles) return renderBuffer(world, mode, selected, hovered);
+  // Nothing to repaint into yet. Ask for the full pass instead, which builds the
+  // chunks and covers these boxes on its way through.
+  if (!tiles) { bufferDirty = true; return; }
 
   const t = shadeTable(world, mode, selected, hovered);
   for (const id of ids) {
@@ -795,13 +1420,30 @@ function repaintProvinces(world, mode, selected, hovered, ids, boxes = []) {
 
     // One box at a time rather than one box around them all: two provinces on
     // opposite sides of the map would otherwise union into the whole thing.
-    repaintBox(world, t, bb.minX, bb.minY, bb.maxX + 1, bb.maxY + 1);
+    for (const r of boxesFor(world, bb)) repaintBox(world, t, r.x0, r.y0, r.x1, r.y1);
   }
 
   // Rectangles rather than provinces, for changes that are not one province's
   // own pixels: an ownership change moves the inland fade for everything within
   // reach of the border it made or unmade. See ownership.js.
   for (const box of boxes) repaintBox(world, t, box.x0, box.y0, box.x1, box.y1);
+}
+
+/**
+ * The rectangles a province box covers, as one or two.
+ *
+ * resolveWrap in mapdata.js may set maxX at or past the map width, for a province
+ * holding ground either side of the seam. Such a box is two rectangles, one
+ * against each edge of the bitmap, which is the same shape regionsFor produces in
+ * ownership.js for the same reason.
+ */
+function boxesFor(world, bb) {
+  const y0 = bb.minY, y1 = bb.maxY + 1;
+  if (bb.maxX < world.width) return [{ x0: bb.minX, y0, x1: bb.maxX + 1, y1 }];
+  return [
+    { x0: bb.minX, y0, x1: world.width, y1 },
+    { x0: 0, y0, x1: bb.maxX + 1 - world.width, y1 },
+  ];
 }
 
 /** Repaints one map rectangle, half-open, and copies it into the overview. */
@@ -963,7 +1605,34 @@ const LABEL_WRAP_GAIN = 1.15;    // and an extra line must grow the type by this
 // --- choosing which stretch of the block the name covers
 // LABEL_HIST_BUCKET comes from mapdata.js — the label geometry is computed there.
 const LABEL_DENSITY_FLOOR = 0.4; // a slice counts as solid ground at this fraction of the block's mean width
-const LABEL_MIN_DENSITY = 0.3;   // a whole block sparser than this is an archipelago, and gets no label
+const LABEL_MIN_DENSITY = 0.3;   // a whole block sparser than this is an archipelago
+
+// What an archipelago gets INSTEAD of nothing.
+//
+// A block sparser than LABEL_MIN_DENSITY is mostly sea, so a name written across
+// it floats on water. That is the right thing to refuse for the island chain
+// hanging off a mainland country, which is already named on its mainland, and
+// the wrong thing to refuse for a country that is mostly islands, which is then
+// barely named or not named at all.
+//
+// What separates the two is not how a country is split but how much of it ends
+// up with no name written on it. A country with outlying pieces each large
+// enough to be named on its own is not an archipelago however many it has: the
+// Empire of Akasora is sixteen blocks and twelve of them carry the name. A
+// country where most of the land is in blocks too sparse to label is one
+// however solid its largest island happens to be: the Colony of the Marzon
+// Islands is a compact main island and a scatter, and putting the name on the
+// island alone leaves 47% of the country bare.
+//
+// Such a country is gathered into a single block holding every province it
+// owns, and the name is written across the lot the way an atlas writes an
+// archipelago: one line, letterspaced, so it reads as covering an area rather
+// than naming a landmass. The pieces give up their own labels to it, so the
+// name appears once. Sixteen of the 191 countries on the map qualify.
+const LABEL_ISLANDS_SHARE = 0.4;      // of a country's land with no name on it
+const LABEL_SPARSE_TRACKING = 0.3;    // letter spacing for such a name
+const LABEL_SPARSE_LIFT = 2.2;        // how far it may exceed the scatter it crosses
+const LABEL_ISLANDS_MAX_SPAN = 0.18;  // of the map width; past this the pieces are not one archipelago
 
 //change the number to change weight/boldness of text
 /*
@@ -978,7 +1647,14 @@ const LABEL_MIN_DENSITY = 0.3;   // a whole block sparser than this is an archip
  * The whole string is the key to the glyph atlas, not just the family — change
  * any part of it and every cached glyph is a miss until the atlas refills.
  */
-const LABEL_FACE = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+const LABEL_FACE = '"Segoe UI", sans-serif';
+
+// The resource layer only. Cabin is what style.css sets the interface in, as
+// --ui, and it ships in data/ui/fonts. LABEL_FACE above is --ui-plain and is
+// left alone: it carries the country, province and sea names.
+const RESOURCE_FACE = 'Cabin, "Segoe UI", sans-serif';
+const resourceFont = (px) => `500 ${px}px ${RESOURCE_FACE}`;
+const resourceIconPx = (px) => Math.round((px * RESOURCE_ICON_PX) / RESOURCE_MAX_LINE);
 const labelFont = (px) => `600 ${px}px ${LABEL_FACE}`;
 
 /**
@@ -995,12 +1671,12 @@ const labelFont = (px) => `600 ${px}px ${LABEL_FACE}`;
  */
 const MEASURE_SIZE = 100;
 let measureCtx = null;             // one reusable context; measuring needs no visible canvas
-function widthRatio(text) {
+function widthRatio(text, tracking = LABEL_TRACKING) {
   measureCtx ??= document.createElement('canvas').getContext('2d');
   measureCtx.font = labelFont(MEASURE_SIZE);
   const chars = [...text];
   const w = chars.reduce((s, c) => s + measureCtx.measureText(c).width, 0)
-    + MEASURE_SIZE * LABEL_TRACKING * (chars.length - 1);
+    + MEASURE_SIZE * tracking * (chars.length - 1);
   return w / MEASURE_SIZE;
 }
 
@@ -1043,11 +1719,11 @@ function wrapInto(words, n) {
  *
  * Returns { lines, size }.
  */
-function fitLabel(text, span, thickness, maxLines) {
+function fitLabel(text, span, thickness, maxLines, tracking = LABEL_TRACKING) {
   const words = text.split(/\s+/);
   let best = null;
   for (let n = 1; n <= Math.min(maxLines, words.length); n++) {
-    const wrapped = n === 1 ? { lines: [text], worst: widthRatio(text) } : wrapInto(words, n);
+    const wrapped = n === 1 ? { lines: [text], worst: widthRatio(text, tracking) } : wrapInto(words, n);
     if (!wrapped) continue;
     const size = Math.min(
       span * LABEL_FIT.along / wrapped.worst,             // limited by the block's length
@@ -1166,7 +1842,123 @@ function denseRange(f, floor) {
  */
 function buildLabels(world, geometry) {
   if (!geometry) return [];
-  return geometry.blocks.map((_, b) => buildLabel(world, geometry, b));
+  surrendered.clear();
+  return nameArchipelagos(world, geometry, geometry.blocks.map((_, b) => buildLabel(world, geometry, b)));
+}
+
+// Blocks that handed their label to a gathered archipelago name. Kept so the
+// next run can rebuild them and measure the map as it would be without this
+// pass, rather than compounding its own previous answer.
+const surrendered = new Set();
+
+/**
+ * Rewrites the names of the countries the pass above cannot serve.
+ *
+ * It measures one thing per country: the share of its land sitting in blocks
+ * that came back without a label. Past LABEL_ISLANDS_SHARE the country reads as
+ * a scatter rather than as being anywhere in particular, and its provinces are
+ * gathered into one block so the name can be written across all of them at once.
+ * Its pieces then surrender their own labels, so the name appears once.
+ *
+ * Measuring bare land rather than the number of pieces is what makes this work
+ * in both directions. A country of sixteen blocks, twelve of them named, is not
+ * gathered. A country of two blocks, one a solid island and the other a scatter
+ * holding half the ground, is.
+ *
+ * Run whole rather than over the countries an ownership change named. It is a
+ * walk over a few hundred blocks and a bounding box each for the dozen or so
+ * countries that qualify, which is cheaper than keeping track of who might have
+ * been affected and being wrong about it.
+ */
+function nameArchipelagos(world, geometry, labels) {
+  const { blocks, geo } = geometry;
+
+  // A piece that gave up its label to a gathered name last time gets it back
+  // first, so the measurement below is taken against the map as it would be if
+  // this pass had never run. Without that, a country that has since taken
+  // ground it can write on would still read as having none.
+  for (const b of surrendered) labels[b] = buildLabel(world, geometry, b);
+  surrendered.clear();
+
+  // Land per country, and how much of it has a name written on it. Ordinary
+  // blocks only: a realm block is a second name over the same ground, and an
+  // islands block is this pass's own work.
+  const land = new Map();
+  const pieces = new Map();
+  for (let b = 0; b < blocks.length; b++) {
+    const blk = blocks[b];
+    if (!blk || blk.level) continue;
+    const n = geo[b] ? geo[b].n : 0;
+    const s = land.get(blk.owner) || { total: 0, named: 0, labelled: false };
+    s.total += n;
+    if (labels[b]) { s.named += n; s.labelled = true; }
+    land.set(blk.owner, s);
+    if (!pieces.has(blk.owner)) pieces.set(blk.owner, []);
+    pieces.get(blk.owner).push(b);
+  }
+
+  const plan = new Map();
+  for (const [owner, s] of land) {
+    if (!s.total || (s.total - s.named) / s.total < LABEL_ISLANDS_SHARE) continue;
+    const members = [];
+    for (const b of pieces.get(owner)) members.push(...blocks[b].members);
+    plan.set(owner, members);
+  }
+
+  const { touched, spare } = setIslandBlocks(world, geometry, plan);
+  for (const b of spare) labels[b] = null;
+
+  for (const b of touched) {
+    const blk = blocks[b];
+    const f = geometry.fit[b];
+
+    // Gathering the pieces is right for a country whose islands are a group and
+    // wrong for one holding islands in two oceans, where the name would be
+    // written across the water between them. Past the cap the pieces are not one
+    // archipelago, and the name goes back on the piece holding the most land.
+    // Nothing on the map reaches it: the widest is 446 map pixels of the 1,080
+    // allowed.
+    //
+    // It catches one more thing. computeBlockGeometry measures in the bitmap's
+    // own frame, so two pieces either side of the map seam read as a map apart
+    // rather than as neighbours, and their centroid lands in the wrong ocean.
+    // That country trips the cap and keeps its name on its largest piece, which
+    // is the answer this had before and is not wrong, only less than it could
+    // be. No country on the map is in that position.
+    if (!f || f.tMax - f.tMin > world.width * LABEL_ISLANDS_MAX_SPAN) {
+      // A country already carrying names keeps them: whatever these pieces are,
+      // they are not one archipelago, and the names it has are better than one
+      // stretched between them. The United Imperial Territories are the only
+      // country here, at 5,899 map pixels across.
+      if (land.get(blk.owner).labelled) {
+        blk.members = [];
+        geometry.geo[b] = null;
+        geometry.fit[b] = null;
+        labels[b] = null;
+        continue;
+      }
+
+      // A country carrying none has nothing to lose, so the name goes on the
+      // piece holding the most land.
+      const bs = pieces.get(blk.owner);
+      let pick = bs[0];
+      for (const q of bs) if ((geo[q]?.n || 0) > (geo[pick]?.n || 0)) pick = q;
+      blk.members = [...blocks[pick].members];
+      computeBlockGeometry(world, geometry, [b]);
+    }
+
+    const L = buildLabel(world, geometry, b, true);
+    labels[b] = L;
+
+    // One name, not two. The pieces hand theirs over, and are noted so the next
+    // run of this pass can give them back.
+    if (L) {
+      for (const q of pieces.get(blk.owner)) {
+        if (labels[q]) { labels[q] = null; surrendered.add(q); }
+      }
+    }
+  }
+  return labels;
 }
 
 /**
@@ -1176,7 +1968,7 @@ function buildLabels(world, geometry) {
  * rebuilds the labels of the blocks it touched instead of all of them. Blocks
  * left empty by such a change have no geometry and land here as null.
  */
-function buildLabel(world, geometry, b) {
+function buildLabel(world, geometry, b, sparseOK = false) {
   const { blocks, geo, fit } = geometry;
   const blk = blocks[b];
   const g = geo[b], f = fit[b];
@@ -1187,15 +1979,27 @@ function buildLabel(world, geometry, b) {
   const thickness = 2 * Math.sqrt(f.pp / f.n);          // ~2 sigma across
   if (extent <= 0 || thickness <= 0) return null;
 
-  // Skip archipelagos. Scattered islands cover a huge extent with very little
-  // land, so the spine runs mostly over open sea and the name ends up floating
-  // on water. Land per unit of extent tells them apart from real territory.
-  if (g.n / (extent * thickness) < LABEL_MIN_DENSITY) return null;
+  // Scattered islands cover a huge extent with very little land, so the spine
+  // runs mostly over open sea and the name ends up floating on water. Land per
+  // unit of extent tells them apart from real territory. Refused unless the
+  // caller has established that this country has nowhere better to write its
+  // name; see nameArchipelagos.
+  const sparse = g.n / (extent * thickness) < LABEL_MIN_DENSITY;
+  if (sparse && !sparseOK) return null;
 
   // STEP 3: the stretch of solid ground the name will cover.
-  const range = denseRange(f, LABEL_DENSITY_FLOOR);
-  if (!range) return null;
-  const [tLo, tHi, groups] = range;
+  //
+  // denseRange exists to keep a name off the water: it hands back the one
+  // cluster holding the most land and refuses to bridge a gap wider than the
+  // ground either side of it. On an archipelago that answer is a single island,
+  // and a name sized to a single island is the same as no name at all.
+  //
+  // There is no dry stretch to find on a country that is only islands, so the
+  // sparse path does not look for one. It takes the whole scatter, first island
+  // to last, which is where the country is and is how an atlas writes one.
+  const range = sparse ? null : denseRange(f, LABEL_DENSITY_FLOOR);
+  if (!sparse && !range) return null;
+  const [tLo, tHi, groups] = sparse ? [f.tMin, f.tMax, 1] : range;
   const span = tHi - tLo;
   if (span <= 0) return null;
 
@@ -1214,9 +2018,18 @@ function buildLabel(world, geometry, b) {
   // It is the wrong measure for a country whose pieces are too far apart to have
   // been bridged, because it counts the pieces the name is not going on and the
   // sea between them.
+  // A name over open water gets neither of those two judgements. It never
+  // stacks, because stacked lines want a landmass with width to sit in and this
+  // has none; and it is not held to the thickness of the scatter it crosses,
+  // because that measures how far apart the islands are rather than how large
+  // the letters may be. What still binds it is the span, so the name reaches
+  // from the first island to the last and no further.
   const shape = groups > 1 ? span : extent;
-  const maxLines = shape / thickness < LABEL_WRAP_ASPECT ? LABEL_MAX_LINES : 1;
-  const laid = fitLabel(text, span, thickness, maxLines);
+  const tracking = sparse ? LABEL_SPARSE_TRACKING : LABEL_TRACKING;
+  const maxLines = sparse ? 1
+    : shape / thickness < LABEL_WRAP_ASPECT ? LABEL_MAX_LINES : 1;
+  const laid = fitLabel(text, span, sparse ? thickness * LABEL_SPARSE_LIFT : thickness,
+    maxLines, tracking);
   if (!laid) return null;
 
   // Only now can the curvature be limited, because the thing that limits it is
@@ -1256,6 +2069,8 @@ function buildLabel(world, geometry, b) {
     // Which of the two names over this ground this is, and where the other one
     // is to be found. See realmHolds().
     block: b,
+    tracking,                   // wider on a name written across open water
+    sparse,
     isRealm: blk.level === 'realm',
     realmBlock: blk.realmBlock,
     spanY: blk.spanY,           // realm blocks only; see realmHolds()
@@ -1780,7 +2595,7 @@ function layoutLabels(labels, cssW, cssH, dx, boxes = null) {
     alpha *= dimming;
     if (alpha <= 0.004) continue;              // fully faded, or not readable yet
 
-    const gap = px * LABEL_TRACKING;
+    const gap = px * L.tracking;
 
     // Which rung of the ladder these glyphs are baked on, and the factor that
     // takes bitmap pixels back to screen pixels. The rung is chosen in DEVICE
@@ -1944,7 +2759,7 @@ function paintLabels(ctx, n) {
  * This is the expensive half — a per-pixel pass — so it is built once per
  * selection and reused at every zoom level.
  */
-function buildSilhouette(world, id) {
+function buildSilhouette(world, id, at = world.provinceAt) {
   const bb = world.bounds.get(id);
   if (!bb) return null;
 
@@ -1958,9 +2773,14 @@ function buildSilhouette(world, id) {
   const img = ctx.createImageData(w, h);
   const index = world.byId.get(id).index;
   for (let y = 0; y < h; y++) {
-    const row = (bb.minY + y) * world.width + bb.minX;
+    const row = (bb.minY + y) * world.width;
     for (let x = 0; x < w; x++) {
-      if (world.provinceAt[row + x] !== index) continue;
+      // The box may run past the right edge of the bitmap and continue at the
+      // left, so the column is taken modulo the width. The silhouette itself
+      // stays one rectangle, and drawView already draws a copy of the map either
+      // side of the seam, so the half past the edge lands on the copy it belongs to.
+      const mx = bb.minX + x;
+      if (at[row + (mx < world.width ? mx : mx - world.width)] !== index) continue;
       const o = (y * w + x) * 4;
       img.data[o] = img.data[o + 1] = img.data[o + 2] = img.data[o + 3] = 255;
     }
@@ -1988,7 +2808,7 @@ function buildSilhouette(world, id) {
  * constant in that space. A big province at deep zoom would need an enormous
  * canvas, so resolution is capped and the width shrinks to match.
  */
-function buildOutline(silhouette, viewScale) {
+function buildOutline(silhouette, viewScale, colour = OUTLINE_COLOUR) {
   const half = OUTLINE_WIDTH / 2;
   const pad = Math.ceil(half) + 2;
   let scale = viewScale;
@@ -2036,7 +2856,7 @@ function buildOutline(silhouette, viewScale) {
   ctx.globalCompositeOperation = 'destination-out';
   ctx.drawImage(inner, 0, 0);                    // hollow it out, leaving the band
   ctx.globalCompositeOperation = 'source-in';    // tint, preserving the edge
-  ctx.fillStyle = OUTLINE_COLOUR;
+  ctx.fillStyle = colour;
   ctx.fillRect(0, 0, w, h);
 
   // Report the ring in map coordinates, so drawing it needs no special case.
@@ -2166,13 +2986,32 @@ function fitToView() {
  *
  * Offsets are in screen pixels and are added to view.x.
  */
-function wrapOffsets(cssW) {
+function wrapOffsets(cssW, originX = view.x) {
   const span = state.world.width * view.scale;      // one map width, on screen
   const out = [];
-  const first = Math.floor((0 - view.x - span) / span) + 1;
-  const last = Math.ceil((cssW - view.x) / span) - 1;
+  const first = Math.floor((0 - originX - span) / span) + 1;
+  const last = Math.ceil((cssW - originX) / span) - 1;
   for (let k = first; k <= last; k++) out.push(k * span);
   return out.length ? out : [0];
+}
+
+/**
+ * The part of one copy of the map that is on screen, in map pixels, or null if
+ * none of it is. `vx` is where that copy's left edge sits.
+ *
+ * Taken outwards to whole map pixels, so nothing shears along the edges. Three
+ * layers ask this same question every frame — the map itself, the terminator
+ * over it and the chunk grid — and they have to agree exactly, or the night
+ * would be cut to a different rectangle than the ground it is falling on.
+ */
+function visibleRect(vx, cssW, cssH) {
+  const s = view.scale;
+  const w = state.world;
+  const x0 = clamp(Math.floor(-vx / s), 0, w.width);
+  const y0 = clamp(Math.floor(-view.y / s), 0, w.height);
+  const x1 = clamp(Math.ceil((cssW - vx) / s), 0, w.width);
+  const y1 = clamp(Math.ceil((cssH - view.y) / s), 0, w.height);
+  return x1 > x0 && y1 > y0 ? { x0, y0, x1, y1 } : null;
 }
 
 /**
@@ -2180,17 +3019,12 @@ function wrapOffsets(cssW) {
  * for the wrapped copies is view.x plus some multiple of the map's width.
  */
 function drawMapLayer(ctx, cssW, cssH, vx) {
-  // Which part of this copy is on screen. Taken outwards to whole map pixels, so
-  // nothing shears along the edges.
   const s = view.scale;
-  const w = state.world;
-  const sx0 = clamp(Math.floor(-vx / s), 0, w.width);
-  const sy0 = clamp(Math.floor(-view.y / s), 0, w.height);
-  const sx1 = clamp(Math.ceil((cssW - vx) / s), 0, w.width);
-  const sy1 = clamp(Math.ceil((cssH - view.y) / s), 0, w.height);
-  if (sx1 <= sx0 || sy1 <= sy0) return;
+  const rect = visibleRect(vx, cssW, cssH);
+  if (!rect) return;
+  const { x0: sx0, y0: sy0, x1: sx1, y1: sy1 } = rect;
 
-  if (s <= overview.scale) {
+  if (overviewCovers(s)) {
     // Zoomed out far enough that the overview holds at least as many pixels as
     // the screen can show, so drawing from it loses nothing and rescales about
     // a tenth as much data. This is the common case, and the whole reason the
@@ -2202,8 +3036,15 @@ function drawMapLayer(ctx, cssW, cssH, vx) {
     // exactly. Left fractional, each copy's edge is antialiased against the
     // background and the page shows through the join as a hairline.
     const o = overview.scale;
-    const dx0 = Math.round(vx + sx0 * s), dx1 = Math.round(vx + sx1 * s);
-    const dy0 = Math.round(view.y + sy0 * s), dy1 = Math.round(view.y + sy1 * s);
+    // Edges expand OUTWARD, so neighbouring draws overlap by up to a pixel
+    // instead of meeting at one. Rounding both to the same integer is exact in
+    // arithmetic and still leaves a seam on screen, because each draw filters
+    // its own edge pixel from its own side of the boundary and the two halves
+    // do not add up to one whole pixel of map. Overlapping costs nothing here:
+    // the tiles are opaque, the content either side of the join is the same
+    // map, and whichever draw lands second is right about what belongs there.
+    const dx0 = Math.floor(vx + sx0 * s), dx1 = Math.ceil(vx + sx1 * s);
+    const dy0 = Math.floor(view.y + sy0 * s), dy1 = Math.ceil(view.y + sy1 * s);
     if (dx1 <= dx0 || dy1 <= dy0) return;
     ctx.drawImage(
       overview.canvas,
@@ -2220,11 +3061,9 @@ function drawMapLayer(ctx, cssW, cssH, vx) {
     const ax1 = Math.min(sx1, tile.x + tile.w), ay1 = Math.min(sy1, tile.y + tile.h);
     if (ax1 <= ax0 || ay1 <= ay0) continue;
 
-    // Destination edges are rounded rather than the width being rounded, so
-    // neighbouring tiles agree on where their shared edge lands and cannot
-    // leave a gap between them.
-    const dx0 = Math.round(vx + ax0 * s), dx1 = Math.round(vx + ax1 * s);
-    const dy0 = Math.round(view.y + ay0 * s), dy1 = Math.round(view.y + ay1 * s);
+    // Expanded outward, for the reason given in the overview branch above.
+    const dx0 = Math.floor(vx + ax0 * s), dx1 = Math.ceil(vx + ax1 * s);
+    const dy0 = Math.floor(view.y + ay0 * s), dy1 = Math.ceil(view.y + ay1 * s);
     ctx.drawImage(
       tile.canvas,
       ax0 - tile.x, ay0 - tile.y, ax1 - ax0, ay1 - ay0,
@@ -2232,6 +3071,312 @@ function drawMapLayer(ctx, cssW, cssH, vx) {
     );
     debug.tilesDrawn++;
   }
+}
+
+/* ------------------------------------------------------------ the night layer
+ *
+ * Drawn over the finished map, once per frame, in three steps: the darkening,
+ * then the city lights cut to the same shape and added over it.
+ *
+ * All of it is positioned from `originX`, which is where the map would be if
+ * the sun were over its centre column. That single offset is the hour: see
+ * sunShiftPx. The layer wraps east-west on its own account, on a period of one
+ * map width, and at most hours it is out of step with the ground by some
+ * fraction of a width — which is why it is positioned from its own offset and
+ * not from the map's. It is drawn in one piece across the window rather than
+ * tiled; see ensureNightStrip for why that matters.
+ */
+
+/**
+ * The mask, laid out as whole periods side by side.
+ *
+ * The terminator is periodic in longitude, and the obvious way to draw a
+ * periodic thing across a wrapping map is to tile copies of it. That was the
+ * way this worked and it was wrong twice over. Each copy had to be clamped to
+ * the map and the two ends had to meet, and where they met the upscale had
+ * nothing to interpolate towards, so the gradient flattened for the last few map
+ * pixels of each copy and two flat ends side by side read as a line down the map.
+ * Bleed columns did not help, because a source rectangle stops the sampler
+ * reaching them. Clipping the copies to their exact abutting range did not
+ * either: a canvas clip is antialiased, so the boundary pixel is shared between
+ * two draws that each cover part of it, and at some zooms they do not add back up
+ * to one. That is a seam that flickers as you zoom, which is worse than a seam.
+ *
+ * Copying the period into a strip at integer offsets and no scaling did not fix
+ * it either, though every pixel provably landed on a pixel and the mask's own
+ * columns measured continuous across the repeat — the smallest step of all 750
+ * of them, at every season checked.
+ *
+ * So the strip is not assembled at all, it is COMPUTED: every column of it comes
+ * from the same formula the mask does, and it goes down in one putImageData.
+ * There is no join anywhere in it to be wrong about. The whole visible width is
+ * then one drawImage out of that strip, so nothing meets anything on the way to
+ * the screen either.
+ *
+ * The pixel loop runs over a few periods rather than one, and it runs when the
+ * DAY changes. The sun moving through the day is this strip being sampled at a
+ * different offset, not rebuilt.
+ */
+function ensureNightStrip(mask, need) {
+  const p = mask.period, h = mask.canvas.height;
+  const reps = Math.max(2, need);
+
+  if (!mask.strip || mask.reps < reps) {
+    mask.strip = document.createElement('canvas');
+    mask.strip.width = reps * p;
+    mask.strip.height = h;
+    mask.stripCtx = mask.strip.getContext('2d');
+    mask.stripImg = mask.stripCtx.createImageData(reps * p, h);
+    mask.reps = reps;
+    mask.stripDay = null;                 // a new canvas holds nothing yet
+  }
+  if (mask.stripDay === mask.dayOfYear) return mask;
+
+  // COMPUTED, not copied. Repeating the period by blitting it several times is
+  // exact on paper — integer offsets, no scaling, so every pixel lands on a
+  // pixel — and the mask's own columns were measured continuous across the
+  // repeat, the smallest step of all 750 of them. It still left a line, and the
+  // only thing left between "the numbers are right" and "the screen is wrong" is
+  // the join between two draws. So there is no join: every column of the strip
+  // is worked out from the same formula the mask itself uses, and the whole
+  // thing goes down in one putImageData.
+  //
+  // The cost is the pixel loop run over a few periods instead of one, and it
+  // runs when the DAY changes, not when the hour does. The sun moving through
+  // the day is the strip being sampled at a different offset, not rebuilt.
+  const { cosLon, sinLat, cosLat, stripImg: img } = mask;
+  const data = img.data;
+  const dec = solarDeclination(mask.dayOfYear);
+  const sinDec = Math.sin(dec), cosDec = Math.cos(dec);
+  const span = NIGHT_DAY_START - NIGHT_FULL_DARK;
+
+  // mask.reps, NOT the reps asked for. The strip is kept when the window needs
+  // fewer periods than it already holds, so the two part company as soon as you
+  // zoom in, and filling a four-period image with a two-period stride shears
+  // every row against the one above it.
+  const cw = mask.reps * p;
+
+  // Alpha only, as everywhere else: the mask is black throughout at varying
+  // opacity, so red, green and blue keep the zero they were allocated with.
+  for (let y = 0; y < h; y++) {
+    const a = sinLat[y] * sinDec;
+    const b = cosLat[y] * cosDec;
+    let o = y * cw * 4 + 3;
+    for (let x = 0; x < cw; x++, o += 4) {
+      let t = (a + b * cosLon[x % p] - NIGHT_FULL_DARK) / span;   // 0 night, 1 day
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      t = t * t * (3 - 2 * t);                                   // ease the twilight band
+      data[o] = Math.round(255 * (1 - t));
+    }
+  }
+  mask.stripCtx.putImageData(img, 0, 0);
+  mask.stripDay = mask.dayOfYear;
+  return mask;
+}
+
+/** The whole terminator across the window, in one piece. */
+function blitNightMask(ctx, mask, originX, cssW, cssH) {
+  const s = view.scale, w = state.world;
+  const k = mask.scale;
+
+  // North and south do not wrap, so the rows are clamped to the map exactly as
+  // the map layer clamps them.
+  const ry0 = clamp(Math.floor(-view.y / s), 0, w.height);
+  const ry1 = clamp(Math.ceil((cssH - view.y) / s), 0, w.height);
+  if (ry1 <= ry0) return;
+
+  // OUTWARD, not to the nearest. The map's first and last rows land wherever
+  // the zoom puts them, on a fraction of a pixel. Rounding to the nearest here
+  // lands short of that edge about half the time, and what shows in the
+  // shortfall is a hairline of map that never got dark, a bright line straight
+  // across the top and the bottom.
+  //
+  // Rounding outward cannot leave one. It can spill a fraction of a pixel past
+  // the map instead, onto the backdrop, which is already very nearly black and
+  // does not care.
+  const dy0 = Math.floor(view.y + ry0 * s), dy1 = Math.ceil(view.y + ry1 * s);
+  if (dy1 <= dy0) return;
+
+  // East and west do wrap, so every column of the window has a longitude and
+  // there is nothing to clamp: the strip covers the lot.
+  const mx0 = -originX / s, mx1 = (cssW - originX) / s;
+  ensureNightStrip(mask, Math.ceil((mx1 - mx0) / w.width) + 1);
+
+  const phase = mx0 - Math.floor(mx0 / w.width) * w.width;   // 0 .. one map width
+  ctx.drawImage(mask.strip,
+    phase * k, ry0 * k, (mx1 - mx0) * k, (ry1 - ry0) * k,
+    0, dy0, cssW, dy1 - dy0);
+}
+
+/** The same, for a bitmap held at full map resolution rather than at mask scale. */
+function blitMapBitmap(ctx, bitmap, vx, cssW, cssH) {
+  const s = view.scale;
+  const rect = visibleRect(vx, cssW, cssH);
+  if (!rect) return;
+
+  const dx0 = Math.round(vx + rect.x0 * s), dx1 = Math.round(vx + rect.x1 * s);
+  const dy0 = Math.round(view.y + rect.y0 * s), dy1 = Math.round(view.y + rect.y1 * s);
+  if (dx1 <= dx0 || dy1 <= dy0) return;
+
+  ctx.drawImage(bitmap,
+    rect.x0, rect.y0, rect.x1 - rect.x0, rect.y1 - rect.y0,
+    dx0, dy0, dx1 - dx0, dy1 - dy0);
+}
+
+const RIVER_AT = 2.55;              // zoom at or above which the rivers are on the map
+
+/**
+ * How much of the ground a river hides at its strongest.
+ *
+ * Never one, and low. A river is drawn in very nearly black, so at any real
+ * strength it reads as a crack in the map rather than as water in a landscape,
+ * and the drainage is dense enough in places that a strong line becomes scribble.
+ * At a third the terrain under it still carries the picture and the river is
+ * something you notice when you look for it. It is one number: raise it if they
+ * are too faint to trace.
+ */
+const RIVER_ALPHA = 0.34;
+
+/**
+ * The rivers, over the finished ground and under the night.
+ *
+ * Under the night on purpose. A river is part of the landscape, so it goes dark
+ * with the rest of the landscape at midnight; drawn over the terminator it would
+ * stay bright through the night and read as something on the interface rather
+ * than something in the world.
+ *
+ * data/img/rivers.png is transparent everywhere except the rivers, which is what
+ * lets this be one blit rather than a mask and a fill. Nothing is tinted here:
+ * the colour is in the file. See the rivers pass in sync-provinces.js.
+ *
+ * They fade in with zoom because a river is one pixel wide on the map. Below
+ * RIVER_AT a screen pixel covers several map pixels, so what would be drawn is
+ * not a river but a dotted line where the sampling happened to land on one.
+ */
+function drawRivers(ctx, cssW, cssH) {
+  const w = state.world;
+  const fade = cityFade(F_RIVER);
+  if (!state.showRivers || !w.rivers || fade <= 0.004) return;
+
+  // Drawn by the same rule as the ground: nearest-neighbour while magnified, so
+  // a river stays as sharp as the map under it. Smoothing it was tried and only
+  // made it blurry, which is a worse thing to have on the map than a hard line.
+  ctx.save();
+  ctx.globalAlpha = RIVER_ALPHA * fade;
+  for (const dx of wrapOffsets(cssW)) blitMapBitmap(ctx, w.rivers, view.x + dx, cssW, cssH);
+  ctx.restore();
+}
+
+/**
+ * The lit cities on the night side.
+ *
+ * The lights belong to the ground and the mask belongs to the hour, so the two
+ * are positioned differently and the cut between them has to happen somewhere.
+ * It happens on layers the size of the window: the lights are laid down where
+ * the map is, the terminator is assembled over them, and what survives the cut
+ * goes onto the map with `lighter`, since a lit city adds to what is under it
+ * rather than replacing it.
+ *
+ * THE MASK IS ASSEMBLED IN FULL BEFORE ANY OF IT CUTS ANYTHING. That is not an
+ * economy, it is the difference between right and wrong. `destination-in`
+ * composites the source against the ENTIRE destination rather than against the
+ * rectangle being drawn, so cutting with one wrapped copy of the mask and then
+ * another means the second erases everything the first one kept — the lights
+ * survive only under the last copy drawn, and vanish everywhere else.
+ *
+ * Two copies is the ordinary case rather than a corner one. The map wraps
+ * east-west and the terminator wraps on its own offset, which slides a full map
+ * width through the course of a day, so the number of copies changes twice a
+ * day at any given zoom. At 200% on a 1920px window those moments are 19:40 and
+ * 23:40, which is why this read as the lights glitching at midnight.
+ *
+ * This is the expensive half of the layer and it is why the Day and night
+ * switch is worth having. It is skipped outright when there is no lights
+ * bitmap, when the map mode asks for no lights, and when the layer is off.
+ */
+function drawCityLights(ctx, cssW, cssH, originX, alpha) {
+  const w = state.world;
+
+  // The lights sit on the ground, so they take the map's own offsets and the
+  // map's own smoothing rule. Several copies here are harmless: each draws only
+  // into its own stretch of window and none of them disturbs the others.
+  const lights = viewportLayer('cityLights', cssW, cssH, NIGHT_LIGHT_SCALE);
+  lights.ctx.imageSmoothingEnabled = view.scale < 1;
+  for (const dx of wrapOffsets(cssW)) blitMapBitmap(lights.ctx, w.night, view.x + dx, cssW, cssH);
+
+  // The terminator, over the whole window, before it is used for anything.
+  const mask = viewportLayer('nightMask', cssW, cssH, NIGHT_LIGHT_SCALE);
+  mask.ctx.imageSmoothingEnabled = true;
+  blitNightMask(mask.ctx, w.nightMask, originX, cssW, cssH);
+
+  // One cut, against a mask that already covers everything it has to. The
+  // mask's alpha is how much night it is, so what comes through is the lights
+  // at exactly that strength: full where it is dark, nothing in daylight, and
+  // fading across the twilight band.
+  lights.ctx.globalCompositeOperation = 'destination-in';
+  lights.ctx.drawImage(mask.canvas, 0, 0, mask.w, mask.h, 0, 0, cssW, cssH);
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(lights.canvas, 0, 0, lights.w, lights.h, 0, 0, cssW, cssH);
+  ctx.restore();
+}
+
+/** Darkens the night side of the map and lights its cities. */
+/**
+ * Whether any of the visible map is dark enough to be worth drawing.
+ *
+ * Sampled on a coarse grid over the visible rectangle. The terminator is a
+ * smooth curve hundreds of pixels across, so it cannot hide between samples at
+ * this spacing, and a window looking at the middle of the day side then costs
+ * nothing at all instead of nine window-sized composites that add up to zero.
+ */
+const NIGHT_PROBE = 5;
+
+function anyNightVisible(world, cssW, cssH) {
+  const dec = solarDeclination(sunDayOfYear);
+  const sunLon = subsolarLongitude(sunUtcHour, world.width);
+
+  // Every copy of the map that is on screen, not just the one at view.x.
+  //
+  // Near the seam two copies are visible and they show different longitudes.
+  // Testing only the first one lets a window whose left half is in daylight
+  // decide there is no night anywhere, and the layer is then skipped for the
+  // right half as well, which is holding the terminator.
+  for (const dx of wrapOffsets(cssW)) {
+    const rect = visibleRect(view.x + dx, cssW, cssH);
+    if (!rect) continue;
+
+    for (let i = 0; i <= NIGHT_PROBE; i++) {
+      const lat = mapLatAt(rect.y0 + ((rect.y1 - rect.y0) * i) / NIGHT_PROBE);
+      for (let j = 0; j <= NIGHT_PROBE; j++) {
+        const lon = mapLonAt(rect.x0 + ((rect.x1 - rect.x0) * j) / NIGHT_PROBE, world.width);
+        if (sinSolarElevation(lat, lon, dec, sunLon) < NIGHT_DAY_START) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function drawNightLayer(ctx, cssW, cssH) {
+  const w = state.world;
+  if (!state.showNight || !w.nightMask) return;
+  if (!anyNightVisible(w, cssW, cssH)) return;
+
+  const originX = view.x + sunShiftPx(w) * view.scale;
+  const dark = nightStrength(NIGHT_DARKEN);
+
+  if (dark > 0.004) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;      // a smooth gradient, drawn eight times its size
+    ctx.globalAlpha = dark;
+    blitNightMask(ctx, w.nightMask, originX, cssW, cssH);
+    ctx.restore();
+  }
+
+  const lit = nightStrength(NIGHT_LIGHTS);
+  if (w.night && lit > 0.004) drawCityLights(ctx, cssW, cssH, originX, lit);
 }
 
 /**
@@ -2242,9 +3387,13 @@ function drawMapLayer(ctx, cssW, cssH, vx) {
  * screen, so it is rebuilt whenever the zoom changes; panning leaves it alone,
  * and each holder caches its own so the two never rebuild each other's.
  */
-function drawSelectionRing(ctx, holder, alpha) {
+function drawSelectionRing(ctx, holder, alpha, colour = OUTLINE_COLOUR) {
   if (!holder.silhouette || alpha <= 0) return;
-  if (holder.outline?.builtFor !== view.scale) holder.outline = buildOutline(holder.silhouette, view.scale);
+  // Each holder caches its own, so two rings in different colours do not
+  // rebuild each other every frame.
+  if (holder.outline?.builtFor !== view.scale) {
+    holder.outline = buildOutline(holder.silhouette, view.scale, colour);
+  }
   const o = holder.outline;
 
   ctx.save();
@@ -2270,7 +3419,9 @@ function drawView() {
 
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = '#0c1015';        // matches --steel-deepest in index.html
+
+  // The deep steel the map is drawn onto.
+  ctx.fillStyle = '#0c1015';      // matches --steel-deepest in index.html
   ctx.fillRect(0, 0, cssW, cssH);
 
   // Smooth only when shrinking the map. Zoomed in, nearest-neighbour keeps the
@@ -2282,7 +3433,21 @@ function drawView() {
   // translate, since they all position themselves from view.x already.
   const offsets = wrapOffsets(cssW);
   debug.tilesDrawn = 0;
+  // Emptied here and not in drawResources, which runs once per copy of the map.
+  resourceHits.length = 0;
   for (const dx of offsets) drawMapLayer(ctx, cssW, cssH, view.x + dx);
+
+  // Over the ground, under everything else that is not the ground.
+  drawRivers(ctx, cssW, cssH);
+
+  // Over the finished ground and under everything else. Night falls on the map
+  // rather than on the interface, so the selection ring, the country names and
+  // the city marks all stand on top of it and stay as legible at midnight as at
+  // noon. It is drawn once for the whole window rather than once per copy of
+  // the map, because it wraps on its own offsets — see the note on the layer.
+  const tNight = performance.now();
+  drawNightLayer(ctx, cssW, cssH);
+  perf.night = ease(perf.night, performance.now() - tNight);
 
   for (const dx of offsets) {
     ctx.save();
@@ -2290,6 +3455,7 @@ function drawView() {
 
     drawSelectionRing(ctx, state, 1);
     if (state.fade) drawSelectionRing(ctx, state.fade, fadeStrength());
+    if (state.county) drawSelectionRing(ctx, state.county, COUNTY_RING_ALPHA, COUNTY_RING_COLOUR);
 
     // Cities UNDER the country names. A country name belongs to the land it is
     // written across, and a city sits on that land, so the name passing over it
@@ -2308,11 +3474,19 @@ function drawView() {
       && (cityFade(F_CITY_NAME) > 0.004 || cityFade(F_CAPITAL_NAME) > 0.004);
     const labelBoxes = wantBoxes ? [] : null;
 
+    const tLabels = performance.now();
     const ops = showNames ? layoutLabels(state.world.labels, cssW, cssH, dx, labelBoxes) : 0;
+    perf.labels = ease(perf.labels, performance.now() - tLabels);
 
-    const cityLayer = () => { if (state.showCities) drawCities(ctx, cssW, cssH, dx, labelBoxes); };
+    const cityLayer = () => {
+      if (!state.showCities) return;
+      const t0 = performance.now();
+      drawCities(ctx, cssW, cssH, dx, labelBoxes);
+      perf.cities = ease(perf.cities, performance.now() - t0);
+    };
     const nameLayer = () => paintLabels(ctx, ops);
     if (state.selected) { nameLayer(); cityLayer(); } else { cityLayer(); nameLayer(); }
+    if (state.mode === 'resources') drawResources(ctx, cssW, cssH, dx);
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -2329,7 +3503,7 @@ const NAME_MIN_PX = 30;        // province must be at least this wide on screen 
 const OVERLAY_FONT = `500 11px ${LABEL_FACE}`;
 
 // Filled in as the overlays draw, and read back by the Performance readout.
-const debug = { names: 0, tilesDrawn: 0, path: '—' };
+const debug = { names: 0, seaNames: 0, tilesDrawn: 0, path: '—', cursor: null };
 
 
 /* --------------------------------------------------------------- cities
@@ -2496,10 +3670,10 @@ function linkInternationalCities(cities) {
 
 // Index into the four opacities below. Order: icons then names, ordinary then
 // capital, which is also the order they are drawn in.
-const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3;
-const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT];
+const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3, F_RIVER = 4;
+const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT, RIVER_AT];
 
-const cityAlpha = [0, 0, 0, 0];
+const cityAlpha = CITY_THRESHOLDS.map(() => 0);
 let cityClock = null;
 
 /**
@@ -2517,7 +3691,7 @@ function stepCityFades(now) {
   cityClock = now;
 
   let moving = false;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < CITY_THRESHOLDS.length; i++) {
     const want = view.scale >= CITY_THRESHOLDS[i] ? 1 : 0;
     if (cityAlpha[i] === want) continue;
     cityAlpha[i] = want > cityAlpha[i]
@@ -2703,12 +3877,347 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
 }
 
 
+/**
+ * The lines the resource layer writes, built once.
+ *
+ * The draw loop runs every frame over every province on screen, and building
+ * a string there is the wrong place for it: eighteen kinds looked up, an array
+ * allocated and a template concatenated, per province, sixty times a second,
+ * to produce the same characters every time. drawProvinceNames does none of
+ * that because a name is already a string sitting on the province.
+ *
+ * So the text is a string here too. Rebuild this when a yield changes, which
+ * is on the day boundary at most: yields come from road, electricity and rail,
+ * and none of those moves inside a tick.
+ */
+function buildResourceLines(world) {
+  const out = new Map();
+  if (!world.resources) return out;
+  // Handed in and not looked up, because this runs while the world is still
+  // being assembled and state.world does not point at it yet.
+  const hasSheet = Boolean(world.resourceSheet);
+  for (const id in world.resources) {
+    const held = world.resources[id];
+    const lines = [];
+    // In the order the file names them, so a province reads the same way
+    // every time and the eye can learn where to look.
+    for (const kind of world.resourceKinds) {
+      const amount = held[kind];
+      if (!amount) continue;
+      lines.push({ kind, text: `(0/${amount})` });
+    }
+    if (!lines.length) continue;
+
+    // The widest row in the stack, carried on the array itself. drawResources
+    // needs a width to test a province's room against, and the honest one is the
+    // width of the widest bitmap it is about to draw. Every icon is the same
+    // width, so the widest row is whichever carries the longest figures; with no
+    // sheet the word in front of them counts as well.
+    lines.wide = lines.reduce((a, b) => (rowChars(b, hasSheet) > rowChars(a, hasSheet) ? b : a));
+    out.set(id, lines);
+  }
+  for (const [id, lines] of out) anchorStack(world, id, lines);
+  return out;
+}
+
+/**
+ * Where a province's stack is written, which is not always its centroid.
+ *
+ * A centroid is the mean of the pixels, and the mean of an archipelago is the
+ * water between its islands. Onanlanu is 234 pixels of land in a 71 by 59 box
+ * and its mean falls 15.5 pixels out to sea, which at a close zoom is two
+ * hundred screen pixels from the nearest shore. The stack was written there,
+ * correctly and uselessly, and panning walked it off the screen while the
+ * islands it belongs to stayed. 86 of the 1,500 provinces do this; the worst,
+ * Verley-Maret, misses its own land by 477 pixels.
+ *
+ * So: the centroid where the centroid is on the province, and the middle of its
+ * largest island where it is not. Largest and not nearest, because the point of
+ * the label is to name the part of the province a person is looking at.
+ *
+ * Only the provinces that need it pay for it. The test is one array read, and
+ * the fourteen hundred that pass it never walk their own box.
+ */
+function anchorStack(world, id, lines) {
+  const bb = world.bounds.get(id);
+  if (!bb) return;
+  lines.ax = bb.cx;
+  lines.ay = bb.cy;
+
+  const W = world.width, H = world.height;
+  const at = world.provinceAt;
+  const index = world.byId.get(id)?.index;
+  if (!at || index === undefined) return;
+
+  const owns = (x, y) => y >= 0 && y < H && at[y * W + ((x % W) + W) % W] === index;
+  if (owns(Math.round(bb.cx), Math.round(bb.cy))) return;
+
+  // Flood fill the box into islands and keep the biggest.
+  const x0 = bb.minX, y0 = bb.minY;
+  const bw = bb.maxX - bb.minX + 1, bh = bb.maxY - bb.minY + 1;
+  const seen = new Uint8Array(bw * bh);
+  const stack = new Int32Array(bw * bh);
+  let bestN = 0, bestX = bb.cx, bestY = bb.cy;
+
+  for (let start = 0; start < bw * bh; start++) {
+    if (seen[start]) continue;
+    seen[start] = 1;
+    const sy = (start / bw) | 0, sx = start - sy * bw;
+    if (!owns(x0 + sx, y0 + sy)) continue;
+
+    let top = 0, count = 0, sumX = 0, sumY = 0;
+    stack[top++] = start;
+    while (top) {
+      const i = stack[--top];
+      const y = (i / bw) | 0, x = i - y * bw;
+      count++; sumX += x0 + x; sumY += y0 + y;
+      if (x > 0 && !seen[i - 1] && (seen[i - 1] = 1) && owns(x0 + x - 1, y0 + y)) stack[top++] = i - 1;
+      if (x + 1 < bw && !seen[i + 1] && (seen[i + 1] = 1) && owns(x0 + x + 1, y0 + y)) stack[top++] = i + 1;
+      if (y > 0 && !seen[i - bw] && (seen[i - bw] = 1) && owns(x0 + x, y0 + y - 1)) stack[top++] = i - bw;
+      if (y + 1 < bh && !seen[i + bw] && (seen[i + bw] = 1) && owns(x0 + x, y0 + y + 1)) stack[top++] = i + bw;
+    }
+    if (count > bestN) { bestN = count; bestX = sumX / count; bestY = sumY / count; }
+  }
+  if (!bestN) return;
+
+  // The mean of one island can still miss it if the island is a crescent, so
+  // settle on the pixel of that island nearest its own middle.
+  if (!owns(Math.round(bestX), Math.round(bestY))) {
+    let near = Infinity, nx = bestX, ny = bestY;
+    for (let y = bb.minY; y <= bb.maxY; y++) {
+      for (let x = bb.minX; x <= bb.maxX; x++) {
+        if (!owns(x, y)) continue;
+        const d = (x - bestX) * (x - bestX) + (y - bestY) * (y - bestY);
+        if (d < near) { near = d; nx = x; ny = y; }
+      }
+    }
+    bestX = nx; bestY = ny;
+  }
+  lines.ax = bestX;
+  lines.ay = bestY;
+}
+
+/**
+ * The resource layer.
+ *
+ * Every KNOWN deposit in a province, stacked at its centre of mass, as a mark
+ * and a pair of figures: what it yields today over what is in the ground.
+ *
+ * Yield is zero throughout. It is deposit x (0.4 + 0.6 x development) under
+ * Extraction, and development reads road, electricity and rail, none of which
+ * has a level on the map yet. Showing 0 is the honest answer and the figure
+ * moves on its own once those are authored.
+ *
+ * Unprospected, offshore and stranded deposits are all absent on purpose. This
+ * is what a country knows it has and can work, which is a different list from
+ * what is under it.
+ */
+/**
+ * One line of a stack, drawn once into its own bitmap and kept.
+ *
+ * The same shape as bakedCityName, and there for the same reason. A line is
+ * live text stroked once for the halo and filled once for the body, the map
+ * holds 4,371 of them across 1,487 provinces, and a low zoom puts well over a
+ * thousand on screen. That is several thousand text rasterisations a frame.
+ *
+ * The saving is larger here than it was for the city names, because the strings
+ * repeat. Between all 1,487 stacks there are only 232 distinct lines, so the
+ * cache fills within the first few provinces and everything after is blitting.
+ *
+ * Baked at device resolution and at the size it will be drawn at, so the blit is
+ * one to one. An earlier attempt baked at a fixed 22px and scaled down to eight,
+ * which was mush.
+ */
+// Where each row of each stack ended up on screen this frame, so the pointer
+// can be told what it is over. Filled by drawResources and read by the hover,
+// which is the only way back from a bitmap to the thing it came from.
+//
+// The box is the row PITCH tall and not the bitmap, which carries enough
+// padding for its halo that neighbouring rows would overlap by half.
+const resourceHits = [];
+
+const resourceLineCache = new Map();
+let resourceMeasure = null;
+
+// How many characters wide a row reads, for picking the widest in a stack. The
+// icon is a fixed width so it does not enter into it; without a sheet the word
+// in front of the figures does.
+const rowChars = (row, hasSheet) =>
+  (hasSheet ? 0 : (RESOURCE_MARK[row.kind] ?? row.kind).length + 1) + row.text.length;
+
+function bakedResourceLine(row, px) {
+  const dpr = Math.max(1, pixelRatio);
+  const sheet = state.world?.resourceSheet;
+  const cell = sheet ? RESOURCE_ICON[row.kind] : undefined;
+  const key = `${px}|${dpr.toFixed(2)}|${cell ?? row.kind}|${row.text}`;
+  const had = resourceLineCache.get(key);
+  if (had) return had;
+
+  if (!resourceMeasure) resourceMeasure = document.createElement('canvas').getContext('2d');
+  resourceMeasure.font = resourceFont(px);
+
+  // With a sheet the row is icon, gap, figures. Without one the resource says
+  // its own short name instead, which is what it did before there was art.
+  const icon = cell === undefined ? 0 : resourceIconPx(px);
+  const gap = cell === undefined ? 0 : Math.round(px * 0.3);
+  const text = cell === undefined ? `${RESOURCE_MARK[row.kind] ?? row.kind} ${row.text}` : row.text;
+  const width = resourceMeasure.measureText(text).width;
+
+  const halo = Math.max(2, px * 0.28);
+  const pad = Math.ceil(halo) + 2;
+  const w = Math.ceil(icon + gap + width) + pad * 2;
+  const h = Math.ceil(Math.max(px * 1.6, icon)) + pad * 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(w * dpr);
+  canvas.height = Math.ceil(h * dpr);
+
+  const x = canvas.getContext('2d');
+  x.scale(dpr, dpr);
+
+  if (cell !== undefined) {
+    // A dark edge under the art, so a pale icon does not vanish into pale sea.
+    // The text gets the same from its own stroke; a bitmap has no stroke.
+    x.shadowColor = 'rgba(6,8,12,.9)';
+    x.shadowBlur = Math.max(1.5, px * 0.18);
+    const sx = (cell % RESOURCE_SHEET_COLS) * RESOURCE_SHEET_CELL;
+    const sy = Math.floor(cell / RESOURCE_SHEET_COLS) * RESOURCE_SHEET_CELL;
+    x.drawImage(sheet, sx, sy, RESOURCE_SHEET_CELL, RESOURCE_SHEET_CELL,
+      pad, pad + (h - pad * 2 - icon) / 2, icon, icon);
+    x.shadowColor = 'transparent';
+    x.shadowBlur = 0;
+  }
+
+  x.font = resourceFont(px);
+  x.textAlign = 'left';
+  x.textBaseline = 'middle';
+  x.lineJoin = 'round';
+  x.lineWidth = halo;
+  x.strokeStyle = 'rgba(6,8,12,.85)';
+  x.fillStyle = 'rgba(232,238,246,.95)';
+  x.strokeText(text, pad + icon + gap, h / 2);
+  x.fillText(text, pad + icon + gap, h / 2);
+
+  const baked = { canvas, w, h };
+  resourceLineCache.set(key, baked);
+  return baked;
+}
+
+/**
+ * Every known deposit in every province that has the room to say so.
+ *
+ * Nothing is styled on the passed context and nothing is saved or restored,
+ * because every line arrives as a finished bitmap.
+ */
+function drawResources(ctx, cssW, cssH, dx) {
+  const t0 = performance.now();
+  const w = state.world;
+  if (!w?.resources || !w.bounds) return;
+
+  const lines = w.resourceLines;
+  if (!lines?.size) return;
+
+  const s = view.scale;
+
+  // Below the size a line can be read at, the layer says nothing.
+  //
+  // The size used to be floated up to the minimum instead, which made zooming
+  // out the expensive direction: it did not thin the layer, it brought more
+  // provinces on screen and wrote 6px text across all of them, overlapping and
+  // unreadable. RESOURCE_MIN_LINE is a floor on legibility, so it is a cutoff.
+  const natural = RESOURCE_LINE * s;
+  if (natural < RESOURCE_MIN_LINE) { debug.resourcesDrawn = 0; return; }
+
+  // Whole pixels, so the bake cache holds the handful of sizes between the
+  // cutoff and the ceiling and not a fresh set for every step of a zoom.
+  const base = Math.round(Math.min(natural, RESOURCE_MAX_LINE));
+  const big = Math.round(base * RESOURCE_SELECTED);
+
+  // The rows are spaced by whichever is taller, the letters or the icon, so a
+  // stack never writes over itself. Worked out for both sizes here, since the
+  // selected province is the only one drawn at the larger of them.
+  const pitchOf = (px) => Math.max(px, w.resourceSheet ? resourceIconPx(px) : 0);
+  const basePitch = pitchOf(base), bigPitch = pitchOf(big);
+  const rowH = basePitch / s;         // one row of the stack, in map pixels
+
+  // Walked over the provinces that HOLD something, not over all of them. The
+  // chosen one is held back to the end so its larger stack lands ON TOP of its
+  // neighbours instead of under them, and so the hover, which reads the record
+  // backwards, answers with it where two overlap.
+  let drawn = 0;
+  const one = (id, rows, chosen) => {
+    const bb = w.bounds.get(id);
+    if (!bb) return;
+
+    // The chosen province is exempt from every room test below. Picking one is
+    // a request to see it, and hiding what was asked for because the ground is
+    // narrow is the opposite of an answer.
+    const line = chosen ? big : base;
+    const pitch = chosen ? bigPitch : basePitch;
+
+    // Height first, because it costs a subtract. A nine-row stack needs nine
+    // rows of room, and a province too short to hold its own stack was only
+    // ever writing it across its neighbours.
+    if (!chosen && bb.maxY - bb.minY + 1 < rowH * rows.length) return;
+
+    // The caller has already done ctx.translate(dx, 0), which is the state
+    // drawProvinceNames is written against. So dx belongs in the test for
+    // whether THIS copy of the wrapped map is on screen and nowhere else.
+    // Folding it into the coordinate as well put every wrapped copy at twice
+    // the offset, so a province would show while the unwrapped copy covered it
+    // and vanish the moment a wrapped one took over, which is what panning
+    // toward Onanlanu looked like.
+    const x = rows.ax * s + view.x;
+    if (x + dx < -160 || x + dx > cssW + 160) return;
+    const y = rows.ay * s + view.y;
+    const reach = rows.length * pitch * 0.5 + pitch;
+    if (y + reach < 0 || y - reach > cssH) return;
+
+    // Then width, measured and not guessed. This asks the cache for a bitmap the
+    // stack is about to draw anyway, so on all but the first few provinces it is
+    // a map lookup. A fixed figure was standing in for this and it was far too
+    // small: 46px of room let a province claim it could write "Tungsten (0/12)",
+    // which is nearer ninety.
+    //
+    // Half of it, because a line may hang over the edges. Demanding the whole
+    // width shut eighteen provinces out at every zoom there is: Zamogon is five
+    // pixels across and holds four things, Ouresca Island is three across and
+    // holds three. A name written wider than the island it belongs to is how an
+    // atlas has always done it.
+    const widest = bakedResourceLine(rows.wide, line);
+    if (!chosen && (bb.maxX - bb.minX + 1) * s < widest.w * RESOURCE_OVERHANG) return;
+
+    let ly = y - ((rows.length - 1) * pitch) / 2;
+    for (let i = 0; i < rows.length; i++, ly += pitch) {
+      const b = bakedResourceLine(rows[i], line);
+      ctx.drawImage(b.canvas, 0, 0, b.canvas.width, b.canvas.height,
+        x - b.w / 2, ly - b.h / 2, b.w, b.h);
+      // In window space, so dx goes back in: the context carries it as a
+      // translate, and the pointer knows nothing about which copy it is over.
+      resourceHits.push({
+        x0: x + dx - b.w / 2, x1: x + dx + b.w / 2,
+        y0: ly - pitch / 2, y1: ly + pitch / 2,
+        id, kind: rows[i].kind, amount: w.resources[id]?.[rows[i].kind] ?? 0,
+      });
+    }
+    drawn++;
+  };
+
+  for (const [id, rows] of lines) if (id !== state.selected) one(id, rows, false);
+  const chosenRows = state.selected && lines.get(state.selected);
+  if (chosenRows) one(state.selected, chosenRows, true);
+  perf.resources = ease(perf.resources, performance.now() - t0);
+  debug.resourcesDrawn = drawn;
+}
+
 function drawOverlays(ctx, cssW, cssH, dx) {
   if (state.showCoastal) drawCoastalFlags(ctx, cssW, cssH, dx);
   if (state.showProvinceNames) drawProvinceNames(ctx, cssW, cssH, dx);
+  if (state.showSeaNames) drawSeaNames(ctx, cssW, cssH, dx);
   if (state.showAdjacency) drawAdjacency(ctx);
   if (state.showBounds) drawSelectionBounds(ctx);
   if (state.showChunks) drawChunkGrid(ctx, cssW, cssH, dx);
+  if (state.showSeams) drawSeams(ctx, cssW, cssH, dx);
 }
 
 /** Sets up the stroke-then-fill style shared by the text overlays. */
@@ -2748,6 +4257,37 @@ function drawProvinceNames(ctx, cssW, cssH, dx) {
 }
 
 /**
+ * Every sea region's name at its centroid, on the same terms.
+ *
+ * Drawn in a colder tint so the two sets can be told apart with both switched
+ * on. A centroid is the mean of the region's own water, so a sea curling round
+ * a headland can put its name on the land inside the bend; drawProvinceNames
+ * does the same to a horseshoe country and it is no less readable for it.
+ */
+function drawSeaNames(ctx, cssW, cssH, dx) {
+  const sea = state.world.sea;
+  if (!sea) return;
+
+  const s = view.scale;
+  ctx.save();
+  overlayText(ctx);
+  ctx.fillStyle = 'rgba(150,206,244,.95)';
+  let drawn = 0;
+  for (const [id, bb] of sea.bounds) {
+    if ((bb.maxX - bb.minX + 1) * s < NAME_MIN_PX) continue;    // too small to read
+    const x = bb.cx * s + view.x, y = bb.cy * s + view.y;
+    if (x + dx < -120 || y < -20 || x + dx > cssW + 120 || y > cssH + 20) continue;
+    const r = sea.byId.get(id);
+    const name = r.lake ? `${r.name} (lake)` : r.name;
+    ctx.strokeText(name, x, y);
+    ctx.fillText(name, x, y);
+    drawn++;
+  }
+  ctx.restore();
+  debug.seaNames = drawn;
+}
+
+/**
  * The tile grid, with each chunk's column,row and whether it is being drawn.
  *
  * Chunks actually blitted this frame are outlined brightly, the rest faintly —
@@ -2757,19 +4297,15 @@ function drawProvinceNames(ctx, cssW, cssH, dx) {
 function drawChunkGrid(ctx, cssW, cssH, dx) {
   if (!tiles) return;
   const s = view.scale;
-  const usingTiles = s > overview.scale;
+  const usingTiles = !overviewCovers(s);
 
   // Which chunks drawMapLayer() used for THIS copy of the map, by the same
   // visible-rect test — so the lit chunks match what is actually drawn here
   // rather than what is drawn in the copy at the origin.
   const inUse = new Set();
   if (usingTiles) {
-    const vx = view.x + dx;
-    const sx0 = clamp(Math.floor(-vx / s), 0, state.world.width);
-    const sy0 = clamp(Math.floor(-view.y / s), 0, state.world.height);
-    const sx1 = clamp(Math.ceil((cssW - vx) / s), 0, state.world.width);
-    const sy1 = clamp(Math.ceil((cssH - view.y) / s), 0, state.world.height);
-    if (sx1 > sx0 && sy1 > sy0) for (const t of tilesOver(sx0, sy0, sx1, sy1)) inUse.add(t);
+    const rect = visibleRect(view.x + dx, cssW, cssH);
+    if (rect) for (const t of tilesOver(rect.x0, rect.y0, rect.x1, rect.y1)) inUse.add(t);
   }
 
   ctx.save();
@@ -2858,6 +4394,46 @@ function drawSelectionBounds(ctx) {
   ctx.restore();
 }
 
+/**
+ * Where the joins are.
+ *
+ * MAGENTA is the left edge of a drawn copy of the map, which is map x 0 and also
+ * map x 6000 of the copy before it. CYAN is a tile column boundary, every 512 map
+ * pixels. ORANGE is the right edge of the overview, which only differs from the
+ * magenta line if a rounding rule has gone wrong.
+ *
+ * A vertical artefact sitting on a magenta line is a copy join. On a cyan line it
+ * is a tile boundary. On neither, it is drawn on the map and is not a seam at all.
+ */
+function drawSeams(ctx, cssW, cssH, dx) {
+  const w = state.world, s = view.scale;
+  ctx.save();
+  ctx.lineWidth = 1;
+
+  ctx.strokeStyle = 'rgba(0,220,255,.55)';
+  for (let x = TILE; x < w.width; x += TILE) {
+    const sx = Math.round(view.x + x * s) + 0.5;
+    if (sx + dx < -1 || sx + dx > cssW + 1) continue;
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, cssH); ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(255,0,220,.95)';
+  for (const x of [0, w.width]) {
+    const sx = Math.round(view.x + x * s) + 0.5;
+    if (sx + dx < -1 || sx + dx > cssW + 1) continue;
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, cssH); ctx.stroke();
+  }
+
+  // The last tile column is the one that cannot land on a whole number of
+  // overview pixels, so it is worth seeing on its own.
+  ctx.strokeStyle = 'rgba(255,150,0,.9)';
+  const last = Math.round(view.x + Math.floor(w.width / TILE) * TILE * s) + 0.5;
+  if (!(last + dx < -1 || last + dx > cssW + 1)) {
+    ctx.beginPath(); ctx.moveTo(last, 0); ctx.lineTo(last, cssH); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 /** A dot on every province the pixel scan found touching open sea. */
 function drawCoastalFlags(ctx, cssW, cssH, dx) {
   const w = state.world, s = view.scale;
@@ -2888,6 +4464,16 @@ const els = {
   selBody: document.getElementById('sel-body'),
   neighbours: document.getElementById('neighbours'),
   card: document.getElementById('card'),
+  countyCard: document.getElementById('county-card'),
+  countyName: document.getElementById('county-name'),
+  countyPolity: document.getElementById('county-polity'),
+  countyProvince: document.getElementById('county-province'),
+  countyOwner: document.getElementById('county-owner'),
+  countyFlag: document.getElementById('county-flag'),
+  countyTerrain: document.getElementById('county-terrain'),
+  countyClimate: document.getElementById('county-climate'),
+  countyRail: document.getElementById('county-rail'),
+  countyArea: document.getElementById('county-area'),
   cardName: document.getElementById('card-name'),
   cardPolity: document.getElementById('card-polity'),
   cardRole: document.getElementById('card-role'),
@@ -2904,12 +4490,23 @@ const els = {
   stats: document.getElementById('stats'),
   toolbar: document.getElementById('toolbar'),
   zoomLevel: document.getElementById('zoom-level'),
+  pause: document.getElementById('pause'),
+  clock: document.getElementById('clock'),
+  clockFace: document.getElementById('clock-face'),
+  clockPlay: document.getElementById('clock-play'),
+  clockSlower: document.getElementById('clock-slower'),
+  clockFaster: document.getElementById('clock-faster'),
 };
 
 const state = {
   mode: 'political',      // which of MODES colours the map
   selected: null,         // province id, or null
   hovered: null,          // province id, or null
+  selectedSea: null,      // sea region id, or null. Navy mode only
+  selectedSub: null,      // sea subregion id, or null. Navy mode only
+  hoveredSub: null,       // the same, under the pointer
+  county: null,           // the county under the right button; see selectCounty
+  hoveredSea: null,       // sea region id, or null
   world: null,            // the model from buildWorld(), once loaded
   silhouette: null,       // selected province's shape; survives zooming
   outline: null,          // the ring built from it, rebuilt on every zoom change
@@ -2919,19 +4516,23 @@ const state = {
   // matching data-toggle, so adding one is a line of HTML and a draw call.
   satellite: false,       // imagery under the province colours; set true if it loads
   showNight: true,        // the terminator and the city lights, baked into the tiles
+  showRivers: true,       // drawn over the ground, from RIVER_AT up; see drawRivers
   showCities: true,
   showLabels: true,
   showProvinceNames: false,
+  showSeaNames: false,
   showChunks: false,
   showAdjacency: false,
   showBounds: false,
   showCoastal: false,
+  showSeams: false,
 };
 
 
 // Redrawing is driven by flags rather than by redrawing on every event, so a
 // burst of mouse moves within one frame still costs a single repaint.
 let bufferDirty = true;               // EVERY province changed: repaint the whole buffer
+let repaintPass = null;               // and the pass doing it, spread over frames
 let viewDirty = true;                 // only the pan/zoom changed: re-blit alone will do
 const dirtyProvinces = new Set();     // just these changed: repaint their boxes only
 const dirtyBoxes = [];                // and these map rectangles, for changes that are not
@@ -2976,7 +4577,7 @@ function invalidateProvinces(...ids) {
  * Infinity, which a running average can never leave: 0.9 x Infinity is still
  * Infinity, so the meter stays pinned there for the rest of the session.
  * Averaging the interval keeps a short frame worth no more than a short frame. */
-const perf = { frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null };
+const perf = { resources: 0, frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null, maskBuilds: 0, night: 0, cities: 0, labels: 0 };
 const ease = (was, now) => (was ? was * 0.9 + now * 0.1 : now);
 
 /** True when the canvas's CSS box no longer matches its pixel buffer. */
@@ -2986,9 +4587,238 @@ function canvasResized() {
     || els.canvas.height !== Math.round(els.canvas.clientHeight * dpr);
 }
 
-/** The render loop. Runs continuously but does nothing unless a flag is set. */
+/* ==================================================================== the clock
+ *
+ * The unit of simulated time is 20 minutes: 3 ticks to the hour, 72 to the day.
+ * Every rule the simulation ever grows is evaluated per tick, never per second
+ * and never per frame, so that a given run of ticks produces the same world on
+ * any machine at any frame rate. Nothing but the clock may read wall time.
+ *
+ * The whole of the date is ONE INTEGER, the ticks elapsed since the start. Year,
+ * month, day, hour and the position of the sun are all derived from it, so a
+ * save carries a single number and there is no second copy of the date to fall
+ * out of step with the first.
+ *
+ * Today it advances the time of day and nothing else. The schedules that hang
+ * off it — construction and production on the day boundary, diplomacy on the
+ * week, the economy on the month — are in plans.md and land here, at the one
+ * place that knows a tick has happened.
+ */
+
+const TICK_MINUTES = 20;
+const TICKS_PER_HOUR = 60 / TICK_MINUTES;               // 3
+const TICKS_PER_DAY = TICKS_PER_HOUR * 24;              // 72
+
+// Tick 0. 10 Ungerbruni 1926, 00:00 UTC, which is day 161 of the year and the
+// sky the map already had before there was a clock to move it.
+const CLOCK_EPOCH = Date.UTC(1926, 5, 10);
+const DAY_MS = 86400000;
+
+// Real milliseconds per tick, slowest first. The ratio between them is about 3,
+// so each step is the same change however fast you were already going.
+const SPEEDS = [333, 100, 33];
+
+// A ceiling on how much simulated time one frame may deliver. Past it the clock
+// FALLS BEHIND rather than catching up: a tab left in the background gets no
+// animation frames at all, and without this the first frame after it comes back
+// would try to run every tick owed since, which at 33ms a tick is an hour of
+// simulation in one blocking loop.
+const MAX_TICKS_PER_FRAME = 12;
+
+// The Rundean calendar is the Gregorian one with its own names for the months,
+// so the arithmetic is Date's and only the naming is ours. That is also how the
+// wiki's own converter does it, and the two have to agree or a date written
+// here would not be the date written there.
+const RUNDEAN_MONTHS = [
+  'Mithalvan', 'Sithvan', 'Ungertre', 'Mithaltre', 'Sithtre', 'Ungerbruni',
+  'Mithalbruni', 'Sithbruni', 'Ungergull', 'Mithalgull', 'Sithgull', 'Ungervan',
+];
+
+const clock = {
+  tick: 0,
+  speed: 2,             // index into SPEEDS, from 1
+  paused: true,         // starts stopped, so the world waits until it is asked to move
+  carry: 0,             // real milliseconds not yet worth a whole tick
+  last: 0,              // when time was last read
+  ticked: 0,            // ticks ever run, for the achieved-rate readout
+  rateFrom: 0,
+};
+
+/** Everything the tick count means, derived rather than stored. */
+function clockDate(tick) {
+  const days = Math.floor(tick / TICKS_PER_DAY);
+  const minutes = (tick % TICKS_PER_DAY) * TICK_MINUTES;
+  const d = new Date(CLOCK_EPOCH + days * DAY_MS);
+  const year = d.getUTCFullYear();
+  return {
+    year,
+    month: d.getUTCMonth(),
+    day: d.getUTCDate(),
+    hour: Math.floor(minutes / 60),
+    minute: minutes % 60,
+    // What the sun's declination is worked out from, so it has to count leap
+    // days exactly as the calendar does rather than from a 365-day assumption.
+    dayOfYear: Math.round((d.getTime() - Date.UTC(year, 0, 1)) / DAY_MS) + 1,
+  };
+}
+
+/**
+ * Whether time is passing.
+ *
+ * Three separate things stop it, and only the first is the player's own choice.
+ * The other two are menus: a screen that has stopped to ask a question should
+ * not have the world moving on behind it, and the start screen is not a place
+ * the game is being played from at all. Neither touches `paused`, so pressing
+ * Resume gives back exactly the state the menu interrupted.
+ */
+const clockRunning = () => !clock.paused && mapIsShowing() && !pauseOpen();
+
+/**
+ * Consumes elapsed real time in whole ticks.
+ *
+ * Frame rate does not affect how fast the world moves: the ticks come out of
+ * elapsed milliseconds, so 60Hz, 144Hz and a stuttering machine all deliver the
+ * same simulation for the same wall time. What is left over is carried, so
+ * changing speed neither creates nor destroys time.
+ */
+function advanceClock(now) {
+  // Read on every frame, running or not, so that unpausing does not hand the
+  // accumulator the entire length of the pause.
+  const elapsed = clock.last ? now - clock.last : 0;
+  clock.last = now;
+  if (!clockRunning()) return;
+
+  const ms = SPEEDS[clock.speed - 1];
+  clock.carry += elapsed;
+
+  let ticked = 0;
+  while (clock.carry >= ms && ticked < MAX_TICKS_PER_FRAME) {
+    clock.carry -= ms;
+    clock.tick++;
+    ticked++;
+  }
+  if (clock.carry > ms * MAX_TICKS_PER_FRAME) clock.carry = ms * MAX_TICKS_PER_FRAME;
+
+  if (ticked) {
+    clock.ticked += ticked;
+    applyClock();
+  }
+}
+
+/**
+ * Puts the world where the tick count says it should be.
+ *
+ * The only caller that matters is advanceClock, but it is written to be
+ * idempotent so that setting the tick from the console lands in the same state
+ * as having arrived there by running.
+ */
+function applyClock() {
+  const at = clockDate(clock.tick);
+
+  sunUtcHour = at.hour + at.minute / 60;
+  sunDayOfYear = at.dayOfYear;
+
+  // The mask is a function of the DAY alone — the hour is the offset it is
+  // drawn at — so it is rebuilt when the day turns and at no other time. That
+  // is once per 72 ticks rather than once per tick.
+  const mask = state.world?.nightMask;
+  if (state.world && (!mask || mask.dayOfYear !== at.dayOfYear)) {
+    state.world.nightMask = buildNightMask(state.world, at.dayOfYear);
+  }
+
+  updateClockFace(at);
+
+  // The ground has not changed, only the light falling on it, so this is a blit
+  // and never a repaint. With the overlay switched off nothing on the map moved
+  // at all and the frame is skipped entirely.
+  //
+  // Held to NIGHT_MIN_MS between redraws. A tick is 20 minutes of simulated time
+  // and at the fastest speed thirty of them pass a second, which would ask for a
+  // full frame thirty times a second to slide a soft gradient a few pixels. Ticks
+  // that fall inside the interval still advance the clock and the date; they just
+  // do not each buy a frame. Anything else that changes the view, such as a pan,
+  // calls invalidateView directly and is unaffected.
+  if (state.showNight) {
+    const now = performance.now();
+    if (now - nightDrawnAt >= NIGHT_MIN_MS) {
+      nightDrawnAt = now;
+      invalidateView();
+    }
+  }
+}
+
+/** `15:00, 10 Ungerbruni 1926`. */
+function updateClockFace(at) {
+  const hh = String(at.hour).padStart(2, '0');
+  const mm = String(at.minute).padStart(2, '0');
+  els.clockFace.textContent = `${hh}:${mm}, ${at.day} ${RUNDEAN_MONTHS[at.month]} ${at.year}`;
+}
+
+/** Reflects the run state and the speed on the plate. */
+function updateClockControls() {
+  els.clock.classList.toggle('running', !clock.paused);
+  els.clockPlay.setAttribute('aria-pressed', String(!clock.paused));
+  els.clockPlay.title = clock.paused ? 'Resume (Space)' : 'Pause (Space)';
+
+  // Dimmed at the ends of the range rather than wrapping round. Speed is a
+  // position on a scale, and a control that jumped from fastest back to slowest
+  // would eventually do it by accident.
+  els.clockSlower.disabled = clock.speed <= 1;
+  els.clockFaster.disabled = clock.speed >= SPEEDS.length;
+  els.clockSlower.title = `Slower (now ${clock.speed} of ${SPEEDS.length})`;
+  els.clockFaster.title = `Faster (now ${clock.speed} of ${SPEEDS.length})`;
+}
+
+function setSpeed(speed) {
+  const want = clamp(Math.round(speed), 1, SPEEDS.length);
+  if (want === clock.speed) return;
+  clock.speed = want;
+  // The remainder is left alone on purpose. It is real time already elapsed and
+  // still owed, so carrying it means a change of speed neither loses a fraction
+  // of a tick nor conjures one, and the new rate applies from the next tick.
+  updateClockControls();
+}
+
+function setPaused(paused) {
+  if (clock.paused === paused) return;
+  clock.paused = paused;
+  updateClockControls();
+}
+
+/**
+ * The render loop. Runs continuously but does nothing unless a flag is set.
+ *
+ * The body is wrapped because a throw in here used to end the program without
+ * saying so. requestAnimationFrame(frame) sat at the bottom, so anything that
+ * threw took the re-arm with it: the canvas stopped updating while every event
+ * handler carried on answering, which reads as the map having frozen while the
+ * tooltip still works. A missing entry in MODES did exactly that.
+ *
+ * Now the loop always re-arms, the first failure is reported where it can be
+ * seen, and the repeats are counted rather than filling the console.
+ */
+let frameFault = null;
+let frameFaults = 0;
+
 function frame() {
+  try {
+    frameBody();
+  } catch (err) {
+    frameFaults++;
+    if (!frameFault) {
+      frameFault = err;
+      console.error('The render loop threw. The map will stop updating until this is fixed.', err);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function frameBody() {
   if (state.world) {
+    // First, so that everything drawn below is drawn for the hour this frame
+    // belongs to rather than the previous one's.
+    advanceClock(performance.now());
+
     // The canvas is sized by CSS, so its box can change without any event of
     // ours firing — a window resize, or the dev panel sliding. Check it here,
     // every frame, rather than reacting to a ResizeObserver: observer callbacks
@@ -3022,15 +4852,22 @@ function frame() {
       viewDirty = true;
     }
 
+    // A full repaint starts here and finishes over the frames that follow. Asking
+    // for another one mid-pass throws the old pass away and starts again, which is
+    // what should happen: the mode or the selection has changed under it.
     if (bufferDirty) {
-      const t0 = performance.now();
-      renderBuffer(state.world, state.mode, state.selected, state.hovered);
-      perf.paint = ease(perf.paint, performance.now() - t0);
-      perf.fullRepaints++;
+      repaintPass = startRepaint(state.world, state.mode, state.selected, state.hovered);
       bufferDirty = false;
-      dirtyProvinces.clear();   // the full repaint covered them
+      dirtyProvinces.clear();   // the full repaint covers them
       dirtyBoxes.length = 0;
-      viewDirty = true;         // new buffer contents always need putting on screen
+    }
+
+    if (repaintPass) {
+      if (stepRepaint(state.world, repaintPass)) {
+        repaintPass = null;
+        perf.fullRepaints++;
+      }
+      viewDirty = true;         // show what has been painted so far
     } else if (dirtyProvinces.size || dirtyBoxes.length) {
       const t0 = performance.now();
       repaintProvinces(state.world, state.mode, state.selected, state.hovered, dirtyProvinces, dirtyBoxes);
@@ -3051,8 +4888,31 @@ function frame() {
     if (perf.lastFrame) perf.frameMs = ease(perf.frameMs, now - perf.lastFrame);
     perf.lastFrame = now;
     updateReadout(now);
+    refreshTooltipTime();
   }
-  requestAnimationFrame(frame);
+}
+
+/**
+ * Keeps the time in the open tooltip up to date while the clock runs.
+ *
+ * The tooltip is built on mousemove and nowhere else, so with the pointer held
+ * still it went on showing the local time of the moment it was opened: the clock
+ * could run through the night and the tooltip would not notice until the mouse
+ * was nudged a pixel.
+ *
+ * Only the markup is rebuilt, from the two halves showTooltip left behind. It is
+ * not placed again: the pointer has not moved, and the time is always five
+ * characters wide so the box does not change size under it either.
+ *
+ * The time is quantised to the twenty-minute tick, so this changes something
+ * about three times an hour of game time however fast the clock is running.
+ */
+function refreshTooltipTime() {
+  if (!tipFor || els.tooltip.hidden || !state.world) return;
+  const time = localTimeAt(state.world, tipFor);
+  if (time === tipTime) return;
+  tipTime = time;
+  els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
 }
 
 /**
@@ -3062,19 +4922,156 @@ function frame() {
  * and that pixel already knows its province. No shape or polygon test is needed,
  * so it stays constant-time however complicated the borders get.
  */
-function provinceAtEvent(ev) {
+/**
+ * Where the pointer is, in map pixels.
+ *
+ * `x` is wrapped into the map and is the column in the bitmaps; `copy` says
+ * which repeat of the map east or west it was read off, since at low zoom the
+ * same column is on screen more than once. Reported in the debug panel so a
+ * mark on the map can be named by the column it sits on rather than estimated
+ * from the longitude it looks like it is near.
+ */
+function mapPointAtEvent(ev) {
+  const w = state.world;
+  if (!w) return null;
+  const rect = els.canvas.getBoundingClientRect();
+  const { x, y } = screenToMap(ev.clientX - rect.left, ev.clientY - rect.top);
+  const fx = Math.floor(x);
+  return {
+    x: ((fx % w.width) + w.width) % w.width,
+    y: Math.floor(y),
+    copy: Math.floor(fx / w.width),
+  };
+}
+
+/**
+ * The map cell under a pointer event, as an index into the map arrays, or -1.
+ *
+ * Wrapped east to west, so a click on any copy of the map lands on the same
+ * place. There is no wrapping north to south and off the map is nothing.
+ *
+ * Worked out ONCE per event. A single mousemove asks what province, county, sea
+ * region and subregion are under the pointer, and each of those read the canvas
+ * rectangle and converted the point over again: four calls to
+ * getBoundingClientRect, any of which can make the browser lay the page out
+ * before it answers.
+ */
+const cellByEvent = new WeakMap();
+
+function cellAtEvent(ev) {
+  const had = cellByEvent.get(ev);
+  if (had !== undefined) return had;
+
   const w = state.world;
   const rect = els.canvas.getBoundingClientRect();
   const { x, y } = screenToMap(ev.clientX - rect.left, ev.clientY - rect.top);
-
-  // Wrapped east-west, so a click on any copy of the map lands on the same
-  // province. Vertically there is no wrapping and off-map is simply nothing.
-  const px = ((Math.floor(x) % w.width) + w.width) % w.width;
   const py = Math.floor(y);
-  if (py < 0 || py >= w.height) return null;
+  const cell = py < 0 || py >= w.height
+    ? -1
+    : py * w.width + ((((Math.floor(x) % w.width) + w.width) % w.width));
 
-  const index = w.provinceAt[py * w.width + px];
+  cellByEvent.set(ev, cell);
+  return cell;
+}
+
+/** The province under the cursor, or null. */
+function provinceAtEvent(ev) {
+  const w = state.world;
+  const i = cellAtEvent(ev);
+  if (i < 0) return null;
+  const index = w.provinceAt[i];
   return index === OCEAN ? null : w.atIndex[index].id;
+}
+
+/** The county under the cursor, or null. */
+function countyAtEvent(ev) {
+  const w = state.world;
+  if (!w || !w.counties) return null;
+  const i = cellAtEvent(ev);
+  if (i < 0) return null;
+  const ix = w.counties.countyAt[i];
+  return ix ? w.counties.atIndex[ix] : null;
+}
+
+/**
+ * The sea subregion under the pointer, or null off the water.
+ *
+ * Read from its own index, and only where the province array says ocean, which
+ * is the rule seaAtEvent follows too, so a stray pixel in either sea bitmap can
+ * never take a click away from the land.
+ */
+function subAtEvent(ev) {
+  const w = state.world;
+  const subs = w && w.subs;
+  if (!subs) return null;
+  const i = cellAtEvent(ev);
+  if (i < 0 || w.provinceAt[i] !== OCEAN) return null;
+  const ix = subs.subAt[i];
+  return ix === 0 ? null : subs.atIndex[ix].id;
+}
+
+/**
+ * The sea region under the cursor, or null.
+ *
+ * Land wins wherever the two bitmaps disagree, on the same rule the painter
+ * follows, so the answer here is always the one on the screen.
+ */
+function seaAtEvent(ev) {
+  const w = state.world;
+  const sea = w && w.sea;
+  if (!sea) return null;
+  const i = cellAtEvent(ev);
+  if (i < 0 || w.provinceAt[i] !== OCEAN) return null;
+  const region = sea.seaAt[i];
+  return region === 0 ? null : sea.atIndex[region].id;
+}
+
+/** Marks a sea region for repaint, unless it is over the highlight ceiling. */
+function invalidateSea(...ids) {
+  const sea = state.world && state.world.sea;
+  if (!sea) return;
+  for (const id of ids) {
+    const bb = id && sea.bounds.get(id);
+    if (bb && !tooBigToLightBox(bb)) dirtyBoxes.push(...boxesFor(state.world, bb));
+  }
+}
+
+/** Selects a sea region, or clears the selection when `id` is null. */
+function selectSea(id) {
+  if (state.selectedSea === id) return;
+  const was = state.selectedSea;
+  state.selectedSea = id;
+  if (id) playWater();
+  invalidateSea(was, id);
+}
+
+/**
+ * The subregion picked, and the one under the pointer.
+ *
+ * Both repaint the whole water buffer rather than a box, because a subregion
+ * has no bounds cached the way a region does and the shade table is rebuilt for
+ * the mode anyway. It is only ever done in the Navy mode, where the water is
+ * the subject.
+ */
+function selectSub(id) {
+  if (state.selectedSub === id) return;
+  state.selectedSub = id;
+  if (id) playWater();
+  if (state.mode === 'navy') invalidateBuffer();
+}
+
+function hoverSub(id) {
+  if (state.hoveredSub === id) return;
+  state.hoveredSub = id;
+  if (state.mode === 'navy') invalidateBuffer();
+}
+
+/** The hover equivalent. Kept apart so the two never repaint each other twice. */
+function hoverSea(id) {
+  if (state.hoveredSea === id) return;
+  const was = state.hoveredSea;
+  state.hoveredSea = id;
+  invalidateSea(was, id);
 }
 
 /**
@@ -3094,8 +5091,16 @@ function fadeStrength() {
 /** Selects a province, or clears the selection when `id` is null. */
 function select(id) {
   const was = state.selected;
-  if (was === id) return;                 // nothing to do, and no fade to start
+  if (was === id) {
+    // Selecting what is already selected still has to show the card. A right
+    // click selects the province the county sits in and then closes its card,
+    // so the left click that follows arrives with the province already selected
+    // and used to return here, leaving no card open at all.
+    if (id) updateCard();
+    return;
+  }
   state.selected = id;
+  if (id) playSelect();
 
   // Exactly two groups change shade: what was highlighted before, and what is
   // highlighted now — each being a province plus its neighbours. Repainting just
@@ -3134,6 +5139,87 @@ function select(id) {
   updatePanel();
 }
 
+/* ------------------------------------------------------- the county under the
+ * right button
+ *
+ * The left button picks a province, which is the thing you own and fight over.
+ * The right picks the ground under the pointer, which is a county.
+ *
+ * BOTH RINGS SHOW AT ONCE — gold around the province, white around the county
+ * inside it. Only the CARDS take turns, because they share a corner and one
+ * would cover the other. A right click therefore closes the province card and
+ * leaves everything else about the province exactly as it was.
+ *
+ * The highlight is a traced ring rather than a change of shade, because a shade
+ * would have to be baked into the map and the map is only coloured by county in
+ * one of its five modes. A ring is drawn over the top and so reads the same
+ * whichever mode is showing.
+ */
+
+/** Picks the county under the pointer, or clears it when `id` is null. */
+function selectCounty(id) {
+  const w = state.world;
+  const county = id && w.counties ? w.counties.byId.get(id) : null;
+  if (!county) {
+    const had = state.county;
+    state.county = null;
+    els.countyCard.classList.remove('open');
+    els.countyCard.setAttribute('aria-hidden', 'true');
+    // The ring is drawn straight onto the view rather than into the map buffer,
+    // so clearing it needs a frame to be asked for. Without this it stays on
+    // screen until something else happens to want one.
+    if (had) invalidateView();
+    return;
+  }
+
+  playSelect();
+
+  // A county is a few thousand pixels at the most, so unlike a province there
+  // is no size at which tracing one is too expensive to be worth doing.
+  state.county = {
+    id,
+    silhouette: buildSilhouette(w.counties, id, w.counties.countyAt),
+    outline: null,
+  };
+  updateCountyCard(county);
+  invalidateView();
+}
+
+/** Fills the county panel and slides it in. */
+function updateCountyCard(county) {
+  const w = state.world;
+  const province = w.byId.get(county.province);
+  const pol = province ? polityOf(w, province) : UNKNOWN_POLITY;
+
+  els.countyName.textContent = county.name;
+  els.countyFlag.style.background = `rgb(${pol.colour})`;
+  els.countyPolity.textContent = pol.name;
+  els.countyProvince.textContent = province ? province.name : '—';
+
+  // Only when the ground is held by somebody other than its owner, which is
+  // the one case where "who owns this" has two answers.
+  const owner = province && province.occupier && province.occupier !== province.owner
+    ? w.table.polityById.get(province.owner) : null;
+  els.countyOwner.hidden = !owner;
+  els.countyOwner.textContent = owner ? `occupied — owned by ${owner.name}` : '';
+
+  els.countyTerrain.textContent = county.terrain.join(' + ') || '—';
+  els.countyClimate.textContent = county.climate || '—';
+
+  // Nothing builds railways yet, so this reads No everywhere until something
+  // does. The row is here rather than waiting for the mechanic because a
+  // county with no railway is a fact about it, not a missing field.
+  els.countyRail.textContent = county.rail ? 'Yes' : 'No';
+  // Same wording as the province card, superscript and all — the two sit in the
+  // same corner and one saying km2 beside the other saying km² reads as a typo.
+  els.countyArea.textContent = county.area >= 1e6
+    ? `${(county.area / 1e6).toFixed(2)}M km²`
+    : `${Math.round(county.area).toLocaleString()} km²`;
+
+  els.countyCard.classList.add('open');
+  els.countyCard.setAttribute('aria-hidden', 'false');
+}
+
 /** A province's neighbour ids, or nothing at all when `id` is null. */
 const neighboursOf = (id) => (id && state.world.adjacency.get(id)) || [];
 
@@ -3166,6 +5252,11 @@ function changeOwners(changes) {
   // Which provinces a realm holds is precisely what a change of owner alters,
   // so its blocks are rebuilt and relabelled with it.
   for (const b of addRealmBlocks(w, w.geometry)) w.labels[b] = buildLabel(w, w.geometry, b);
+
+  // A country can lose the last ground it could write on here, or gain its first,
+  // and either way how much of it goes unnamed has changed.
+  nameArchipelagos(w, w.geometry, w.labels);
+
   dirtyBoxes.push(...result.boxes);
 
   // Both of these show the owner, so they are stale if what they are describing
@@ -3180,6 +5271,17 @@ function changeOwners(changes) {
 const swatch = (rgb) => `<span class="swatch" style="background: rgb(${rgb})"></span>`;
 
 const TOOLTIP_OFFSET = 14;
+
+// Which province the open tooltip is describing, and the local time it is
+// showing for it. Both null while it is closed or naming a sea, which has no
+// time of its own. See refreshTooltipTime, which is what they are kept for.
+let tipFor = null;
+let tipTime = null;
+let tipHead = '';
+let tipTail = '';
+
+/** The time as it appears in the tooltip, separator and all, or nothing. */
+const timeMarkup = (t) => (t ? ` &middot; ${t}` : '');
 
 /**
  * Local time at a province, rounded to the nearest 20 minutes.
@@ -3206,23 +5308,13 @@ function localTimeAt(world, id) {
 }
 
 /**
- * Shows the hover tooltip, or hides it when `id` is null.
+ * Shows the tooltip and puts it beside the pointer.
  *
- * It normally sits below and right of the cursor, but flips to the other side
- * when it would otherwise run past the edge of the map area.
+ * Flipped to the other side of the pointer where it would run off the window.
+ * Measured after the content is in, since how wide it is depends on what it
+ * says.
  */
-function showTooltip(id, ev) {
-  const w = state.world;
-  if (!id) { els.tooltip.hidden = true; return; }
-
-  const p = w.byId.get(id);
-  const pol = polityOf(w, p);
-  const time = localTimeAt(w, id);
-  els.tooltip.innerHTML =
-    `<div>${p.name}</div>` +
-    `<div class="sub">${swatch(pol.colour)}${pol.name}` +
-    `${p.terrain.length ? ` &middot; ${p.terrain.join(' + ')}` : ''}` +
-    `${time ? ` &middot; ${time}` : ''}</div>`;
+function placeTooltip(ev) {
   els.tooltip.hidden = false;
 
   const box = els.wrap.getBoundingClientRect();
@@ -3233,6 +5325,103 @@ function showTooltip(id, ev) {
 
   els.tooltip.style.left = `${x + TOOLTIP_OFFSET + tw > box.width ? x - TOOLTIP_OFFSET - tw : x + TOOLTIP_OFFSET}px`;
   els.tooltip.style.top = `${y + TOOLTIP_OFFSET + th > box.height ? y - TOOLTIP_OFFSET - th : y + TOOLTIP_OFFSET}px`;
+}
+/**
+ * Shows the hover tooltip, or hides it when `id` is null.
+ *
+ * It normally sits below and right of the cursor, but flips to the other side
+ * when it would otherwise run past the edge of the map area.
+ */
+function showTooltip(id, ev, seaId = null) {
+  const w = state.world;
+  if (!id && !seaId) { els.tooltip.hidden = true; tipFor = null; return; }
+
+  if (id) {
+    const p = w.byId.get(id);
+    const pol = polityOf(w, p);
+    const time = localTimeAt(w, id);
+    // The county under the cursor, where there is one. It is the level armies
+    // move on, so it is worth naming even when the map is showing something else,
+    // and its terrain is more use than the province's, being the ground itself
+    // rather than the average of a dozen counties.
+    const county = countyAtEvent(ev);
+    // Held in two halves with the time between them, so the clock ticking over
+    // can rewrite it without any of this being worked out again. countyAtEvent
+    // in particular needs a pointer event, and by then there is not one.
+    tipFor = id;
+    tipTime = time;
+    tipHead =
+      `<div>${p.name}</div>` +
+      `<div class="sub">${swatch(pol.colour)}${pol.name}`;
+    tipTail = '</div>' +
+      (county
+        ? `<div class="sub">${county.name} &middot; ${county.terrain.join(' + ')}`
+          + ` &middot; ${county.climate}</div>`
+        : `<div class="sub">${[...p.terrain, ...p.climate].join(' &middot; ')}</div>`);
+    els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
+  } else {
+    // Named in every mode, whether or not the water can be picked in this one.
+    // Knowing which sea is under the cursor is wanted as often on the political
+    // map as on the chart.
+    const r = w.sea.byId.get(seaId);
+    tipFor = null;                 // a sea keeps no local time
+    tipTime = null;
+    // The subregion under the pointer as well, which is the level a fleet is
+    // ordered to. The region is what the sea is called; the subregion is the
+    // piece of it you would be moving into.
+    const sub = w.subs && state.mode === 'navy' ? w.subs.byId.get(subAtEvent(ev)) : null;
+
+    els.tooltip.innerHTML =
+      `<div>${r.name}</div>` +
+      `<div class="sub">${swatch(navyColour(r))}${[r.lake ? 'Lake' : 'Sea', ...r.tags].join(' &middot; ')}` +
+      `${r.area ? ` &middot; ${areaText(r)}` : ''}</div>` +
+      (sub
+        // The band, and nothing else about the depth. It says how deep the water
+        // is on its own; adding "deep" beside a band called Deep said it twice and
+        // said it badly.
+        ? `<div class="sub">${sub.name}${sub.depth ? ` &middot; ${sub.depth}` : ''}`
+          + ` &middot; ${Math.round(sub.area).toLocaleString()} km²</div>`
+        : '');
+  }
+  placeTooltip(ev);
+}
+
+/**
+ * The resource row under the pointer, or null.
+ *
+ * Walked backwards, so where two stacks overlap the one drawn last, and
+ * therefore the one on top, is the one answered with.
+ */
+function resourceAtEvent(ev) {
+  if (state.mode !== 'resources' || !resourceHits.length) return null;
+  const box = els.canvas.getBoundingClientRect();
+  const x = ev.clientX - box.left;
+  const y = ev.clientY - box.top;
+  for (let i = resourceHits.length - 1; i >= 0; i--) {
+    const h = resourceHits[i];
+    if (x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1) return h;
+  }
+  return null;
+}
+
+/**
+ * Names the deposit under the pointer.
+ *
+ * The icon says which resource it is at a glance. This is for when a glance is
+ * not enough: what the thing is called and what the province holds. No local
+ * time, so tipFor is cleared and refreshTooltipTime leaves this alone.
+ */
+function showResourceTooltip(hit, ev) {
+  const w = state.world;
+  const p = w.byId.get(hit.id);
+  tipFor = null;
+  tipTime = null;
+
+  els.tooltip.innerHTML =
+    `<div>${RESOURCE_NAME[hit.kind] ?? hit.kind}</div>` +
+    `<div class="sub">deposit ${hit.amount} &middot; yield 0 a day</div>` +
+    `<div class="sub">${p ? p.name : ''}</div>`;
+  placeTooltip(ev);
 }
 
 const panelOpen = () => els.panel.classList.contains('open');
@@ -3279,7 +5468,7 @@ function areaText(p) {
 /* ------------------------------------------------------ the province card
  *
  * What a province HAS, as opposed to what it is. Everything here is read from
- * data/province-stats.json, which sync-provinces.js keeps an entry in for every
+ * data/json/province-stats.json, which sync-provinces.js keeps an entry in for every
  * province; the map data itself knows nothing about roads or factories.
  *
  * Order matters as much as content. Ownership sits at the top because it is the
@@ -3371,7 +5560,10 @@ function updateCard() {
   const owner = occupied ? w.table.polityById.get(p.owner) : null;
   els.cardRole.textContent = occupied ? 'Occupying power' : 'Province owner';
   els.cardOwner.hidden = !occupied;
-  if (occupied) els.cardOwner.textContent = `Owned by ${owner?.name || p.owner}`;
+  // Cleared, not just hidden. The line is only true of the province it was
+  // written for, and leaving it in place had the card telling the next one it
+  // was occupied when the stylesheet failed to take it down.
+  els.cardOwner.textContent = occupied ? `Owned by ${owner?.name || p.owner}` : '';
 
   // Claims are polity ids in the file; show the names, since an id is a slug.
   const claims = (stats.claims || [])
@@ -3419,9 +5611,12 @@ function updatePanel() {
     <div class="row"><span>ID</span><span>${p.id}</span></div>
     <div class="row"><span>Owner</span><span>${swatch(polityOf(w, p).colour)}${polityOf(w, p).name}</span></div>
     <div class="row"><span>Terrain</span><span>${p.terrain.join(' + ') || '—'}</span></div>
+    <div class="row"><span>Climate</span><span>${p.climate.join(' + ') || '—'}</span></div>
     <div class="row"><span>Coastal</span><span>${w.coastal.has(p.id) ? 'yes' : 'no'}</span></div>
     <div class="row"><span>Area</span><span>${areaText(p)}</span></div>
-    ${tooBigToLight(w, p.id) ? '<div class="row"><span>Highlight</span><span class="warn">off — box over ' + (HIGHLIGHT_MAX_PX / 1e6) + 'M px</span></div>' : ''}
+    ${tooBigToLight(w, p.id) ? '<div class="row"><span>Highlight</span><span class="warn">off, box '
+      + (w.bounds.get(p.id).maxX - w.bounds.get(p.id).minX + 1) + ' wide by '
+      + (w.bounds.get(p.id).maxY - w.bounds.get(p.id).minY + 1) + '</span></div>' : ''}
     <div class="row"><span>Pixels</span><span>${w.bounds.get(p.id)?.n ?? 0}</span></div>
     <div class="row"><span>Neighbours</span><span>${nb.length}</span></div>`;
   els.neighbours.innerHTML = `<h1>Adjacent provinces</h1><ul>${nb.map((q) => `<li data-id="${q.id}">${swatch(polityOf(w, q).colour)}${q.name}</li>`).join('')
@@ -3430,7 +5625,12 @@ function updatePanel() {
 
 // Bumped whenever this file is edited, and shown in the debug menu. If what is
 // on screen does not match what is in the file, this is how you find out.
-const BUILD = 'v0.6-indev';
+const BUILD = 'v0.7-indev';
+
+/** The size a ring was traced at, for the readout. */
+const ringShape = (holder) => (holder.silhouette
+  ? `(${holder.silhouette.w}&times;${holder.silhouette.h})`
+  : '(NO SHAPE)');
 
 const READOUT_MS = 250;    // refresh rate of the live numbers; per-frame DOM writes are wasteful
 let readoutAt = 0;
@@ -3446,16 +5646,54 @@ const statRow = (k, v, warn) =>
  */
 function updateReadout(now) {
   if (!panelOpen() || now - readoutAt < READOUT_MS) return;
+  const since = now - readoutAt;
   readoutAt = now;
 
-  const drawing = view.scale > overview.scale ? 'tiles' : 'overview';
-  const visible = drawing === 'tiles' ? `${debug.tilesDrawn} / ${tiles.list.length}` : `0 / ${tiles.list.length}`;
+  // Ticks actually delivered against the ticks asked for, which is the figure
+  // that says whether the simulation is keeping up. They part company when a
+  // frame cannot be turned round inside a tick, and the clock then falls behind
+  // real time rather than running the world in bursts. The first call has no
+  // previous reading to measure against, so it reports nothing.
+  const target = 1000 / SPEEDS[clock.speed - 1];
+  const achieved = since > 0 && since < 2000 ? ((clock.ticked - clock.rateFrom) * 1000) / since : 0;
+  clock.rateFrom = clock.ticked;
+
+  const drawing = overviewCovers(view.scale) ? 'overview' : 'tiles';
+  // Null until the chunks are built. Reading through it is what took the render
+  // loop down once already.
+  const chunks = tiles ? tiles.list.length : 0;
+  const visible = drawing === 'tiles' ? `${debug.tilesDrawn} / ${chunks}` : `0 / ${chunks}`;
 
   els.perf.innerHTML =
     statRow('Build', BUILD) +
+    statRow('Tick', `${clock.tick}${clock.paused ? ' (paused)' : ''}`) +
+    statRow('Ticks/s', `${achieved.toFixed(1)} / ${target.toFixed(1)} at speed ${clock.speed}`,
+      !clock.paused && achieved < target * 0.9) +
+    statRow('Sun', `${sunUtcHour.toFixed(2)}h, day ${sunDayOfYear}, +${Math.round(sunShiftPx(state.world))}px`) +
+    // Should track days elapsed and nothing faster. If this climbs with the
+    // tick count then the mask is being rebuilt per tick and the reuse above
+    // has been defeated.
+    statRow('Mask builds', `${perf.maskBuilds} (${Math.floor(clock.tick / TICKS_PER_DAY) + 1} days)`,
+      perf.maskBuilds > Math.floor(clock.tick / TICKS_PER_DAY) + 2) +
     statRow('Frame', `${perf.frameMs ? (1000 / perf.frameMs).toFixed(0) : 0} fps`, perf.frameMs > 22) +
     statRow('Blit', `${perf.draw.toFixed(2)} ms`, perf.draw > 8) +
+    statRow('  night', `${perf.night.toFixed(2)} ms`, perf.night > 4) +
+    statRow('  labels', `${perf.labels.toFixed(2)} ms`, perf.labels > 3) +
+    statRow('  cities', `${perf.cities.toFixed(2)} ms`, perf.cities > 3) +
     statRow('Last paint', `${perf.paint.toFixed(2)} ms`, perf.paint > 16) +
+    (state.mode === 'resources'
+      ? statRow('Resources', `${perf.resources.toFixed(2)} ms, ${debug.resourcesDrawn || 0} stacks`
+        + `, ${resourceLineCache.size} baked`
+        , perf.resources > 4)
+      : '') +
+    // Three separate delays, and only the middle one is this page's fault.
+    statRow('Click sound', sfx.buffer
+      ? `${(sfx.offset * 1000).toFixed(0)}ms trimmed, ${(sfx.attack * 1000).toFixed(0)}ms attack,`
+        + ` ${(sfxDelay * 1000).toFixed(0)}ms held,`
+        + ` ${sfx.lag.toFixed(1)}ms to answer,`
+        + ` ${sfx.base + sfx.output ? `${((sfx.base + sfx.output) * 1000).toFixed(0)}ms device` : 'device n/a'}`
+        + `, peak ${sfx.peak.toFixed(2)}`
+      : 'not loaded', sfx.lag > 8) +
     // The single number that decides whether a frame can be delivered on time.
     // Everything above is JavaScript, and it is now small; what costs the rest is
     // the browser rasterising and compositing a surface of this many pixels every
@@ -3463,16 +5701,43 @@ function updateReadout(now) {
     statRow('Canvas', `${els.canvas.width} &times; ${els.canvas.height}`
       + ` (${(els.canvas.width * els.canvas.height / 1e6).toFixed(1)}M px @ ${pixelRatio.toFixed(2)}x of ${(window.devicePixelRatio || 1)})`,
       els.canvas.width * els.canvas.height > 5e6) +
+    (frameFault
+      ? statRow('LOOP THREW', `${frameFault.message} (${frameFaults} frames)`, true)
+      : '') +
     statRow('Repaints', `${perf.fullRepaints} full / ${perf.partRepaints} part`) +
+    statRow('Repainting', repaintPass && tiles
+      ? `${tiles.list.length - repaintPass.todo.size} / ${tiles.list.length} chunks`
+      : 'idle', !!repaintPass) +
     statRow('Drawing from', drawing) +
     statRow('Chunks drawn', visible) +
     statRow('Zoom', `${view.scale.toFixed(2)}  (${Math.round(view.scale * 100)}%)`) +
+    statRow('Cursor', debug.cursor
+      ? `x ${debug.cursor.x}, y ${debug.cursor.y}` +
+        `${debug.cursor.copy ? ` (copy ${debug.cursor.copy > 0 ? '+' : ''}${debug.cursor.copy})` : ''}` +
+        `${debug.cursor.y < 0 || debug.cursor.y >= state.world.height ? ' — off the map' : ''}`
+      : '—') +
+    // Both rings, and the SHAPE each one is traced from. A ring with no shape
+    // behind it draws nothing and looks exactly like a ring that was never asked
+    // for, which is how the county highlight stayed missing.
+    statRow('Sea subregions', state.world.subs
+      ? `${(state.world.subs.atIndex.length - 1).toLocaleString()} drawn`
+        + `${state.hoveredSub ? `, over ${state.hoveredSub}` : ''}`
+      : 'none — run: node sync-provinces.js --regen-sea-subs --write --cache') +
+    statRow('Highlighted', [
+      state.selected ? `province ${state.selected} ${ringShape(state)}` : null,
+      state.county ? `county ${state.county.id} ${ringShape(state.county)}` : null,
+    ].filter(Boolean).join(' + ') || 'nothing') +
+    statRow('Rivers', state.world.rivers
+      ? `${cityFade(F_RIVER).toFixed(2)} @ ${RIVER_AT}, ${RIVER_ALPHA} when full`
+      : 'no rivers.png') +
     statRow('City icons', `${cityFade(F_CITY).toFixed(2)} @ ${CITY_AT}`) +
     statRow('Capital icons', `${cityFade(F_CAPITAL).toFixed(2)} @ ${CAPITAL_AT}`) +
     statRow('City names', `${cityFade(F_CITY_NAME).toFixed(2)} @ ${CITY_NAME_AT}`) +
     statRow('Capital names', `${cityFade(F_CAPITAL_NAME).toFixed(2)} @ ${CAPITAL_NAME_AT}`) +
     statRow('Load', `${perf.load.ms.toFixed(0)} ms ${perf.load.cached ? '(cached)' : '(computed)'}`, !perf.load.cached) +
-    (state.showProvinceNames ? statRow('Names shown', `${debug.names} / ${state.world.byId.size}`) : '');
+    (state.showProvinceNames ? statRow('Names shown', `${debug.names} / ${state.world.byId.size}`) : '') +
+    (state.showSeaNames && state.world.sea
+      ? statRow('Sea names shown', `${debug.seaNames} / ${state.world.sea.byId.size}`) : '');
 }
 
 /** One-off summary of the loaded map. Nothing here changes after load. */
@@ -3489,9 +5754,15 @@ function showStats(w) {
     statRow('Provinces', w.byId.size) +
     statRow('Borders', edges / 2) +
     statRow('Coastal', w.coastal.size) +
+    statRow('Counties', w.counties
+      ? `${(w.counties.atIndex.length - 1).toLocaleString()} in ${w.byId.size} provinces`
+      : 'none', !w.counties) +
+    statRow('Sea regions', w.sea
+      ? `${w.sea.atIndex.length - 1} (${w.sea.atIndex.slice(1).filter((r) => r.lake).length} lakes)`
+      : 'none', !w.sea) +
     statRow('Polities', w.table.polities.length - 1) +
     statRow('Labels', `${w.labels.filter(Boolean).length} / ${w.labels.length} blocks`) +
-    statRow('Chunks', `${tiles.cols} &times; ${tiles.rows} @ ${TILE}px`) +
+    statRow('Chunks', tiles ? `${tiles.cols} &times; ${tiles.rows} @ ${TILE}px` : 'not built yet') +
     statRow('Overview', `${overview.canvas.width} &times; ${overview.canvas.height}`) +
     statRow('Cities', w.cities.length
       ? `${w.cities.length} (${w.cities.filter((c) => c.capital).length} capital)`
@@ -3503,6 +5774,60 @@ function showStats(w) {
     statRow('Empty', empty, empty > 0);
 }
 
+/* ---------------------------------------------------------- the pause menu
+ *
+ * Esc from the map, once there is nothing left to deselect.
+ *
+ * Escape already drops a selection, and this takes the press only when that
+ * press would otherwise do nothing at all. So the key keeps one meaning rather
+ * than two: put down whatever is being held, and when nothing is being held,
+ * stop. Reaching the menu is then a matter of pressing it twice, and never a
+ * matter of remembering which of the two it is about to do.
+ */
+
+/** Whether the start screen has been dismissed, so the map is what is on show. */
+const mapIsShowing = () => document.getElementById('start')?.classList.contains('gone') === true;
+
+const pauseOpen = () => els.pause.classList.contains('open');
+
+function setPause(open) {
+  els.pause.classList.toggle('open', open);
+  els.pause.setAttribute('aria-hidden', String(!open));
+
+  if (!open) {
+    els.canvas.focus?.();
+    return;
+  }
+
+  // Nothing on the map is being pointed at any more. The scrim takes the
+  // pointer from here on, so no mousemove will reach the canvas to correct
+  // either of these, and a tooltip left showing would hang over the menu until
+  // it closed. The highlight under it would sit there just as long.
+  els.tooltip.hidden = true;
+  invalidateProvinces(state.hovered);
+  state.hovered = null;
+
+  document.getElementById('pause-resume')?.focus();
+}
+
+/**
+ * Back to the start screen, with the map left standing behind it.
+ *
+ * Nothing is torn down. The world, the tiles, the labels and the view all
+ * survive, so Enter puts you back exactly where you were rather than paying
+ * for the load a second time — which is the whole reason this is a menu over
+ * the map rather than a reload.
+ *
+ * What is dropped is what belonged to looking at a province: the selection,
+ * its card and the panel describing it, all of which select(null) clears
+ * through the same path as clicking open sea.
+ */
+function quitToStartMenu() {
+  setPause(false);
+  select(null);
+  showStartMenu();
+}
+
 // =================================================================== 7. input
 
 // Drag pans, click selects — and the mouse cannot say which you meant until you
@@ -3510,8 +5835,227 @@ function showStats(w) {
 // release counts as a click, which stops a shaky hand from eating selections.
 const DRAG_SLOP = 4;
 
+// ---------------------------------------------------------------- the click
+//
+// Four short sounds: one on every button press, one for picking a province or
+// a county, and two for picking water, of which one is chosen at random.
+//
+// Each is fetched once and decoded into a buffer held in memory. Every press
+// then starts a fresh source node, which is cheap, so presses overlap on their
+// own. See loadSounds below for why this is not an Audio element.
+const SFX_CLICK = './data/sfx/old_radio_button.ogg';
+const SFX_SELECT = './data/sfx/province_county_selection.ogg';
+// Two recordings of the water selection, one picked at random each time. A
+// single sample repeated on every click is what makes an interface sound
+// mechanical, and water is clicked a great deal in the Navy mode.
+const SFX_WATER = [
+  './data/sfx/region_subregion_selection.ogg',
+  './data/sfx/region_subregion_selection_2.ogg',
+];
+const SFX_VOLUME = 0.35;
+
+// Where the sound is judged to begin, as a share of its own peak. An absolute
+// floor cannot do this: it clips the attack off a quiet recording and steps
+// over the start of a loud one.
+//
+// A quarter of peak, because the ear places a sound at the point it gets loud
+// and not at the point it becomes measurable. old_radio_button.ogg takes 112ms
+// to reach a tenth of its peak, and every one of those milliseconds reads as
+// the interface being slow.
+const SFX_ONSET = 0.25;
+
+// Backed off from that point, so the attack itself survives the trim. A click
+// that starts at its loudest sounds like a tick.
+const SFX_PREROLL = 0.002;   // seconds
+
+// And then held back on purpose.
+//
+// A real button clicks at the bottom of its travel, not at first contact, so a
+// sound that lands the instant the mouse goes down reads as early. This is the
+// travel. It is scheduled on the audio clock rather than through a timer, so it
+// is the same few milliseconds every time and not whatever the main thread was
+// doing. Tune it by ear with game.clickDelay(ms).
+let sfxDelay = 0;            // seconds, set by ear
+
+const sfx = {
+  ctx: null, buffer: null, gain: null, offset: 0, on: true,
+  // The two selection sounds, decoded the same way as the click and each with
+  // its own leading silence measured off it. select is ground, water is sea.
+  select: null, selectOffset: 0,
+  // One entry per recording, each { buffer, offset }. Empty if none loaded.
+  water: [],
+  // Reported in the debug panel. Between them these say which part of the
+  // delay is the file, which is this page, and which is the sound hardware.
+  lag: 0, base: 0, output: 0, peak: 0, attack: 0,
+};
+
+/**
+ * Decodes the click once, into memory.
+ *
+ * This was an Audio element first, and it was audibly late. An element goes
+ * through the media pipeline: play() is asynchronous by specification, and
+ * rewinding with currentTime = 0 forces a seek. Together that is tens of
+ * milliseconds, which is nothing for a soundtrack and far too much for a
+ * button. A decoded buffer starts on the next audio callback instead.
+ *
+ * Nothing here is awaited by the caller. The interface works in silence while
+ * the file is loading, and works in silence forever if it fails to.
+ */
+async function loadSounds() {
+  const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (!Ctx || sfx.ctx) return;
+  try {
+    sfx.ctx = new Ctx({ latencyHint: 'interactive' });
+    sfx.gain = sfx.ctx.createGain();
+    sfx.gain.gain.value = SFX_VOLUME;
+    sfx.gain.connect(sfx.ctx.destination);
+    const bytes = await (await fetch(SFX_CLICK)).arrayBuffer();
+    sfx.buffer = await sfx.ctx.decodeAudioData(bytes);
+    sfx.offset = leadingSilence(sfx.buffer);
+
+    // Each of these is caught on its own. Losing one leaves the click and the
+    // other working, and selecting something in silence is a smaller loss than
+    // losing every button on the page.
+    const decode = async (url) => {
+      const raw = await (await fetch(url)).arrayBuffer();
+      const buffer = await sfx.ctx.decodeAudioData(raw);
+      return { buffer, offset: leadingSilence(buffer) };
+    };
+
+    try {
+      const one = await decode(SFX_SELECT);
+      sfx.select = one.buffer;
+      sfx.selectOffset = one.offset;
+    } catch { sfx.select = null; }
+
+    for (const url of SFX_WATER) {
+      try { sfx.water.push(await decode(url)); } catch { /* one variant short */ }
+    }
+    // What the device costs before a sample reaches a speaker. This is a floor
+    // nothing in this file can get under, so it is worth being able to read.
+    sfx.base = sfx.ctx.baseLatency || 0;
+    sfx.output = sfx.ctx.outputLatency || 0;
+  } catch {
+    sfx.ctx = null;
+    sfx.buffer = null;
+  }
+}
+
+/**
+ * Where the sound actually begins, in seconds.
+ *
+ * Silence at the head of the file is latency the listener cannot tell apart
+ * from a slow interface, and it is not something a bitmap editor shows you.
+ * Measuring it here means the file can be replaced without anyone having to
+ * remember to trim it first.
+ */
+function leadingSilence(buf) {
+  const d = buf.getChannelData(0);
+  let peak = 0, peakAt = 0;
+  for (let i = 0; i < d.length; i++) {
+    const v = Math.abs(d[i]);
+    if (v > peak) { peak = v; peakAt = i; }
+  }
+  sfx.peak = peak;
+  if (!peak) return 0;
+
+  const gate = peak * SFX_ONSET;
+  for (let i = 0; i < d.length; i++) {
+    if (Math.abs(d[i]) >= gate) {
+      // How long the sound takes to get from here to its loudest. A long
+      // attack cannot be trimmed away, and it is what makes a sound feel late
+      // when it is not, so it is reported instead.
+      sfx.attack = Math.max(0, (peakAt - i) / buf.sampleRate);
+      return Math.max(0, i / buf.sampleRate - SFX_PREROLL);
+    }
+  }
+  return 0;
+}
+
+/**
+ * Plays it. Never throws and never reports.
+ *
+ * A source node is single use, so every press gets a new one. They are cheap,
+ * and it means presses overlap on their own with no pool to advance.
+ */
+function playClick(ev) {
+  playSound(sfx.buffer, sfx.offset, ev);
+}
+
+// One gesture, one sound. A right click selects the county AND the province it
+// sits in, both from the same handler, and two copies of one file a millisecond
+// apart is a flam. The handler sets this for the province half, so the sound
+// belongs to the county, which is what was actually asked for.
+//
+// A flag and not a delay. Suppressing anything within n milliseconds of the
+// last sound also suppresses two deliberate clicks in quick succession, and
+// makes which one you hear depend on how fast the machine is.
+let quietSelect = false;
+let quietWater = false;
+
+/** Plays the ground selection sound. Called from select() and selectCounty(). */
+function playSelect() {
+  if (quietSelect) return;
+  playSound(sfx.select, sfx.selectOffset);
+}
+
+/**
+ * Plays the water selection sound. Called from selectSea() and selectSub().
+ *
+ * One of the recordings at random. With one loaded this is the same sound every
+ * time, which is what happens if the other fails to load.
+ */
+function playWater() {
+  if (quietWater || !sfx.water.length) return;
+  const pick = sfx.water[Math.floor(Math.random() * sfx.water.length)];
+  playSound(pick.buffer, pick.offset);
+}
+
+function playSound(buffer, offset, ev) {
+  if (!sfx.on || !buffer) return;
+  // How long the page took to answer the press. The browser stamps the event
+  // when it happens; this runs whenever the main thread is next free. A large
+  // figure here is a rendering problem wearing an audio costume.
+  if (ev && ev.timeStamp) sfx.lag = ease(sfx.lag, Math.max(0, performance.now() - ev.timeStamp));
+  try {
+    // A context built before the first gesture starts suspended. The press
+    // that gets here is that gesture.
+    if (sfx.ctx.state === 'suspended') sfx.ctx.resume();
+    const source = sfx.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(sfx.gain);
+    source.start(sfx.ctx.currentTime + sfxDelay, offset);
+  } catch { /* nothing to do about it and nothing worth saying */ }
+}
+
 /** Attaches every event listener. Called once, from init(). */
 function wireInput() {
+  loadSounds();
+
+  // Every button on the page goes through one delegated listener, so a button
+  // added later is covered without being wired up. Capture phase, so it still
+  // fires where a handler below stops propagation. A disabled button is not a
+  // press and makes no sound.
+  //
+  // On pointerdown, NOT on click. A click event is delivered when the button
+  // comes back up, so the sound waited for the release: press and hold, and it
+  // arrived whenever you let go. That is most of the delay this used to have,
+  // and no amount of audio work would have found it, because the audio was
+  // always prompt about answering the wrong event.
+  const pressed = (ev) => {
+    const b = ev.target && ev.target.closest && ev.target.closest('button');
+    if (b && !b.disabled) playClick(ev);
+  };
+  document.addEventListener('pointerdown', pressed, true);
+
+  // A button reached by keyboard never sees a pointer event. The click it does
+  // send carries detail 0, which is how it is told apart from the one a mouse
+  // sends, so Enter on a focused button still sounds and a mouse press does not
+  // sound twice.
+  document.addEventListener('click', (ev) => {
+    if (ev.detail === 0) pressed(ev);
+  }, true);
+
   // Shared by the mouse handlers below: whether a button is down, whether it has
   // yet travelled far enough to count as a drag, and where it last was.
   let dragging = false;
@@ -3544,8 +6088,33 @@ function wireInput() {
   });
 
   window.addEventListener('mouseup', (ev) => {
+    // THE LEFT BUTTON ONLY. This fires for every button, so a right click used
+    // to end here selecting the province under it — undoing, one event later,
+    // the select(null) that the context menu handler had just done to get the
+    // province card out of the way. Both panels then came up in the same corner,
+    // one over the other.
+    //
     // Never travelled past the slop, so it was a click after all.
-    if (dragging && !moved) select(provinceAtEvent(ev));
+    if (dragging && !moved && ev.button === 0) {
+      const id = provinceAtEvent(ev);
+      select(id);
+      // Only the Navy mode lets the water be picked. On every other mode a click
+      // on the sea clears the selection and does nothing else, which is what it
+      // has always done.
+      if (state.mode === 'navy') {
+        const seaId = id ? null : seaAtEvent(ev);
+        const subId = id ? null : subAtEvent(ev);
+
+        // One gesture, one sound. A click on water picks the region AND the
+        // subregion inside it. The subregion is the finer of the two and the
+        // level a fleet is ordered to, so it makes the sound; where the water
+        // has no subregion drawn, the region answers for it.
+        quietWater = Boolean(subId);
+        selectSea(seaId);
+        quietWater = false;
+        selectSub(subId);
+      }
+    }
     dragging = false;
     els.canvas.classList.remove('panning');
   });
@@ -3553,18 +6122,70 @@ function wireInput() {
   // Hover highlighting and the tooltip. Separate from the pan handler above,
   // since this one only cares about the canvas.
   els.canvas.addEventListener('mousemove', (ev) => {
+    debug.cursor = mapPointAtEvent(ev);
     if (dragging && moved) { els.tooltip.hidden = true; return; }  // stay quiet mid-drag
     const id = provinceAtEvent(ev);
     // Only repaint when the province under the cursor actually changes, not on
     // every pixel of movement within one province.
     // Only the province being left and the one being entered change shade.
     if (id !== state.hovered) { invalidateProvinces(state.hovered, id); state.hovered = id; }
-    showTooltip(id, ev);
+
+    // Water is looked up only where there is no province, since land wins.
+    // The highlight belongs to the Navy mode alone; the tooltip does not.
+    const seaId = id ? null : seaAtEvent(ev);
+    hoverSea(state.mode === 'navy' ? seaId : null);
+    hoverSub(state.mode === 'navy' && !id ? subAtEvent(ev) : null);
+
+    // A deposit under the pointer wins over the ground under it. The stack is
+    // drawn on top of the province and is what the pointer is aiming at, and
+    // the province keeps its name in the layer's own colouring anyway.
+    const deposit = resourceAtEvent(ev);
+    if (deposit) showResourceTooltip(deposit, ev);
+    else showTooltip(id, ev, seaId);
+  });
+
+  // The right button picks the county under it. preventDefault stops the
+  // browser menu, which would otherwise cover the panel being opened.
+  //
+  // Land only. Right-clicking the sea puts the panel away, since there is no
+  // county out there to describe and leaving the last one up would say there
+  // is.
+  // A left click anywhere puts the county away. It is a look at one patch of
+  // ground, not a selection to be carried around: going off to click something
+  // else means you are done with it, and leaving the panel up would have it
+  // describing ground nowhere near what is now highlighted.
+  els.canvas.addEventListener('mousedown', (ev) => {
+    if (ev.button === 0) selectCounty(null);
+  });
+
+  els.canvas.addEventListener('contextmenu', (ev) => {
+    ev.preventDefault();
+    const county = countyAtEvent(ev);
+
+    // BOTH highlights. The province the county is in is lit in gold, exactly as
+    // a left click would light it, and the county is ringed in white inside it —
+    // seeing which province the ground belongs to is most of the point of
+    // picking a county at all.
+    //
+    // Only the CARDS take turns, because they share a corner and one would cover
+    // the other. select() opens the province card as part of selecting, so the
+    // order here matters: light it first, then put its card away.
+    // Silently, so the one sound this gesture makes is the county below.
+    if (county) {
+      quietSelect = true;
+      select(county.province);
+      quietSelect = false;
+    }
+    closeCard();
+    selectCounty(county ? county.id : null);
   });
 
   els.canvas.addEventListener('mouseleave', () => {
+    debug.cursor = null;
     invalidateProvinces(state.hovered);      // just clear the one that was lit
     state.hovered = null;
+    hoverSea(null);
+    hoverSub(null);
     els.tooltip.hidden = true;
   });
 
@@ -3605,14 +6226,68 @@ function wireInput() {
     else invalidateView();
   });
 
+  document.getElementById('pause-resume').addEventListener('click', () => setPause(false));
+  document.getElementById('pause-quit').addEventListener('click', quitToStartMenu);
+
+  els.clockPlay.addEventListener('click', () => setPaused(!clock.paused));
+  els.clockSlower.addEventListener('click', () => setSpeed(clock.speed - 1));
+  els.clockFaster.addEventListener('click', () => setSpeed(clock.speed + 1));
+
   window.addEventListener('keydown', (ev) => {
+    // The start screen owns the keyboard while it is up. Its own handler runs
+    // Enter, Space and Escape over there, and nothing in here should be acting
+    // behind it — Space would pause a clock nobody can see, and the digits
+    // would change a speed nobody asked about.
+    //
+    // This covers every press the start screen does not consume. The press that
+    // dismisses it is the other half of the problem and is stopped at source,
+    // since by the time it reached here the screen would already be gone. See
+    // the note in openStartMenu.
+    if (!mapIsShowing()) return;
+
+    // The pause menu owns the keyboard while it is up. Zooming the map or
+    // sliding out the debug panel behind a menu that has stopped to ask a
+    // question is not something to support, and Escape is what answers it.
+    if (pauseOpen()) {
+      if (ev.key !== 'Escape') return;
+      ev.preventDefault();
+      setPause(false);
+      return;
+    }
+
     if (ev.key === '+' || ev.key === '=') zoomCentre(1.4);
     else if (ev.key === '-' || ev.key === '_') zoomCentre(1 / 1.4);
     else if (ev.key === '0') fitToView();
     else if (ev.key === '`') togglePanel();
-    // select(null) already clears the highlight, the ring and the panel, and
-    // repaints only what was lit — the same path as clicking open sea.
-    else if (ev.key === 'Escape' && state.selected) select(null);
+    else if (ev.key >= '1' && ev.key <= String(SPEEDS.length)) setSpeed(Number(ev.key));
+    else if (ev.key === ' ') {
+      // A focused button keeps its own keys, which is the rule the start menu
+      // follows for Enter. Space is how a button is pressed, and taking it away
+      // from whichever one has the focus to run the clock instead would break
+      // the toolbar for anyone working it from the keyboard.
+      if (document.activeElement?.tagName === 'BUTTON') return;
+      ev.preventDefault();          // or the page tries to scroll on it
+      setPaused(!clock.paused);
+    }
+    else if (ev.key === 'Escape') {
+      // select(null) already clears the highlight, the ring and the panel, and
+      // repaints only what was lit — the same path as clicking open sea. Only
+      // once there is nothing left to clear does the press reach the menu.
+      //
+      // And only from the map: while the start screen is up this key belongs
+      // to it and to whichever of its panels is open, and openStartMenu() is
+      // already listening for it.
+      // The county goes first: it is the most recent thing to have been opened
+      // and the smallest, so Escape peeling it off before the province selection
+      // is what somebody who just right-clicked expects.
+      if (state.county) selectCounty(null);
+      else if (state.selected) select(null);
+      // Both levels of water at once. A click on the sea picks the region AND the
+      // subregion inside it, so clearing only the region left the subregion lit
+      // with nothing selected above it.
+      else if (state.selectedSea || state.selectedSub) { selectSea(null); selectSub(null); }
+      else if (mapIsShowing()) setPause(true);
+    }
   });
 
   // One listener on the list rather than one per item, since updatePanel()
@@ -3625,11 +6300,16 @@ function wireInput() {
   // Closing the card leaves the province selected: the ring and the debug panel
   // are a separate question from whether you want its details in the way.
   document.getElementById('card-close').addEventListener('click', closeCard);
+  document.getElementById('county-close').addEventListener('click', () => selectCounty(null));
 
   els.toolbar.addEventListener('click', (ev) => {
     const b = ev.target.closest('button[data-mode]');
     if (!b) return;                                // a click on some other button
     state.mode = b.dataset.mode;
+    // Nothing outside the Navy mode draws the water, so a selection made there
+    // would be invisible everywhere else and would come back on returning to it,
+    // having been made on a map the player has since left.
+    if (state.mode !== 'navy') { state.selectedSea = null; state.hoveredSea = null; }
     for (const other of els.toolbar.querySelectorAll('button[data-mode]')) {
       other.classList.toggle('active', other === b);
     }
@@ -3654,7 +6334,7 @@ function wireInput() {
   // nothing anyone would miss, and being asked to confirm before the game has
   // even started is just an obstacle.
   window.addEventListener('beforeunload', (ev) => {
-    if (document.getElementById('start')?.classList.contains('gone') !== true) return;
+    if (!mapIsShowing()) return;
     ev.preventDefault();
     ev.returnValue = '';
   });
@@ -3679,29 +6359,55 @@ async function init() {
 
   // All four fetched together. The imagery is by far the largest, and waiting
   // for it after the others would add its whole download to the load time.
-  const [raw, pngBytes, cacheBytes, satellite, night, cities, cityIcon, capitalIcon, stats, quotes] = await Promise.all([
-    loadJSON('./data/provinces.json'),
-    loadBytes('./data/provinces.png'),
-    loadBytes(`./data/${CACHE_FILE}`, true),
-    loadBitmap('./data/satellite.png'),
-    // City lights as they stood in the 1920s, aligned to provinces.png. Optional:
-    // without it the night side is simply dark.
-    loadBitmap('./data/night_1920s.png'),
-    // Extracted from cities.png by the build step, so the page reads a few
-    // kilobytes of JSON rather than decoding a second full-size bitmap.
-    loadJSON('./data/cities.json', true),
-    loadBitmap('./data/icons/city.png'),
-    loadBitmap('./data/icons/capital.png'),
-    // What has been built on each province. Optional: without it the card shows
-    // zeros rather than refusing to open.
-    loadJSON('./data/province-stats.json', true),
-    // Shown on the loading screen once the map is ready. Optional.
-    loadJSON('./data/quotes.json', true),
-  ]);
+  const [raw, pngBytes, cacheBytes, satellite, rivers, night, cities, cityIcon, capitalIcon,
+    resourceSheet, stats, resources, quotes,
+    seaRaw, seaPngBytes, countyRaw, countyPngBytes, subPngBytes] = await Promise.all([
+      loadJSON('./data/json/provinces.json'),
+      loadBytes('./data/img/provinces.png'),
+      loadBytes(`./data/${CACHE_FILE}`, true),
+      loadBitmap('./data/img/satellite.png'),
+      // The rivers, already lifted out of true_water_bodies_and_rivers.png and
+      // coloured by the build step, so this is a mostly-transparent 179KB file
+      // rather than a second full-size decode. Optional: without it the map
+      // simply has no rivers drawn on it.
+      loadBitmap('./data/img/rivers.png'),
+      // City lights as they stood in the 1920s, aligned to provinces.png. Optional:
+      // without it the night side is simply dark.
+      loadBitmap('./data/img/night_1920s.png'),
+      // Extracted from cities.png by the build step, so the page reads a few
+      // kilobytes of JSON rather than decoding a second full-size bitmap.
+      loadJSON('./data/json/cities.json', true),
+      loadBitmap('./data/icons/city.png'),
+      loadBitmap('./data/icons/capital.png'),
+      // The eighteen resource icons on one sheet, six across and three down at
+      // 64px a cell. Optional: without it the layer falls back to the short
+      // words it used before there was any art.
+      loadBitmap('./data/icons/resources.png'),
+      // What has been built on each province. Optional: without it the card shows
+      // zeros rather than refusing to open.
+      loadJSON('./data/json/province-stats.json', true),
+      // Every deposit on the map, for the resource layer. Optional: without it
+      // the layer draws nothing and the rest of the map is unaffected.
+      loadJSON('./data/json/resources.json', true),
+      // Shown on the loading screen once the map is ready. Optional.
+      loadJSON('./data/json/quotes.json', true),
+      // The sea, as its own table and its own bitmap on the same grid as the
+      // provinces. Both optional: without them the Navy mode is not offered and
+      // the water is drawn flat, which is what it did before there were regions.
+      loadJSON('./data/json/sea.json', true),
+      loadBytes('./data/img/sea.png', true),
+      // The counties, the level below provinces. Both optional: without them the
+      // County mode is not offered and nothing else changes.
+      loadJSON('./data/json/counties.json', true),
+      loadBytes('./data/img/counties.png', true),
+      // The sea subregions, the level a fleet is ordered to. Optional: without
+      // the bitmap the Navy mode draws whole regions as it did before.
+      loadBytes('./data/img/sea_subregions.png', true),
+    ]);
 
   // Hashed before normaliseTable(), which rewrites the colours in place — the
   // build script hashes the same fields in the same form.
-  const hash = hashInputs(pngBytes, raw);
+  const hash = hashInputs(pngBytes, raw, seaPngBytes, seaRaw, countyPngBytes, countyRaw, subPngBytes);
   const cache = await loadCache(cacheBytes, hash);
   const table = normaliseTable(raw);
 
@@ -3729,13 +6435,84 @@ async function init() {
   // and derived from the polity table, which the cache does not cover.
   if (geometry) addRealmBlocks(world, geometry);
 
+  // The sea, restored from the same cache file when it is in there and built
+  // from sea.png when it is not. Land wins wherever the two bitmaps disagree,
+  // so a region is only ever consulted for a pixel the province array calls
+  // ocean, and nothing here can move a coastline.
+  world.sea = null;
+  if (seaRaw && seaRaw.regions && seaRaw.regions.length) {
+    const seaTable = normaliseSeaTable(seaRaw);
+    world.sea = (cache && cache.seaAt)
+      ? seaFromCache(seaTable, cache.meta.sea, cache.seaAt, indexSea, world.width, world.height)
+      : null;
+    if (!world.sea && seaPngBytes) {
+      const seaPixels = await loadPixels(seaPngBytes);
+      if (seaPixels.width === world.width && seaPixels.height === world.height) {
+        world.sea = buildSeaWorld(seaTable, seaPixels);
+      } else {
+        console.warn(`sea.png is ${seaPixels.width}x${seaPixels.height}, not `
+          + `${world.width}x${world.height}; the Navy mode is off.`);
+      }
+    }
+  }
+  // Both of these are about the water and have nothing to show without it.
+  // The counties, restored from the same cache or built from counties.png when
+  // there is none. Fourteen thousand of them, so the cache matters: reading them
+  // back is a memcpy where building them is a decode, a scan and an adjacency
+  // pass over sixteen million pixels.
+  // The sea subregions, from the same cache or from their own bitmap. They live
+  // in sea.json beside the regions, so there is no second table to fetch.
+  world.subs = null;
+  if (seaRaw && seaRaw.subregions && seaRaw.subregions.length) {
+    const subTable = normaliseSubTable(seaRaw);
+    world.subs = (cache && cache.subAt)
+      ? subsFromCache(subTable, cache.meta.subs, cache.subAt, indexSubs, world.width, world.height)
+      : null;
+    if (!world.subs && subPngBytes) {
+      const subPixels = await loadPixels(subPngBytes);
+      if (subPixels.width === world.width && subPixels.height === world.height) {
+        world.subs = buildSubWorld(subTable, subPixels);
+      } else {
+        console.warn(`sea_subregions.png is ${subPixels.width}x${subPixels.height}, not `
+          + `${world.width}x${world.height}; the Navy layer shows whole regions.`);
+      }
+    }
+  }
+
+  world.counties = null;
+  if (countyRaw && countyRaw.counties && countyRaw.counties.length) {
+    const countyTable = normaliseCountyTable(countyRaw);
+    world.counties = (cache && cache.countyAt)
+      ? countiesFromCache(countyTable, cache.meta.counties, cache.countyAt, indexCounties, world.width, world.height)
+      : null;
+    if (!world.counties && countyPngBytes) {
+      const countyPixels = await loadPixels(countyPngBytes);
+      if (countyPixels.width === world.width && countyPixels.height === world.height) {
+        world.counties = buildCountyWorld(countyTable, countyPixels);
+      } else {
+        console.warn(`counties.png is ${countyPixels.width}x${countyPixels.height}, not `
+          + `${world.width}x${world.height}; the County mode is off.`);
+      }
+    }
+  }
+
+  for (const el of document.querySelectorAll('button[data-mode="navy"], button[data-toggle="showSeaNames"]')) {
+    el.hidden = !world.sea;
+  }
+  document.querySelector('button[data-mode="county"]').hidden = !world.counties;
+
   world.satellite = satellite;
+  world.rivers = rivers;
   world.night = night;
-  world.nightMask = buildNightMask(world);
+  world.nightMask = buildNightMask(world, sunDayOfYear);
   world.cities = cities?.cities ?? [];
   linkInternationalCities(world.cities);
   world.cityIcons = { city: cityIcon, capital: capitalIcon };
   world.stats = stats?.provinces ?? null;
+  world.resources = resources?.provinces ?? null;
+  world.resourceKinds = resources?.kinds ?? [];
+  world.resourceSheet = resourceSheet;
+  world.resourceLines = buildResourceLines(world);
   world.quotes = quotes?.quotes ?? [];
 
   // Written in now, while the gauge is still showing and the quote is
@@ -3765,6 +6542,12 @@ async function init() {
   fitToView();
   updatePanel();
 
+  // Puts the plate at tick 0 rather than leaving it showing a dash until the
+  // first tick, which on a clock that starts paused would be until the player
+  // pressed something.
+  applyClock();
+  updateClockControls();
+
   // Draw the map once here rather than leaving it to the first animation frame,
   // and only then report ready. That first pass is a full repaint of all 15.9
   // million pixels — around 250ms — so reporting ready before it would put a
@@ -3779,7 +6562,10 @@ async function init() {
   // changeOwners() directly; this is the same thing from the console:
   //   game.setOwner('norrhus', 'FNA')
   //   game.setOwners([['norrhus', 'FNA'], ['rodtfjell', 'FNA']])
-  window.game = {
+  // Bound to a name first, then published. Several of these report their new
+  // state by calling another, and reaching that through the global would work
+  // only for as long as nothing ever reassigned window.game.
+  const game = {
     setOwner: (province, owner) => changeOwners([[province, owner]]),
     setOwners: changeOwners,
     world: () => state.world,
@@ -3790,18 +6576,52 @@ async function init() {
     // instead. lookAt() is the one that is actually useful: it puts a map
     // coordinate in the middle of the window at whatever zoom is asked for.
     //   game.lookAt(3211, 2018, 4)
-    // Moving the sun, which the clock will do once it exists. Day of the year
-    // sets the season and the UTC hour sets the longitude:
-    //   game.setSun(355, 0)   21 December, midnight
-    //   game.setSun(80, 12)   20 March, noon
-    setSun: (dayOfYear = sunDayOfYear, utcHour = sunUtcHour) => {
-      sunDayOfYear = dayOfYear;
-      sunUtcHour = utcHour;
-      state.world.nightMask = buildNightMask(state.world);
-      invalidateBuffer();
-      invalidateView();
-      return { dayOfYear: sunDayOfYear, utcHour: sunUtcHour };
+    // The clock, from the console. There is deliberately no setSun() any more:
+    // the sun is derived from the tick, so anything written straight into it
+    // would be overwritten by the next tick, which is a trap rather than a tool.
+    // Move the clock and the sun follows.
+    //   game.setDate(1926, 12, 21)    21 Ungervan 1926, midnight — the solstice
+    //   game.setDate(1926, 6, 10, 12) noon on the start date
+    //   game.setTick(72 * 30)         thirty days in
+    clock: () => ({
+      tick: clock.tick, speed: clock.speed, paused: clock.paused, ...clockDate(clock.tick),
+      month: RUNDEAN_MONTHS[clockDate(clock.tick).month],
+    }),
+    setTick: (tick) => {
+      clock.tick = Math.max(0, Math.round(tick));
+      applyClock();
+      return game.clock();
     },
+    // Month is 1 to 12 here, unlike the 0-based index everything inside uses,
+    // because this is typed by a person and 6 is Ungerbruni to a person.
+    setDate: (year, month, day, hour = 0) => {
+      const days = Math.round((Date.UTC(year, month - 1, day) - CLOCK_EPOCH) / DAY_MS);
+      clock.tick = Math.max(0, days * TICKS_PER_DAY + Math.round(hour * TICKS_PER_HOUR));
+      applyClock();
+      return game.clock();
+    },
+    pause: () => { setPaused(true); return game.clock(); },
+    resume: () => { setPaused(false); return game.clock(); },
+    speed: (n) => { setSpeed(n); return clock.speed; },
+
+    // The button sound, by ear. Nothing else in the interface has a number
+    // whose only correct value is the one that feels right.
+    //   game.clickDelay()     what it is now, in milliseconds
+    //   game.clickDelay(45)   hold it back a little further
+    clickDelay: (ms) => {
+      if (typeof ms === 'number') sfxDelay = clamp(ms, 0, 500) / 1000;
+      return Math.round(sfxDelay * 1000);
+    },
+    // What the sound measured about itself when it loaded, in milliseconds.
+    clickSound: () => ({
+      trimmed: Math.round(sfx.offset * 1000),
+      attack: Math.round(sfx.attack * 1000),
+      held: Math.round(sfxDelay * 1000),
+      answer: Number(sfx.lag.toFixed(1)),
+      device: Math.round((sfx.base + sfx.output) * 1000),
+      peak: Number(sfx.peak.toFixed(3)),
+      loaded: Boolean(sfx.buffer),
+    }),
 
     view: () => ({ ...view }),
     lookAt: (mapX, mapY, scale = view.scale) => {
@@ -3813,6 +6633,8 @@ async function init() {
       return { ...view };
     },
   };
+
+  window.game = game;
 }
 
 /**
@@ -3881,7 +6703,7 @@ function setLoadingNote(text) {
 }
 
 /**
- * Writes one of `data/quotes.json` into the loading screen, chosen at random.
+ * Writes one of `data/json/quotes.json` into the loading screen, chosen at random.
  *
  * Called as soon as the file is read, not when loading finishes. The element is
  * transparent until the screen reaches its ready state, and filling it early is
@@ -3899,6 +6721,118 @@ function fillLoadingQuote(list) {
   if (by) by.textContent = q.by ?? '';
 }
 
+/* ------------------------------------------------------ the drifting backdrop
+ *
+ * The artwork behind the loading screen and the start menu moves with the
+ * pointer, against it rather than with it, so the screen reads as a window
+ * onto something standing further back instead of as a flat picture.
+ *
+ * The two halves of this do not know about each other. style.css owns where
+ * the layer sits, how much room it has to move in and what is stacked over it;
+ * this owns how far it has drifted, published as two custom properties. So the
+ * artwork can be restyled without touching the arithmetic, and the arithmetic
+ * has no opinion about which screen is up.
+ */
+
+// Furthest the artwork travels from centre, in CSS pixels. The layer is inset
+// by 40px on every side in style.css, and this has to stay under that figure
+// or the edge of the photograph comes into view at the extremes.
+const PARALLAX_PX = 26;
+
+// How long the drift takes to close most of the distance to the pointer. It
+// trails rather than tracking, and the lag is the whole effect: a layer that
+// arrives instantly reads as glued to the cursor, and one that takes its time
+// reads as having some weight to move.
+const PARALLAX_MS = 320;
+
+function startParallax() {
+  // Movement for its own sake, which is precisely what this is, so somebody
+  // who has asked for less of it gets none. Returning here means the listener
+  // is never attached, so there is no per-move cost either. The CSS pins the
+  // layer as well, for a preference turned on later in the session.
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+  const root = document.documentElement;
+  const at = { x: 0, y: 0 };      // where the artwork is
+  const to = { x: 0, y: 0 };      // where the pointer says it should be
+  let raf = 0;
+  let clock = 0;
+
+  const step = (now) => {
+    // Exponential easing on ELAPSED TIME rather than a fixed share per frame,
+    // for the reason stepCityFades gives: a share per frame closes the gap
+    // faster on a 144Hz screen than on a 60Hz one, and the drift would be a
+    // different gesture on different machines. On the first frame of a burst
+    // there is no previous reading, so dt is 0 and nothing moves until there
+    // is a real interval to move against.
+    const k = 1 - Math.exp(-(clock ? now - clock : 0) / PARALLAX_MS);
+    clock = now;
+    at.x += (to.x - at.x) * k;
+    at.y += (to.y - at.y) * k;
+
+    // Settle rather than approach forever. An exponential never actually
+    // arrives, and a frame requested every 16ms to move a hundredth of a pixel
+    // is a frame nobody asked for and a compositor layer nothing is doing with.
+    const done = Math.abs(to.x - at.x) < 0.05 && Math.abs(to.y - at.y) < 0.05;
+    if (done) { at.x = to.x; at.y = to.y; }
+
+    root.style.setProperty('--parallax-x', `${at.x.toFixed(2)}px`);
+    root.style.setProperty('--parallax-y', `${at.y.toFixed(2)}px`);
+
+    clock = done ? 0 : clock;
+    raf = done ? 0 : requestAnimationFrame(step);
+  };
+
+  // mousemove rather than pointermove. A pen or a finger has no hover, so a
+  // pointer event from one arrives already at the place it is touching, and
+  // the artwork would jump the width of the screen on a tap rather than drift.
+  window.addEventListener('mousemove', (ev) => {
+    // Only while one of the two screens carrying the artwork is up. Once the
+    // menu has been dismissed there is nothing on screen to move, and tracking
+    // the pointer across a map being panned would be arithmetic for no picture.
+    if (mapIsShowing()) return;
+
+    // -1 at the left edge of the window, +1 at the right. The artwork moves
+    // AGAINST the pointer: a layer sliding the same way as the cursor reads as
+    // being dragged along by it, and one sliding the opposite way reads as
+    // sitting behind the frame you are looking through.
+    const nx = (ev.clientX / window.innerWidth) * 2 - 1;
+    const ny = (ev.clientY / window.innerHeight) * 2 - 1;
+    to.x = -clamp(nx, -1, 1) * PARALLAX_PX;
+    to.y = -clamp(ny, -1, 1) * PARALLAX_PX;
+
+    if (!raf) raf = requestAnimationFrame(step);
+  }, { passive: true });
+
+  // Nothing resets on the way out. Quitting to the start menu finds the
+  // artwork where the pointer left it, which is right: it is the same screen,
+  // and it has not moved in the meantime.
+}
+
+/**
+ * Puts the start screen back up, over a map that is already built.
+ *
+ * Kept apart from markMapReady(), which shows it for the first time. That one
+ * has a loading screen to dissolve and a `pending` class to take off and runs
+ * exactly once; this is the same screen returned to later, and has neither.
+ *
+ * The wiring in openStartMenu() is untouched by any of it — those listeners
+ * were attached once at module level and are still attached — so the screen
+ * comes back working rather than having to be built again.
+ */
+function showStartMenu() {
+  const menu = document.getElementById('start');
+  if (!menu) return;
+  menu.classList.remove('gone');
+  menu.setAttribute('aria-hidden', 'false');
+
+  // Focus on the NEXT frame, for the reason markMapReady() gives at greater
+  // length: the press that asked to quit is still being delivered, and Enter
+  // landing on a button that has just taken the focus would dismiss this
+  // screen again in the same keystroke and drop you straight back on the map.
+  requestAnimationFrame(() => document.getElementById('start-enter')?.focus());
+}
+
 /**
  * Wires the start menu up. Called at module level, so the buttons work the
  * moment the menu is shown.
@@ -3912,11 +6846,15 @@ function openStartMenu() {
   const enter = document.getElementById('start-enter');
   if (!menu || !enter) return;
 
-  let dismissed = false;
   const dismiss = () => {
-    if (dismissed || menu.classList.contains('pending')) return;   // one press, and not while hidden
-    dismissed = true;
+    // Not while the screen is hidden, and not twice over. Both questions are
+    // answered by the classes rather than by a flag of its own, which is what
+    // lets the screen be dismissed AGAIN after quitting has brought it back —
+    // a latch set on the first press would have closed the menu permanently
+    // and left the second visit to it with a dead Enter button.
+    if (menu.classList.contains('gone') || menu.classList.contains('pending')) return;
     menu.classList.add('gone');
+    menu.setAttribute('aria-hidden', 'true');
     els.canvas.focus?.();
   };
   enter.addEventListener('click', dismiss);
@@ -3952,12 +6890,17 @@ function openStartMenu() {
     dialog.addEventListener('click', (ev) => { if (ev.target === dialog) setDialog(dialog, false); });
   }
 
-  // Enter and Escape both work, but only while the menu is up — afterwards
-  // Escape belongs to clearing the selection.
+  // ENTER AND SPACE GO IN. ESCAPE DOES NOT.
   //
-  // While a panel is open they belong to IT, and Escape closes the panel rather
-  // than dismissing the menu underneath. Otherwise reading the changelog and
-  // pressing Escape to put it away would drop you into the map.
+  // Escape is the key for stepping back, everywhere it appears: it drops a
+  // selection, it closes the changelog, it closes the pause menu. Letting it
+  // also start the game made it the one place where going back went forward,
+  // and it is the natural key to reach for when you have just arrived at this
+  // screen and want to be left alone on it.
+  //
+  // So here it closes an open panel, and with no panel open it does nothing at
+  // all — there is nothing behind this screen to step back to. Enter and Space
+  // are the ways in, and the Enter button says so.
   window.addEventListener('keydown', (ev) => {
     if (menu.classList.contains('gone') || menu.classList.contains('pending')) return;
     if (ev.key !== 'Enter' && ev.key !== 'Escape' && ev.key !== ' ') return;
@@ -3970,13 +6913,36 @@ function openStartMenu() {
       return;
     }
 
+    // Nothing open for it to close, and it is not a way in. Swallowed rather
+    // than left to fall through, so that it cannot come to mean something else
+    // later by accident.
+    if (ev.key === 'Escape') {
+      ev.preventDefault();
+      return;
+    }
+
     // A focused button keeps its own keys, or Enter on the Changelog button
-    // would open the changelog and start the game in the same press. Escape is
-    // not a button's key, so it still dismisses whatever has the focus.
-    if (ev.key !== 'Escape' && document.activeElement?.tagName === 'BUTTON'
-      && document.activeElement !== enter) return;
+    // would open the changelog and start the game in the same press.
+    if (document.activeElement?.tagName === 'BUTTON' && document.activeElement !== enter) return;
 
     ev.preventDefault();
+
+    // This press is SPENT, and no other listener may act on it.
+    //
+    // wireInput() attaches a second keydown listener to the same window for the
+    // map's own keys. Without this line that listener still runs, and by then
+    // dismiss() has already set `gone` — so it asks whether the map is showing,
+    // is told yes, and treats the press as one made on the map. Space therefore
+    // dismissed the start screen and set the clock running in the same keystroke.
+    //
+    // stopPropagation is not enough. Both listeners are on window, so there is
+    // no propagation between nodes to stop; only the immediate form stops the
+    // next listener on the same target. It works because this one is registered
+    // FIRST, openStartMenu() being called at module level and wireInput() from
+    // init(). The map's handler guards on the start screen as well, so neither
+    // order can leave both of them acting.
+    ev.stopImmediatePropagation();
+
     dismiss();
   });
 }
@@ -3985,9 +6951,14 @@ function openStartMenu() {
 // which markMapReady() does at the end of the load.
 openStartMenu();
 
+// Likewise, and earlier still: the loading screen carries the same artwork and
+// is on screen from the first frame, so the drift is live while the map is
+// being built rather than only once the menu behind it appears.
+startParallax();
+
 init().catch((err) => {
   document.body.innerHTML =
-    `<div style="padding:24px;font:14px system-ui;color:#d8dce4">
+    `<div style="padding:24px;font:14px 'Segoe UI', sans-serif;color:#d8dce4">
        <strong>Failed to start.</strong><br><br>${err.message}<br><br>
        <span style="color:#8a91a0">If this says the file could not be loaded, you are probably
        opening index.html directly. Browsers block local file reads. Serve the folder over

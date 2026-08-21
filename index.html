@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Hearts of Iron Chron</title>
+  <title>The New Concert</title>
   <!--
     Named explicitly because a browser asks for /favicon.ico on every page load
     whether or not one is declared. Left undeclared it guesses that path, finds
@@ -16,7 +16,7 @@
     screen is the first thing drawn and this is what it is drawn on, so the fetch
     has to start while the HTML is still being read.
   -->
-  <link rel="preload" as="image" href="./data/start_menu_bg.jpg">
+  <link rel="preload" as="image" href="./data/img/start_menu_bg.jpg">
   <link rel="stylesheet" href="./src/style.css">
 </head>
 
@@ -29,7 +29,7 @@
   -->
   <div id="start" class="pending" aria-hidden="true">
     <div class="start-panel">
-      <h1>Hearts of Iron Chron</h1>
+      <h1>The New Concert</h1>
 
       <!-- data-dialog names the panel a button opens, so a new one is a button
            and a panel with no wiring of its own. -->
@@ -40,7 +40,7 @@
       </div>
 
       <p>
-        Hearts of Iron Chron is the placeholder name of this in-development game.
+        The New Concert is an in-development game.
         Currently, there is no game to speak of so have fun looking at an
         incomplete map.
       </p>
@@ -60,6 +60,22 @@
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.7 <span>21 Aug 2026</span></h3>
+            <ul>
+              <li>Non-placeholder name finally decided on: The New Concert.</li>
+              <li>The map is now finished in terms of both cities and countries.</li>
+              <li>Added a secondary level of division below provinces: counties.</li>
+              <li>Added sea subdivisions.</li>
+              <li>Added rivers.</li>
+              <li>Overhauled terrain so the map now shows both climate and terrain.</li>
+              <li>Added sound effects for button clicks and for selecting provinces and regions.</li>
+              <li>The day-night divide is now a working cycle.</li>
+              <li>Added resources and their icons.</li>
+              <li>Started adding population to provinces. Therundia is finished, Sakan is ongoing.</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.6 <span>17 Aug 2026</span></h3>
             <ul>
@@ -138,7 +154,7 @@
         </div>
 
         <div class="dialog-body about-body">
-          <img class="about-seal" src="./data/seal.png" width="2300" height="2300"
+          <img class="about-seal" src="./data/img/seal.png" width="2300" height="2300"
             alt="Seal of the Chronic Worldbuilding Authority">
           <p>
             This game is part of the Chron Project, created by
@@ -163,7 +179,7 @@
     <div class="loading-panel">
       <!--
         The gauge and the quote share this box and cross-fade in it. The quote is
-        written in as soon as data/quotes.json is read, while still transparent,
+        written in as soon as data/json/quotes.json is read, while still transparent,
         so it is holding its own height before it is visible and nothing on the
         screen moves when the two swap over. The gauge sits centred on top of it.
       -->
@@ -194,13 +210,16 @@
 
   <div id="map-area">
     <div id="toolbar" class="milled">
-      <span class="wordmark">Hearts of Iron Chron<b>Third Sapient War</b></span>
+      <span class="wordmark">The New Concert<b>Third Sapient War</b></span>
 
       <span class="sep"></span>
 
       <button data-mode="political" class="active">Political</button>
       <button data-mode="province">Provinces</button>
       <button data-mode="terrain">Terrain</button>
+      <button data-mode="county" hidden>Counties</button>
+      <button data-mode="navy" hidden>Navy</button>
+      <button data-mode="resources">Resources</button>
 
       <span class="sep"></span>
 
@@ -214,6 +233,28 @@
       <span class="sep"></span>
 
       <button id="toggle-panel" title="Debug menu (`)">Debug</button>
+
+      <!--
+        The clock. Pushed to the right-hand end of the toolbar by a margin
+        rather than by a spacer element, so there is nothing here that exists
+        only to take up room.
+
+        Four parts, in the order they are read: slower, the run state, the
+        date, faster. The play control carries both marks and shows whichever
+        the state calls for, so the button never changes size as it switches.
+      -->
+      <div id="clock">
+        <button id="clock-slower" title="Slower" aria-label="Slower">&minus;</button>
+
+        <button id="clock-play" title="Pause and resume (Space)" aria-label="Pause and resume"
+          aria-pressed="false">
+          <i class="play"></i><i class="halt"></i>
+        </button>
+
+        <span id="clock-face">&mdash;</span>
+
+        <button id="clock-faster" title="Faster" aria-label="Faster">+</button>
+      </div>
     </div>
 
     <div id="canvas-wrap">
@@ -225,6 +266,34 @@
         left on selection; the debug menu slides in from the right, so the two
         can be open together without meeting. Rows are filled by updateCard().
       -->
+      <!--
+        The county under the RIGHT button. Its own panel rather than a section of
+        the province card, because the two answer different questions and are
+        opened by different buttons: a province is what you own, a county is the
+        ground itself. Only ever one of the two is up, and they share a corner.
+      -->
+      <aside id="county-card" class="milled" aria-hidden="true">
+        <div class="card-head">
+          <h2 id="county-name">&mdash;</h2>
+          <button id="county-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="card-owner">
+          <span class="card-flag" id="county-flag"></span>
+          <span>
+            <b id="county-polity">&mdash;</b>
+            <i id="county-province">in a province</i>
+            <!-- Only shown when the owner and the occupier differ. -->
+            <i id="county-owner" hidden></i>
+          </span>
+        </div>
+
+        <div class="card-row"><span>Terrain</span><span id="county-terrain">&mdash;</span></div>
+        <div class="card-row"><span>Climate</span><span id="county-climate">&mdash;</span></div>
+        <div class="card-row"><span>Railway</span><span id="county-rail">&mdash;</span></div>
+        <div class="card-row"><span>Area</span><span id="county-area">&mdash;</span></div>
+      </aside>
+
       <aside id="card" class="milled" aria-hidden="true">
         <div class="card-head">
           <h2 id="card-name">&mdash;</h2>
@@ -267,6 +336,31 @@
     </div>
   </div>
 
+  <!--
+    The pause menu, opened with Esc from the map once nothing is selected.
+
+    Outside #start rather than inside it, unlike the changelog and the about
+    box. Those are panels belonging to the start screen and are carried off by
+    the same fade when it is dismissed, which is what they want. This one has
+    to work after that fade has happened, so it is a sibling of the map and
+    sits below #start's z-index — quitting reveals the start screen over it.
+
+    No close button in the head: Resume is the close, and two ways to do the
+    same thing on a menu of two buttons is one too many.
+  -->
+  <div id="pause" aria-hidden="true">
+    <div class="dialog-panel" role="dialog" aria-modal="true" aria-label="Paused">
+      <div class="dialog-head">
+        <h2>Paused</h2>
+      </div>
+
+      <div class="dialog-body pause-body">
+        <button id="pause-resume">Resume game</button>
+        <button id="pause-quit" class="start-secondary">Quit to start menu</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Development inspector. Closed until the backtick key adds .open; see §7 of main.js.
        The inner div is what scrolls. The panel itself must stay still, because it
        holds the texture overlay and a texture that slid with the content would
@@ -278,14 +372,23 @@
         <!-- data-repaint marks a toggle that changes the painted map rather than
              just what is drawn over it, so it needs the buffer rebuilt. -->
         <button id="toggle-satellite" data-toggle="satellite" data-repaint>Satellite</button>
-        <button data-toggle="showNight" data-repaint class="active">Day and night</button>
+        <!-- No data-repaint any more. The terminator moves with the clock, so
+             it is drawn over the finished map every frame rather than baked
+             into the tiles, and switching it off is now only another blit. -->
+        <button data-toggle="showNight" class="active">Day and night</button>
+        <button data-toggle="showRivers" class="active">Rivers</button>
         <button data-toggle="showCities" class="active">Cities</button>
         <button data-toggle="showLabels" class="active">Polity labels</button>
         <button data-toggle="showProvinceNames">Province names</button>
+        <button data-toggle="showSeaNames" hidden>Sea region names</button>
         <button data-toggle="showChunks">Chunk grid</button>
         <button data-toggle="showAdjacency">Adjacency links</button>
         <button data-toggle="showBounds">Selection bounds</button>
         <button data-toggle="showCoastal">Coastal flags</button>
+        <!-- Marks where each drawn copy of the map begins and where the tile
+             columns fall, so a vertical artefact can be attributed to one or
+             the other instead of guessed at. -->
+        <button data-toggle="showSeams">Seams</button>
       </div>
 
       <h1>Performance</h1>

@@ -26,14 +26,14 @@ cache and a live computation come from the same code.
 
 | File | Format | Contents |
 | --- | --- | --- |
-| `data/provinces.png` | 8-bit PNG, 6000x2650 | Province shapes. One flat RGB colour per province. Ocean is `#ffffff`. |
-| `data/provinces.json` | JSON | Province table keyed by colour: id, name, terrain, owner, area, centre. Also the polity list and `oceanColour`. |
+| `data/img/provinces.png` | 8-bit PNG, 6000x2650 | Province shapes. One flat RGB colour per province. Ocean is `#ffffff`. |
+| `data/json/provinces.json` | JSON | Province table keyed by colour: id, name, terrain, owner, area, centre. Also the polity list and `oceanColour`. |
 | `data/map-cache.bin` | deflated binary | Precomputed world. Optional. |
-| `data/satellite.png` | PNG, same size as provinces.png | Imagery drawn under the province colours. Optional. |
-| `data/true_area.png` | PNG, 2:1 whole globe | Same province colours, pole to pole. Used only for area measurement. |
-| `data/cities.png` | palette PNG, same size as provinces.png | One pixel per city. Read by the build script only. |
-| `data/cities.json` | JSON | Extracted city list: id, name, capital flag, x, y, province. |
-| `data/province-stats.json` | JSON | Per province: claims, population, infrastructure pairs, building slots, factories. |
+| `data/img/satellite.png` | PNG, same size as provinces.png | Imagery drawn under the province colours. Optional. |
+| `data/img/true_area.png` | PNG, 2:1 whole globe | Same province colours, pole to pole. Used only for area measurement. |
+| `data/img/cities.png` | palette PNG, same size as provinces.png | One pixel per city. Read by the build script only. |
+| `data/json/cities.json` | JSON | Extracted city list: id, name, capital flag, x, y, province. |
+| `data/json/province-stats.json` | JSON | Per province: claims, population, infrastructure pairs, building slots, factories. |
 | `data/icons/city.png`, `capital.png` | PNG | City markers. |
 | `data/ui/` | PNG, woff2 | Panel texture and the Cabin variable font. |
 
