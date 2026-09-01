@@ -12,7 +12,7 @@ Province statistics are complete. `data/json/province-stats.json` holds the maxi
 
 Sea regions are drawn and named in `data/json/sea.json`, which also records which of them are lakes.
 
-## Running it locally
+## Local running
 
 It requires a recent browser and a static file server. Opening `index.html` directly does not work because browsers block a local page from reading its own data files.
 
