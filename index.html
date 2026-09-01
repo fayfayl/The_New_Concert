@@ -61,6 +61,16 @@
 
         <div class="dialog-body changelog-body">
           <section>
+            <h3>Indev v0.8 <span>1 Sep 2026</span></h3>
+            <ul>
+              <li>Added a barebones Happiness and unrest mechanic on the user interface.</li>
+              <li>Added max slots and levels for provincial infrastructure.</li>
+              <li>Added all starting infrastructures in provinces, including the levels and factory
+                slots themselves as well as eyries, dockyards, and 1 synthetic rubber plant.</li>
+            </ul>
+          </section>
+
+          <section>
             <h3>Indev v0.7 <span>21 Aug 2026</span></h3>
             <ul>
               <li>Non-placeholder name finally decided on: The New Concert.</li>
@@ -221,6 +231,28 @@
       <button data-mode="navy" hidden>Navy</button>
       <button data-mode="resources">Resources</button>
 
+      <!--
+        The infrastructure layers. A native select rather than seven more
+        buttons: the toolbar is already at its width, and these are one
+        choice among themselves rather than seven separate ones.
+      -->
+      <span id="infra-menu">
+        <button id="infra-button" aria-haspopup="true" aria-expanded="false">
+          <span id="infra-label">Infrastructure</span><i>&#9662;</i>
+        </button>
+        <div id="infra-list" hidden>
+          <button data-layer="infra:road">Road</button>
+          <button data-layer="infra:electricity">Electricity</button>
+          <button data-layer="infra:fortification">Fortification</button>
+          <button data-layer="infra:supplyHub">Supply hub</button>
+          <button data-layer="infra:antiAir">Anti-air</button>
+          <button data-layer="infra:airBase">Air base</button>
+          <button data-layer="infra:factories">Factories</button>
+          <button data-layer="infra:hydro">Hydro</button>
+          <button data-layer="infra:rail">Rail</button>
+        </div>
+      </span>
+
       <span class="sep"></span>
 
       <span id="zoom-group">
@@ -313,6 +345,28 @@
         <div class="card-row"><span>Foreign claims</span><span id="card-claims">&mdash;</span></div>
         <div class="card-row"><span>Population</span><span id="card-pop">0</span></div>
         <div class="card-row"><span>Area</span><span id="card-area">&mdash;</span></div>
+
+        <!--
+          Happiness and unrest are not built things and do not belong in the
+          grid below, which is levels the player sets. These are read, not set:
+          happiness is how a province feels and unrest is how long it has felt
+          that way. Each row opens its own breakdown on click, because the only
+          actionable question about either is what is moving it.
+        -->
+        <div class="card-meters">
+          <div class="card-meter" id="card-happy-row">
+            <span class="cm-label">Happiness</span>
+            <span class="cm-value" id="card-happy">50</span>
+            <span class="cm-bar"><i id="card-happy-fill"></i></span>
+            <span class="cm-note" id="card-happy-note">tax &times;1.00</span>
+          </div>
+          <div class="card-meter" id="card-unrest-row">
+            <span class="cm-label">Unrest</span>
+            <span class="cm-value" id="card-unrest">0</span>
+            <span class="cm-bar unrest"><i id="card-unrest-fill"></i><u class="t40"></u><u class="t70"></u></span>
+            <span class="cm-note" id="card-unrest-note">&mdash;</span>
+          </div>
+        </div>
 
         <div class="card-grid" id="card-grid"></div>
 

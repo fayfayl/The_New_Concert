@@ -874,7 +874,15 @@ function modalOver(pixels, codes, width, areaOfPixel, n) {
   return best;
 }
 
-/** Centre of a set of pixels as lat/lon in radians, through unit vectors. */
+/**
+ * Centre of a set of pixels as lat/lon in radians, through unit vectors.
+ *
+ * A county wrapped around a bay has its mean out in the water, and a centre is
+ * a PLACE: the game draws rail nodes and city markers on it, and one sitting
+ * offshore is wrong wherever it is used. So the mean is kept when it falls on
+ * the county's own ground and otherwise pulled to the pixel of its own that
+ * lies nearest it. Convex counties, which are nearly all of them, are untouched.
+ */
 function centreOf(pixels, width, proj) {
   let vx = 0, vy = 0, vz = 0;
   for (const i of pixels) {
@@ -882,7 +890,25 @@ function centreOf(pixels, width, proj) {
     const [a, b, c] = proj.toVector(i - y * width, y);
     vx += a; vy += b; vz += c;
   }
-  return proj.fromVector([vx, vy, vz]);
+  const mean = proj.fromVector([vx, vy, vz]);
+
+  // lonAt and latAt are both linear in the pixel index, so this inverts them
+  // exactly rather than searching.
+  const x = Math.round((((mean.lon + Math.PI) / (2 * Math.PI)) * width) - 0.5);
+  const y = Math.round(((Math.PI / 2 - mean.lat) / Math.PI) * proj.globeHeight - 0.5)
+    - proj.northRow;
+  const at = y * width + ((x % width) + width) % width;
+  for (const i of pixels) if (i === at) return mean;
+
+  let best = at, bestDot = -Infinity;
+  for (const i of pixels) {
+    const py = (i / width) | 0;
+    const [a, b, c] = proj.toVector(i - py * width, py);
+    const dot = a * vx + b * vy + c * vz;
+    if (dot > bestDot) { bestDot = dot; best = i; }
+  }
+  const by = (best / width) | 0;
+  return { lat: proj.latAt(by), lon: proj.lonAt(best - by * width) };
 }
 
 // ------------------------------------------------------------------ 4-6. growth

@@ -302,6 +302,55 @@
   --tex-at: -55px -365px;
 }
 
+/* The layer menu, on the same terms. Seven rows sharing one offset showed the
+   identical patch of grain seven times over, which reads as a printed pattern
+   rather than as seven pieces of metal. */
+#infra-list button:nth-child(1) {
+  --tex-span: 380px;
+  --tex-turn: 12deg;
+  --tex-at: -180px -85px;
+}
+#infra-list button:nth-child(2) {
+  --tex-span: 380px;
+  --tex-turn: 98deg;
+  --tex-at: -95px -300px;
+}
+#infra-list button:nth-child(3) {
+  --tex-span: 380px;
+  --tex-turn: 167deg;
+  --tex-at: -300px -160px;
+}
+#infra-list button:nth-child(4) {
+  --tex-span: 380px;
+  --tex-turn: 251deg;
+  --tex-at: -40px -245px;
+}
+#infra-list button:nth-child(5) {
+  --tex-span: 380px;
+  --tex-turn: 304deg;
+  --tex-at: -250px -35px;
+}
+#infra-list button:nth-child(6) {
+  --tex-span: 380px;
+  --tex-turn: 41deg;
+  --tex-at: -140px -390px;
+}
+#infra-list button:nth-child(7) {
+  --tex-span: 380px;
+  --tex-turn: 219deg;
+  --tex-at: -355px -120px;
+}
+#infra-list button:nth-child(8) {
+  --tex-span: 380px;
+  --tex-turn: 134deg;
+  --tex-at: -70px -155px;
+}
+#infra-list button:nth-child(9) {
+  --tex-span: 380px;
+  --tex-turn: 281deg;
+  --tex-at: -230px -340px;
+}
+
 #zoom-group button:nth-of-type(1) {
   --tex-span: 380px;
   --tex-turn: 84deg;
@@ -1234,6 +1283,61 @@ body {
   transition: border-color .12s, color .12s, background .12s;
 }
 
+/* The layer menu. The closed control is a toolbar button like any other and
+   takes that styling from #toolbar button; only the caret and the list below
+   are its own. */
+#infra-menu {
+  display: inline-flex;
+}
+#infra-button i {
+  font-style: normal;
+  font-size: 9px;
+  margin-left: 9px;
+  opacity: .65;
+  vertical-align: middle;
+}
+#infra-list {
+  /* Against the VIEWPORT, not under the button. #toolbar hides its overflow,
+     so a list laid out inside it is clipped away to nothing however far down
+     it is placed. A fixed box escapes that, since its containing block is the
+     viewport and no ancestor here carries a transform to capture it. Its
+     coordinates are set from the button rect each time it opens. */
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel-deep));
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .05);
+  z-index: 40;
+}
+/* display:flex above would otherwise beat the hidden attribute. */
+#infra-list[hidden] {
+  display: none;
+}
+/* A row in a list, not a control of its own: no bevel, no border until it is
+   under the cursor, and the text left where a list is read from. */
+#infra-list button {
+  background: none;
+  border: 1px solid transparent;
+  box-shadow: none;
+  border-radius: 1px;
+  text-align: left;
+  padding: 6px 12px;
+}
+#infra-list button:hover {
+  background: linear-gradient(180deg, var(--steel-hover), #1d242e);
+  border-color: var(--rule-bright);
+}
+#infra-list button.active {
+  background: linear-gradient(180deg, #46586e, #2b3746);
+  border-color: var(--rule-bright);
+  border-top-color: var(--accent);
+  color: var(--paper);
+}
+
 #toolbar button:hover {
   background: linear-gradient(180deg, var(--steel-hover), #1d242e);
   border-color: var(--rule-bright);
@@ -1474,7 +1578,10 @@ canvas.panning {
 
 #tooltip {
   position: absolute;
-  z-index: 10;
+  /* Above #card and #county-card at 20. The tooltip is raised by hovering the
+     card itself, so anything lower is drawn behind the thing that summoned it.
+     Safe to lift: pointer-events are off, so it intercepts nothing. */
+  z-index: 30;
   pointer-events: none;
   /* never let the tooltip sit under the cursor and eat the next event */
   background: linear-gradient(180deg, rgba(34, 43, 54, .97), rgba(16, 21, 27, .97));
@@ -1923,11 +2030,19 @@ canvas.panning {
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--paper);
-  /* A long name shortens rather than wrapping the plate onto two lines. */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* A long name wraps rather than being cut. Truncating a province name hides
+     the one piece of text on the plate that identifies what you are looking at,
+     and "Northeast Ropagungwan Highla..." names nothing. The plate growing a
+     line is the cheaper cost. Line height is pulled in so two lines still read
+     as one title block. */
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
+
+/* The button stays with the first line rather than centring against a title
+   that may now be two lines tall. */
+.card-head { align-items: flex-start; }
+.card-head h2 { padding-top: 1px; }
 
 #card-close,
 #county-close {
@@ -2004,6 +2119,76 @@ canvas.panning {
   font-variant-numeric: tabular-nums;
 }
 
+/* --- happiness and unrest.
+
+   Read, not set, so they sit above the built things rather than among them:
+   everything in the grid below is a level the player raises, and these two are
+   consequences of those levels.
+
+   No hover highlight, and no help cursor. The card is a readout and nothing
+   else in it answers the pointer, so lighting two rows out of nine would read
+   as a fault rather than as an affordance. The breakdown appearing is its own
+   feedback, and it rides the shared #tooltip rather than opening in place,
+   since a panel that changes height while being read drags every row under it
+   out from beneath the cursor. */
+.card-meters { border-bottom: 1px solid var(--rule); }
+
+.card-meter {
+  display: grid;
+  grid-template-columns: auto 2.6em 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 11px;
+  border-bottom: 1px solid rgba(49, 61, 76, .5);
+}
+
+.cm-label { color: var(--dim); }
+.cm-value { color: var(--paper); font-variant-numeric: tabular-nums; text-align: right; }
+.cm-note  { color: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* The bar is the reason these are not ordinary rows. A figure between 0 and 100
+   means nothing on its own; where it sits on the scale is the whole message. */
+.cm-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(12, 16, 21, .8);
+  box-shadow: inset 0 0 0 1px rgba(49, 61, 76, .6);
+  overflow: hidden;
+}
+
+.cm-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  transition: width .18s ease, background-color .18s ease;
+}
+
+/* Unrest bites in steps, not on a slope: 40 costs supply and construction, 70
+   stops construction outright, 100 is an uprising. Ticks say that; a gradient
+   would hide exactly the boundaries that matter. */
+.cm-bar.unrest u {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(214, 226, 240, .35);
+}
+
+.cm-bar.unrest u.t40 { left: 40%; }
+.cm-bar.unrest u.t70 { left: 70%; }
+
+/* The breakdown rides the shared #tooltip rather than opening in place. A card
+   that changes height as you read it moves everything under the pointer. */
+#tooltip .cm-line { display: flex; justify-content: space-between; gap: 14px; }
+#tooltip .cm-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
+#tooltip .up, .cm-note .up   { color: #8fd694; }
+#tooltip .down, .cm-note .down { color: #e0837f; }
+#tooltip .none { color: var(--dim); font-style: italic; }
+#tooltip hr { border: 0; border-top: 1px solid var(--rule); margin: 5px 0; }
+#tooltip .cm-line.sub b, #tooltip .cm-line.sub span { color: var(--dim); }
+
 /* --- the built things, two to a row */
 .card-grid {
   display: grid;
@@ -2026,6 +2211,11 @@ canvas.panning {
   color: var(--dim);
   font-size: 11px;
 }
+
+/* Ground that allows nothing of a type at all. Dimmed rather than hidden, so
+   the grid keeps its shape and 0/0 reads as a fact about the province. */
+.card-cell.none span,
+.card-cell.none b { opacity: .45; }
 
 .card-cell b {
   font-weight: 600;
@@ -2061,31 +2251,81 @@ canvas.panning {
   gap: 3px;
 }
 
+/* Past ten sockets the strip stops being a strip. A row of eighteen squeezes
+   each one below the width of its own art, so the long ones go to a grid of ten
+   columns and wrap. The columns are fixed, so the sockets on the second row are
+   the same size as those on the first rather than stretching to fill it. */
+.card-slot-boxes.wrapped {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  row-gap: 3px;
+}
+
 .card-slot {
   flex: 1;
-  height: 15px;
+  height: 20px;
   border: 1px solid var(--rule);
   border-radius: 1px;
   background: linear-gradient(180deg, #151b23, #10151b);
   box-shadow: inset 0 1px 0 rgba(0, 0, 0, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* The tile the art rides on. Fixed width, so one cell of a two-cell sprite can
+   be cut exactly whatever the socket is doing. */
+.card-slot i {
+  width: 18px;
+  height: 18px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
 }
 
 /* A socket the province does not have yet. Kept on screen rather than hidden so
    the panel does not change height as provinces are filled in, but plainly
-   emptier than an unlocked one. */
+   emptier than an unlocked one. An open socket with nothing in it stays bare:
+   the padlock is the thing being said, and an icon for "empty" would be one. */
 .card-slot.locked {
-  opacity: .35;
   border-style: dashed;
+  opacity: .45;
+}
+
+.card-slot.locked i {
+  background-image: url("../data/icons/locked.png");
+  background-size: 13px 13px;
+  background-position: center;
+}
+
+/* The bed stays dark under a factory. The sprite is already coloured to the two
+   types, so tinting the socket as well would put a blue factory on blue ground
+   and a brown one on brown. The border carries the type at a glance instead.
+
+   One sprite, 128x64, two 64px cells. Drawn 18px to a cell on an 18px tile, so
+   the pair is 36px and the offset is a flat -18px for the right-hand one. No
+   percentages: a background-position percentage resolves against (box - image),
+   so on a flexible socket narrower than the sprite it showed both factories. */
+.card-slot.civ i,
+.card-slot.mil i {
+  background-image: url("../data/icons/factories.png");
+  background-size: 36px 18px;
 }
 
 .card-slot.civ {
   border-color: var(--accent-dim);
-  background: linear-gradient(180deg, #46586e, #2b3746);
+}
+
+.card-slot.civ i {
+  background-position: 0 0;
 }
 
 .card-slot.mil {
   border-color: #6b5340;
-  background: linear-gradient(180deg, #7a5f45, #4a382a);
+}
+
+.card-slot.mil i {
+  background-position: -18px 0;
 }
 
 .card-legend {

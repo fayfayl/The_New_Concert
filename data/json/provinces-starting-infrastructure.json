@@ -1,0 +1,7533 @@
+{
+  "provinces": {
+    "fjordic_cape": {"road": 3, "electricity": 1},
+    "northwest_krenland": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "norrhus": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "vanersland": {"road": 3, "electricity": 1},
+    "havssas": {"road": 2, "electricity": 1},
+    "rodtfjell": {
+      "road": 2,
+      "electricity": 3,
+      "fortification": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_osterdal": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "skehammar": {"road": 3, "electricity": 2, "fortification": 1, "civilianFactories": 2},
+    "cederholm": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "east_krenland": {"road": 3, "electricity": 1, "fortification": 1},
+    "south_osterdal": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "askerfjord": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "west_fellnor": {"road": 2, "electricity": 2, "fortification": 1},
+    "borgsand": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "pollenby": {"road": 2, "electricity": 3, "antiAir": 1},
+    "iparvaeia": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "fellnor_interior": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "helsinghall": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "ohnstad_island": {"road": 1, "electricity": 1},
+    "elkjur": {
+      "road": 2,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "rhinadelm": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "vordhus": {"road": 2, "electricity": 2, "antiAir": 1, "airBase": 1},
+    "tornstad": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "canves": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "north_gutzalur": {"road": 3, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "north_howsenland": {"road": 5, "electricity": 4, "civilianFactories": 2},
+    "elkjur_south": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "blom_myren": {"road": 2, "electricity": 2},
+    "sagyern": {"road": 3, "electricity": 1, "fortification": 1},
+    "wexvan_island": {"road": 2, "electricity": 2},
+    "southeast_subeny": {"road": 4, "electricity": 3, "civilianFactories": 2},
+    "south_subeny": {"road": 3, "electricity": 2, "civilianFactories": 2},
+    "lerdalien": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "kalvan": {
+      "road": 3,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_gutzalur": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "vollemaar": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "kemble": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "meerdorp": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "enneland_hermadren": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "transferia": {"road": 1, "electricity": 1},
+    "svaneland": {"road": 2, "electricity": 2},
+    "griesburg": {"road": 4, "electricity": 2, "antiAir": 2, "civilianFactories": 2},
+    "hamrevik": {"road": 4, "electricity": 4, "civilianFactories": 1},
+    "oyestad": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "north_outer_podderonskie": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lyshaven": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "settlern": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "lindby": {"road": 3, "electricity": 2},
+    "north_feria": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "norreborg": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "burway_aldwin": {"road": 2, "electricity": 1},
+    "dinasferic": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "auseland": {"road": 2, "electricity": 1},
+    "langholt": {
+      "road": 6,
+      "electricity": 6,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "south_outer_podderonskie": {"road": 3, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "mollergard": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_feria": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "south_feric_islands": {"road": 4, "electricity": 3, "civilianFactories": 2},
+    "osterholm": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "fugelstrup": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "afongaer": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "nyhaven": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "haagensen": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_gweru": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "cooteney": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "east_gweru": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "emrys_island": {"road": 2, "electricity": 2},
+    "gethin_island": {"road": 2, "electricity": 2},
+    "svyturyne": {"road": 3, "electricity": 1},
+    "east_siaurija": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "west_siaurija": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "east_zaliagirija": {"road": 4, "electricity": 1},
+    "west_zaliagirija": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "telgaros_islands": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "senoveija": {"road": 6, "electricity": 4, "antiAir": 1, "civilianFactories": 3},
+    "malonkrontija": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "west_kunigija": {"road": 4, "electricity": 1},
+    "east_kunigija": {"road": 5, "electricity": 3, "civilianFactories": 1},
+    "dzwieckie": {"road": 5, "electricity": 2, "civilianFactories": 1},
+    "dusetskes": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "bialolasko_legowskie": {"road": 5, "electricity": 1, "civilianFactories": 1},
+    "bialolasko_kwiatkowskie": {"road": 5, "electricity": 2, "civilianFactories": 1},
+    "north_wielkotwadamskie": {"road": 7, "electricity": 4, "antiAir": 1, "civilianFactories": 3},
+    "south_wielkotwadamskie": {"road": 5, "electricity": 1, "civilianFactories": 1},
+    "koszakary": {"road": 6, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "west_podderonskie": {
+      "road": 8,
+      "electricity": 6,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 5
+    },
+    "east_podlazowskie": {"road": 4, "electricity": 1},
+    "west_podlazowskie": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "malotwadamskie": {
+      "road": 6,
+      "electricity": 3,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "poznice": {
+      "road": 8,
+      "electricity": 7,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "blawatskie": {
+      "road": 7,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "southeast_podderonskie": {"road": 7, "electricity": 5, "antiAir": 1, "civilianFactories": 3},
+    "east_podderonskie": {"road": 5, "electricity": 2, "civilianFactories": 2},
+    "polnocnorybackie": {"road": 5, "electricity": 1, "civilianFactories": 1},
+    "slawskie": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_colland": {"road": 5, "electricity": 4, "civilianFactories": 2},
+    "poludnioworybackie": {"road": 5, "electricity": 1, "civilianFactories": 1},
+    "wiernowskie": {"road": 4, "electricity": 1},
+    "south_colland": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "litnik": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "east_krevocoll": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_krevia": {"road": 5, "electricity": 2, "civilianFactories": 2},
+    "krasvicovo": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "krevocollish_deronics": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "south_krevia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "prolin_karvy": {"road": 3, "electricity": 1, "fortification": 1},
+    "delfea": {
+      "road": 7,
+      "electricity": 6,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "aradewick": {"road": 6, "electricity": 6, "antiAir": 1, "civilianFactories": 3},
+    "selwyn": {"road": 7, "electricity": 6, "antiAir": 1, "civilianFactories": 3},
+    "west_swanders": {"road": 6, "electricity": 5, "antiAir": 1, "civilianFactories": 3},
+    "south_swanders": {
+      "road": 7,
+      "electricity": 6,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "elwood": {"road": 6, "electricity": 5, "fortification": 1, "civilianFactories": 2},
+    "fenhaven": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "west_otterhaven": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "farholmshire": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "langbrook": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_otterhaven": {"road": 5, "electricity": 4, "antiAir": 1, "civilianFactories": 1},
+    "great_midlands": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 2
+    },
+    "northwest_dronland": {"road": 4, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "dronland": {
+      "road": 7,
+      "electricity": 3,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "guildkister": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "east_deronshire": {"road": 4, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "hulldon": {
+      "road": 9,
+      "electricity": 8,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "west_deronshire": {"road": 2, "electricity": 1, "fortification": 3, "supplyHub": 1},
+    "ashwood": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "west_pelerclore": {"road": 5, "electricity": 4, "antiAir": 1, "civilianFactories": 1},
+    "allermark": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "upper_kazanland": {"road": 4, "electricity": 2, "civilianFactories": 1},
+    "pelerclore": {
+      "road": 8,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "lower_kazanland": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_omarbat": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_ajaxgul": {
+      "road": 2,
+      "electricity": 3,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_ajaxgul": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "svolograd": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "borisosinsk": {"road": 4, "electricity": 2},
+    "east_omarbat": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kostrava": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "litrov": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "belokovo": {"road": 4, "electricity": 2, "antiAir": 1},
+    "berekoy": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "smotlas": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "gotim": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "cona": {
+      "road": 6,
+      "electricity": 5,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "conasud": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "ornoit": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "alenzon": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "rouvree": {
+      "road": 8,
+      "electricity": 7,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "vaninterre": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "vandamme": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "herbreaux": {
+      "road": 7,
+      "electricity": 6,
+      "fortification": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "vallee_de_vosennac": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 6,
+      "militaryFactories": 2
+    },
+    "chaluire": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "touleme": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "marche_de_fatiras": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "patsue": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "hauts_mafignes": {"road": 3, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "west_collinia": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_voseni_deronics": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "north_kazan_desert": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "santa_rossa": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "murait": {"road": 4, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "avisart": {"road": 2, "electricity": 2, "civilianFactories": 1},
+    "gatennes": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "gracia": {"road": 2, "electricity": 1},
+    "bohera": {"road": 2, "electricity": 1},
+    "central_voseni_deronics": {"road": 2, "electricity": 1, "fortification": 2},
+    "south_voseni_deronics": {"road": 1, "electricity": 1, "fortification": 2},
+    "campania_superior": {
+      "road": 7,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "sirenale": {"road": 4, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "vallmiria": {
+      "road": 7,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "luminara": {
+      "road": 7,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "caitponte": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "fatiras": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "campania_silvana": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 2
+    },
+    "campania_vetus": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "campania_litoralis": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "collinia": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "orenia": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "campania_inferior": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 2
+    },
+    "albinia": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "saggia": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "odes": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "north_tarsilia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "terrumi": {"road": 3, "electricity": 1, "fortification": 1, "supplyHub": 1},
+    "pestia": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "south_tarsilia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "militaryFactories": 1
+    },
+    "south_dravena": {"road": 3, "electricity": 1, "supplyHub": 1},
+    "zoventa": {"road": 3, "electricity": 1, "fortification": 2, "supplyHub": 1},
+    "fara": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "north_aheria": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "east_aheria": {"road": 2, "electricity": 1, "fortification": 4},
+    "vilnia": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "inpola_aheria": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_eskuona": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "herita_valley": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 3,
+      "civilianFactories": 5,
+      "militaryFactories": 2
+    },
+    "west_spodnovo_svjatina": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "west_treja": {"road": 4, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "southeast_aheria": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_spodnovo_svjatina": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "zute_obale": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "east_merinia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3
+    },
+    "raliki": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_merinia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "turbia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_mojacka": {"road": 4, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "west_mojacka": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3
+    },
+    "east_manaqueland": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "maket": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "north_servia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "els_estanys": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_loxunterra": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "harona": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "suriura": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_loxunterra": {"road": 5, "electricity": 3, "civilianFactories": 1},
+    "izarhili": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "west_central_kazan_desert": {"road": 2, "electricity": 1},
+    "north_kazan_hills": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "north_espatan_deronics": {"road": 2, "electricity": 1, "fortification": 2},
+    "east_central_kazan_desert": {"road": 2, "electricity": 1, "airBase": 1, "civilianFactories": 1},
+    "rojeguri_pass": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "south_kazan_hills": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "south_espatan_deronics": {"road": 2, "electricity": 1, "fortification": 2},
+    "espatan_penian_highlands": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "azalurian_deronics": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "tiradec": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mamurta": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "azaleasca": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "chyqume": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_servia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "erdibidea": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1
+    },
+    "north_curonul_de_sus": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "east_servia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "spatan": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "agiesti": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "east_gordokia": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "south_servia": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_gordokia": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "dovita": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "west_gordokia": {"road": 2, "electricity": 1, "fortification": 1},
+    "saret": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inner_karraleta": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "tarici": {"road": 3, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "zabianice": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "karraleta": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "konac": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_gordokia": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "simonici_busui": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "zenga_island": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "huneasca": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_arberio": {"road": 2, "electricity": 1, "fortification": 1},
+    "arberio": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "grisona_island": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "inner_luruze": {"road": 2, "electricity": 1, "fortification": 2},
+    "inner_mendebeheria": {"road": 2, "electricity": 1, "fortification": 2},
+    "central_mendebeheria": {"road": 2, "electricity": 1, "fortification": 1},
+    "coastal_mendebeheria": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "luruze": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "kana_island": {"road": 2, "electricity": 1},
+    "halios": {"road": 2, "electricity": 1, "fortification": 1},
+    "karbon": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "el_puerto": {
+      "road": 8,
+      "electricity": 6,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 3,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "east_barona": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "west_suria": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_barona": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "north_lopan": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "coastal_urbarra": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "aligo": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "east_suria": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "baronan_lalturas": {"road": 2, "electricity": 1, "fortification": 2},
+    "tenada": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_lopan": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "south_barona": {"road": 3, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "north_bestaldia": {"road": 3, "electricity": 2},
+    "castigon": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 3,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_saracia": {"road": 3, "electricity": 2},
+    "castigonian_kazan_desert": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "bestaldian_escarpment": {"road": 2, "electricity": 1},
+    "north_saracian_lalturas": {"road": 2, "electricity": 1, "fortification": 3},
+    "west_bestaldian_penian_highlands": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "arixbidea": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_bestaldian_penian_highlands": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 5,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 1
+    },
+    "central_bajo_guseco": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "south_bajo_guseco_penian_highlands": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "south_saracian_lalturas": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "bajo_guesco_penian_highlands": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 5,
+      "supplyHub": 2,
+      "antiAir": 2
+    },
+    "south_saracia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "bajo_guseco_lalturas": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 5,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "valenic_islands": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "el_pinar": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "ikumattiavat": {"road": 1, "electricity": 1},
+    "northern_nunattiavak": {"road": 2, "electricity": 4, "supplyHub": 1},
+    "north_nuvugraq": {"road": 1, "electricity": 3, "antiAir": 1},
+    "saint_richard_island": {"road": 1, "electricity": 1},
+    "skamstrad": {
+      "road": 3,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "narhammer": {"road": 2, "electricity": 1, "antiAir": 1},
+    "hjortsager": {
+      "road": 3,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_napaaqtuq": {
+      "road": 3,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "halske": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "south_nuvugraq": {
+      "road": 3,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "vestfjell": {
+      "road": 6,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "fjordlands": {
+      "road": 7,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "south_napaaqtuq": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "bolletarn": {
+      "road": 7,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "pasketin": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "new_grannas": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_arksunds": {"road": 1, "electricity": 1},
+    "prince_ingvar": {
+      "road": 7,
+      "electricity": 7,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "new_maidenshire": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kistikan": {
+      "road": 6,
+      "electricity": 6,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "new_wexvan": {
+      "road": 7,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "mamaskach": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "evanson": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "evanson_island": {"road": 1, "electricity": 1},
+    "tronderskyst": {
+      "road": 7,
+      "electricity": 7,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "kamilla": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "hindby": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "east_lusatean_islands": {"road": 4, "electricity": 3, "civilianFactories": 2},
+    "north_kisisaka": {
+      "road": 7,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "new_greenpool": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_kisisaka": {"road": 3, "electricity": 1, "antiAir": 1},
+    "eleanoria": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "eso_newydd": {
+      "road": 7,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "aranffordd": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "carregdrwyn": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "agnar_island": {"road": 2, "electricity": 1},
+    "fribol_island": {"road": 3, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "helsingdal_island": {"road": 1, "electricity": 1, "antiAir": 1},
+    "north_vaughan_islands": {"road": 1, "antiAir": 1},
+    "south_vaughan_islands": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_chevaho": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "temora_island": {"road": 3, "electricity": 2, "antiAir": 1},
+    "west_chevaho": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "panresa_and_badantera_islands": {"road": 1, "electricity": 1},
+    "central_chevaho": {"road": 1, "electricity": 1},
+    "east_chevaho": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_chevaho": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "algedoba": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "central_torin": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "narbella": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "ouresca_island": {"road": 1, "electricity": 1},
+    "san_pedro": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "zamogon": {"road": 2, "electricity": 1},
+    "vanershalla": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "east_arveland": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "helgen_highlands": {"road": 1, "electricity": 1},
+    "guatu_desert": {"road": 3, "electricity": 2, "fortification": 1, "supplyHub": 1},
+    "kramsas": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_arveland": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "holten_island": {"road": 1, "electricity": 1},
+    "waundderwen": {
+      "road": 2,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "south_mantrear": {"road": 1, "electricity": 1},
+    "saint_anne": {"road": 2, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "vackero": {"road": 2, "electricity": 2, "antiAir": 1},
+    "rosombe": {"road": 3, "electricity": 1, "supplyHub": 1, "antiAir": 1},
+    "hapartuna": {"road": 3, "electricity": 2, "antiAir": 1},
+    "ankerby": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "molbu": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "central_yunkallpa": {"road": 3, "electricity": 2, "supplyHub": 1},
+    "northeast_yunkallpa": {"road": 2, "electricity": 1},
+    "west_yunkallpa": {"road": 1, "electricity": 1},
+    "sortsos": {"road": 1, "electricity": 1},
+    "south_agnarland": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_yunkallpa": {"road": 2, "electricity": 2, "fortification": 1, "supplyHub": 1},
+    "yaotl": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "crepanisic_island": {"road": 1, "electricity": 1},
+    "surbac": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_huanca_desert": {"road": 3, "electricity": 2, "supplyHub": 1},
+    "dravnik": {"road": 3, "electricity": 2, "supplyHub": 1},
+    "tuzdor": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "nagona": {"road": 1, "electricity": 1},
+    "marevo": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "slatigir_island": {"road": 1, "electricity": 1},
+    "west_nova_aheria": {"road": 1, "electricity": 1},
+    "huanska_radosevic": {"road": 1, "electricity": 1},
+    "huanska_pjescana": {"road": 2, "electricity": 2, "supplyHub": 1},
+    "paraska": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "prohac": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "sukuishima": {"road": 2, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "tokvero": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "novarinsko": {"road": 2, "electricity": 1},
+    "aoiwa": {"road": 2, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "novo_sletanje": {"road": 3, "electricity": 2, "fortification": 1},
+    "north_amotle": {"road": 3, "electricity": 1, "fortification": 1},
+    "north_new_guildkister": {"road": 4, "electricity": 2, "fortification": 1},
+    "north_fitzgerald": {"road": 3, "electricity": 2, "fortification": 1},
+    "north_cedrina": {"road": 4, "electricity": 2, "fortification": 1},
+    "zarkovo": {"road": 3, "electricity": 1, "fortification": 1},
+    "north_pisiallpa": {"road": 3, "electricity": 1, "fortification": 1},
+    "lamir_island": {"road": 1, "electricity": 1},
+    "god_vind_islands": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "inner_costa_auro": {"road": 1, "electricity": 1},
+    "costa_auro": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "ettore_da_gadine": {"road": 1},
+    "east_citta_nel_nulla": {"road": 2, "fortification": 2},
+    "rasello_islands": {"road": 1},
+    "intiraymi": {"road": 2, "electricity": 2},
+    "west_nuova_frontiera": {"road": 2, "fortification": 2},
+    "chakapuyu": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "east_gelsominia": {"road": 2},
+    "gelsominia": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_alta_novacasa": {"road": 3, "electricity": 2},
+    "east_alta_novacasa": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "east_lenzia": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "west_lenzia": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "liberatore_c_l_molenaar": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "popolo": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "hetland_island": {"road": 2, "electricity": 1, "antiAir": 1},
+    "santa_alberta": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "costa_ricca": {
+      "road": 5,
+      "electricity": 4,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "bassa_novacasa": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_amotle": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "west_pisiallpa": {"road": 2, "fortification": 1},
+    "south_fitzgerald": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_new_guildkister": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "south_cedrina": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "pisiallpa": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "jamesland": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "tusetta": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "lakonia": {"road": 6, "electricity": 4, "antiAir": 1, "civilianFactories": 3},
+    "torbury": {
+      "road": 6,
+      "electricity": 4,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "new_blackmouth": {
+      "road": 6,
+      "electricity": 5,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 5
+    },
+    "josephinia": {
+      "road": 6,
+      "electricity": 5,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "lakesouth": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "pheonixburg": {
+      "road": 7,
+      "electricity": 6,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 6,
+      "militaryFactories": 1
+    },
+    "nuova_frontiera": {"road": 3, "electricity": 1, "fortification": 2, "civilianFactories": 1},
+    "brue": {"road": 6, "electricity": 4, "antiAir": 2, "civilianFactories": 4},
+    "riahua": {"road": 6, "electricity": 4, "antiAir": 2, "civilianFactories": 4},
+    "nakochee": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "saint_camille": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "vetro": {"road": 3, "fortification": 1},
+    "ifombree": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_dovasia": {"road": 2},
+    "north_arenaria": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "patokayoo": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "fresvane": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "chambers": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "dibella": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "nanowin": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "east_onanwa": {"road": 3, "fortification": 4, "supplyHub": 1, "antiAir": 1},
+    "central_onanwa": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "guristalay": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "piccolo_roccia": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "central_arenaria": {"road": 3, "electricity": 1},
+    "dubuisson": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "denude": {"road": 3, "electricity": 2},
+    "caquienne": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "coastal_onanwa": {"road": 3},
+    "tantoque": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "far_east_onanwa": {"road": 2},
+    "terre_de_justin": {"road": 5, "electricity": 3, "civilianFactories": 2},
+    "capovi": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "south_arenaria": {"road": 2},
+    "south_dovasia": {"road": 2},
+    "north_supte": {"road": 3, "electricity": 1},
+    "nouvelle_alenzon": {
+      "road": 7,
+      "electricity": 4,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "onanwa_exclave": {"road": 2},
+    "west_umokavinia": {"road": 3, "electricity": 1, "civilianFactories": 1},
+    "east_umokavinia": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "basse_terregrise": {"road": 7, "electricity": 4, "antiAir": 2, "civilianFactories": 4},
+    "vianuovo": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "marillac": {
+      "road": 8,
+      "electricity": 7,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 6,
+      "militaryFactories": 1
+    },
+    "haute_terregrise": {
+      "road": 7,
+      "electricity": 5,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 5
+    },
+    "terra_del_fueco": {
+      "road": 4,
+      "electricity": 2,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "south_supte": {"road": 7, "electricity": 4, "antiAir": 2, "civilianFactories": 4},
+    "masiomau": {"road": 5, "electricity": 3, "antiAir": 2, "civilianFactories": 3},
+    "nouvelle_vandamme": {
+      "road": 8,
+      "electricity": 6,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "east_fiume_rosso": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "monzani": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "etienne": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "tambasco": {"road": 5, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "nuova_capoli": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "santa_ania": {
+      "road": 6,
+      "electricity": 4,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "fiume_nero": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "bonaria": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "aurelia": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "nuova_luma": {"road": 5, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "pannet": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "west_fiume_rosso": {"road": 2},
+    "north_shinchi": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "south_shinchi": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "north_mawr": {"road": 1},
+    "north_tirgoyan": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 6,
+      "militaryFactories": 1
+    },
+    "nanes": {"road": 3, "electricity": 3, "antiAir": 1, "civilianFactories": 2},
+    "east_denude": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "east_tirgoyan": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "central_tirgoyan": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 7,
+      "militaryFactories": 1
+    },
+    "malmara": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "south_tirgoyan": {"road": 4, "electricity": 3, "antiAir": 1, "civilianFactories": 3},
+    "north_giorgia": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "andy_island": {"road": 2, "electricity": 1},
+    "nuova_serran": {
+      "road": 5,
+      "electricity": 4,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "south_giorgia": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "frisk_island": {"road": 2},
+    "axel_island": {"road": 2, "electricity": 1},
+    "norban": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "gogaran": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_sheria": {"road": 3, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "central_buravetia": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "arrapi": {"road": 3, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "savat_island": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "chamberyan": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "marerdi": {"road": 4, "electricity": 2, "antiAir": 1},
+    "ashti": {"road": 3, "fortification": 1, "supplyHub": 1, "antiAir": 1},
+    "upper_garcha": {"road": 4, "electricity": 2},
+    "garice_island": {"road": 2},
+    "aravashun": {"road": 4, "electricity": 2},
+    "sahmanarrad": {"road": 3},
+    "xod": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "uzha": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "timak": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_qorgastan": {"road": 2, "fortification": 2},
+    "south_qorgic_desert": {"road": 2},
+    "karz": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "gohar": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_herravor": {"road": 2, "fortification": 2},
+    "zalang": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "helage": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_mijinzeh": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "nikran_islands": {"road": 2},
+    "dendzy": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "komcaeh": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "west_mijinzeh": {"road": 2, "fortification": 2},
+    "malos": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "gaezdanty": {"road": 3, "supplyHub": 1, "civilianFactories": 1},
+    "eginia": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "tumu_island": {"road": 2, "electricity": 1, "supplyHub": 1, "antiAir": 1, "airBase": 1},
+    "north_katina": {"road": 3, "fortification": 4, "supplyHub": 1, "antiAir": 1},
+    "nastia": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "southwest_mijinzeh": {"road": 1, "fortification": 4},
+    "south_gaezdanty": {"road": 2, "electricity": 1, "fortification": 4},
+    "north_ithea": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "south_katina": {"road": 1, "fortification": 3},
+    "eppan": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "dexens": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "horopyrgos": {"road": 1, "fortification": 3},
+    "zenuzeno": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_ithea": {"road": 1, "electricity": 1, "fortification": 2, "supplyHub": 1},
+    "garcha": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "arrbajar": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "kauwu_mountains": {"road": 1, "fortification": 2},
+    "northeast_eazima_mountains": {"road": 1, "fortification": 2},
+    "opul": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_arbus_desert": {"road": 2},
+    "hamyan": {"road": 3, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "awmarsa_pass": {"road": 2, "fortification": 3},
+    "aridek": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "central_jashastan": {
+      "road": 4,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "south_arbus_desert": {"road": 2},
+    "southeast_eazima_mountains": {"road": 1, "fortification": 2},
+    "charah": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "atarian_islands": {"road": 2, "supplyHub": 1, "airBase": 1},
+    "south_kewelat": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_lim": {"road": 1, "fortification": 2},
+    "gatred_islands": {"road": 2, "electricity": 1, "supplyHub": 1, "airBase": 1},
+    "lim": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "angul": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "abayeh": {"road": 3, "electricity": 2, "supplyHub": 1},
+    "idim_delta": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "luana_island": {"road": 1},
+    "katok_island": {"road": 1},
+    "yantik_island": {"road": 1},
+    "east_alittum_highlands": {"fortification": 2},
+    "central_alittum_highlands": {"road": 1, "fortification": 2},
+    "awbar": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "al_nafura": {"road": 2},
+    "awmarsa": {"road": 2, "fortification": 2, "supplyHub": 1},
+    "jaran": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "hadarat": {"road": 2, "electricity": 1},
+    "alyamin": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "central_mudawar": {"road": 1},
+    "minalulua": {"road": 2, "supplyHub": 1},
+    "south_minalulua": {"road": 1, "fortification": 1},
+    "areshi_island": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "akka_island": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "shajar_islands": {"road": 2, "supplyHub": 1, "airBase": 1, "civilianFactories": 1},
+    "pishfar": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "kian": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "perskerd": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "mandasht": {"road": 3, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "bishabestan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_sabzegan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "abarveh": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_sabzegan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "santrich": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "kolora": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "daobo_island": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "borbor": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "coldokol": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "bos": {"road": 1, "fortification": 1},
+    "south_qorgastan": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "qorgmenel": {"road": 3, "fortification": 1},
+    "cakili": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "west_alittum_highlands": {"road": 1, "fortification": 2},
+    "kocayayla": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "goldere": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "pasanjilm": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "karuva": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "gelenoluk": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "karacol": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bukadar": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "atiran": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "hadaya": {"road": 2, "electricity": 1, "fortification": 2},
+    "sarniktas": {"road": 3, "antiAir": 1, "civilianFactories": 1},
+    "marwi": {"road": 3, "antiAir": 1, "civilianFactories": 1},
+    "yildizki": {"road": 3, "electricity": 2, "antiAir": 1},
+    "butun_island": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "dusenceli": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "katuran_islands": {"road": 2, "electricity": 1},
+    "olmak": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "nehirgolu": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "nagpat": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "denizci": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "luktap": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "southwest_qorgastan": {"road": 2, "electricity": 1, "fortification": 2},
+    "pahalabe": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "nadhina": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_mattidesh": {"road": 4, "electricity": 1, "fortification": 2},
+    "laala": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_saamarria": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "west_uttaree": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_uttaree": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "bhalepatha": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "saamarria": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "gulaabdesh": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "devasmin": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "balaada": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "dbara": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "ramandesh": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_karudesh": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_mattidesh": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "virupa": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "east_karudesa": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "gajja": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_poorvi": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_kendry": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_poorvi": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "maarv": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "west_karudesa": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_bakatt": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "pobnyiaj": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "west_bakatt": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_ayyanga": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "bahaast": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "vadrisa": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_ayyanga": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "chauhan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "dakar": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "argela": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "south_salwav": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "punja": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "kanjaga": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "renua": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "sarma": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "savata_island": {"road": 3, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "aluqa": {"road": 4, "electricity": 1, "civilianFactories": 1},
+    "sukazug": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "cholotal": {"road": 5, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "ganura": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "achituhul": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "ainoir_islands": {"road": 3, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "harkuri": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "kosunnaran": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "geilkan": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "sabu_island": {"road": 2},
+    "north_zanyan_mountains": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "dabsunger": {"road": 5, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "chahonnur": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "kutalmor": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "lower_boluzalau": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1
+    },
+    "south_zanyan_mountains": {"road": 3, "electricity": 1, "fortification": 1},
+    "qalochahon": {"road": 5, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "osunhol": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "qitsing": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "central_boluzalau_basin": {"road": 5, "electricity": 3, "antiAir": 1, "civilianFactories": 1},
+    "ebasunitola": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "southwest_zania": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "zalaumadun": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "east_artinia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_josunnom": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "east_josunnom": {"road": 4, "electricity": 1, "fortification": 1, "civilianFactories": 1},
+    "west_artinia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "south_zanyan_hills": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "zardul": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "zanian_nekotsi_steppes": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "qara": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "shirvaz": {"road": 2},
+    "north_qorgic_desert": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "seralan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mutor": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "west_vokanda": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "yoypon": {"road": 2, "electricity": 1, "fortification": 1},
+    "sardo": {"road": 1, "fortification": 2},
+    "sabirul": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_qiziltog": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "dasht": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "loyshar": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "hanisan": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "north_sheria": {"road": 2, "fortification": 2},
+    "ramol": {"road": 2, "electricity": 1},
+    "aq_quduk": {"road": 2, "electricity": 1},
+    "buston": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "tortayol": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "jasdanya": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "qabas": {"road": 2, "electricity": 1},
+    "janitesik": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_qoracho_l": {"road": 2, "electricity": 1, "fortification": 1},
+    "south_gotzmenistan": {"road": 3, "electricity": 2, "fortification": 2},
+    "qoramulla": {"road": 2, "electricity": 1, "fortification": 1},
+    "ranota_islands": {"road": 1},
+    "viyula_nadu": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "manal_island": {"road": 1},
+    "niramvalai": {"road": 2, "electricity": 1, "fortification": 2, "supplyHub": 1},
+    "mithuan": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "irungakottai": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inner_kanchanapalli": {"road": 3},
+    "rajulapeta": {"road": 5, "electricity": 2, "supplyHub": 1, "civilianFactories": 1},
+    "senthamarai": {
+      "road": 5,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inner_irungakottai": {"road": 2},
+    "inner_podalanadu": {"road": 2},
+    "inner_chandanagiri": {"road": 2},
+    "kanchanapalli": {"road": 5, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "shankaranadu": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "podalanadu": {"road": 3, "electricity": 1, "supplyHub": 1},
+    "chandanagiri": {"road": 4},
+    "kamalagiri": {"road": 4, "electricity": 1, "fortification": 2},
+    "inner_mandharai": {"road": 1},
+    "mandharai": {"road": 1, "electricity": 1},
+    "catcao": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "phiadoi": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "baidai": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bacdao": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "haiben": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "pasirbiru": {"road": 3, "electricity": 1, "supplyHub": 1, "antiAir": 1},
+    "orangtera": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "istana_lumpur": {"road": 2, "electricity": 1, "supplyHub": 1, "antiAir": 1},
+    "north_tangmon": {"road": 1},
+    "tanmoia": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "kamdar": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "magiibaataar": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "south_tangmon": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_ukhiava": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_ukhiava": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "west_ukhiava": {"road": 2},
+    "east_thidanook": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "west_thidanook": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "sava": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_karanfold": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "west_karanfold": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_karanfold": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_lanizemin": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "asmalewi": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "olok": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "songiki": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "jaamuuri_island": {"road": 2, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "north_vahasalmi": {"road": 3, "electricity": 1, "fortification": 2},
+    "north_ylahati": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_mokkipohja": {"road": 2, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "south_vahasalmi": {
+      "road": 5,
+      "electricity": 5,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "tule": {"road": 2, "electricity": 1},
+    "west_mokkipohja": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "south_ylahati": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_mokkipohja": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "lahnaki": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "north_kauheavirta": {
+      "road": 8,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "central_havulahti": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "suurjandi": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "west_jyvasmaa": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "civilianFactories": 7,
+      "militaryFactories": 1
+    },
+    "north_itainta_peninsula": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_havulahti": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "south_kauheavirta": {
+      "road": 8,
+      "electricity": 6,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "east_jyvasmaa": {
+      "road": 7,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "helmi_island": {"road": 4, "electricity": 2, "supplyHub": 1, "civilianFactories": 1},
+    "sinra": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "rapkula": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "rapidiski": {
+      "road": 7,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "itaintomaa": {
+      "road": 8,
+      "electricity": 6,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "nurhamina": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "sinski": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "voikumpu": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_yla_asuultmaa": {"road": 2, "electricity": 1, "fortification": 3},
+    "mantyjarvi": {
+      "road": 7,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "west_saarivuori": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lihusaare": {
+      "road": 7,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "east_saarivuori": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "kapeavesi": {
+      "road": 8,
+      "electricity": 5,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "east_ala_asuultmaa": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "harjapula": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "south_mantyjarvi": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "harjamina": {
+      "road": 7,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "west_ala_asuultmaa": {"road": 2, "electricity": 1, "fortification": 1},
+    "jarvesuu": {"road": 4, "electricity": 2, "civilianFactories": 1},
+    "south_kotimaa": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "north_asuult_lowlands": {"road": 1, "fortification": 2},
+    "otuvartio_island": {"road": 2, "electricity": 1},
+    "south_yla_asuultmaa": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "central_torolt_desert": {"road": 1},
+    "east_torolt_desert": {"road": 1},
+    "khairgon": {"road": 1, "fortification": 1, "supplyHub": 1, "antiAir": 1},
+    "handene": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_asuult_mountains": {"road": 1, "fortification": 1, "antiAir": 1},
+    "south_torolt_desert": {"road": 1},
+    "south_asuult_mountains": {"road": 1, "electricity": 1, "fortification": 1, "supplyHub": 1},
+    "kherlenraat": {
+      "road": 1,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "upper_rassionic_basin": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "saltseeg": {"road": 1, "electricity": 1},
+    "onbulag": {"road": 1},
+    "shinekhit": {"road": 1},
+    "north_havulahti": {"road": 2, "electricity": 1},
+    "north_kaltain_mountains": {"road": 1, "fortification": 1},
+    "hokha": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "noutmyit": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kyatkone": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "newsawmyit": {"road": 2, "electricity": 1, "supplyHub": 1, "antiAir": 1},
+    "khoktalid": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "phumrak": {
+      "road": 6,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "noasa": {
+      "road": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "mahaon": {"road": 2},
+    "phanpheung": {
+      "road": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "thakaeng": {"road": 3},
+    "paxonxay": {"road": 2, "fortification": 1, "supplyHub": 1},
+    "xaignabouli": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "houayxai": {"road": 2, "fortification": 1, "supplyHub": 1},
+    "saya": {"road": 2},
+    "xiengboree": {
+      "road": 4,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "sangri": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "phanivong": {"road": 2, "antiAir": 1, "civilianFactories": 1},
+    "ngoilom": {"road": 2, "fortification": 1, "supplyHub": 1},
+    "nayouai": {"road": 3, "antiAir": 1},
+    "pahainy": {"road": 3, "antiAir": 2, "civilianFactories": 2},
+    "phokhon": {"road": 3, "antiAir": 1, "civilianFactories": 1},
+    "bokeo": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "muangsing": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "rattanawong": {"road": 3, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "meanampbung": {"road": 2, "fortification": 2, "supplyHub": 1, "civilianFactories": 1},
+    "banthuk": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "thaburi": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "phnangtizom": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "weilian": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "phandet": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "chaidenlek": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "xamneua": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "partuham": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bushpak": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "ban_nahin": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "keamaena": {
+      "road": 6,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "chaydaen_khamay": {"road": 3, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "khao_sawan": {"road": 5, "electricity": 3, "civilianFactories": 1},
+    "sunchai": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "nongkhon": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "muang_thong": {"road": 2, "civilianFactories": 1},
+    "kohsawang": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "klongsai": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "phnang_nakhon": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "miuthale": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "sawasdeepong": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "muang_korth": {"road": 3, "electricity": 1, "civilianFactories": 1},
+    "theavada": {"road": 2, "civilianFactories": 2},
+    "nakhon_sawan": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "chomthong": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "baanjaroen": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "talaynamp": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "suanpradit": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "gongyuk": {
+      "road": 1,
+      "electricity": 1,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bukma": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "jeung": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "sinsan": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "ng": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "north_dong_desert": {"road": 2, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "singjong": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "kok": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "kwan": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "yi": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "augum": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "lammun": {"road": 1, "fortification": 2, "antiAir": 1},
+    "south_dong_desert": {"road": 2, "electricity": 2, "fortification": 1, "civilianFactories": 1},
+    "hongwa": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 3,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mawu": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "lukngan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "onciu": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "mei": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "weishan": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "east_weishan": {"road": 1, "electricity": 1, "fortification": 1},
+    "nanlongjiang": {"road": 1, "fortification": 1},
+    "north_langgu": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "east_langgu": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_langgu": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 2
+    },
+    "west_mangajiang": {"road": 2, "electricity": 1, "fortification": 1},
+    "east_mangajiang": {
+      "road": 2,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "xintai_panhandle": {"road": 1, "fortification": 1},
+    "yuanhua": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_hanbei": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_cengku": {"road": 1, "electricity": 1, "fortification": 2},
+    "north_pingbei": {
+      "road": 5,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 2
+    },
+    "international_chuhai": {"road": 2, "electricity": 1},
+    "north_xintai": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_hanbei": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "west_cengku": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "south_pingbei": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "international_gekte": {"road": 2, "electricity": 1},
+    "south_xintai": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "north_hannan": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_shangshan": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_pingjiang": {"road": 1, "electricity": 1, "fortification": 2},
+    "north_nachuan": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "west_shengshan": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_pingnan": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "south_hannan": {"road": 4, "electricity": 2, "supplyHub": 1, "civilianFactories": 1},
+    "west_pingjiang": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "zhongtou": {"road": 2, "electricity": 1},
+    "sanyu": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_nachuan": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "anqiu": {
+      "road": 6,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "international_nazhou": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_pingnan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_zhonghe": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "north_yanzhou": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_zhongan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "huimin": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "international_zhaodong": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_yanzhou": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "xinren": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_zhonghe": {"road": 4, "electricity": 2, "civilianFactories": 1},
+    "north_longxia": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "international_jiayao": {"road": 2, "electricity": 1, "supplyHub": 1, "civilianFactories": 1},
+    "south_zhongnan": {"road": 3, "electricity": 1, "supplyHub": 1, "civilianFactories": 2},
+    "east_qingyuan": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_qingyuan": {"road": 3, "electricity": 1},
+    "xindu": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "jiumen": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "east_longxia": {"road": 3, "electricity": 1},
+    "longxue": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "international_longxue": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "yu_an": {
+      "road": 5,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "daojian": {"road": 2, "electricity": 1},
+    "north_nanwa": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "yinkou": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "international_yinkou": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "central_nanwa": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "north_beikou": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "zhanghu": {"road": 3, "electricity": 1, "fortification": 1, "supplyHub": 1},
+    "south_beikou": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "international_huaqing": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_endrovic_mountains": {"road": 1, "electricity": 1, "fortification": 1},
+    "hetugurun": {"road": 3, "electricity": 3, "fortification": 1, "supplyHub": 1},
+    "eldenwehe": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "huwesibira": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "taqalin": {"road": 1, "electricity": 1, "antiAir": 1},
+    "diradolo": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "niyaman": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 4,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "gucugurun": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "oyyongo": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "susu": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "chiansau": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "orhousin": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "julergiduka": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lamchhiu": {"road": 2, "electricity": 1, "fortification": 2},
+    "nikang": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "toakhang": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "ialam": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "poelo": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "chuhai": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "chhianchui": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "gekte": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "tiongkui": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "korahy": {"road": 1, "electricity": 1},
+    "kergettak": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "tumanakhary_island": {"road": 1},
+    "kavkak": {"road": 2, "electricity": 2},
+    "arany_islands": {"road": 1},
+    "uonnaghyta_islands": {"road": 1},
+    "yapat": {"road": 1, "electricity": 1},
+    "mevalik": {"road": 2, "electricity": 2, "civilianFactories": 1},
+    "borongkhomoto": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "mustaksul": {"road": 1, "electricity": 1},
+    "mykjaal": {"road": 3, "electricity": 3},
+    "vyrepata": {"road": 2, "electricity": 2, "civilianFactories": 1},
+    "atekerti": {"road": 3, "electricity": 3, "civilianFactories": 2},
+    "north_mangania": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "ilinggavan": {"road": 1, "electricity": 1},
+    "contav": {"road": 2, "electricity": 2, "civilianFactories": 1},
+    "ulu": {"road": 1, "electricity": 1, "civilianFactories": 1},
+    "north_kasen_hills": {"road": 1, "electricity": 1},
+    "northwest_endrovics": {"road": 1},
+    "northeast_endrovics": {"road": 1, "electricity": 1},
+    "north_kuohhaja": {"road": 2, "electricity": 2, "civilianFactories": 1},
+    "northeast_kasen_hills": {"road": 1, "electricity": 1},
+    "northeast_gyron_mountains": {"road": 1, "electricity": 1},
+    "kyhylkuol": {"road": 1, "electricity": 1, "fortification": 2, "civilianFactories": 1},
+    "puyut": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "ankannen": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "militaryFactories": 1
+    },
+    "rezkymco": {
+      "road": 4,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "north_hankong": {"road": 1, "electricity": 1},
+    "taranyk": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "nejcymce": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "militaryFactories": 1
+    },
+    "myngentyn": {
+      "road": 4,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "west_kasen": {"road": 1},
+    "east_kasen_hills": {"road": 1, "electricity": 1, "fortification": 2},
+    "south_kuohhaja": {"road": 2, "electricity": 2, "civilianFactories": 2},
+    "southwest_endrovics": {"road": 1},
+    "southeast_endrovics": {"road": 1},
+    "yitshygejaxxa": {
+      "road": 1,
+      "electricity": 1,
+      "fortification": 4,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "southeast_gyron_mountains": {"road": 1, "electricity": 1},
+    "epatyk": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 3
+    },
+    "vareponty": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "rarer": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "levyntyk": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "ymmegek": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_kasen": {"road": 1, "electricity": 1},
+    "angajyn": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "tykekyk": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "urahy": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "mygrony": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "cajaty": {
+      "road": 4,
+      "electricity": 4,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "gyron_valley": {"road": 1, "electricity": 1},
+    "ecivtyk": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "abacu": {
+      "road": 1,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_kasen": {"road": 1},
+    "tacannyk": {
+      "road": 5,
+      "electricity": 5,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "saikhorin": {"road": 2, "electricity": 2, "fortification": 2},
+    "oksonbanjim": {"road": 1, "electricity": 1},
+    "inynewry": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "gytork": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 2
+    },
+    "giteklyla": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "kytloka": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "rilkyry": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "northeast_jugmunics": {"road": 1, "electricity": 1},
+    "ankany": {
+      "road": 4,
+      "electricity": 4,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "gytylkyn": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "northeast_jugmunics_2": {"road": 1, "electricity": 1},
+    "bugai": {"road": 2, "electricity": 2, "fortification": 2, "civilianFactories": 1},
+    "atyngytyn": {
+      "road": 7,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 6,
+      "militaryFactories": 3
+    },
+    "velivel": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "tukapu": {"road": 3, "electricity": 2, "civilianFactories": 1},
+    "rycepjaret": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "nuteejmik": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "oyaitak": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 4,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "imponta": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "gycurmvyn": {"road": 3, "electricity": 3, "civilianFactories": 1},
+    "mimenin": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "vagryn": {"road": 4, "electricity": 3, "civilianFactories": 1},
+    "ravkern": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "ileretke": {"road": 4, "electricity": 2, "civilianFactories": 1},
+    "beilongjiang": {"road": 1},
+    "north_torolt_desert": {"road": 2, "electricity": 2},
+    "galmboo": {"road": 4, "electricity": 2, "civilianFactories": 1},
+    "mangan_tsenkher_mountains": {"road": 1},
+    "east_oyaitak": {"road": 1, "electricity": 1, "fortification": 2},
+    "north_namcheon": {"road": 2, "electricity": 2, "fortification": 2},
+    "north_gwanghui": {"road": 1, "electricity": 1, "fortification": 2},
+    "north_pyonghak": {"road": 1, "electricity": 1, "fortification": 2},
+    "namcheon": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "south_gwanghui": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "jik_ye": {
+      "road": 5,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 2
+    },
+    "jangsan": {
+      "road": 2,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "pyonghak": {
+      "road": 5,
+      "electricity": 5,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "mawuna": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "east_mawuna": {"road": 1, "electricity": 1, "fortification": 2},
+    "yeongye": {
+      "road": 6,
+      "electricity": 5,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 1,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "tumutursat": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "hanmag": {"road": 2, "electricity": 2, "fortification": 2},
+    "east_tumutursat": {"road": 1, "electricity": 1, "fortification": 2},
+    "south_hanmag": {"road": 1, "fortification": 1},
+    "south_jeonggu": {"road": 4, "electricity": 3, "supplyHub": 1, "civilianFactories": 2},
+    "kewsiri": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "west_shamochasi": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 2
+    },
+    "hanha": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "central_jugmunics": {"road": 2, "electricity": 1, "fortification": 2},
+    "emusnipkat": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "menaskar": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "koraru": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "aripecan": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "south_jugmunics": {"road": 2, "electricity": 1, "fortification": 2},
+    "hicucini": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "pirkamaw": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "sinekiraw": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "seseksuma": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "retarkotan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_konmoni": {"road": 2, "electricity": 1, "fortification": 1},
+    "tucikur": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "faakubi": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mannakubi": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "kuugayaa": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "kijiridinaga": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "iibijima": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "uraijima": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "yamayama_island": {"road": 2, "electricity": 1},
+    "akasanijima": {"road": 3, "electricity": 1, "supplyHub": 1},
+    "north_iijinoutashi": {"road": 2, "electricity": 1},
+    "koyo_island": {"road": 2, "electricity": 1},
+    "chiimui": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "surutii": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "uikeifa": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "gusukunaichi": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "kiotsukeijima": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "hagiijima": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "funasaki": {"road": 3, "electricity": 1, "supplyHub": 1},
+    "furusato": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "fujikumo": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kiyostukawa": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "matsubiro": {"road": 3, "electricity": 2, "supplyHub": 1, "civilianFactories": 1},
+    "junkou": {
+      "road": 6,
+      "electricity": 5,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 4,
+      "militaryFactories": 2
+    },
+    "midoriyama": {"road": 2, "electricity": 1},
+    "north_utoshima_islands": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "civilianFactories": 1
+    },
+    "toriyama": {"road": 2},
+    "kenwara": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "iwamoto": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inuisuna": {"road": 2, "electricity": 1, "fortification": 1},
+    "kuronagi": {"road": 3, "electricity": 2},
+    "yokoshiri": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "funa_islands": {"road": 2},
+    "nanpowan": {
+      "road": 6,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "nerabetsu": {"road": 3, "electricity": 2, "supplyHub": 1, "civilianFactories": 1},
+    "south_nanpo": {"road": 3, "electricity": 2},
+    "central_utoshima_islands": {"road": 2, "electricity": 1, "fortification": 1},
+    "south_utoshima_islands": {"road": 2, "electricity": 1, "fortification": 1},
+    "kasagar": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bagongmataw": {"road": 3, "electricity": 1, "supplyHub": 1},
+    "enkita": {"road": 3, "electricity": 2, "supplyHub": 1},
+    "okukonai": {"road": 3, "electricity": 1, "fortification": 1, "supplyHub": 1},
+    "besu_islands": {"road": 1},
+    "ganaan_heartlands": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 4,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "gallamitri": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inner_moradzar": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "egen_island": {"road": 1},
+    "temisef": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "tibski": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "janees": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "seti_islands": {"road": 1},
+    "chuma": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "sept": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "itsanpo_islands": {"road": 1},
+    "ufre": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "sete": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "mater_island": {"road": 1},
+    "adondi": {"road": 1},
+    "north_werikia": {"road": 1},
+    "mountainous_werikia": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "urban_werikia": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "dagax": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "dhallacabo": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "layinti": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "aqalbari": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "ramenka_estuary": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "kursidah": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "xarbaxa": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lafa": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "wauwau": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "rorkoth": {"road": 1},
+    "mountainous_kattikime_strip": {"road": 1},
+    "wamimal": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "agalur": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "kattikime_strip": {"road": 1, "fortification": 1},
+    "east_cidiama": {"road": 2},
+    "west_cidiama": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "avemul": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "wiirtuu": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lafaadii": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "dallaa": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "didu": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "gaasu": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mukadiimaa": {"road": 2},
+    "kubaba": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mulo": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "asmel": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "turnamna": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "recogen_island": {"road": 1},
+    "rabim": {"road": 1, "fortification": 1},
+    "north_costa_acero": {"road": 4, "electricity": 2, "antiAir": 2, "civilianFactories": 2},
+    "isloro": {"road": 1},
+    "south_costa_acero": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "inner_costa_acero": {"road": 1},
+    "ballamanas": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "trefnewydd": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_inner_lavosuma": {"road": 1},
+    "north_lavosuma": {
+      "road": 3,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "tirmerion": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "tojvor": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "south_lavosuma": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "south_inner_lavosuma": {"road": 1},
+    "eniya": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "eniyan_corridor": {"road": 1},
+    "north_nuova_campania": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "triscari_island": {"road": 1},
+    "central_nuova_campania": {"road": 2, "electricity": 2, "antiAir": 1, "civilianFactories": 2},
+    "colomba_island": {"road": 1},
+    "south_nuova_campania": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_soboland": {"road": 1, "fortification": 1},
+    "southeast_soboland": {"road": 1},
+    "south_soboland": {"road": 1, "fortification": 1},
+    "esikliba": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "nkaso": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "outer_kantuland": {"road": 2, "electricity": 1, "civilianFactories": 1},
+    "oyobala": {
+      "road": 1,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "senga_island": {"road": 2, "electricity": 1, "supplyHub": 1, "antiAir": 1},
+    "kingstown": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "arasca": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "abahodia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "karamtafkin": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1
+    },
+    "kamparu": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "muhorosi": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "abinabi": {"road": 1, "fortification": 3, "supplyHub": 1},
+    "igantia": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "sili": {"road": 2, "electricity": 1},
+    "east_mubbangan_comonaits": {"road": 1, "fortification": 2},
+    "mibya": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "upper_grey_ramenka_basin": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "kigoti": {"road": 1, "fortification": 1},
+    "orienton": {"road": 1, "electricity": 1},
+    "akhan": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_meyafo": {"road": 1},
+    "south_meyafo": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "highfield": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "pumwani": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 2,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bechlandsby": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "tarnet": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_noyinha": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "bijahijan": {"road": 4, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "east_noyinha": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "kwanza": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "north_sorovera": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "south_noyinha": {
+      "road": 4,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "bwanai": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_sorovera": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "nhovorus": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "west_kumabvazuva": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "east_kumabvazuva": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "sandesnes": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "sharone": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "nyhatten": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "balstad_island": {"road": 1},
+    "ringager": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "guldhus": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "laursen_island": {"road": 1},
+    "slanova": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "rullo_island": {"road": 2},
+    "new_lendisi": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "folke_island": {"road": 1},
+    "gronberg_islands": {"road": 1},
+    "northeast_kupenya": {"road": 1},
+    "north_kupenya": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "north_xanda": {"road": 2, "electricity": 1, "fortification": 1, "antiAir": 1},
+    "south_kupenya": {"road": 3},
+    "southeast_kupenya": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_xanda": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "mawakuda": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_hegoan_mountains": {"road": 1},
+    "core_xanda": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "mhanga": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "xandal_panhandle": {"road": 2},
+    "chowala": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "ekumavonza": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 1
+    },
+    "girolid_island": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "san_barona": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "claudia_east": {
+      "road": 5,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "claudia_west": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "maburia": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "lutila": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "bolomo": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "east_boka": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_managan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "east_managan": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "west_boka": {"road": 1},
+    "yakakana": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "chikup": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "porgos": {"road": 1},
+    "aldiocha": {
+      "road": 2,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "northwest_lacaludo": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "loncanha": {"road": 2},
+    "east_lacaludo": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "auberroux": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "southeast_hegoan_mountains": {"road": 1},
+    "southwest_lacaludo": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "lalut": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "hather": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "north_ihlane_eliokuomu": {"road": 1},
+    "okuomu_desert": {"road": 1},
+    "abayen": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_zamanzi": {"road": 2, "electricity": 1, "antiAir": 1},
+    "west_zamanzi": {"road": 3, "electricity": 1},
+    "idwae": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "ham": {"road": 2, "antiAir": 1},
+    "esewula": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "mingumi": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "north_shinnan": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "northeast_ropagungwan_highlands": {"road": 1},
+    "northwest_ropagungwan_highlands": {"road": 1},
+    "akamatsu_island": {"road": 2},
+    "west_shinnan": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "north_rio_de_zafiro": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "imbaakak": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_shinnan": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "shatonhatu": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "shinkabe": {
+      "road": 5,
+      "electricity": 4,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "south_rio_de_zafiro": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "timboforogo": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "southeast_ropagungwan_highlands": {"road": 1},
+    "southwest_ropagungwan_highlands": {"road": 1},
+    "haman_islands": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_blaland": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "jaalal": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "nokula": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "nahabatho": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "saint_john": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "batho_triangle": {"road": 2, "fortification": 1},
+    "westport": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "new_morel": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "new_avizieu": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4,
+      "militaryFactories": 1
+    },
+    "marrac": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "new_sarfort": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "egalville": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2,
+      "militaryFactories": 1
+    },
+    "kurabin_islands": {"road": 1},
+    "puluire": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "coembua": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "negapola": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_legae_islands": {"road": 1},
+    "masjiva": {"road": 2, "electricity": 1, "antiAir": 1},
+    "bairimo": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "kaebo_islands": {"road": 1},
+    "ikhanda": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "pabonne": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "new_gomur": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "camles": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "kwezibongo": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "avinnet": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "ezweni": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "vitrossons": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "izibini": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "qamat": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "genedam": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "slomond": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "wagemere": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "emmelveen": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "westerdaal": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "zaltoord": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_thaphakwe": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "apellingen": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "winterdrecht": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "proci": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kunoken_islands": {"road": 1},
+    "izindlu": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "orvag": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "new_molland": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "halheim": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "kulung_island": {"road": 1},
+    "pumla_island": {"road": 1},
+    "capo_di_luna": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "cape_nada": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "nardin_island": {"road": 2, "electricity": 1},
+    "orfelia": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "pirsa": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "vetro_island": {"road": 1, "electricity": 1},
+    "mormile_island": {"road": 2, "electricity": 1},
+    "kralovci": {
+      "road": 4,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "jabska": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "costanzia": {
+      "road": 5,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 3,
+      "militaryFactories": 1
+    },
+    "prijica": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "buteran_island": {"road": 1, "electricity": 1},
+    "zoric_islands": {"road": 2, "electricity": 1, "antiAir": 1},
+    "orahusi": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "costa_verde": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "biscaria": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "north_new_levamart": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "north_torre_de_coina": {"road": 2, "electricity": 1},
+    "south_casalina": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "south_new_levamart": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "south_torre_de_coina": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "lungsund": {
+      "road": 5,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 3,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "south_hullet": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "san_ciutava": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "hullet_panhandle": {"road": 2, "electricity": 1},
+    "finnrum": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "west_palatia": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "salongo": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "notodsnes": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "central_delefjellic_mountains": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "covismo": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "kongshelle": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "stavanger": {"road": 1, "electricity": 1, "antiAir": 1},
+    "south_palatia": {"road": 1},
+    "vindbaek": {"road": 1, "electricity": 1},
+    "skogen_island": {"road": 2, "electricity": 1, "antiAir": 1},
+    "ofors_island": {"road": 1},
+    "norrebro": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "elvinger": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "namheim_island": {"road": 1},
+    "fladborg": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "leone": {
+      "road": 2,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "gronholt": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "porssnes": {"road": 1, "electricity": 1, "antiAir": 1},
+    "narbu_islands": {"road": 1},
+    "munon_island": {"road": 1, "fortification": 1},
+    "vungden_island": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "datnam": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "methanh_island": {"road": 1, "antiAir": 1},
+    "susong": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "central_gioimoi": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "vachdabuom": {"road": 2, "electricity": 1, "antiAir": 1},
+    "emiwa": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "new_aligo": {
+      "road": 3,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "mawaka": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "enikmuloko": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "mawaar": {"road": 2, "electricity": 1, "antiAir": 1},
+    "yopila": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "orakamiri": {"road": 1, "electricity": 1, "antiAir": 1},
+    "ndowa": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "wuupu": {
+      "road": 2,
+      "electricity": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "militaryFactories": 1
+    },
+    "northwest_owerchisian_highlands": {"road": 1},
+    "east_holmlund": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "northeast_owerchisian_highlands": {"road": 1},
+    "west_holmlund": {"road": 1},
+    "southwest_owerchisian_highlands": {"road": 1},
+    "southeast_holmlund": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "southwest_holmlund": {"road": 2},
+    "southeast_owerchisian_highlands": {"road": 1},
+    "north_bachdan_islands": {"road": 2},
+    "lanhkho": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "miwadume": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "kilimacha": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "glasblair": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "craigmore": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "gwyngors": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "south_hestain": {"road": 1},
+    "owena": {"road": 1},
+    "aberbwlch": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "inner_llysfelin": {"road": 1},
+    "llysfelin": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "inner_sevinada": {"road": 1},
+    "sevinada": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "girovia": {"road": 2, "electricity": 1, "antiAir": 1},
+    "albanada": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "portimbal": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "inner_rio_de_capaluz": {"road": 1},
+    "rio_de_capaluz": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "upper_ainahanaui_islands": {"road": 3, "electricity": 2, "supplyHub": 1, "antiAir": 1},
+    "edena_island": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "kapono_island": {"road": 3, "electricity": 2, "antiAir": 1},
+    "kaai_island": {
+      "road": 5,
+      "electricity": 4,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 1,
+      "militaryFactories": 1
+    },
+    "north_wrightsland_island": {"road": 2, "electricity": 1},
+    "south_wrightsland_island": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_kenyon_islands": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "south_kenyon_islands": {"road": 2, "electricity": 1, "antiAir": 1},
+    "north_newkingsland": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 4
+    },
+    "north_trallwng": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "west_brunland": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "north_latoma": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 3,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3
+    },
+    "saint_tofos": {
+      "road": 4,
+      "electricity": 4,
+      "supplyHub": 3,
+      "antiAir": 3,
+      "airBase": 2,
+      "civilianFactories": 5,
+      "militaryFactories": 1
+    },
+    "north_terrimine": {"road": 3, "electricity": 1, "fortification": 1},
+    "manildra": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 3
+    },
+    "east_brunland": {"road": 3, "electricity": 1},
+    "oldervik": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "central_trallwng": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "south_latoma": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "east_trallwng": {"road": 2, "electricity": 1, "fortification": 1},
+    "new_westhall": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "south_terrimine": {
+      "road": 4,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "cooldanning": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 3
+    },
+    "new_woolford": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "east_steensen": {"road": 2, "electricity": 1},
+    "west_steensen": {"road": 1},
+    "nemilaroo": {
+      "road": 3,
+      "electricity": 2,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "north_odelago": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "east_looluen": {"road": 1, "fortification": 2},
+    "north_nova_lopan": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "spalding": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "north_lanyde": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 1,
+      "antiAir": 2,
+      "civilianFactories": 2
+    },
+    "south_looluen": {"road": 3, "electricity": 1, "fortification": 2},
+    "south_lanyde": {
+      "road": 4,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "south_nova_lopan": {
+      "road": 3,
+      "electricity": 1,
+      "fortification": 1,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "south_odelago": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 1,
+      "airBase": 1,
+      "civilianFactories": 1
+    },
+    "east_asaria": {
+      "road": 4,
+      "electricity": 3,
+      "fortification": 1,
+      "supplyHub": 3,
+      "antiAir": 2,
+      "airBase": 2,
+      "civilianFactories": 3
+    },
+    "camara": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "west_asaria": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 2
+    },
+    "attraverso_islands": {"road": 2, "electricity": 1, "antiAir": 1},
+    "madrigal": {
+      "road": 4,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 1
+    },
+    "porto_modesto": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "karrpawala": {
+      "road": 3,
+      "electricity": 3,
+      "supplyHub": 2,
+      "antiAir": 2,
+      "airBase": 1,
+      "civilianFactories": 3
+    },
+    "yirrakurlu": {
+      "road": 3,
+      "electricity": 2,
+      "supplyHub": 1,
+      "antiAir": 1,
+      "civilianFactories": 2
+    },
+    "bathaved": {"road": 2, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "central_urumangan_ice_sheet": {"road": 1},
+    "east_urumanga": {"road": 1},
+    "west_urumanga": {"road": 1},
+    "andakland": {"road": 1, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "eideland": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "boko_island": {"road": 1},
+    "witkain": {"road": 2, "electricity": 1, "antiAir": 1},
+    "bawaka": {"road": 2, "electricity": 1, "antiAir": 1},
+    "tumbakabang": {"road": 3, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "jajur": {"road": 2, "electricity": 1, "antiAir": 1},
+    "aontabukikai": {"road": 2, "electricity": 1, "antiAir": 1},
+    "natimarewe": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "camilleville": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "orrault": {"road": 2, "electricity": 1, "antiAir": 1},
+    "onanlanu": {"road": 2, "electricity": 1, "antiAir": 1},
+    "paolo": {"road": 2, "electricity": 1, "antiAir": 1, "civilianFactories": 1},
+    "nodavanua": {"road": 3, "electricity": 1, "antiAir": 1},
+    "east_fellnoro_avantan_chiliadnesia": {"road": 2},
+    "injeman": {"road": 2, "electricity": 1, "antiAir": 1},
+    "burero": {"road": 2, "electricity": 1, "antiAir": 1},
+    "abaland": {"road": 2, "electricity": 1, "antiAir": 1},
+    "motuereere": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "temaumana": {"road": 2, "electricity": 1, "antiAir": 1},
+    "whakawaho": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "taiepa": {"road": 3, "electricity": 2, "antiAir": 1, "civilianFactories": 1},
+    "powles_island": {"road": 2, "electricity": 1, "antiAir": 1}
+  }
+}

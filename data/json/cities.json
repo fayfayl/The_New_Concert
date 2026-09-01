@@ -1633,8 +1633,8 @@
       "province": "gatennes"
     },
     {
-      "id": "coastal_urbarra",
-      "name": "Coastal Urbarra",
+      "id": "urbarra",
+      "name": "Urbarra",
       "capital": false,
       "x": 2602,
       "y": 868,
@@ -2457,8 +2457,8 @@
       "province": "nakochee"
     },
     {
-      "id": "navocchia",
-      "name": "Navocchia",
+      "id": "novacchia",
+      "name": "Novacchia",
       "capital": false,
       "x": 4946,
       "y": 1659,
@@ -2790,7 +2790,7 @@
       "capital": false,
       "x": 5245,
       "y": 1646,
-      "province": "north_tirbryn"
+      "province": "north_tirgoyan"
     },
     {
       "id": "kenkita",
@@ -2814,7 +2814,7 @@
       "capital": false,
       "x": 5238,
       "y": 1672,
-      "province": "north_tirbryn"
+      "province": "north_tirgoyan"
     },
     {
       "id": "le_sabbie",
@@ -2830,7 +2830,7 @@
       "capital": false,
       "x": 5289,
       "y": 1677,
-      "province": "north_tirbryn"
+      "province": "north_tirgoyan"
     },
     {
       "id": "nanes",
@@ -2854,7 +2854,7 @@
       "capital": false,
       "x": 5337,
       "y": 1715,
-      "province": "north_tirbryn"
+      "province": "north_tirgoyan"
     },
     {
       "id": "llwyngors",
@@ -2862,7 +2862,7 @@
       "capital": false,
       "x": 5296,
       "y": 1735,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "turrara",
@@ -2886,7 +2886,7 @@
       "capital": false,
       "x": 5330,
       "y": 1749,
-      "province": "east_tirbryn"
+      "province": "east_tirgoyan"
     },
     {
       "id": "maesfawr",
@@ -2894,7 +2894,7 @@
       "capital": false,
       "x": 5235,
       "y": 1759,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "cooterary",
@@ -2902,7 +2902,7 @@
       "capital": false,
       "x": 5279,
       "y": 1764,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "siemola",
@@ -2918,7 +2918,7 @@
       "capital": false,
       "x": 5310,
       "y": 1779,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "balenvar",
@@ -2926,7 +2926,7 @@
       "capital": false,
       "x": 5254,
       "y": 1793,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "colenbeg",
@@ -2934,7 +2934,7 @@
       "capital": false,
       "x": 5339,
       "y": 1794,
-      "province": "east_tirbryn"
+      "province": "east_tirgoyan"
     },
     {
       "id": "belbet",
@@ -2942,7 +2942,7 @@
       "capital": false,
       "x": 5277,
       "y": 1803,
-      "province": "central_tirbryn"
+      "province": "central_tirgoyan"
     },
     {
       "id": "santa_alberta",
@@ -2974,7 +2974,7 @@
       "capital": false,
       "x": 5318,
       "y": 1825,
-      "province": "south_tirbryn"
+      "province": "south_tirgoyan"
     },
     {
       "id": "bolone",
@@ -3006,7 +3006,7 @@
       "capital": false,
       "x": 5294,
       "y": 1845,
-      "province": "south_tirbryn"
+      "province": "south_tirgoyan"
     },
     {
       "id": "marapani",
@@ -3054,7 +3054,7 @@
       "capital": false,
       "x": 5296,
       "y": 1695,
-      "province": "north_tirbryn"
+      "province": "north_tirgoyan"
     },
     {
       "id": "arerdi",
@@ -3430,7 +3430,7 @@
       "capital": false,
       "x": 2326,
       "y": 1369,
-      "province": "nekuah"
+      "province": "pishfar"
     },
     {
       "id": "aftaha",
@@ -3438,7 +3438,7 @@
       "capital": false,
       "x": 2307,
       "y": 1385,
-      "province": "aftaha"
+      "province": "kian"
     },
     {
       "id": "perskerd",
@@ -3454,7 +3454,7 @@
       "capital": false,
       "x": 2333,
       "y": 1414,
-      "province": "smutkaw"
+      "province": "bishabestan"
     },
     {
       "id": "khomejil",
@@ -3462,7 +3462,7 @@
       "capital": false,
       "x": 2355,
       "y": 1420,
-      "province": "khomejil"
+      "province": "mandasht"
     },
     {
       "id": "abarveh",
@@ -3478,7 +3478,7 @@
       "capital": false,
       "x": 2309,
       "y": 1444,
-      "province": "zakuteh"
+      "province": "north_sabzegan"
     },
     {
       "id": "liuva",
@@ -3486,7 +3486,7 @@
       "capital": false,
       "x": 2337,
       "y": 1462,
-      "province": "liyoveh"
+      "province": "south_sabzegan"
     },
     {
       "id": "santrich",
@@ -6337,15 +6337,15 @@
       "province": "mannakubi"
     },
     {
-      "id": "kuugayaa",
-      "name": "Kuugayaa",
+      "id": "oosanmui",
+      "name": "Oosanmui",
       "capital": false,
       "x": 817,
       "y": 881,
       "province": "kuugayaa"
     },
     {
-      "id": "kuugayaa_2",
+      "id": "kuugayaa",
       "name": "Kuugayaa",
       "capital": false,
       "x": 787,
@@ -7113,8 +7113,8 @@
       "province": "south_lavosuma"
     },
     {
-      "id": "eniya",
-      "name": "Eniya",
+      "id": "alu",
+      "name": "Alu",
       "capital": true,
       "x": 2911,
       "y": 1272,
@@ -7369,8 +7369,8 @@
       "province": "nhovorus"
     },
     {
-      "id": "new_vodhus",
-      "name": "New Vodhus",
+      "id": "new_vordhus",
+      "name": "New Vordhus",
       "capital": false,
       "x": 2526,
       "y": 1686,
@@ -8553,6 +8553,14 @@
       "province": "cape_nada"
     },
     {
+      "id": "makedonbri",
+      "name": "Makedonbri",
+      "capital": false,
+      "x": 3611,
+      "y": 2023,
+      "province": "cape_nada"
+    },
+    {
       "id": "zvezevac",
       "name": "Zvezevac",
       "capital": false,
@@ -8963,7 +8971,7 @@
     {
       "id": "mawaar",
       "name": "Mawaar",
-      "capital": false,
+      "capital": true,
       "x": 2281,
       "y": 1735,
       "province": "mawaar"
@@ -9161,7 +9169,7 @@
       "province": "gwyngors"
     },
     {
-      "id": "gwyngors_2",
+      "id": "gwyngors",
       "name": "Gwyngors",
       "capital": true,
       "x": 2074,
@@ -9257,8 +9265,8 @@
       "province": "rio_de_capaluz"
     },
     {
-      "id": "gwyngors",
-      "name": "Gwyngors",
+      "id": "gwynpwll",
+      "name": "Gwynpwll",
       "capital": false,
       "x": 2101,
       "y": 1786,

@@ -177,6 +177,17 @@ export const mapLatAt = (y) =>
 /** Longitude of a drawn column, in radians, -π at the left edge. */
 export const mapLonAt = (x, width) => -Math.PI + TAU * (x / width);
 
+// Back from a place to the pixel it was measured at. A position written into
+// the tables — a county's centre, say — comes from makeProjection, which reads
+// a pixel at its CENTRE, half a pixel south and east of where mapLatAt and
+// mapLonAt put the same index. These invert that convention, so a centre goes
+// back to the pixel it came from rather than to its neighbour.
+/** Row a measured latitude, in radians, was read from. */
+export const mapRowAt = (lat) =>
+  ((Math.PI / 2 - lat) / Math.PI) * MAP_GLOBE_HEIGHT - 0.5 - MAP_NORTH_ROW;
+/** Column a measured longitude, in radians, was read from. */
+export const mapColAt = (lon, width) => ((lon + Math.PI) / TAU) * width - 0.5;
+
 /**
  * The sun's declination on a given day of the year, in radians.
  *

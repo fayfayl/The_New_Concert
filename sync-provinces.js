@@ -48,6 +48,7 @@ import {
   normaliseSubTable, buildSubWorld,
 } from './src/mapdata.js';
 import { CACHE_FILE, hashInputs, buildCacheMeta, packCache, buildSubMeta } from './src/mapcache.js';
+import { mergeStats, splitStats } from './src/provincestats.js';
 import { makeProjection, toDegrees, MAP_NORTH_ROW, MAP_GLOBE_HEIGHT, mapLatAt, mapLonAt } from './src/geo.js';
 import {
   depthByRegion, readDepth, subregionCount, cutStraight, mendPieces,
@@ -120,8 +121,25 @@ const RIVERS_PNG = path.join(IMG, 'true_water_bodies_and_rivers.png');
 const RIVER_LAYER_PNG = path.join(IMG, 'rivers.png');
 const COUNTIES_PNG = path.join(IMG, 'counties.png');
 const COUNTIES_JSON = path.join(TABLES, 'counties.json');
+// The buildings a county can hold, which this file must know about twice over:
+// once to carry them across a counties.png read-back and once to write them out
+// again. The writer builds each county from a named field list, so a building
+// missing from here is silently demolished by a --counties --write however
+// carefully the read preserved it. Kept in step with BUILDINGS in
+// src/provincestats.js, which this cannot import.
+const BUILDING_KINDS = ['eyrie', 'dockyard', 'syntheticOil', 'syntheticRubber'];
+// Polities live in their own file: they are a list of countries, not a fact about
+// any province, and keeping them here means a resync of the bitmap cannot touch them.
+const POLITIES_JSON = path.join(TABLES, 'polities.json');
+const readPolities = () => (fs.existsSync(POLITIES_JSON)
+  ? JSON.parse(fs.readFileSync(POLITIES_JSON, 'utf8')).polities
+  : [{ id: 'NONE', name: 'Unclaimed', colour: '#5a5a60' }]);
 const CITIES_JSON = path.join(TABLES, 'cities.json');
 const STATS_JSON = path.join(TABLES, 'province-stats.json');
+// What a game starts with, kept apart from what the map fixes. See src/provincestats.js.
+const START_INFRA_JSON = path.join(TABLES, 'provinces-starting-infrastructure.json');
+const START_ATTITUDE_JSON = path.join(TABLES, 'provinces-starting-attitude.json');
+const readJSONIf = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null);
 // The whole world on a 2:1 globe, poles included. Areas are measured from this
 // rather than from provinces.png — see the note at the top of src/geo.js.
 const GLOBE_PNG = path.join(IMG, 'true_area.png');
@@ -444,12 +462,18 @@ function countBorders(width, height, px, oceanKey) {
       if (y + 1 < height) add(px[i], px[i + width]);
     }
   }
+  // Who has a land neighbour at all. The pairs were being counted and thrown
+  // away, and this is the whole of what makes a province an island: a body of
+  // land surrounded by water is one that touches no other province by land.
   let borders = 0, tooShort = [];
+  const neighboured = new Set();
   for (const [key, n] of touch) {
-    if (n >= MIN_BORDER_PX) borders++;
-    else tooShort.push(key);
+    if (n < MIN_BORDER_PX) { tooShort.push(key); continue; }
+    borders++;
+    const [a, b] = key.split('|');
+    neighboured.add(Number(a)); neighboured.add(Number(b));
   }
-  return { borders, coastal, tooShort };
+  return { borders, coastal, tooShort, neighboured };
 }
 
 // --------------------------------------------------------------------- run
@@ -471,7 +495,7 @@ if (!counts.has(oceanKey)) {
 }
 
 const blobs = analyse(img.width, img.height, img.px, oceanKey);
-const { borders, coastal, tooShort } = countBorders(img.width, img.height, img.px, oceanKey);
+const { borders, coastal, tooShort, neighboured } = countBorders(img.width, img.height, img.px, oceanKey);
 
 // ------------------------------------------------------ area on the globe
 //
@@ -645,11 +669,23 @@ const provinces = present.map((k) => {
 // only be undone. Rounded because the last digits are noise from the drawing:
 // a province's outline is worth a pixel or two either way, which at this scale
 // is tens of square kilometres.
+// A province too small for the drawing to resolve keeps the area it was given.
+// Below roughly a hundred pixels the outline is a large share of the whole shape,
+// so the measurement is noise around the truth rather than the truth: at ~30 px
+// the error runs to a quarter of the figure. Worse, it is not centred, since a
+// feature narrower than a pixel gets fattened to stay visible at all, which
+// biases small shapes HIGH — the map had El Puerto at 2.2x and Weilian at 2.0x
+// their real size. Those provinces take the equal-area figures from the country
+// masterlist, which has no such floor, and carry areaFixed so this run leaves
+// them alone. The centre is still measured: that is a position, not a size, and
+// is sound at any scale.
+const pinned = [];
 if (measured) {
   for (const p of provinces) {
     const m = measured.get(parseHex(p.colour));
     if (!m) continue;                      // stale entry, no pixels to measure
-    p.area = Math.round(m.area);
+    if (p.areaFixed) pinned.push(p.id);
+    else p.area = Math.round(m.area);
     p.centre = [Number(m.lat.toFixed(4)), Number(m.lon.toFixed(4))];
   }
 }
@@ -775,7 +811,6 @@ const table = {
   width: img.width,
   height: img.height,
   oceanColour: hex(oceanKey),
-  polities: old.polities && old.polities.length ? old.polities : [{ id: 'NONE', name: 'Unclaimed', colour: '#5a5a60' }],
   provinces,
 };
 
@@ -787,6 +822,7 @@ console.log(`provinces     ${provinces.length}  (${kept.length} kept, ${added.le
 console.log(`borders       ${borders}`
   + `${tooShort.length ? `  (${tooShort.length} contact${tooShort.length > 1 ? 's' : ''} of under ${MIN_BORDER_PX}px ignored)` : ''}`);
 console.log(`coastal       ${coastal.size}`);
+console.log(`islands       ${provinces.filter((p) => !neighboured.has(parseHex(p.colour))).length}`);
 
 if (projection) {
   const km = (v) => v.toLocaleString('en-GB', { maximumFractionDigits: 0 });
@@ -826,6 +862,11 @@ const nameOf = (k) => {
 // from the globe, so their area and centre are whatever was last written and
 // will stay that way until the colour is painted into true_area.png. That is
 // the one silent staleness in the file, since every other run rewrites both.
+if (pinned.length) {
+  console.log(`
+areaFixed — area held at the masterlist figure, too small to measure (${pinned.length}):`);
+  console.log('  ' + pinned.join(', '));
+}
 if (unmeasured.length) {
   console.log(`\nno pixels in true_area.png — area and centre left as they were (${unmeasured.length}):`);
   for (const k of unmeasured) {
@@ -924,6 +965,253 @@ if (stale.length) {
 // can never have one. The card shows them as "0/0" for that reason.
 const PAIRED = ['road', 'airBase', 'supplyHub', 'fortification', 'electricity', 'antiAir', 'buildingSlots'];
 
+
+// ------------------------------------------------- building slots
+//
+// Read from the counties for the same reason the level ceilings are: the
+// province tags are the 40% reduction, and on mixed ground they are wrong
+// rather than merely coarse.
+const TERRAIN_SLOTS = { Plains: 4, Hills: 3, Mountains: 1, Alpine: 0 };
+const CLIMATE_SLOTS = { Rainforest: 2, Monsoon: 2, Desert: 2, Savanna: 3, Steppe: 3, Subarctic: 3, Tundra: 1, 'Ice cap': 0 };
+/*
+ * Hydroelectric generation.
+ *
+ * 90 polities hold neither coal nor gas, Krenland among them, and under the
+ * power rules that leaves them unable to light a room. They are not poor: they
+ * are the countries that ran on falling water, which is most of the mountainous
+ * north. Without this the model cannot represent Norway.
+ *
+ * Three things make a river worth damming, and all three are already on the map.
+ * HEAD is the drop, from the county landform. FLOW is the water, from the river
+ * share the county already records. RAIN is whether the flow is there all year,
+ * from the climate. They multiply, because any one of them at zero is no scheme
+ * at all: a wet mountain with no river, or a great river across a plain, is not
+ * a site.
+ *
+ * Scaled by AREA and not averaged, since what a country can generate is the
+ * absolute volume of falling water it holds, not how hilly it is per square
+ * kilometre. The divisor puts world potential near 1,460, which is 34% of what
+ * the map can generate once every deposit is worked, close to hydro's real share
+ * of generation in the 1920s. At 600 it came to 590, and Krenland could not have
+ * covered its own demand at any level of development, which is the wrong answer
+ * for the country the model exists to represent.
+ */
+const HYDRO_HEAD = { Alpine: 1, Mountains: 1, Hills: 0.5, Plains: 0, Urban: 0 };
+const HYDRO_RAIN = {
+  Oceanic: 1, Monsoon: 1, Rainforest: 1, 'Humid continental': 0.9, 'Humid subtropical': 0.9,
+  Subarctic: 0.8, Mediterranean: 0.5, Savanna: 0.5, Tundra: 0.3, Steppe: 0.15,
+  Desert: 0, 'Ice cap': 0.1,
+};
+const HYDRO_DIVISOR = 250;
+
+/** What a province could generate from falling water once it is dammed. */
+function hydroPotential(counties) {
+  const acc = new Map();
+  for (const c of counties) {
+    const id = c.province || c.parent;
+    const area = c.area || 0;
+    if (id === undefined || !area || !c.riverShare) continue;
+
+    const t = c.terrain || [];
+    const head = t.length ? t.reduce((s, x) => s + (HYDRO_HEAD[x] ?? 0), 0) / t.length : 0;
+    if (!head) continue;
+
+    const cl = Array.isArray(c.climate) ? c.climate : [c.climate];
+    const rain = cl.length ? cl.reduce((s, x) => s + (HYDRO_RAIN[x] ?? 0.5), 0) / cl.length : 0.5;
+
+    acc.set(id, (acc.get(id) || 0) + area * head * c.riverShare * rain);
+  }
+  const out = new Map();
+  for (const [id, v] of acc) out.set(id, Math.round(v / HYDRO_DIVISOR));
+  return out;
+}
+
+const SLOTS_PER_CITY = 3;
+
+// Where people live something can be built, and more people means more of it.
+// The ground on its own says otherwise: Alpine carries no slots and Ice cap
+// carries none, which left 43 inhabited provinces holding nothing at all, East
+// Pingjiang among them with a million people and Kallstrand on plains that
+// happen to be frozen. Ground that is 84% alpine and carries a million people is
+// not a contradiction, it is a valley, and a valley has room for works.
+//
+// A floor and not a cap. It only ever adds, so it cannot do what capping BY
+// population did to the mountain passes, and the ground still decides wherever
+// it is the more generous of the two, which is 96% of the map.
+const POPULATION_SLOTS = [
+  [10e6, 6],
+  [5e6,  5],
+  [2.5e6, 4],
+  [1e6,  3],
+  [250e3, 2],
+  [1,    1],
+];
+
+const populationSlotsFor = (pop) => (POPULATION_SLOTS.find(([at]) => pop >= at) || [0, 0])[1];
+
+// An island gets its ground and nothing for its cities. Three slots a city is a
+// statement about a city drawing on the country behind it, and an island has no
+// country behind it: Skogen Island is 535 km2 holding three thousand people and
+// came out with seven slots, more than most of the mainland.
+//
+// An island is a province with no land neighbour, read off the same adjacency
+// the game uses. Nothing about size enters into it — Weilian is 378 km2 and
+// Nanpowan 657, and both border their neighbours by land, so neither is an
+// island however small it looks.
+//
+// The capital bonus survives, being about the state and not the hinterland.
+
+// A capital is not a fixed prize. The seat of a great power concentrates
+// government, finance and industry in a way the seat of an island territory of
+// three thousand people does not, and a flat bonus gave Isbjerg exactly what it
+// gave Xindu. It scales with the state behind it instead.
+const CAPITAL_SLOTS = [[50e6, 3], [10e6, 2], [1e6, 1]];
+const capitalSlotsFor = (pop) => (CAPITAL_SLOTS.find(([at]) => pop >= at) || [0, 0])[1];
+
+/** Area-weighted slot ground per province, as levelCeilings but one figure. */
+function slotGround(counties) {
+  const acc = new Map();
+  for (const c of counties) {
+    const id = c.province || c.parent;
+    const area = c.area || 0;
+    if (id === undefined || !area) continue;
+    let g = acc.get(id);
+    if (!g) acc.set(id, g = { area: 0, terrain: 0, climate: 0 });
+    g.area += area;
+    const tags = (c.terrain || [])
+      .map((t) => (t === 'Urban' ? 'Plains' : t))
+      .filter((t) => TERRAIN_SLOTS[t] !== undefined);
+    const rows = tags.length ? tags : ['Plains'];
+    g.terrain += area * (rows.reduce((a, t) => a + TERRAIN_SLOTS[t], 0) / rows.length);
+    const cl = (Array.isArray(c.climate) ? c.climate : [c.climate]).filter((x) => CLIMATE_SLOTS[x] !== undefined);
+    // An uncapped climate carries the top of the scale, as with the levels.
+    g.climate += area * (cl.length ? cl.reduce((a, x) => a + CLIMATE_SLOTS[x], 0) / cl.length : 4);
+  }
+  const out = new Map();
+  // Rounded, not floored. The slot scale runs 0 to 4 where the level scale runs
+  // 0 to 10, so the same truncation costs four times as much: Gongyuk averages
+  // 0.95 across ground that is 70% Alpine, 23% Hills and 5% Plains, and flooring
+  // called that nothing at all. Ground that is genuinely empty still rounds to
+  // zero, because it averages zero.
+  for (const [id, g] of acc) out.set(id, Math.min(Math.round(g.terrain / g.area), Math.round(g.climate / g.area)));
+  return out;
+}
+
+/** How much of a maximum a province has actually opened up. */
+function unlockedSlots(maximum, road, electricity, railedShare) {
+  if (!maximum) return 0;
+  const share = 0.3 + 0.6 * ((road + electricity) / 20);
+  return Math.min(maximum, Math.ceil(maximum * share) + (railedShare >= 0.5 ? 1 : 0));
+}
+
+// ------------------------------------------------- maximum levels
+//
+// The ceiling on each of the six levelled types is a property of the GROUND, and
+// the ground does not move, so this is settled here once and written into the
+// file. The game reads the figure and never recomputes it.
+//
+// Population is deliberately absent. A state can drive a road or a supply line
+// through empty country if it pays for it, and capping by population held
+// mountain passes to fortification 2 because nobody lived on them.
+//
+// Read from the COUNTIES, not from the province tags. Those tags are the
+// "everything over 40%" reduction and on mixed ground they are wrong rather than
+// coarse: Gongyuk is tagged Mountains and Alpine and has no mountain county at
+// all, being Alpine 70%, Hills 23% and Plains 5%.
+const LEVEL_TYPES = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase'];
+
+const TERRAIN_CEILING = {
+  Plains:    [10, 10,  6, 10, 10, 10],
+  Hills:     [ 8,  8,  8,  8, 10,  6],
+  Mountains: [ 4,  6, 10,  4,  8,  2],
+  Alpine:    [ 2,  3,  8,  2,  6,  0],
+};
+
+// null is no cap from this climate, and the four temperate ones are absent for
+// the same reason. A climate value can only ever LOWER the terrain one, so a
+// number above the terrain ceiling would never bind.
+// Below this latitude, subarctic is altitude rather than latitude, and the
+// fortification cap that comes with it does not apply. A subarctic county at 40
+// degrees is a mountain; one at 65 is the far north. The map splits at almost
+// exactly this line: below 40 degrees, 85% of subarctic counties are mountain or
+// alpine, and above 60 only 1% are.
+//
+// It is lifted for FORTIFICATION alone. The other five caps are about weather,
+// which a mountain has just the same, but the fortification cap stands for
+// permafrost and a building season measured in weeks, and a temperate mountain
+// has neither. Rock is the best ground on the map to dig into.
+const SUBARCTIC_BY_ALTITUDE = 50;
+
+const CLIMATE_CEILING = {
+  Rainforest: [5, 6,    4, 5,  5, 4],
+  Monsoon:    [6, 7,    5, 6,  6, 5],
+  Savanna:    [8, 8, null, 8,  9, 8],
+  Desert:     [6, 8,    4, 6, 10, 9],
+  Steppe:     [8, 8, null, 8, 10, 10],
+  Subarctic:  [4, 6,    5, 5,  7, 6],
+  Tundra:     [2, 4,    4, 3,  6, 4],
+  'Ice cap':  [1, 2,    3, 2,  4, 2],
+};
+
+/**
+ * Area-weighted ceilings per province, from counties.json.
+ *
+ * Terrain and climate are averaged separately and only then compared: taking the
+ * lower per county and averaging afterwards would let one bad pairing decide the
+ * whole province.
+ */
+function levelCeilings(counties, cityProvinces = new Set()) {
+  const acc = new Map();
+
+  for (const c of counties) {
+    const id = c.province || c.parent;
+    const area = c.area || 0;
+    if (id === undefined || !area) continue;
+
+    let g = acc.get(id);
+    if (!g) acc.set(id, g = { area: 0, terrain: new Array(6).fill(0), climate: new Array(6).fill(0) });
+    g.area += area;
+
+    // Urban takes the Plains row whatever it sits on, a city being where the
+    // infrastructure already is. It replaces the landform rather than averaging
+    // in as a fifth one, because it is a marker over ground, not ground.
+    const tags = (c.terrain || [])
+      .map((t) => (t === 'Urban' ? 'Plains' : t))
+      .filter((t) => TERRAIN_CEILING[t]);
+    const rows = (tags.length ? tags : ['Plains']).map((t) => TERRAIN_CEILING[t]);
+    const cl = (Array.isArray(c.climate) ? c.climate : [c.climate]).filter((x) => CLIMATE_CEILING[x]);
+    const highGround = Math.abs(c.centre?.[0] ?? 90) < SUBARCTIC_BY_ALTITUDE;
+    const fort = LEVEL_TYPES.indexOf('fortification');
+
+    for (let i = 0; i < 6; i++) {
+      g.terrain[i] += area * (rows.reduce((a, r) => a + r[i], 0) / rows.length);
+      // An uncapped climate carries the top of the scale into the average, so
+      // temperate ground neither raises nor lowers what the terrain said.
+      const here = (i === fort && highGround) ? cl.filter((x) => x !== 'Subarctic') : cl;
+      const caps = here.length ? here.map((x) => CLIMATE_CEILING[x][i] ?? 10) : [10];
+      g.climate[i] += area * (caps.reduce((a, v) => a + v, 0) / caps.length);
+    }
+  }
+
+  const air = LEVEL_TYPES.indexOf('airBase');
+  const out = new Map();
+  for (const [id, g] of acc) {
+    const m = LEVEL_TYPES.map((_, i) => Math.min(
+      Math.floor(g.terrain[i] / g.area),
+      Math.floor(g.climate[i] / g.area),
+    ));
+    // A city is proof that ground was cleared and levelled here, so a strip is
+    // possible however bad the average says the province is. Akhan is the case:
+    // Mountains and Alpine throughout, and a city sitting on it. Without this
+    // the averaged ground says no airfield at all, which is a stronger claim
+    // than the map is making.
+    if (cityProvinces.has(id)) m[air] = Math.max(1, m[air]);
+    out.set(id, m);
+  }
+  return out;
+}
+
+
 // Rail is not here. It is built county by county and has no level, so it lives
 // with the counties rather than as a province pair.
 const BLANK_STATS = {
@@ -943,9 +1231,20 @@ const BLANK_STATS = {
   buildingSlots: [0, 0],
   civilianFactories: 0,
   militaryFactories: 0,
+  // Unrest is the one province value that cannot be derived. Happiness is a
+  // function of the fields above and is computed fresh every tick, but unrest
+  // is a recurrence — today's figure depends on every previous day's happiness,
+  // stability and garrison — and it is clamped to 0..100, which destroys the
+  // history a replay would need. So it is stored, and happiness is not.
+  unrest: 0,
+  // The event, not the decay. "Recently annexed" costs happiness on a curve
+  // that fades to nothing, and storing the curve means something has to tick it
+  // daily and it drifts if a tick is missed. A date needs no maintenance and
+  // lets the curve be changed without touching the data. null where it never was.
+  annexedOn: null,
 };
 
-const oldStats = fs.existsSync(STATS_JSON) ? JSON.parse(fs.readFileSync(STATS_JSON, 'utf8')) : {};
+const oldStats = { provinces: mergeStats(readJSONIf(STATS_JSON), readJSONIf(START_INFRA_JSON), readJSONIf(START_ATTITUDE_JSON)) };
 const statsById = oldStats.provinces || {};
 
 // --reslug renames ids, and this file is keyed by id, so every entry has to
@@ -1008,11 +1307,120 @@ if (statsKept.length) {
   if (statsKept.length > 8) console.log(`    ... and ${statsKept.length - 8} more`);
 }
 
+// Settle the ceilings before writing. The `built` half of every pair is left
+// exactly as it is; only the maximum is authored here, and it is authored from
+// the ground rather than by hand.
+const ceilingSource = fs.existsSync(COUNTIES_JSON)
+  ? (JSON.parse(fs.readFileSync(COUNTIES_JSON, 'utf8')).counties || [])
+  : [];
+const cityProvinces = new Set(
+  (fs.existsSync(CITIES_JSON) ? (JSON.parse(fs.readFileSync(CITIES_JSON, 'utf8')).cities || []) : [])
+    .map((c) => c.province),
+);
+const ceilings = levelCeilings(ceilingSource, cityProvinces);
+/*
+ * A small island is small, whatever its ground would allow on a continent.
+ * Gethin Island is 246 km2 of temperate plain and came out with a road ceiling
+ * of 10 and an electricity ceiling of 10, which is a motorway network and a
+ * national grid for thirty-two thousand people who can walk across it.
+ *
+ * So: no land neighbour and under 5,000 km2 takes three off every ceiling that
+ * is 6 or more. Fortification is exempt, a rock in the sea being exactly the
+ * thing you fortify, and a ceiling already under 6 is left alone rather than
+ * driven to nothing.
+ */
+const SMALL_ISLE_KM2 = 5000;
+const SMALL_ISLE_CUT = 3;
+const SMALL_ISLE_EXEMPT = new Set(['fortification']);
+
+const provinceById = new Map(provinces.map((p) => [p.id, p]));
+let ceilingsSet = 0, isleCut = 0;
+for (const [id, entry] of Object.entries(statsById)) {
+  const m = ceilings.get(id);
+  if (!m) continue;
+  const p = provinceById.get(id);
+  const smallIsle = p && !neighboured.has(parseHex(p.colour)) && (p.area || 0) < SMALL_ISLE_KM2;
+  if (smallIsle) isleCut++;
+  LEVEL_TYPES.forEach((key, i) => {
+    const built = Array.isArray(entry[key]) ? entry[key][0] : Number(entry[key]) || 0;
+    const cap = smallIsle && !SMALL_ISLE_EXEMPT.has(key) && m[i] >= 6
+      ? m[i] - SMALL_ISLE_CUT
+      : m[i];
+    // A ceiling gates what can be added and never takes away what is there, so
+    // a level already built survives a ceiling that has since been lowered.
+    entry[key] = [built, Math.max(cap, built)];
+  });
+  ceilingsSet++;
+}
+// Slots, from the same counties. The first half of the pair is the UNLOCKED
+// figure and is derived too, following from road and electricity rather than
+// being something anyone sets.
+const slotCities = fs.existsSync(CITIES_JSON)
+  ? (JSON.parse(fs.readFileSync(CITIES_JSON, 'utf8')).cities || []) : [];
+const ground = slotGround(ceilingSource);
+const hydro = hydroPotential(ceilingSource);
+
+// The share of each province's counties carrying a line, for the slot figure
+// below. Hardcoding it to 0 was fine when no county had rail and wrong the day
+// one did.
+const railedShare = new Map();
+{
+  const seen = new Map();
+  for (const c of ceilingSource) {
+    const id = c.province || c.parent;
+    if (id === undefined) continue;
+    const t = seen.get(id) || { n: 0, railed: 0 };
+    t.n++;
+    if (Array.isArray(c.rail) ? c.rail.length : c.rail) t.railed++;
+    seen.set(id, t);
+  }
+  for (const [id, t] of seen) railedShare.set(id, t.n ? t.railed / t.n : 0);
+}
+const capitalProvinces = new Set(slotCities.filter((c) => c.capital).map((c) => c.province));
+const cityTally = {};
+for (const c of slotCities) cityTally[c.province] = (cityTally[c.province] || 0) + 1;
+const nationalPop = {};
+for (const p of provinces) {
+  nationalPop[p.owner] = (nationalPop[p.owner] || 0) + (statsById[p.id]?.population || 0);
+}
+let slotsSet = 0;
+for (const p of provinces) {
+  const e = statsById[p.id];
+  const g = ground.get(p.id);
+  if (!e || g === undefined) continue;
+  const island = !neighboured.has(parseHex(p.colour));
+  const raw = g
+    + (island ? 0 : SLOTS_PER_CITY * (cityTally[p.id] || 0))
+    + (capitalProvinces.has(p.id) ? capitalSlotsFor(nationalPop[p.owner] || 0) : 0);
+  const maximum = Math.max(raw, populationSlotsFor(e.population || 0));
+  const [road = 0] = Array.isArray(e.road) ? e.road : [0];
+  const [power = 0] = Array.isArray(e.electricity) ? e.electricity : [0];
+  e.buildingSlots = [unlockedSlots(maximum, road, power, railedShare.get(p.id) || 0), maximum];
+  // The ground only. What is actually generated is this worked by the same
+  // development rule a deposit is, under Resources, Extraction: a river nobody
+  // has dammed generates nothing.
+  e.hydroPotential = hydro.get(p.id) || 0;
+  slotsSet++;
+}
+
+console.log('  slots written for ' + slotsSet + ' provinces');
+console.log('  small islands cut ' + isleCut + ' provinces under ' + SMALL_ISLE_KM2 + ' km2 with no land neighbour');
+{
+  const h = [...hydro.values()].filter((v) => v > 0);
+  console.log('  hydro potential ' + h.reduce((a, b) => a + b, 0) + ' across ' + h.length + ' provinces'
+    + ', largest ' + Math.max(0, ...h));
+}
+console.log(`  ceilings written for ${ceilingsSet} provinces from ${ceilingSource.length.toLocaleString()} counties`
+  + `${ceilingSource.length ? '' : ' — counties.json missing, none set'}`);
+
 if (WRITE) {
   writeJSON(JSON_PATH, table);
   console.log(`\nwrote ${path.relative(process.cwd(), JSON_PATH)}`);
-  writeJSON(STATS_JSON, { provinces: statsById });
-  console.log(`wrote ${path.relative(process.cwd(), STATS_JSON)}`);
+  const split = splitStats(statsById);
+  writeJSON(STATS_JSON, { provinces: split.stats });
+  writeJSON(START_INFRA_JSON, { provinces: split.infrastructure });
+  writeJSON(START_ATTITUDE_JSON, { provinces: split.attitude });
+  for (const f of [STATS_JSON, START_INFRA_JSON, START_ATTITUDE_JSON]) console.log(`wrote ${path.relative(process.cwd(), f)}`);
 } else {
   console.log(`\n(dry run — nothing written. re-run with --write to apply)`);
 }
@@ -1036,6 +1444,7 @@ if (CACHE) {
   } else {
     const started = Date.now();
     const raw = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
+    raw.polities = readPolities();
     const seaBytes = fs.existsSync(SEA_PNG) ? fs.readFileSync(SEA_PNG) : null;
     const seaRaw = fs.existsSync(SEA_JSON) ? JSON.parse(fs.readFileSync(SEA_JSON, "utf8")) : null;
     const countyBytes = fs.existsSync(COUNTIES_PNG) ? fs.readFileSync(COUNTIES_PNG) : null;
@@ -2295,8 +2704,9 @@ if (COUNTIES) {
         //
         // counties.png is the authority from here on. Paint one county's colour
         // over another and the two merge; move a boundary and the areas follow.
-        // Only the id and the name are kept from the table, because only those two
-        // are typed in; everything else is read back off the map.
+        // Only the id, the name, the railway and the buildings are kept from the
+        // table, because only those are typed in; everything else is read back
+        // off the map.
         const oldFile = fs.existsSync(COUNTIES_JSON)
           ? JSON.parse(fs.readFileSync(COUNTIES_JSON, "utf8")) : { counties: [] };
         const oldByColour = new Map((oldFile.counties || []).map((c) => [parseHex(c.colour), c]));
@@ -2325,6 +2735,17 @@ if (COUNTIES) {
             if (!prev) continue;
             c.id = prev.id;
             c.name = prev.name;
+            // Rail is built, not measured. It survives a read-back for the
+            // same reason the name does: nothing on any bitmap records it.
+            if (prev.rail) c.rail = prev.rail;
+            // Buildings likewise, with the pixel their mark stands on. Losing
+            // these to a boundary edit would silently demolish every building on
+            // the map, so they are carried across with the name.
+            for (const b of BUILDING_KINDS) {
+              if (!prev[b]) continue;
+              c[b] = true;
+              if (Array.isArray(prev[b + 'At'])) c[b + 'At'] = prev[b + 'At'];
+            }
             const m = /_(\d+)$/.exec(prev.id);
             if (m) taken.set(c.province.id, Math.max(taken.get(c.province.id) || 0, Number(m[1])));
           }
@@ -2380,6 +2801,14 @@ if (COUNTIES) {
                 province: c.province.id,
                 terrain: [c.terrain, ...(c.urban ? [URBAN] : [])],
                 climate: c.climate,
+                ...(c.rail ? { rail: c.rail } : {}),
+                // Buildings, on the same terms as rail: carried across the read
+                // above and written out here. This object is built field by
+                // field, so anything not named here is dropped however carefully
+                // it was preserved.
+                ...Object.fromEntries(BUILDING_KINDS.flatMap((b) => (c[b]
+                  ? [[b, true], [b + 'At', c[b + 'At']]]
+                  : []))),
                 riverShare: shareOf(c.riverShare),
                 lakeShare: shareOf(c.lakeShare),
                 riverBorders: bordersOf(c.riverBorders),

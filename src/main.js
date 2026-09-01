@@ -50,9 +50,11 @@ const {
   setIslandBlocks, computeBlockGeometry,
 } = await import(`./mapdata.js${VERSION}`);
 const { CACHE_FILE, hashInputs, unpackCache, worldFromCache, seaFromCache, countiesFromCache, subsFromCache } = await import(`./mapcache.js${VERSION}`);
+const { mergeStats, BUILDINGS, BUILDING_AT } = await import(`./provincestats.js${VERSION}`);
 const { setOwners } = await import(`./ownership.js${VERSION}`);
 const {
-  mapLatAt, mapLonAt, solarDeclination, subsolarLongitude, localHours, sinSolarElevation,
+  mapLatAt, mapLonAt, mapRowAt, mapColAt,
+  solarDeclination, subsolarLongitude, localHours, sinSolarElevation,
 } = await import(`./geo.js${VERSION}`);
 
 // ============================================================ 1. data loading
@@ -147,13 +149,11 @@ async function loadBitmap(url) {
   }
 }
 
-
 // ============================================================= 2. world model
 
 const UNKNOWN_POLITY = { id: '?', name: 'Unknown', colour: [90, 90, 96] };
 
 // The model itself is built in mapdata.js, which the build script shares.
-
 
 // ================================================================ 3. rendering
 //
@@ -212,8 +212,9 @@ const IMPASSABLE_MIX = 0.45;    // how far toward that near-black the water is p
 // so the number here is the cell and the row and column fall out of it.
 const RESOURCE_ICON = {
   fertileLand: 0, coal: 1, timber: 2, iron: 3, fish: 4, textiles: 5,
-  oil: 6, baseMetals: 7, copper: 8, aluminium: 9, naturalGas: 10, rareMetals: 11,
-  rubber: 12, gold: 13, nitrates: 14, tungsten: 15, tazkuri: 16, uranium: 17,
+  oil: 6, baseMetals: 7, baul: 8, aluminium: 9, naturalGas: 10, rareMetals: 11,
+  rubber: 12, gold: 13, nitrates: 14, tungsten: 15, tazkuri: 16, goizederium: 17,
+  livestock: 18,
 };
 
 // What a resource is called. Only the layer hover uses this; the icon says
@@ -221,9 +222,10 @@ const RESOURCE_ICON = {
 const RESOURCE_NAME = {
   fertileLand: 'Fertile land', coal: 'Coal', timber: 'Timber', iron: 'Iron',
   fish: 'Fish', textiles: 'Textiles', oil: 'Oil', baseMetals: 'Base metals',
-  copper: 'Copper', aluminium: 'Aluminium', naturalGas: 'Natural gas',
+  baul: 'Baul', aluminium: 'Aluminium', naturalGas: 'Natural gas',
   rareMetals: 'Rare metals', rubber: 'Rubber', gold: 'Gold', nitrates: 'Nitrates',
-  tungsten: 'Tungsten', tazkuri: 'Tazkuri', uranium: 'Uranium',
+  tungsten: 'Tungsten', tazkuri: 'Tazkuri', goizederium: 'Goizederium',
+  livestock: 'Livestock',
 };
 
 const RESOURCE_SHEET_COLS = 6;
@@ -234,9 +236,9 @@ const RESOURCE_SHEET_CELL = 64;
 const RESOURCE_MARK = {
   fertileLand: 'Food', timber: 'Wood', fish: 'Fish', textiles: 'Cloth',
   rubber: 'Rubber', coal: 'Coal', oil: 'Oil', naturalGas: 'Gas', iron: 'Iron',
-  copper: 'Copper', aluminium: 'Alum', baseMetals: 'Base', rareMetals: 'Rare',
-  tungsten: 'Tungsten', gold: 'Gold', nitrates: 'Nitre', uranium: 'Uranium',
-  tazkuri: 'Tazkuri',
+  baul: 'Baul', aluminium: 'Alum', baseMetals: 'Base', rareMetals: 'Rare',
+  tungsten: 'Tungsten', gold: 'Gold', nitrates: 'Nitre', goizederium: 'Goiz',
+  tazkuri: 'Tazkuri', livestock: 'Stock',
 };
 
 // A province has to be at least this many pixels across on screen before its
@@ -255,7 +257,6 @@ const RESOURCE_ICON_PX = 15;
 const RESOURCE_SELECTED = 1.6;
 const RESOURCE_MIN_LINE = 6;
 const RESOURCE_MAX_LINE = 13;
-
 
 // A province whose owner is not in the polity table still has to draw as
 // something, so it falls back to a neutral grey rather than crashing the repaint.
@@ -298,6 +299,20 @@ const MODES = {
     return base.map(Math.round);
   },
 };
+
+/*
+ * The infrastructure layers.
+ *
+ * Every province keeps its political colour, as the resource map does: what is
+ * read here is the writing over it, and the ground only has to say whose it is.
+ * The figures are drawn in drawInfrastructure, a level above this.
+ *
+ * Registered in a loop rather than typed out seven times. A mode missing from
+ * MODES takes the tooltip down with it, and seven near-identical entries are
+ * seven chances to leave one out.
+ */
+const INFRA_LAYERS = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase', 'factories', 'hydro', 'rail'];
+for (const key of INFRA_LAYERS) MODES['infra:' + key] = (w, p) => polityOf(w, p).colour;
 
 // The county map.
 //
@@ -389,7 +404,7 @@ const SATELLITE_LIFT = { selected: 0.5, neighbour: 0.32, hovered: 0.22 };
 const DESELECT_FADE_MS = 60;
 
 // The ring drawn around the selected province. Its width is in SCREEN pixels, so
-// buildOutline() rebuilds it whenever the zoom changes. See §4 for how.
+// The ring is a stroked path, so the zoom enters only as the line width.
 const OUTLINE_COLOUR = '#cea35eff';
 
 // The county ring, cool against the province ring’s gold. The two mean
@@ -398,7 +413,6 @@ const OUTLINE_COLOUR = '#cea35eff';
 const COUNTY_RING_COLOUR = '#e6eef7ff';
 const COUNTY_RING_ALPHA = 0.85;
 const OUTLINE_WIDTH = 2.5;
-const OUTLINE_MAX_PIXELS = 4e6;     // ceiling on the offscreen canvas the ring is built in
 
 /* ------------------------------------------------------------ the buffer
  *
@@ -554,6 +568,16 @@ function sunShiftPx(world) {
 // without losing which country is which.
 const NIGHT_DARKEN = { political: 0.28, province: 0.31, terrain: 0.33, default: 0.32 };
 const NIGHT_LIGHTS = { political: 0.55, province: 0.75, terrain: 0.75, default: 0.8 };
+
+// The resource and infrastructure layers ARE the political map with writing
+// over them, so they take its night rather than the default. Falling through
+// left them a shade darker than the map they are drawn on, which shows the
+// moment you switch between the two.
+for (const mode of ['resources', ...INFRA_LAYERS.map((k) => 'infra:' + k)]) {
+  NIGHT_DARKEN[mode] = NIGHT_DARKEN.political;
+  NIGHT_LIGHTS[mode] = NIGHT_LIGHTS.political;
+}
+
 const nightStrength = (table) => table[state.mode] ?? table.default;
 
 /* The mask, its pixel buffer, and the trigonometry that depends only on the
@@ -2790,84 +2814,54 @@ function buildSilhouette(world, id, at = world.provinceAt) {
 }
 
 /**
- * A yellow-orange ring straddling the province border, OUTLINE_WIDTH thick on
- * screen whatever the zoom.
+ * The province border as a path, in the silhouette's own pixel coordinates.
  *
- * The band is the difference of two shifted-stamp passes: a union of copies
- * offset in a circle, which grows the shape outwards by half the width, minus an
- * intersection of the same copies, which shrinks it inwards by the same amount.
- * Subtracting the second from the first leaves a band centred on the true edge,
- * so the ring lands on the border rather than beside it. A source-in fill then
- * tints the band without disturbing its shape.
+ * A ring is a PERIMETER, and the raster version that stood here stored it as an
+ * AREA: a canvas the size of the province at screen resolution, built by
+ * stamping the silhouette in a circle and hollowing it out. For a province of
+ * 111x98 pixels that came to two million pixels composited every frame to draw
+ * about six hundred pixels of border, which cost 70ms of an 80ms frame. Caching
+ * it harder could not help, because the cost was in the blit and not the build.
  *
- * Smoothing follows the map's own rule, so a zoomed-in ring is as crisply
- * stair-stepped as the province pixels it traces instead of blurring off them.
+ * Traced instead as the exact pixel boundary: every edge where a set pixel meets
+ * an unset one, with collinear runs merged so a straight border is one segment
+ * rather than a hundred. Stroking that costs by the length of the border, holds
+ * a constant width on screen by dividing the line width by the scale, and never
+ * needs rebuilding when the zoom changes.
  *
- * Holding the ring to a fixed screen thickness means rebuilding whenever the
- * zoom changes: it is rasterised at the current scale, and the width is a
- * constant in that space. A big province at deep zoom would need an enormous
- * canvas, so resolution is capped and the width shrinks to match.
+ * The staircase is kept rather than smoothed. The map underneath is drawn
+ * nearest-neighbour, so its province edges ARE pixel steps, and a smoothed ring
+ * would sit beside them rather than on them.
  */
-function buildOutline(silhouette, viewScale, colour = OUTLINE_COLOUR) {
-  const half = OUTLINE_WIDTH / 2;
-  const pad = Math.ceil(half) + 2;
-  let scale = viewScale;
-  let w = Math.ceil(silhouette.w * scale) + pad * 2;
-  let h = Math.ceil(silhouette.h * scale) + pad * 2;
+function buildOutlinePath(s) {
+  const w = s.w, h = s.h;
+  const data = s.canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  // The silhouette is opaque white where the province is and clear elsewhere.
+  const on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3] !== 0;
 
-  if (w * h > OUTLINE_MAX_PIXELS) {
-    scale *= Math.sqrt(OUTLINE_MAX_PIXELS / (w * h));
-    w = Math.ceil(silhouette.w * scale) + pad * 2;
-    h = Math.ceil(silhouette.h * scale) + pad * 2;
+  const path = new Path2D();
+  let segments = 0;
+
+  // Horizontal edges: the line y between row y-1 and row y.
+  for (let y = 0; y <= h; y++) {
+    let run = -1;
+    for (let x = 0; x <= w; x++) {
+      const edge = x < w && on(x, y) !== on(x, y - 1);
+      if (edge && run < 0) run = x;
+      else if (!edge && run >= 0) { path.moveTo(run, y); path.lineTo(x, y); segments++; run = -1; }
+    }
   }
-
-  const dw = silhouette.w * scale;
-  const dh = silhouette.h * scale;
-  const r = half * scale / viewScale;            // ring half-width, in canvas pixels
-  const STEPS = 16;                              // enough that the band has no scallops
-  const offsets = [];
-  for (let i = 0; i < STEPS; i++) {
-    const a = (i / STEPS) * Math.PI * 2;
-    offsets.push([Math.cos(a) * r, Math.sin(a) * r]);
+  // Vertical edges: the line x between column x-1 and column x.
+  for (let x = 0; x <= w; x++) {
+    let run = -1;
+    for (let y = 0; y <= h; y++) {
+      const edge = y < h && on(x, y) !== on(x - 1, y);
+      if (edge && run < 0) run = y;
+      else if (!edge && run >= 0) { path.moveTo(x, run); path.lineTo(x, y); segments++; run = -1; }
+    }
   }
-
-  const layer = () => {
-    const c = document.createElement('canvas');
-    c.width = w;
-    c.height = h;
-    const x = c.getContext('2d');
-    x.imageSmoothingEnabled = viewScale < 1;     // same rule the map is drawn by
-    x.drawImage(silhouette.canvas, pad, pad, dw, dh);
-    return [c, x];
-  };
-
-  const [outer, octx] = layer();                 // union: the shape grown outwards
-  for (const [dx, dy] of offsets) octx.drawImage(silhouette.canvas, pad + dx, pad + dy, dw, dh);
-
-  const [inner, ictx] = layer();                 // intersection: the shape shrunk inwards
-  ictx.globalCompositeOperation = 'destination-in';
-  for (const [dx, dy] of offsets) ictx.drawImage(silhouette.canvas, pad + dx, pad + dy, dw, dh);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(outer, 0, 0);
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.drawImage(inner, 0, 0);                    // hollow it out, leaving the band
-  ctx.globalCompositeOperation = 'source-in';    // tint, preserving the edge
-  ctx.fillStyle = colour;
-  ctx.fillRect(0, 0, w, h);
-
-  // Report the ring in map coordinates, so drawing it needs no special case.
-  return {
-    canvas,
-    x: silhouette.x - pad / scale,
-    y: silhouette.y - pad / scale,
-    w: w / scale,
-    h: h / scale,
-    builtFor: viewScale,
-  };
+  s.segments = segments;
+  return path;
 }
 
 // ===================================================================== 5. view
@@ -3389,17 +3383,38 @@ function drawNightLayer(ctx, cssW, cssH) {
  */
 function drawSelectionRing(ctx, holder, alpha, colour = OUTLINE_COLOUR) {
   if (!holder.silhouette || alpha <= 0) return;
-  // Each holder caches its own, so two rings in different colours do not
-  // rebuild each other every frame.
-  if (holder.outline?.builtFor !== view.scale) {
-    holder.outline = buildOutline(holder.silhouette, view.scale, colour);
+  // The path hangs off the silhouette, not off the holder, so a selection and
+  // the copy of it fading out share one trace. Colour is a stroke argument, so
+  // sharing costs nothing even where the two rings are drawn differently.
+  const s = holder.silhouette;
+  // Traced once per selection and never again. The path is in the silhouette's
+  // own pixel coordinates, so it is independent of the zoom: the thickness is
+  // put back below by dividing the line width by the scale.
+  if (s.path === undefined) {
+    const tBuild = performance.now();
+    s.path = buildOutlinePath(s);
+    perf.ringBuild = ease(perf.ringBuild, performance.now() - tBuild);
+    perf.ringBuilds++;
+    perf.ringPx = s.segments;
   }
-  const o = holder.outline;
 
+  const t0 = performance.now();
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.drawImage(o.canvas, o.x * view.scale + view.x, o.y * view.scale + view.y, o.w * view.scale, o.h * view.scale);
+  // Into map space, then into the silhouette's own box, so the path can be
+  // stroked exactly as it was traced.
+  ctx.translate(view.x, view.y);
+  ctx.scale(view.scale, view.scale);
+  ctx.translate(s.x, s.y);
+  // The one place the zoom enters. Dividing by it holds the ring at
+  // OUTLINE_WIDTH on screen however far in the map is.
+  ctx.lineWidth = OUTLINE_WIDTH / view.scale;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = colour;
+  ctx.stroke(s.path);
   ctx.restore();
+  perf.ringDraw = ease(perf.ringDraw, performance.now() - t0);
 }
 
 function drawView() {
@@ -3435,6 +3450,7 @@ function drawView() {
   debug.tilesDrawn = 0;
   // Emptied here and not in drawResources, which runs once per copy of the map.
   resourceHits.length = 0;
+  markHits.length = 0;
   for (const dx of offsets) drawMapLayer(ctx, cssW, cssH, view.x + dx);
 
   // Over the ground, under everything else that is not the ground.
@@ -3485,8 +3501,17 @@ function drawView() {
       perf.cities = ease(perf.cities, performance.now() - t0);
     };
     const nameLayer = () => paintLabels(ctx, ops);
+
+    // The railway goes UNDER the writing. It is a thing on the ground rather
+    // than a reading taken over it, so a line running through a country name or
+    // a city marker passes behind them instead of striking them out. The other
+    // infrastructure layers are figures, and figures stay on top.
+    if (state.mode === 'infra:rail') drawRail(ctx, cssW, cssH, dx);
+
     if (state.selected) { nameLayer(); cityLayer(); } else { cityLayer(); nameLayer(); }
+    drawBuildingMarks(ctx, cssW, cssH, dx);
     if (state.mode === 'resources') drawResources(ctx, cssW, cssH, dx);
+    else if (state.mode.startsWith('infra:')) drawInfrastructure(ctx, cssW, cssH, dx);
     drawOverlays(ctx, cssW, cssH, dx);
     ctx.restore();
   }
@@ -3504,7 +3529,6 @@ const OVERLAY_FONT = `500 11px ${LABEL_FACE}`;
 
 // Filled in as the overlays draw, and read back by the Performance readout.
 const debug = { names: 0, seaNames: 0, tilesDrawn: 0, path: '—', cursor: null };
-
 
 /* --------------------------------------------------------------- cities
  *
@@ -3527,6 +3551,16 @@ const CITY_NAME_AT = 2.25;
 const CAPITAL_NAME_AT = 1.30;
 const CITY_FADE_MS = 150;           // how long the transition takes, always
 
+const EYRIE_AT = 0.90;              // eyries arrive between capitals and cities
+const EYRIE_ICON_PX = 16;           // on-screen height of an eyrie mark
+const DOCKYARD_AT = 0.90;           // dockyards arrive with the eyries
+const DOCKYARD_ICON_PX = 16;        // and are drawn at the same size
+const DOCKYARD_OUTLINE_PX = 0.4;    // and take the same white edge
+const EYRIE_OUTLINE_PX = 0.4;       // white edge traced round it, on top of
+                                    // the thin keyline the icon carries itself
+const SYNTHETIC_AT = 0.90;          // synthetic plants arrive with them too
+const SYNTHETIC_ICON_PX = 16;       // at the same size
+const SYNTHETIC_OUTLINE_PX = 0.4;   // and with the same white edge
 const CITY_ICON_PX = 9;            // on-screen height of an ordinary city
 const CAPITAL_ICON_PX = 14;         // and of a capital
 const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
@@ -3670,8 +3704,10 @@ function linkInternationalCities(cities) {
 
 // Index into the four opacities below. Order: icons then names, ordinary then
 // capital, which is also the order they are drawn in.
-const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3, F_RIVER = 4;
-const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT, RIVER_AT];
+const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3, F_RIVER = 4, F_EYRIE = 5,
+  F_DOCKYARD = 6, F_SYNTHETIC = 7;
+const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT, RIVER_AT, EYRIE_AT,
+  DOCKYARD_AT, SYNTHETIC_AT];
 
 const cityAlpha = CITY_THRESHOLDS.map(() => 0);
 let cityClock = null;
@@ -3747,6 +3783,35 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
   const placedGrid = makeGrid();
   const glyphGrid = makeGrid();
   if (labelBoxes) for (const g of labelBoxes) glyphGrid.add(g, ...glyphExtent(g));
+
+  // Eyrie marks are a third kind of obstacle, between the two above. They are
+  // painted after this whole pass, so a name left under one is written and then
+  // covered over, and unlike a name a mark cannot be moved: its position was
+  // fixed the day the eyrie was generated. But a city hemmed in by marks should
+  // still be named, so these are ranked rather than obeyed. A spot clear of them
+  // wins; failing that the spot covering the least of one does.
+  const eyrieGrid = makeGrid();
+  const nearEyries = [];
+  for (const kind of MARK_KINDS) {
+    for (const m of buildingMarks(kind, cssW, cssH, dx, markScratch[kind].labels)) {
+      const b = [m.x - m.w / 2 - CITY_NAME_PAD, m.y - m.h / 2 - CITY_NAME_PAD,
+      m.x + m.w / 2 + CITY_NAME_PAD, m.y + m.h / 2 + CITY_NAME_PAD];
+      eyrieGrid.add(b, b[0], b[1], b[2], b[3]);
+    }
+  }
+
+  // How much of a mark a spot would sit on, as area. Zero is the common answer
+  // and costs one grid lookup to get.
+  const eyrieHit = (b) => {
+    let a = 0;
+    for (const p of eyrieGrid.near(b[0], b[1], b[2], b[3], nearEyries)) {
+      const w = Math.min(b[2], p[2]) - Math.max(b[0], p[0]);
+      if (w <= 0) continue;
+      const h = Math.min(b[3], p[3]) - Math.max(b[1], p[1]);
+      if (h > 0) a += w * h;
+    }
+    return a;
+  };
 
   // One scratch list per kind of question, filled and refilled. Allocating a
   // fresh array per query would put thousands of them a frame on the heap.
@@ -3852,16 +3917,20 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
     }
     if (!open.length) continue;    // hemmed in by other cities; the dot stands alone
 
-    // The first spot that also clears the country names, or failing that the one
-    // that covers the fewest letters of them. Taking the first open spot instead
-    // would put the name in its default position over a name it could have
-    // half-missed, which looks like the placement never tried.
-    let box = open.find((b) => clearOfNames(b));
-    if (!box) {
-      let worst = Infinity;
-      for (const b of open) {
-        const n = namesHit(b);
-        if (n < worst) { worst = n; box = b; }
+    // Two soft obstacles left, and they are not equal. An eyrie mark is a small
+    // opaque picture, and a name written across one is unreadable in a way a
+    // name written across large translucent country lettering is not. So the
+    // ranking is the mark first and the country names only to break its ties.
+    // Taking the first open spot instead would put the name in its default
+    // position over something it could have missed, which looks like the
+    // placement never tried.
+    let box = null, leastEyrie = Infinity, leastNames = Infinity;
+    for (const b of open) {
+      const e = eyrieHit(b);
+      if (!e && clearOfNames(b)) { box = b; break; }   // in preference order, so the first clean one wins
+      const n = namesHit(b);
+      if (e < leastEyrie || (e === leastEyrie && n < leastNames)) {
+        leastEyrie = e; leastNames = n; box = b;
       }
     }
     placedGrid.add(box, box[0], box[1], box[2], box[3]);
@@ -3876,7 +3945,6 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
   ctx.restore();
 }
 
-
 /**
  * The lines the resource layer writes, built once.
  *
@@ -3890,6 +3958,29 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
  * is on the day boundary at most: yields come from road, electricity and rail,
  * and none of those moves inside a tick.
  */
+// Farms, fisheries and flocks are the existing economy and yield whatever the
+// infrastructure is. Everything that has to be dug, hauled and loaded waits on
+// the road.
+const ALWAYS_FULL = new Set(['fertileLand', 'fish', 'textiles', 'livestock']);
+
+// Timber is between the two. A forest is cut with axes and floated downriver,
+// which is how it moved for centuries and needs no road at all, so a fifth of
+// any stand comes out whatever the province has. Development is what takes it
+// past that, when the road and the rail let a country cut at scale.
+const FLOOR = { timber: 0.2 };
+// Coal and gas are worked on their own weighting, under Extraction. The choice
+// is per RESOURCE and not per province: a province holding one coal and thirty
+// gold works its gold the ordinary way and its single seam the pit way.
+const PIT = new Set(['coal', 'naturalGas']);
+
+// A farm, a fishery and a flock yield in full, but only where the yield has a
+// way out. A crop with no road and no railway feeds the people standing next to
+// it and reaches nobody else, which is what subsistence farming is, so it shows
+// as nothing rather than as tonnage the country can never draw on.
+const yieldOf = (kind, amount, dev, devPit, connected = true) =>
+  (ALWAYS_FULL.has(kind) ? (connected ? amount : 0)
+    : Math.round(amount * Math.max(FLOOR[kind] ?? 0, PIT.has(kind) ? devPit : dev) * 10) / 10);
+
 function buildResourceLines(world) {
   const out = new Map();
   if (!world.resources) return out;
@@ -3899,12 +3990,16 @@ function buildResourceLines(world) {
   for (const id in world.resources) {
     const held = world.resources[id];
     const lines = [];
+    const stats = world.stats?.[id] || {};
+    const dev = developmentOf(world, world.byId?.get(id), stats);
+    const devPit = developmentPitOf(world, world.byId?.get(id), stats);
+    const connected = connectedOf(world, world.byId?.get(id));
     // In the order the file names them, so a province reads the same way
     // every time and the eye can learn where to look.
     for (const kind of world.resourceKinds) {
       const amount = held[kind];
       if (!amount) continue;
-      lines.push({ kind, text: `(0/${amount})` });
+      lines.push({ kind, text: `(${yieldOf(kind, amount, dev, devPit, connected)}/${amount})` });
     }
     if (!lines.length) continue;
 
@@ -4003,10 +4098,10 @@ function anchorStack(world, id, lines) {
  * Every KNOWN deposit in a province, stacked at its centre of mass, as a mark
  * and a pair of figures: what it yields today over what is in the ground.
  *
- * Yield is zero throughout. It is deposit x (0.4 + 0.6 x development) under
- * Extraction, and development reads road, electricity and rail, none of which
- * has a level on the map yet. Showing 0 is the honest answer and the figure
- * moves on its own once those are authored.
+ * Yield is deposit x development, under Extraction, and development reads the
+ * road, electricity and rail a province has built against that province's own
+ * ceilings. Fertile land, fish and textiles are outside it and always yield in
+ * full: a province should not starve because nobody paved it.
  *
  * Unprospected, offshore and stranded deposits are all absent on purpose. This
  * is what a country knows it has and can work, which is a different list from
@@ -4198,6 +4293,10 @@ function drawResources(ctx, cssW, cssH, dx) {
         x0: x + dx - b.w / 2, x1: x + dx + b.w / 2,
         y0: ly - pitch / 2, y1: ly + pitch / 2,
         id, kind: rows[i].kind, amount: w.resources[id]?.[rows[i].kind] ?? 0,
+        yield: yieldOf(rows[i].kind, w.resources[id]?.[rows[i].kind] ?? 0,
+          developmentOf(w, w.byId.get(id), w.stats?.[id] || {}),
+          developmentPitOf(w, w.byId.get(id), w.stats?.[id] || {}),
+          connectedOf(w, w.byId.get(id))),
       });
     }
     drawn++;
@@ -4254,6 +4353,931 @@ function drawProvinceNames(ctx, cssW, cssH, dx) {
   }
   ctx.restore();
   debug.names = drawn;
+}
+
+/*
+ * The rail network: a node at every railed county and a line to each railed
+ * neighbour.
+ *
+ * Which counties a line joins is DECLARED, not derived. Two railed counties can
+ * be adjacent and on different lines that never meet, and reading the network
+ * off adjacency drew links nobody built. It also hid a real gap in Krenland,
+ * where the eastern line had nothing joining East Krenland to North Osterdal and
+ * was two fragments pretending to be a railway.
+ *
+ * A line is NOT drawn straight. Two counties can meet around a bay, and the
+ * crow-flies path between their centres of mass crosses open water, so the
+ * network would read as a ferry service. Every link bends through a point on
+ * the border the two counties actually share, which is land by definition.
+ *
+ * Which point matters. Sixteen candidates are taken along the shared border and
+ * each is scored by how much water the two legs cross; the driest wins. That
+ * handles the case the border midpoint does not, where a county is itself bent
+ * around water and even the leg to its own border would swim.
+ *
+ * Built once per world and kept. It is a pass over the map, and rail changes
+ * when a line is finished, which is rare enough to rebuild it then.
+ */
+let railNet = null, railNetWorld = null;
+
+function railNetwork(w) {
+  if (railNetWorld === w) return railNet;
+  railNetWorld = w;
+  railNet = { nodes: [], links: [] };
+  const cs = w.counties;
+  if (!cs?.countyAt || !cs.byId || !cs.bounds) return railNet;
+
+  // A station stands where counties.json says the county is, NOT at the centre
+  // of mass of its pixels. The two agree everywhere except the counties bent
+  // around a bay, where the centre of mass is out in the water and sync-provinces
+  // has already pulled the written centre back onto the county's own ground.
+  // One answer to where a county is, arrived at once.
+  const wanted = new Set();
+  const wantId = new Set();
+  const nodeAt = new Map();
+  for (const c of cs.byId.values()) {
+    const to = Array.isArray(c.rail) ? c.rail : (c.rail ? [] : null);
+    if (!to) continue;
+    const bb = cs.bounds.get(c.id);
+    if (!bb) continue;
+    wantId.add(c.id);
+    const at = Array.isArray(c.centre)
+      ? { x: mapColAt((c.centre[1] * Math.PI) / 180, cs.width), y: mapRowAt((c.centre[0] * Math.PI) / 180) }
+      : { x: bb.cx, y: bb.cy };
+    nodeAt.set(c.id, at);
+    railNet.nodes.push({ x: at.x, y: at.y, id: c.id });
+    for (const other of to) wanted.add(c.id < other ? c.id + "|" + other : other + "|" + c.id);
+  }
+  if (!railNet.nodes.length) return railNet;
+  const idAt = (index) => cs.atIndex?.[index]?.id;
+
+  // One pass, collecting border pixels for every railed pair.
+  const W = cs.width, H = cs.height, at = cs.countyAt;
+  const pairs = new Map();
+  const note = (a, b, x, y) => {
+    if (a === b) return;
+    const ia = idAt(a), ib = idAt(b);
+    if (!ia || !ib || !wantId.has(ia) || !wantId.has(ib)) return;
+    const key = ia < ib ? ia + "|" + ib : ib + "|" + ia;
+    if (!wanted.has(key)) return;          // adjacent, but no line runs between them
+    const list = pairs.get(key) || (pairs.set(key, []), pairs.get(key));
+    if (list.length < 400) list.push(x + y * W);
+  };
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      const c = at[i];
+      if (!c) continue;
+      note(c, at[x + 1 < W ? i + 1 : y * W], x, y);
+      if (y + 1 < H) note(c, at[i + W], x, y);
+    }
+  }
+
+  // How much water a straight run crosses, sampled. A county index of 0 is
+  // anything that is not a county, which on this map is the sea.
+  const wetness = (x0, y0, x1, y1) => {
+    let wet = 0;
+    for (let k = 1; k < 24; k++) {
+      const t = k / 24;
+      const x = Math.round(x0 + (x1 - x0) * t), y = Math.round(y0 + (y1 - y0) * t);
+      if (y < 0 || y >= H) continue;
+      if (!at[y * W + ((x % W) + W) % W]) wet++;
+    }
+    return wet;
+  };
+
+  for (const [key, px] of pairs) {
+    const [ia, ib] = key.split("|");
+    const A = nodeAt.get(ia), B = nodeAt.get(ib);
+    if (!A || !B || !px.length) continue;
+    // A straight run that stays on land is drawn straight. Bending every link
+    // through its border put a sharp V in twenty of the twenty-one lines to
+    // solve a problem only one of them had.
+    if (!wetness(A.x, A.y, B.x, B.y)) {
+      railNet.links.push({ ax: A.x, ay: A.y, wx: null, wy: null, bx: B.x, by: B.y });
+      continue;
+    }
+
+    // Where a bend IS needed, the driest candidate wins and the tie is broken by
+    // whichever sits nearest the straight line. Taking the first dry one instead
+    // sent the line to whichever end of the border the scan happened to reach
+    // first, which is a detour rather than a route.
+    const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+    let best = null, bestWet = Infinity, bestOff = Infinity;
+    const step = Math.max(1, Math.floor(px.length / 24));
+    for (let k = 0; k < px.length; k += step) {
+      const p = px[k], x = p % W, y = (p - (p % W)) / W;
+      const wet = wetness(A.x, A.y, x, y) + wetness(x, y, B.x, B.y);
+      const off = (x - mx) * (x - mx) + (y - my) * (y - my);
+      if (wet < bestWet || (wet === bestWet && off < bestOff)) {
+        bestWet = wet; bestOff = off; best = { x, y };
+      }
+    }
+    if (best) railNet.links.push({ ax: A.x, ay: A.y, wx: best.x, wy: best.y, bx: B.x, by: B.y });
+  }
+  return railNet;
+}
+
+/**
+ * The rail layer. Lines rather than figures, since a railway is a thing that
+ * goes somewhere and a number at a centroid would not say where.
+ */
+function drawRail(ctx, cssW, cssH, dx) {
+  const w = state.world, s = view.scale;
+  const net = railNetwork(w);
+  if (!net.links.length && !net.nodes.length) { debug.infrastructure = 0; return; }
+
+  const px = (v) => v * s + view.x;
+  const py = (v) => v * s + view.y;
+  const on = (x) => x + dx > -200 && x + dx < cssW + 200;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // Drawn twice: a dark bed under a bright rail, so the line reads over both
+  // pale desert and dark sea without a halo pass per segment.
+  for (const pass of [0, 1]) {
+    ctx.strokeStyle = pass ? "rgba(236,242,250,.92)" : "rgba(8,10,14,.75)";
+    ctx.lineWidth = Math.max(pass ? 1.1 : 3.2, (pass ? 1.1 : 3.2) * Math.min(2, s));
+    ctx.beginPath();
+    for (const l of net.links) {
+      const x0 = px(l.ax);
+      if (!on(x0) && !on(px(l.bx))) continue;
+      ctx.moveTo(x0, py(l.ay));
+      if (l.wx !== null) ctx.lineTo(px(l.wx), py(l.wy));
+      ctx.lineTo(px(l.bx), py(l.by));
+    }
+    ctx.stroke();
+  }
+
+  // A node at every railed county, so a single railed county with no neighbour
+  // still shows rather than vanishing for having nothing to connect to.
+  const r = Math.max(1.6, Math.min(4, 2.2 * s));
+  ctx.fillStyle = "rgba(236,242,250,.95)";
+  ctx.strokeStyle = "rgba(8,10,14,.75)";
+  ctx.lineWidth = 1.4;
+  let drawn = 0;
+  for (const n of net.nodes) {
+    const x = px(n.x), y = py(n.y);
+    if (!on(x) || y < -20 || y > cssH + 20) continue;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    drawn++;
+  }
+  ctx.restore();
+  debug.infrastructure = drawn;
+}
+
+/*
+ * The level lines, baked once per size.
+ *
+ * The resource layer's text without its icons: same face, same halo, same cache
+ * by size and device ratio. A label is redrawn every frame for every province on
+ * screen, and measuring and stroking text that often is the whole reason the
+ * bake exists.
+ */
+const levelLineCache = new Map();
+let levelMeasure = null;
+
+function bakedLevelLine(text, px) {
+  const dpr = Math.max(1, pixelRatio);
+  const key = `${px}|${dpr.toFixed(2)}|${text}`;
+  const had = levelLineCache.get(key);
+  if (had) return had;
+
+  if (!levelMeasure) levelMeasure = document.createElement('canvas').getContext('2d');
+  levelMeasure.font = resourceFont(px);
+  const width = levelMeasure.measureText(text).width;
+
+  const halo = Math.max(2, px * 0.28);
+  const pad = Math.ceil(halo) + 2;
+  const w = Math.ceil(width) + pad * 2;
+  const h = Math.ceil(px * 1.6) + pad * 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(w * dpr);
+  canvas.height = Math.ceil(h * dpr);
+
+  const x = canvas.getContext('2d');
+  x.scale(dpr, dpr);
+  x.font = resourceFont(px);
+  x.textAlign = 'left';
+  x.textBaseline = 'middle';
+  x.lineJoin = 'round';
+  x.lineWidth = halo;
+  x.strokeStyle = 'rgba(6,8,12,.85)';
+  x.fillStyle = 'rgba(232,238,246,.95)';
+  x.strokeText(text, pad, h / 2);
+  x.fillText(text, pad, h / 2);
+
+  const baked = { canvas, w, h };
+  levelLineCache.set(key, baked);
+  return baked;
+}
+
+/*
+ * Where a province writes its level, memoised.
+ *
+ * anchorStack again, which the resource layer uses for the same reason: the
+ * mean of an archipelago is the water between its islands, and Verley-Maret
+ * misses its own land by 477 pixels. Held per world, so a reload drops it.
+ */
+let levelAnchors = null, levelAnchorWorld = null;
+
+function levelAnchor(w, id) {
+  if (levelAnchorWorld !== w) { levelAnchors = new Map(); levelAnchorWorld = w; }
+  let a = levelAnchors.get(id);
+  if (!a) { a = {}; anchorStack(w, id, a); levelAnchors.set(id, a); }
+  return a;
+}
+
+
+// How far the mark stands off the high ground it is built against, in map
+// pixels, and how far out it is thrown when there is no high ground to stand
+// against. An eyrie is put where a dragon can drop off a height and where a
+// rider can reach it, which is near a slope rather than on top of one.
+// What the pointer can be over, filled by drawBuildingMarks and read by the hover. The
+// same trick the resource layer uses: a bitmap cannot be asked what it is, so
+// the drawer records the boxes it painted.
+const markHits = [];
+
+const MARK_RING = 0.20;           // of the mean of the county's width and height
+const MARK_OFF_EDGE = 2;          // and never that close to the county's own edge
+
+const DOCKYARD_RING = 10;         // from the coastal city the yard belongs to
+const DOCKYARD_RADII = [10, 8, 6, 4];  // and closer only where 10 has no room
+const DOCKYARD_OFF_CITY = 3;      // never right under the town's own marker
+const DOCKYARD_OFF_FRONTIER = 5;  // on empty shore, clear of where it meets a neighbour
+const DOCKYARD_PORT_PX = 5;       // a city this close to water is a port, as in the build rule
+const DOCKYARD_OFF_WATER = 2;     // the mark never stands on the waterline
+const DOCKYARD_NEAR_COAST = 6;    // and never wanders inland out of sight of it
+const DOCKYARD_SHORE_REACH = 8;   // far enough to find the water a pixel stands on
+
+/** Stable per province, so the mark does not wander between frames. */
+// Two buildings in one province must not sit on top of each other. Ten pixels
+// is enough to read them as two marks rather than one, and small enough that
+// most provinces can hold it: a great many are only a few hundred pixels of
+// land and a wider gap would be unmeetable more often than not.
+const MARK_MIN_GAP = 10;
+
+/**
+ * Where the province's other buildings already stand, as [x, y] pairs.
+ *
+ * Read from what is stored rather than recomputed, so a mark placed today keeps
+ * clear of one placed a year ago and the order they were generated in does not
+ * matter. A building with no stored position yet is not in the way of anything.
+ */
+function otherMarksIn(w, id, mine) {
+  const e = w.stats?.[id];
+  if (!e) return [];
+  const out = [];
+  for (const k of BUILDINGS) {
+    if (k === mine || !e[k]) continue;
+    const at = e[BUILDING_AT[k]];
+    if (Array.isArray(at) && at.length === 2) out.push(at);
+  }
+  return out;
+}
+
+const clearOfMarks = (others, x, y) => {
+  for (const [ox, oy] of others)
+    if ((x - ox) ** 2 + (y - oy) ** 2 < MARK_MIN_GAP * MARK_MIN_GAP) return false;
+  return true;
+};
+
+function markHash(id) {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0) / 4294967296;
+}
+
+let markAnchors = new Map(), markAnchorWorld = null;
+
+/**
+ * Where a building's mark stands inside its county.
+ *
+ * Both buildings share the ring: a bearing fixed by a hash of the county, at a
+ * radius of MARK_RING of the county's own size, kept clear of the county edge so
+ * the icon does not bleed into the next one. What differs is what each rule
+ * insists on beyond that, and the dockyard's insistence is the whole of it.
+ *
+ * There is no terrain rule any more. A county carries one terrain tag, so there
+ * is no slope edge inside it to stand three pixels off, and the eyrie's old
+ * mountain and hill cases have nothing left to bite on.
+ */
+function markAnchor(w, countyId, kind) {
+  if (markAnchorWorld !== w) { markAnchors = new Map(); markAnchorWorld = w; }
+  const key = countyId + ':' + kind;
+  const hit = markAnchors.get(key);
+  if (hit) return hit;
+  const put = (a) => { markAnchors.set(key, a); return a; };
+
+  const g = countyGround(w, countyId);
+  if (!g) return put({ ax: 0, ay: 0, lost: true });
+
+  const { bb } = g;
+  const cx = bb.sx / bb.n, cy = bb.sy / bb.n;
+  const bw = bb.maxX - bb.minX + 1, bh = bb.maxY - bb.minY + 1;
+  const others = g.others().filter(([ox, oy]) => !(ox === undefined));
+  const spaced = (x, y) => others.every(([ox, oy]) =>
+    (x - ox) ** 2 + (y - oy) ** 2 >= MARK_MIN_GAP * MARK_MIN_GAP);
+
+  const start = markHash(key) * Math.PI * 2;
+  const radii = [MARK_RING * (bw + bh) / 2, 4, 2];
+
+  if (kind === 'dockyard') {
+    // A yard is on the water. It hangs off a port town in this county where
+    // there is one, and off the shore itself where there is not, which is the
+    // distinction the build cost already draws between 800 points and 2,000.
+    const ports = (w.cities || []).filter((c) =>
+      g.mine(c.x, c.y) && g.seaWithin(c.x, c.y, DOCKYARD_PORT_PX));
+
+    if (ports.length) {
+      const city = ports[Math.floor(markHash(key + ':city') * ports.length) % ports.length];
+      const seaGap = (x, y) => {
+        for (let r = 1; r <= DOCKYARD_NEAR_COAST; r++) if (g.seaWithin(x, y, r)) return r;
+        return DOCKYARD_NEAR_COAST + 1;
+      };
+      // A county can front two seas. A ship leaves from the coast its town
+      // stands on, so the yard stands there too: the water nearest a candidate
+      // must lie in the same direction as the water nearest the town.
+      const nearestWater = (x, y) => {
+        for (let r = 1; r <= DOCKYARD_SHORE_REACH; r++) {
+          let found = null, near = Infinity;
+          for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+              if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+              const d = dx * dx + dy * dy;
+              if (d < near && g.water(x + dx, y + dy)) { near = d; found = [dx, dy]; }
+            }
+          }
+          if (found) return found;
+        }
+        return null;
+      };
+      const home = nearestWater(city.x, city.y);
+      const onCityShore = (x, y) => {
+        if (!home) return true;
+        const w2 = nearestWater(x, y);
+        return w2 ? home[0] * w2[0] + home[1] * w2[1] >= 0 : false;
+      };
+      // The town's coast outranks the radius: a yard at 4 px on the right water
+      // beats one at 10 px on the wrong one.
+      for (let shore = 0; shore < 2; shore++) {
+        for (let pass = 0; pass < 2; pass++) {
+          for (const r of DOCKYARD_RADII) {
+            let best = null, bestGap = Infinity;
+            for (let k = 0; k < 16; k++) {
+              const th = start + k * Math.PI / 8;
+              const x = Math.round(city.x + Math.cos(th) * r);
+              const y = Math.round(city.y + Math.sin(th) * r);
+              if (!g.mine(x, y)) continue;
+              if (g.seaWithin(x, y, DOCKYARD_OFF_WATER)) continue;
+              if (pass < 1 && !g.seaWithin(x, y, DOCKYARD_NEAR_COAST)) continue;
+              if (shore < 1 && !onCityShore(x, y)) continue;
+              if (!spaced(x, y)) continue;
+              const gap = seaGap(x, y);
+              if (gap < bestGap) { bestGap = gap; best = { ax: x, ay: y }; }
+            }
+            if (best) return put(best);
+          }
+        }
+      }
+    }
+
+    // Empty shore, or a port town the ring could not serve. Every pixel of the
+    // county that stands on the coast without standing in it, away from another
+    // country's ground, and the hash picks one.
+    const shore = [];
+    for (let y = bb.minY; y <= bb.maxY; y++) {
+      for (let x = bb.minX; x <= bb.maxX; x++) {
+        if (!g.mine(x, y)) continue;
+        if (g.seaWithin(x, y, DOCKYARD_OFF_WATER)) continue;
+        if (!g.seaWithin(x, y, DOCKYARD_NEAR_COAST)) continue;
+        if (g.foreignWithin(x, y, DOCKYARD_OFF_FRONTIER)) continue;
+        if (!spaced(x, y)) continue;
+        shore.push([x, y]);
+      }
+    }
+    if (shore.length) {
+      const p = shore[Math.floor(markHash(key + ':shore') * shore.length) % shore.length];
+      return put({ ax: p[0], ay: p[1] });
+    }
+    return put({ ax: Math.round(cx), ay: Math.round(cy), coastless: true });
+  }
+
+  // The eyrie, and anything else that only has to stand somewhere sensible.
+  for (const r of radii) {
+    if (r < 1) continue;
+    for (let pass = 0; pass < 2; pass++) {
+      for (let k = 0; k < 16; k++) {
+        const th = start + k * Math.PI / 8;
+        const x = Math.round(cx + Math.cos(th) * r);
+        const y = Math.round(cy + Math.sin(th) * r);
+        if (!g.mine(x, y)) continue;
+        if (pass < 1 && !g.clear(x, y, MARK_OFF_EDGE)) continue;
+        if (!spaced(x, y)) continue;
+        return put({ ax: x, ay: y });
+      }
+    }
+  }
+  // A county of a handful of pixels. Its middle is the only answer left.
+  return put({ ax: Math.round(cx), ay: Math.round(cy) });
+}
+
+/** The stored position, or a fresh one written onto the county and kept. */
+function markAt(w, countyId, kind, c) {
+  const key = BUILDING_AT[kind];
+  const at = c[key];
+  if (Array.isArray(at) && at.length === 2) return { ax: at[0], ay: at[1] };
+  const a = markAnchor(w, countyId, kind);
+  c[key] = [a.ax, a.ay];        // fixed from here on, and written out on save
+  return a;
+}
+
+/**
+ * The eyrie mark, on every province holding one.
+ *
+ * An eyrie is a building rather than a level, so there is no figure to write and
+ * nothing to write it over: the province either has one or it does not, and the
+ * mark says which. It is drawn on its own rather than inside an infrastructure
+ * layer because a country wants to see where its dragons are bred whatever mode
+ * the map is in, the same way it can always see where its cities are.
+ *
+ * Anchored on the ground rather than on a settlement, and not at the province's
+ * middle either: eyrieAnchor puts it against the nearest high ground, which is
+ * where one would be built.
+ */
+/**
+ * Where this province's eyrie mark stands, settled once and then kept.
+ *
+ * The first time an eyrie is seen — authored into the file, or built during a
+ * game — its place is worked out from the ground and written onto the province.
+ * Every frame after that reads the stored pair. Nothing recomputes it, so
+ * retagging a county or tightening the placement rule cannot make a building
+ * walk across its own province, and a save carries the mark exactly where the
+ * player last saw it.
+ */
+let navigableLakeSet = null, navigableLakeWorld = null;
+
+/**
+ * Which lakes are worth a dockyard, as a set of sea region slots.
+ *
+ * A lake qualifies when two or more towns stand on it, anywhere and under any
+ * flag. Two towns on one water means traffic between them and a reason to build
+ * hulls; one town means a wharf and a rowing boat.
+ */
+function navigableLakes(w) {
+  if (navigableLakeWorld === w && navigableLakeSet) return navigableLakeSet;
+  const sea = w.sea, at = w.provinceAt, W = w.width, H = w.height;
+  const found = new Map();
+  if (sea?.seaAt && at) {
+    const wrap = (x) => ((x % W) + W) % W;
+    const r = DOCKYARD_PORT_PX, rr = r * r;
+    for (const c of w.cities || []) {
+      const touched = new Set();
+      for (let dy = -r; dy <= r; dy++) {
+        const y = c.y + dy;
+        if (y < 0 || y >= H) continue;
+        for (let dx = -r; dx <= r; dx++) {
+          if (dx * dx + dy * dy > rr) continue;
+          const p = y * W + wrap(c.x + dx);
+          if (at[p] !== OCEAN) continue;
+          const slot = sea.seaAt[p];
+          if (sea.atIndex[slot]?.lake) touched.add(slot);
+        }
+      }
+      for (const slot of touched) found.set(slot, (found.get(slot) || 0) + 1);
+    }
+  }
+  navigableLakeSet = new Set([...found].filter(([, n]) => n > 1).map(([slot]) => slot));
+  navigableLakeWorld = w;
+  return navigableLakeSet;
+}
+
+/**
+ * Everything the two placement rules share, worked out once for a county.
+ *
+ * A building belongs to a county rather than a province, so every question a
+ * placement rule asks is asked of the county: is this pixel mine, how far is the
+ * water, where is the frontier. The county is also the reason the terrain rules
+ * that used to steer an eyrie are gone: a county carries one terrain tag, so
+ * there is no slope edge inside it to stand off from.
+ *
+ * @returns {?object} null where the county is not on the map
+ */
+function countyGround(w, countyId) {
+  const cs = w.counties;
+  const c = cs?.byId?.get(countyId);
+  const bb = cs?.bounds?.get(countyId);
+  const at = cs?.countyAt;
+  if (!c || !bb || !at) return null;
+
+  const W = cs.width, H = cs.height, index = c.index;
+  const pat = w.provinceAt;
+  const wrap = (x) => ((x % W) + W) % W;
+
+  const sea = w.sea;
+  const lakes = sea?.seaAt ? navigableLakes(w) : null;
+
+  const g = {
+    c, bb, W, H, wrap,
+    mine: (x, y) => y >= 0 && y < H && at[y * W + wrap(x)] === index,
+    // Navigable water: the sea always, a lake only where two towns stand on it.
+    water: (x, y) => {
+      if (y < 0 || y >= H || !pat) return false;
+      const p = y * W + wrap(x);
+      if (pat[p] !== OCEAN) return false;
+      if (!sea?.seaAt) return true;
+      const slot = sea.seaAt[p];
+      const region = sea.atIndex[slot];
+      if (!region) return false;
+      return region.lake ? lakes.has(slot) : true;
+    },
+    // Ground belonging to another COUNTRY. A neighbouring county of the same
+    // province is not a frontier: it is the same flag on the other side of an
+    // administrative line, and a mark near it reads as nobody else's.
+    foreign: (x, y) => {
+      if (y < 0 || y >= H || !pat) return false;
+      const p = y * W + wrap(x);
+      if (pat[p] === OCEAN) return false;
+      return w.atIndex[pat[p]]?.owner !== w.atIndex[pat[y * W + wrap(x)]]?.owner
+        ? true
+        : w.byId.get(c.province)?.owner !== w.atIndex[pat[p]]?.owner;
+    },
+  };
+  g.seaWithin = (x, y, r) => {
+    const b = Math.ceil(r), rr = r * r;
+    for (let dy = -b; dy <= b; dy++)
+      for (let dx = -b; dx <= b; dx++)
+        if (dx * dx + dy * dy <= rr && g.water(x + dx, y + dy)) return true;
+    return false;
+  };
+  g.foreignWithin = (x, y, r) => {
+    const b = Math.ceil(r), rr = r * r;
+    for (let dy = -b; dy <= b; dy++)
+      for (let dx = -b; dx <= b; dx++)
+        if (dx * dx + dy * dy <= rr && g.foreign(x + dx, y + dy)) return true;
+    return false;
+  };
+  // Clear of the county's own edge, so a mark does not bleed into the next one.
+  g.clear = (x, y, r) => {
+    const b = Math.ceil(r), rr = r * r;
+    for (let dy = -b; dy <= b; dy++)
+      for (let dx = -b; dx <= b; dx++)
+        if (dx * dx + dy * dy < rr && !g.mine(x + dx, y + dy)) return false;
+    return true;
+  };
+  // Every mark near enough to matter: this county's own, every other county of
+  // the same province, and every county touching this one whoever holds it. A
+  // county line is one pixel wide and a mark is twenty-six, so checking only the
+  // county a mark sits in would let two of them meet across a border they are
+  // both clear of.
+  g.others = () => {
+    const out = [];
+    const seen = new Set([countyId]);
+    const near = [c];
+    for (const q of cs.atIndex) if (q && q.province === c.province && !seen.has(q.id)) { seen.add(q.id); near.push(q); }
+    for (const id2 of cs.adjacency?.get(countyId) || []) {
+      if (seen.has(id2)) continue;
+      seen.add(id2);
+      const q = cs.byId.get(id2);
+      if (q) near.push(q);
+    }
+    for (const q of near) {
+      for (const k of BUILDINGS) {
+        const at2 = q[BUILDING_AT[k]];
+        if (q[k] && Array.isArray(at2) && at2.length === 2) out.push(at2);
+      }
+    }
+    return out;
+  };
+  return g;
+}
+
+const outlinedIcons = new Map();
+
+/**
+ * An icon with a white edge traced round its own silhouette, baked once.
+ *
+ * The ground under a mark runs from ice cap white through savanna brown to
+ * rainforest green and out over open ocean, and there is no single ink that
+ * reads on all of it. An outline is what lets the mark carry its own
+ * background, so the shape stays legible wherever it lands.
+ *
+ * The edge is a true dilation rather than a blur: the silhouette is stamped
+ * at every whole offset inside the radius, which follows a wing or a claw
+ * exactly instead of fogging it. That is expensive and it is why this is
+ * baked at load and not stamped per eyrie per frame.
+ *
+ * @param {ImageBitmap} icon    the source mark
+ * @param {number} h            the height it will be drawn at, in CSS pixels
+ * @param {number} outline      the edge width at that height, in CSS pixels
+ * @returns {{canvas: HTMLCanvasElement, w: number, h: number}} the baked mark
+ *   and the CSS size to draw it at, both already including the edge
+ */
+function outlinedIcon(icon, h, outline) {
+  let per = outlinedIcons.get(icon);
+  if (!per) { per = new Map(); outlinedIcons.set(icon, per); }
+  const key = `${h}|${outline}`;
+  const had = per.get(key);
+  if (had) return had;
+
+  // Twice the source, so the edge stays smooth on a high density screen and
+  // under the zoom without carrying a bitmap four times the size for it.
+  const ss = 2;
+  const iw = icon.width * ss, ih = icon.height * ss;
+  const r = outline * ih / h;                  // the edge, in baked pixels
+  const pad = Math.ceil(r) + 1;
+
+  const sil = document.createElement('canvas');
+  sil.width = iw; sil.height = ih;
+  const sx = sil.getContext('2d');
+  sx.drawImage(icon, 0, 0, icon.width, icon.height, 0, 0, iw, ih);
+  sx.globalCompositeOperation = 'source-in';   // keep the alpha, replace the colour
+  sx.fillStyle = '#fff';
+  sx.fillRect(0, 0, iw, ih);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = iw + pad * 2; canvas.height = ih + pad * 2;
+  const x = canvas.getContext('2d');
+  const rr = r * r;
+  for (let dy = -pad; dy <= pad; dy++) {
+    for (let dx = -pad; dx <= pad; dx++) {
+      if (dx * dx + dy * dy > rr) continue;
+      x.drawImage(sil, pad + dx, pad + dy);
+    }
+  }
+  x.drawImage(icon, 0, 0, icon.width, icon.height, pad, pad, iw, ih);
+
+  const baked = { canvas, w: (iw + pad * 2) * h / ih, h: (ih + pad * 2) * h / ih };
+  per.set(key, baked);
+  return baked;
+}
+
+/**
+ * The buildings that put a mark on the map, and everything that differs between
+ * them. The walking, the drawing, the white edge, the label reservation and the
+ * tooltip are written once against this table and do not care which building
+ * they are handling.
+ *
+ * NEEDS is the resource the county's province must hold for the building to
+ * stand there at all, under Province mechanics, Synthetic plants. A kind without
+ * one has a site rule of its own or none: the dockyard wants a coast, which is
+ * geometry and lives in markAnchor, and the eyrie wants nothing.
+ *
+ * Adding a building is an entry here, a name in BUILDINGS, and an icon. Only a
+ * site rule that cannot be written as NEEDS takes code as well.
+ */
+const MARKS = {
+  eyrie: { label: 'Eyrie', fade: F_EYRIE, px: EYRIE_ICON_PX, outline: EYRIE_OUTLINE_PX },
+  dockyard: { label: 'Naval dockyard', fade: F_DOCKYARD, px: DOCKYARD_ICON_PX, outline: DOCKYARD_OUTLINE_PX },
+  syntheticOil: {
+    label: 'Synthetic oil plant', fade: F_SYNTHETIC,
+    px: SYNTHETIC_ICON_PX, outline: SYNTHETIC_OUTLINE_PX, needs: 'coal',
+  },
+  syntheticRubber: {
+    label: 'Synthetic rubber plant', fade: F_SYNTHETIC,
+    px: SYNTHETIC_ICON_PX, outline: SYNTHETIC_OUTLINE_PX, needs: 'oil',
+  },
+};
+const MARK_KINDS = Object.keys(MARKS);
+
+// One scratch list per kind per caller, so the labeller's walk and the drawer's
+// walk in the same frame cannot tread on one another. Built from the table, so a
+// new building brings its own.
+const markScratch = Object.fromEntries(MARK_KINDS.map((k) => [k, { labels: [], drawing: [] }]));
+
+/**
+ * Every mark of one kind standing on this copy of the map, in the copy's own space.
+ *
+ * Walked twice a frame and by two callers. The drawer paints them. The city
+ * labeller reserves their ground before it places a single name, because the
+ * marks are painted after the names and a name that ignored them would be
+ * written and then buried. Of the two, the name is the one that can move: a
+ * building's position is fixed the day it is generated.
+ *
+ * `w` and `h` are the icon proper. The white edge overhangs it and is not
+ * reserved, since a letter grazing the outline is not a collision worth moving
+ * a name for.
+ *
+ * @returns {Array<{x: number, y: number, w: number, h: number, mark: object, id: string}>}
+ */
+function buildingMarks(kind, cssW, cssH, dx, out) {
+  out.length = 0;
+  const spec = MARKS[kind];
+  const w = state.world, s = view.scale;
+  if (!w?.counties?.atIndex) return out;
+  // The plain works stands in for a building with no art of its own, so a kind
+  // added to the table draws something the day it is added.
+  const icon = w.buildingIcons?.[kind] || w.buildingIcons?.plain;
+  if (!icon) return out;
+  if (cityFade(spec.fade) <= 0.004) return out;   // faded out reserves nothing
+
+  const h = spec.px;
+  const iw = Math.round(h * (icon.width / icon.height));
+  const mark = outlinedIcon(icon, h, spec.outline);
+
+  for (const c of w.counties?.atIndex || []) {
+    if (!c || !c[kind]) continue;
+
+    // The caller has already translated by dx, so dx belongs in the test for
+    // whether THIS copy of the wrapped map is on screen and nowhere else.
+    const at = markAt(w, c.id, kind, c);
+    const x = at.ax * s + view.x;
+    if (x + dx < -80 || x + dx > cssW + 80) continue;
+    const y = at.ay * s + view.y;
+    if (y + h < 0 || y - h > cssH) continue;
+
+    out.push({ x, y, w: iw, h, mark, id: c.id, province: c.province });
+  }
+  return out;
+}
+
+/**
+ * Puts a building on a province or takes it off, from the console.
+ *
+ * A building is a flag, so this is mostly one assignment. The rest is placing
+ * the mark, and it is placed here rather than left to the next frame for two
+ * reasons: the caller gets told where it went, and a province with nowhere to
+ * put one finds out immediately instead of quietly drawing nothing. A dockyard
+ * on a landlocked province is the case that matters, since the anchor falls
+ * back to the middle of the province and the yard would look built.
+ *
+ * Taking a building off clears its position too. Putting the same one back
+ * therefore places it afresh, which is right: the ground may have changed, and
+ * the fixed-position rule exists to stop a mark drifting under a building that
+ * stayed put, not to make a demolished one remember where it was.
+ *
+ * @param {string} province province id
+ * @param {string} kind     one of BUILDINGS
+ * @param {boolean} on      true to build, false to demolish
+ * @returns {{province: string, kind: string, built: boolean, at: ?number[]}}
+ */
+function setBuilding(countyId, kind, on) {
+  const w = state.world;
+  const c = w?.counties?.byId?.get(countyId);
+  if (!c) throw new Error(`no county "${countyId}"`);
+  if (!BUILDINGS.includes(kind)) {
+    throw new Error(`no building "${kind}"; try ${BUILDINGS.map((k) => `"${k}"`).join(' or ')}`);
+  }
+
+  // A plant stands on what it eats: the oil plant in a coal province, the rubber
+  // plant in an oil one. Refused before anything is written, so there is nothing
+  // to put back.
+  const needs = on ? MARKS[kind].needs : null;
+  if (needs && !(w.resources?.[c.province]?.[needs] > 0)) {
+    throw new Error(`"${c.province}" holds no ${needs}, so "${countyId}" cannot hold a `
+      + MARKS[kind].label.toLowerCase());
+  }
+
+  const key = BUILDING_AT[kind];
+  if (!on) {
+    delete c[kind];
+    delete c[key];
+    invalidateView();
+    return { county: countyId, province: c.province, kind, built: false, at: null };
+  }
+
+  const had = Array.isArray(c[key]) && c[key].length === 2;
+  c[kind] = true;
+  if (!had) delete c[key];
+  const at = markAt(w, countyId, kind, c);
+
+  // A dockyard needs water. Where the county has none the build is refused and
+  // the county put back as it was, rather than a yard being marked inland.
+  if (at.coastless || at.lost) {
+    delete c[kind];
+    delete c[key];
+    throw new Error(at.lost
+      ? `"${countyId}" is not on the map`
+      : `"${countyId}" has no coast, so it cannot hold a dockyard`);
+  }
+
+  invalidateView();
+  return { county: countyId, province: c.province, kind, built: true, at: [at.ax, at.ay] };
+}
+
+function drawBuildingMarks(ctx, cssW, cssH, dx) {
+  let drawn = 0;
+  for (const kind of MARK_KINDS) {
+    const spec = MARKS[kind];
+    const marks = buildingMarks(kind, cssW, cssH, dx, markScratch[kind].drawing);
+    if (!marks.length) continue;
+
+    const prev = ctx.globalAlpha;
+    ctx.globalAlpha = prev * cityFade(spec.fade);
+    for (const m of marks) {
+      // The edge overhangs the icon on every side, so the baked mark is drawn
+      // from its own size and stays centred on the same anchor.
+      ctx.drawImage(m.mark.canvas, m.x - m.mark.w / 2, m.y - m.mark.h / 2, m.mark.w, m.mark.h);
+      // In window space, so dx goes back in: the context carries it as a translate
+      // and the pointer knows nothing about which copy of the map it is over.
+      markHits.push({
+        x0: m.x + dx - m.w / 2, x1: m.x + dx + m.w / 2,
+        y0: m.y - m.h / 2, y1: m.y + m.h / 2, id: m.id, province: m.province, kind,
+      });
+      drawn++;
+    }
+    ctx.globalAlpha = prev;
+  }
+  debug.eyries = drawn;
+}
+
+/**
+ * The chosen infrastructure level, written at each province's anchor.
+ *
+ * Sized on the resource layer's terms rather than the name layer's: the figures
+ * grow with the zoom to a ceiling, vanish below the size they can be read at,
+ * and give way where the province is too narrow to hold them. Nothing is styled
+ * on the passed context and nothing is saved or restored, because every line
+ * arrives as a finished bitmap.
+ *
+ * A province whose maximum is 0 is left blank. "0/0" is not a reading but the
+ * absence of one, and an alpine wall says more by staying empty than by being
+ * labelled with the fact that nothing can go there.
+ */
+function drawInfrastructure(ctx, cssW, cssH, dx) {
+  const w = state.world, s = view.scale;
+  if (!w?.bounds || !w.stats) return;
+  const key = state.mode.slice('infra:'.length);
+  if (key === 'rail') return;   // drawn under the labels, above
+
+  // Below the size a line can be read at the layer says nothing. Zooming out
+  // has to thin it rather than bring more provinces on screen and write 6px
+  // figures across all of them.
+  const natural = RESOURCE_LINE * s;
+  if (natural < RESOURCE_MIN_LINE) { debug.infrastructure = 0; return; }
+
+  // Whole pixels, so the cache holds the handful of sizes between the cutoff
+  // and the ceiling and not a fresh set for every step of a zoom.
+  const base = Math.round(Math.min(natural, RESOURCE_MAX_LINE));
+  const big = Math.round(base * RESOURCE_SELECTED);
+
+  let drawn = 0;
+  const one = (id, chosen) => {
+    const e = w.stats[id];
+    if (!e) return;
+
+    let built, max;
+    if (key === 'hydro') {
+      // Generated over potential. A dam is worked by the same development rule a
+      // mine is, so a province full of rivers it has never dammed reads 0 of what
+      // it holds, which is the useful thing to be able to see.
+      max = e.hydroPotential || 0;
+      const share = (b, m) => (m > 0 ? b / m : 0);
+      built = Math.round(max * (0.4 * share(builtLevel(e, 'road'), (e.road || [0, 0])[1])
+        + 0.3 * share(builtLevel(e, 'electricity'), (e.electricity || [0, 0])[1])
+        + 0.3 * railShare(w, w.byId.get(id))));
+    } else if (key === 'factories') {
+      // Against the UNLOCKED slots and not the maximum. What this layer answers
+      // is whether anything can be built here now, and a province full at 4 of 4
+      // would read as half empty against a ceiling its roads cannot reach yet.
+      built = (e.civilianFactories || 0) + (e.militaryFactories || 0);
+      // Worked out here, not read from the file. The stored half is a starting
+      // figure and goes stale the moment a road or a railway is finished, and a
+      // layer disagreeing with the card it sits next to is worse than either.
+      max = unlockedSlots(Array.isArray(e.buildingSlots) ? e.buildingSlots[1] : 0,
+        builtLevel(e, 'road'), builtLevel(e, 'electricity'), railShare(w, w.byId.get(id)));
+    } else {
+      if (!Array.isArray(e[key])) return;
+      [built, max] = e[key];
+    }
+    if (!max) return;
+
+    const bb = w.bounds.get(id);
+    if (!bb) return;
+    const a = levelAnchor(w, id);
+
+    // The chosen province is exempt from the room test below. Picking one is a
+    // request to see it, and hiding what was asked for because the ground is
+    // narrow is the opposite of an answer.
+    const b = bakedLevelLine(built + '/' + max, chosen ? big : base);
+
+    // The caller has already translated by dx, so dx belongs in the test for
+    // whether THIS copy of the wrapped map is on screen and nowhere else.
+    const x = a.ax * s + view.x;
+    if (x + dx < -160 || x + dx > cssW + 160) return;
+    const y = a.ay * s + view.y;
+    if (y + b.h < 0 || y - b.h > cssH) return;
+
+    // Half the width, because a line may hang over the edges. A figure written
+    // wider than the island it belongs to is how an atlas has always done it.
+    if (!chosen && (bb.maxX - bb.minX + 1) * s < b.w * RESOURCE_OVERHANG) return;
+
+    ctx.drawImage(b.canvas, 0, 0, b.canvas.width, b.canvas.height,
+      x - b.w / 2, y - b.h / 2, b.w, b.h);
+    drawn++;
+  };
+
+  // The chosen one is held back so its larger figure lands ON TOP of its
+  // neighbours rather than under them.
+  for (const id of w.bounds.keys()) if (id !== state.selected) one(id, false);
+  if (state.selected) one(state.selected, true);
+  debug.infrastructure = drawn;
 }
 
 /**
@@ -4483,6 +5507,16 @@ const els = {
   cardPop: document.getElementById('card-pop'),
   cardArea: document.getElementById('card-area'),
   cardGrid: document.getElementById('card-grid'),
+  cardHappyRow: document.getElementById('card-happy-row'),
+  cardHappy: document.getElementById('card-happy'),
+  cardHappyFill: document.getElementById('card-happy-fill'),
+  cardHappyNote: document.getElementById('card-happy-note'),
+
+  cardUnrestRow: document.getElementById('card-unrest-row'),
+  cardUnrest: document.getElementById('card-unrest'),
+  cardUnrestFill: document.getElementById('card-unrest-fill'),
+  cardUnrestNote: document.getElementById('card-unrest-note'),
+
   cardSlots: document.getElementById('card-slots'),
   cardSlotsN: document.getElementById('card-slots-n'),
   cardCivN: document.getElementById('card-civ-n'),
@@ -4527,7 +5561,6 @@ const state = {
   showCoastal: false,
   showSeams: false,
 };
-
 
 // Redrawing is driven by flags rather than by redrawing on every event, so a
 // burst of mouse moves within one frame still costs a single repaint.
@@ -4577,7 +5610,7 @@ function invalidateProvinces(...ids) {
  * Infinity, which a running average can never leave: 0.9 x Infinity is still
  * Infinity, so the meter stays pinned there for the rest of the session.
  * Averaging the interval keeps a short frame worth no more than a short frame. */
-const perf = { resources: 0, frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null, maskBuilds: 0, night: 0, cities: 0, labels: 0 };
+const perf = { resources: 0, frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null, maskBuilds: 0, night: 0, cities: 0, labels: 0, ringDraw: 0, ringBuild: 0, ringBuilds: 0, ringPx: 0, frameJs: 0 };
 const ease = (was, now) => (was ? was * 0.9 + now * 0.1 : now);
 
 /** True when the canvas's CSS box no longer matches its pixel buffer. */
@@ -4801,6 +5834,12 @@ let frameFault = null;
 let frameFaults = 0;
 
 function frame() {
+  // Everything this callback costs, against perf.frameMs which is the wall clock
+  // between one frame and the next. The gap between the two is what is spent
+  // outside our code — the browser compositing the canvas, or a frame we were
+  // not given. Reading only the parts made the sum look fine while the frame
+  // rate said otherwise, because the parts were not where the time was going.
+  const t0 = performance.now();
   try {
     frameBody();
   } catch (err) {
@@ -4810,6 +5849,7 @@ function frame() {
       console.error('The render loop threw. The map will stop updating until this is fixed.', err);
     }
   }
+  perf.frameJs = ease(perf.frameJs, performance.now() - t0);
   requestAnimationFrame(frame);
 }
 
@@ -5419,8 +6459,52 @@ function showResourceTooltip(hit, ev) {
 
   els.tooltip.innerHTML =
     `<div>${RESOURCE_NAME[hit.kind] ?? hit.kind}</div>` +
-    `<div class="sub">deposit ${hit.amount} &middot; yield 0 a day</div>` +
+    `<div class="sub">deposit ${hit.amount} &middot; yield ${hit.yield ?? 0} a day</div>` +
     `<div class="sub">${p ? p.name : ''}</div>`;
+  placeTooltip(ev);
+}
+
+/**
+ * The eyrie mark under the pointer, or null.
+ *
+ * Walked backwards so that where two overlap the one drawn last, and therefore
+ * the one on top, is the one answered with. Unlike the resource layer this is
+ * live in every mode, because the mark is drawn in every mode.
+ */
+function markAtEvent(ev) {
+  if (!markHits.length) return null;
+  const box = els.canvas.getBoundingClientRect();
+  const x = ev.clientX - box.left;
+  const y = ev.clientY - box.top;
+  for (let i = markHits.length - 1; i >= 0; i--) {
+    const h = markHits[i];
+    if (x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1) return h;
+  }
+  return null;
+}
+
+/**
+ * Names the building under the pointer.
+ *
+ * The mark says there is one. This says which kind, whose it is and where, which
+ * is what a player wants when a mark turns up on somebody else's ground. No local
+ * time, so tipFor is cleared and refreshTooltipTime leaves this alone.
+ */
+function showMarkTooltip(hit, ev) {
+  const w = state.world;
+  const c = w.counties?.byId?.get(hit.id);
+  const p = w.byId.get(hit.province ?? c?.province);
+  const pol = p ? polityOf(w, p) : null;
+  tipFor = null;
+  tipTime = null;
+
+  // The county is named because the county is what holds it. A building falls
+  // with its own county and not with the province around it, so which county is
+  // the fact a player needs and the province is only where to look.
+  els.tooltip.innerHTML =
+    `<div>${MARKS[hit.kind].label}</div>` +
+    (pol ? `<div class="sub">${swatch(pol.colour)}${pol.name}</div>` : '') +
+    `<div class="sub">${c ? c.name : (p ? p.name : '')}</div>`;
   placeTooltip(ev);
 }
 
@@ -5468,8 +6552,9 @@ function areaText(p) {
 /* ------------------------------------------------------ the province card
  *
  * What a province HAS, as opposed to what it is. Everything here is read from
- * data/json/province-stats.json, which sync-provinces.js keeps an entry in for every
- * province; the map data itself knows nothing about roads or factories.
+ * the three province tables merged by src/provincestats.js, which sync-provinces.js
+ * keeps an entry in for every province; the map data itself knows nothing about
+ * roads or factories.
  *
  * Order matters as much as content. Ownership sits at the top because it is the
  * one fact that decides what any of the rest is worth, then the two figures that
@@ -5485,6 +6570,452 @@ function areaText(p) {
 // Rail is deliberately absent. It is built county by county and has no level,
 // so it does not belong in a list of province levels; it will be shown as a
 // share of counties once counties exist. Air base took the slot it left.
+/*
+ * Happiness and unrest.
+ *
+ * Happiness is DERIVED and never stored. Every input is a field on the province
+ * or a fact about its owner, so computing it fresh each time is cheaper than
+ * keeping it correct — a stored derived value is one that will eventually be
+ * wrong, which is the same trap province area fell into.
+ *
+ * Unrest IS stored, in provinces-starting-attitude.json, because it cannot be
+ * derived: it is a recurrence over every previous day and it saturates at 100,
+ * which throws away the history a reconstruction would need.
+ *
+ * Both return their parts as well as their figure. The number alone says a
+ * province is unhappy; the parts say what to do about it, which is the only
+ * question a player can act on.
+ */
+const HAPPINESS_BASE = 50;
+const UNREST_THRESHOLD = 20;      // 30 while the country is under strain
+const UNREST_DECAY = 2;           // a day, wherever nothing is pressing
+
+/** Share of a province's counties carrying rail. Nothing lays rail yet. */
+/**
+ * The share of a province's counties that carry a railway, 0 to 1.
+ *
+ * A share and not a count, because counties vary in size with climate and area:
+ * counting them would hand a large province three times the throughput and three
+ * times the construction bonus of a small one for the same finished line. Size
+ * shows in what the line costs, not in what it returns.
+ *
+ * Memoised per world. Rail changes when a line is finished, which is rare enough
+ * that rebuilding the map then is cheaper than counting on every card paint.
+ */
+let railCache = null, railCacheWorld = null;
+
+/**
+ * Whether a province is in the national economy at all.
+ *
+ * Food only leaves a province that has a way out. The first level of road is the
+ * one that puts a province into the national pool, and no level after it does
+ * anything comparable: everything else in the game reads road as a share of a
+ * ceiling and moves in proportion. A railway across a border does the same job
+ * without a road, which is how a pithead on a line feeds a country that never
+ * paved the valley.
+ *
+ *   connected = road >= 1
+ *            or some county of it is railed to a county in another province
+ *
+ * Cached per world the way railShare is, and for the same reason: rail changes
+ * when a line is finished and roads change on a build, both rare enough that
+ * rebuilding the set then is cheaper than walking the counties on every paint.
+ */
+let railToCapital = null, railToCapitalWorld = null;
+
+/**
+ * The provinces whose railways reach their own capital without leaving the
+ * country.
+ *
+ * A line is only worth anything to a national economy if what it carries can get
+ * to the country. Track that runs to a neighbour's railhead and stops moves
+ * goods into somebody else's network, not into this one, so it does not put the
+ * province into the national pool. Crossing foreign ground on the way needs a
+ * lease or a right of way from whoever owns it, which is a mechanic that does not
+ * exist yet; until it does, a route that leaves the country does not count.
+ *
+ * Walked as components over the counties, following a link only where both ends
+ * stand in provinces held by the same polity, then keeping every component that
+ * contains a county of that polity's capital province.
+ */
+function railsReachingTheCapital(w) {
+  if (railToCapitalWorld === w) return railToCapital;
+  railToCapital = new Set();
+  const counties = [...w.counties.byId.values()];
+  const provinceOf = new Map(counties.map((c) => [c.id, c.province ?? c.parent]));
+  const ownerOf = (pid) => w.byId?.get(pid)?.owner;
+
+  // the capital province of every polity that has one
+  const capitalProvince = new Map();
+  for (const c of (w.cities || [])) {
+    if (!c.capital) continue;
+    const o = ownerOf(c.province);
+    if (o !== undefined) capitalProvince.set(o, c.province);
+  }
+
+  // components, never crossing an owner boundary
+  const seen = new Set();
+  for (const c of counties) {
+    if (seen.has(c.id) || c.rail === undefined) continue;
+    const home = ownerOf(provinceOf.get(c.id));
+    const part = [];
+    const queue = [c.id];
+    seen.add(c.id);
+    let touchesCapital = false;
+    while (queue.length) {
+      const id = queue.shift();
+      const pid = provinceOf.get(id);
+      part.push(pid);
+      if (capitalProvince.get(home) === pid) touchesCapital = true;
+      for (const other of (Array.isArray(w.counties.byId.get(id)?.rail) ? w.counties.byId.get(id).rail : [])) {
+        if (seen.has(other)) continue;
+        const there = provinceOf.get(other);
+        if (there === undefined || ownerOf(there) !== home) continue;   // the line leaves the country
+        seen.add(other);
+        queue.push(other);
+      }
+    }
+    if (touchesCapital) for (const pid of part) railToCapital.add(pid);
+  }
+  railToCapitalWorld = w;
+  return railToCapital;
+}
+
+function connectedOf(w, p) {
+  if (!w?.counties?.byId || !p) return true;
+  if (builtLevel(w.stats?.[p.id] || {}, 'road') >= 1) return true;
+  return railsReachingTheCapital(w).has(p.id);
+}
+
+function railShare(w, p) {
+  if (!w?.counties?.byId || !p) return 0;
+  if (railCacheWorld !== w) {
+    railCache = new Map();
+    for (const c of w.counties.byId.values()) {
+      const id = c.province || c.parent;
+      if (id === undefined) continue;
+      const t = railCache.get(id) || { n: 0, railed: 0 };
+      t.n++;
+      // The FIELD says the county has a railway; the list says where it runs.
+      // An empty list is a line that reaches nothing beyond its own ground,
+      // which is what an island railway is. Gwerinlur is 40 landmasses and
+      // 37 of them are a single county, so without this most of the Combine
+      // could never have rail at all.
+      if (c.rail !== undefined) t.railed++;
+      railCache.set(id, t);
+    }
+    railCacheWorld = w;
+  }
+  const t = railCache.get(p.id);
+  return t && t.n ? t.railed / t.n : 0;
+}
+
+/** Fraction of the province in foreign hands. Occupation is per-province today. */
+function occupiedFraction(w, p) { return p.occupier && p.occupier !== p.owner ? 1 : 0; }
+
+/**
+ * True while the province's owner is at war, from polities-starting-values.json.
+ * Being at war costs a province no happiness by itself; what costs it is the
+ * weariness the war accumulates, under wearinessOf(). This answers the panels
+ * and anything that needs to know whether a war is on.
+ */
+export function ownerAtWar(w, p) {
+  return (w?.polityValues?.[p?.owner]?.atWar?.length ?? 0) > 0;
+}
+
+/**
+ * How far an occupied population sides with its occupier, 0 to 1, derived at
+ * capture and never authored: any polity can occupy any province, so there is no
+ * table of 1,525 provinces against 193 polities for anyone to write.
+ *
+ * A claim is the strongest signal, being the occupier saying in the data that
+ * these people are already its own, which is what an irredentist war and a civil
+ * war both are. Misery is the second: a province that was content has something
+ * to lose. baseHappiness is measured with the occupation penalty taken out,
+ * which both keeps it to what the province felt the day before it fell and stops
+ * the circle, since the penalty is computed from compliance.
+ */
+export function collaborationOf(w, p, stats, baseHappiness) {
+  if (!p?.occupier) return 0;
+  const claimed = (stats.claims || []).includes(p.occupier) ? 1 : 0;
+  const ideology = 0;                    // 0.30 * (1 - distance / 200) - 0.15, once ideologies are stored
+  return clamp(0.5 * claimed + 0.4 * (1 - baseHappiness / 100) + ideology, 0, 1);
+}
+
+/**
+ * What a province's weight is when war weariness is handed out: its industry,
+ * and how many engagements have been fought over it, and a 1 so that a province
+ * with neither still feels the war. The strike count is capped because the
+ * deduction divides by the country's mean, and one province accumulating
+ * strikes without limit would quietly reduce what every other province suffers.
+ */
+const STRUCK_CAP = 10;
+const STRUCK_HAPPINESS = 1.5;
+
+// Industry only. struck is deliberately NOT in here: inside the weight it was a
+// share of the country's own mean, so raising strikes everywhere changed nothing
+// and a country fought over in every province suffered less per province than one
+// fought over in a single place. It bites directly instead, in struckOf().
+function wearinessWeight(stats) {
+  return 1 + (stats.civilianFactories || 0) + (stats.militaryFactories || 0);
+}
+
+/** Happiness lost to what happened on this ground, whatever the nation feels. */
+function struckOf(stats) {
+  return STRUCK_HAPPINESS * Math.min(STRUCK_CAP, stats.struck || 0);
+}
+
+/**
+ * The mean weight across everything a polity owns, cached per polity. Measured
+ * against the mean rather than the total so that a large country is not made
+ * nearly immune to weariness by having more ground to spread it over.
+ */
+function wearinessMean(w, owner) {
+  if (!w?.wearinessMeans || !w.stats) return 0;
+  if (w.wearinessMeans.has(owner)) return w.wearinessMeans.get(owner);
+  let sum = 0, n = 0;
+  for (const q of w.table.provinces) {
+    if (q.owner !== owner) continue;
+    sum += wearinessWeight(w.stats[q.id] || {});
+    n++;
+  }
+  const mean = n ? sum / n : 0;
+  w.wearinessMeans.set(owner, mean);
+  return mean;
+}
+
+/** Happiness lost to war weariness in this province, 0 to WEARINESS_CAP. */
+const WEARINESS_CAP = 30;
+function wearinessOf(w, p, stats) {
+  const weariness = w?.polityValues?.[p?.owner]?.weariness || 0;
+  if (!weariness) return 0;
+  const mean = wearinessMean(w, p.owner);
+  if (!mean) return 0;
+  return Math.min(WEARINESS_CAP, weariness * wearinessWeight(stats) / mean);
+}
+
+/**
+ * The unsettled share of a recent annexation, 1 falling to 0 across 180 days.
+ * Derived from the date, not stored as a counter: a counter has to be ticked
+ * every day and drifts when a tick is missed, and its curve cannot be changed
+ * without rewriting the data.
+ */
+function unsettledShare(stats, today) {
+  if (!stats.annexedOn || !today) return 0;
+  const days = (today - new Date(stats.annexedOn)) / 86400000;
+  return days >= 0 && days < 180 ? 1 - days / 180 : 0;
+}
+
+/** Happiness 0..100 with the contributions that made it. */
+/**
+ * How many of a province's slots can be used today.
+ *
+ * Derived and not stored, on the same grounds as happiness: it is a pure
+ * function of the road and electricity a province has BUILT, and those move.
+ * An undeveloped province can use 30% of its slots, one at road 10 and
+ * electricity 10 can use 90%, and the last of them waits on rail through half
+ * the province.
+ *
+ * Rail unlocks a slot rather than adding one: the +1 sits inside the min
+ * against the maximum, so it can never take unlocked past what the ground
+ * holds. Only granted slots raise a maximum.
+ */
+/**
+ * How much of a province's deposits are actually worked, 0 to 1.
+ *
+ * Resources, Extraction: the road to haul it out, the power to run the
+ * machinery, and the rail to move it in quantity. Each term is progress toward
+ * that province's OWN ceiling and not toward a fixed 10, so a province whose
+ * ground caps its road at 4 is fully developed at road 4.
+ *
+ * Read from the levels a province has BUILT and never reduced by a shortage.
+ * Letting a power shortfall back in here would make a coal shortage cut coal
+ * production, which cuts it again.
+ */
+function developmentOf(w, p, stats) {
+  const share = (built, max) => (max > 0 ? built / max : 0);
+  return 0.4 * share(builtLevel(stats, 'road'), (stats.road || [0, 0])[1])
+    + 0.3 * share(builtLevel(stats, 'electricity'), (stats.electricity || [0, 0])[1])
+    + 0.3 * railShare(w, p);
+}
+
+/**
+ * The same figure for coal and natural gas, which are worked differently.
+ *
+ * What raised coal output in the 1920s was electric cutters, conveyors, pumps
+ * and winders, and a colliery moved its product by rail and not by lorry: the
+ * road was for the men and the stores. The weights still sum to 1, so a fully
+ * developed pit reaches its ceiling. What changes is the marginal value of a
+ * level, which is what lets electrifying a coalfield pay back the power it
+ * draws.
+ *
+ * The weights sum to 1.1 and the figure is capped at 1. A pit that has its
+ * power and its railway is working the seam, and it does not yield less for
+ * wanting a better road. The road still counts; it is simply no longer the
+ * thing standing between the coal and the surface.
+ */
+function developmentPitOf(w, p, stats) {
+  const share = (built, max) => (max > 0 ? built / max : 0);
+  return Math.min(1, 0.3 * share(builtLevel(stats, 'road'), (stats.road || [0, 0])[1])
+    + 0.5 * share(builtLevel(stats, 'electricity'), (stats.electricity || [0, 0])[1])
+    + 0.3 * railShare(w, p));
+}
+
+/** The built half of a [built, max] pair, however the file wrote it. */
+const builtLevel = (stats, key) => (Array.isArray(stats[key]) ? stats[key][0] : Number(stats[key])) || 0;
+
+function unlockedSlots(maximum, road, electricity, railedShare) {
+  if (!maximum) return 0;
+  const share = 0.3 + 0.6 * ((road + electricity) / 20);
+  return Math.min(maximum, Math.ceil(maximum * share) + (railedShare >= 0.5 ? 1 : 0));
+}
+
+function happinessOf(w, p, stats, today) {
+  const parts = [];
+  const add = (label, n) => { if (n) parts.push([label, n]); };
+
+  const [road = 0] = stats.road || [];
+  const [power = 0] = stats.electricity || [];
+  add('road', road * 0.5);
+  add('rail', railShare(w, p) * 4);
+  add('electricity', power * 1);
+  // 'employment', not 'factories'. Nobody is cheered by a factory; they are
+  // cheered by the work in it, which is what the figure is measuring.
+  add('employment', (stats.civilianFactories || 0) * 1);
+  // An occupation the population accepts is not felt as one. The penalty runs
+  // off compliance rather than off the fact of occupation, so it lifts as the
+  // province settles: collaboration only sets where compliance starts.
+  add('occupied', -30 * occupiedFraction(w, p) * (1 - (stats.compliance || 0)));
+  // No flat penalty for being at war. War weariness is the whole of what a war
+  // costs a population, and it starts at nothing: a war nobody has died in
+  // wearies nobody, which a flat -10 on the day of the declaration contradicts.
+  add('war weariness', -wearinessOf(w, p, stats));
+  add('fought over', -struckOf(stats));
+  add('recently annexed', -25 * unsettledShare(stats, today));
+
+  const raw = HAPPINESS_BASE + parts.reduce((a, [, n]) => a + n, 0);
+  return { value: clamp(raw, 0, 100), parts };
+}
+
+/**
+ * Unrest: the stored figure, plus how fast it is moving and why.
+ *
+ * Rising and falling are not one formula. Pressure accumulates, and a province
+ * with none recovers at a flat rate, so the two are reported separately rather
+ * than as a single signed sum that would read 0 for a province quietly healing.
+ */
+function unrestOf(w, p, stats, happiness) {
+  const local = Math.max(0, UNREST_THRESHOLD - happiness) / 5;
+  // Resistance in an occupied province arrives here rather than having a rule of
+  // its own, so a province leaves its owner the one way any province does.
+  const occupation = p?.occupier ? 5 * (stats.resistance || 0) * occupiedFraction(w, p) : 0;
+  const national = 0;                              // stability < 20; no national values yet
+  const garrison = 0;                              // 3 per unit stationed, capped at 9; no units yet
+  const pressure = local + national + occupation;
+  const rising = pressure > garrison;
+  const rate = rising ? pressure - garrison : -UNREST_DECAY;
+  const parts = [];
+  if (local) parts.push(['unhappy', local]);
+  if (occupation) parts.push(['resistance', occupation]);
+  if (national) parts.push(['instability', national]);
+  if (garrison) parts.push(['garrison', -garrison]);
+  // Only when there is something to settle. A province at 0 was showing a
+  // recovery it could not be making.
+  if (!rising && (stats.unrest || 0) > 0) parts.push(['settling', -UNREST_DECAY]);
+  return { value: clamp(stats.unrest || 0, 0, 100), rate, parts };
+}
+
+
+/** Green at 100 through amber at 50 to red at 0, for happiness. */
+function moodColour(v) {
+  const h = (v / 100) * 120;                       // 0 red .. 120 green
+  return `hsl(${h.toFixed(0)} 52% 46%)`;
+}
+
+/** Cool while unrest is harmless, warming as it crosses each step. */
+function unrestColour(v) {
+  if (v >= 70) return 'hsl(0 58% 48%)';
+  if (v >= 40) return 'hsl(28 58% 47%)';
+  return 'hsl(48 40% 44%)';
+}
+
+/**
+ * The breakdown, as tooltip markup: one line per contribution, signed and
+ * coloured by direction.
+ *
+ * It hovers rather than opening in place. A breakdown that expanded inside the
+ * card would change its height while being read, moving every row under it and
+ * the pointer with them.
+ */
+function partsMarkup(title, parts, empty, risingIsGood = true) {
+  const body = parts.length
+    ? parts
+      .map(([label, n]) => {
+        const sign = n > 0 ? '+' : '';
+        const round = Math.abs(n) < 10 ? n.toFixed(1) : n.toFixed(0);
+        // Colour says good or bad, not positive or negative. The two agree on
+        // happiness and disagree on unrest, where falling is what you want, so
+        // the caller states which way is up rather than the sign deciding.
+        const good = n > 0 === risingIsGood;
+        return `<div class="cm-line"><span>${label}</span><b class="${good ? 'up' : 'down'}">${sign}${round}</b></div>`;
+      })
+      .join('')
+    : `<div class="sub none">${empty}</div>`;
+  return `<b>${title}</b>${body}`;
+}
+
+/**
+ * Hangs a hover breakdown on one meter row.
+ *
+ * Written on every paint, because what it says depends on the province that is
+ * selected now. The shared tooltip is reused rather than a second one built:
+ * it already flips at the window edge and already sits above everything.
+ */
+function meterTip(row, markup) {
+  row.onmouseenter = (ev) => { els.tooltip.innerHTML = markup; placeTooltip(ev); };
+  row.onmousemove = (ev) => placeTooltip(ev);
+  row.onmouseleave = () => { els.tooltip.hidden = true; };
+}
+
+/** Writes both meters and their breakdowns for the selected province. */
+function paintMeters(w, p, stats) {
+  const today = state.clock?.date instanceof Date ? state.clock.date : null;
+  const happy = happinessOf(w, p, stats, today);
+  const unrest = unrestOf(w, p, stats, happy.value);
+
+  els.cardHappy.textContent = happy.value.toFixed(0);
+  els.cardHappyFill.style.width = `${happy.value}%`;
+  els.cardHappyFill.style.background = moodColour(happy.value);
+  // The multiplier is the whole point of the figure and 0.5 + h/100 is not
+  // something a player will work out from a number between 0 and 100.
+  els.cardHappyNote.innerHTML = `tax &times;${(0.5 + happy.value / 100).toFixed(2)}`;
+  meterTip(els.cardHappyRow, partsMarkup('Happiness', happy.parts, 'nothing here yet'));
+
+  els.cardUnrest.textContent = unrest.value.toFixed(0);
+  els.cardUnrestFill.style.width = `${unrest.value}%`;
+  els.cardUnrestFill.style.background = unrestColour(unrest.value);
+
+  // Direction matters more than level: unrest measures how long a province has
+  // been neglected, so a figure sitting still and one climbing read alike.
+  if (unrest.rate > 0) {
+    // Just the rate. The next threshold and how far off it is are in the bar's
+    // own tooltip, and spelling them out here ran the red text across the card.
+    els.cardUnrestNote.innerHTML = `<span class="down">+${unrest.rate.toFixed(1)}/day</span>`;
+  } else if (unrest.value > 0) {
+    els.cardUnrestNote.innerHTML = `<span class="up">${unrest.rate.toFixed(1)}/day, settling</span>`;
+  } else {
+    els.cardUnrestNote.textContent = 'settled';
+  }
+  // The two ticks on the bar are the only points where anything changes, so
+  // the tooltip names them. A mark you cannot read is worse than no mark.
+  const steps = [[40, 'supply and construction -20%'], [70, 'no construction at all'], [100, 'uprising']]
+    .map(([at, what]) => `<div class="cm-line ${unrest.value >= at ? 'down' : 'sub'}">`
+      + `<span>${unrest.value >= at ? '&bull;' : '&#9702;'} ${at}</span><span>${what}</span></div>`)
+    .join('');
+  meterTip(els.cardUnrestRow,
+    partsMarkup('Unrest per day', unrest.parts, 'business as usual', false) + '<hr>' + steps);
+}
+
 const CARD_FIELDS = [
   ['road', 'Road'],
   ['airBase', 'Air base'],
@@ -5494,19 +7025,23 @@ const CARD_FIELDS = [
   ['antiAir', 'Anti-air'],
 ];
 
+// Maximum levels are DERIVED but not computed here. The ceiling is a property
+// of the ground, the ground does not move, so sync-provinces.js settles it once
+// from counties.json and writes it into province-stats.json as a ceiling. Reading it back is
+// the whole of the game's involvement.
+const LEVEL_TYPES = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase'];
+/** What can still be added. The ceiling gates additions and never removes. */
+function buildableLevels(built, ceiling) { return Math.max(0, ceiling - built); }
+
+
 /** "built / max", tolerating a bare number from a stats file written before. */
 function pair(v) {
   const [built, max] = Array.isArray(v) ? v : [v ?? 0, 0];
   return `${built ?? 0}/${max ?? 0}`;
 }
 
-// Sockets drawn when a province has no slots recorded at all. They are shown
-// locked rather than left out, so the panel keeps its height as provinces are
-// filled in and the mechanic is visible before any data exists.
-const CARD_GHOST_SLOTS = 5;
-
 /** Zeroes, for a province the stats file has never heard of. */
-const BLANK_STATS = { claims: [], population: 0, road: [0, 0], airBase: [0, 0], supplyHub: [0, 0], fortification: [0, 0], electricity: [0, 0], antiAir: [0, 0], buildingSlots: [0, 0], civilianFactories: 0, militaryFactories: 0 };
+const BLANK_STATS = { claims: [], hydroPotential: 0, population: 0, road: [0, 0], airBase: [0, 0], supplyHub: [0, 0], fortification: [0, 0], electricity: [0, 0], antiAir: [0, 0], buildingSlots: [0, 0], civilianFactories: 0, militaryFactories: 0 };
 
 const cardOpen = () => els.card.classList.contains('open');
 
@@ -5523,14 +7058,27 @@ function closeCard() {
  * a single pool, so every factory built takes a socket the other kind can no
  * longer have — and a row each would say the opposite.
  */
-function drawSlots(host, unlocked, civ, mil) {
+function drawSlots(host, unlocked, civ, mil, maximum = unlocked) {
   host.innerHTML = '';
-  const ghost = unlocked === 0;
-  const n = ghost ? CARD_GHOST_SLOTS : unlocked;
+  // Every socket the province will ever have, not just the ones open now. A
+  // strip that showed only the unlocked ones said a province with nine slots
+  // and three of them open had three slots, which is a different claim.
+  //
+  // A maximum of 0 draws nothing at all. The ground allows no factory here and
+  // the figure above the strip says so; sockets would offer something that is
+  // never going to open. Every province carries an authored figure now, so 0 is
+  // a fact about the province and no longer a province nobody has filled in.
+  const n = maximum;
+  // Ten to a row. Below that the strip stretches to the card as it always has.
+  host.classList.toggle('wrapped', n > 10);
   for (let i = 0; i < n; i++) {
     const box = document.createElement('span');
     box.className = 'card-slot'
-      + (ghost ? ' locked' : i < civ ? ' civ' : i < civ + mil ? ' mil' : '');
+      + (i >= unlocked ? ' locked' : i < civ ? ' civ' : i < civ + mil ? ' mil' : '');
+    // The art rides an inner tile of fixed size. The socket itself is flexible,
+    // and a two-cell sprite positioned on a flexible box shows both cells the
+    // moment the box is narrower than the sprite.
+    box.append(document.createElement('i'));
     host.append(box);
   }
 }
@@ -5573,17 +7121,32 @@ function updateCard() {
   els.cardPop.textContent = stats.population.toLocaleString();
   els.cardArea.textContent = areaText(p);
 
+  paintMeters(w, p, stats);
+
   els.cardGrid.innerHTML = CARD_FIELDS
-    .map(([key, label]) => `<div class="card-cell"><span>${label}</span><b>${pair(stats[key])}</b></div>`)
+    .map(([key, label]) => {
+      const [built = 0, max = 0] = Array.isArray(stats[key]) ? stats[key] : [stats[key] ?? 0, 0];
+      // Greyed where the ground allows nothing at all, so 0/0 reads as a fact
+      // about the province rather than as data nobody has filled in yet.
+      const dead = max ? '' : ' none';
+      return `<div class="card-cell${dead}"><span>${label}</span><b>${built}/${max}</b></div>`;
+    })
     .join('');
 
   // Used against unlocked, which is the figure that decides whether anything
-  // more can be built here at all.
-  const [unlocked = 0] = Array.isArray(stats.buildingSlots) ? stats.buildingSlots : [0, 0];
+  // more can be built here at all. Worked out here from the province's current
+  // road and electricity rather than read from the file, so that building a
+  // road opens a slot the same day instead of at the next generation.
+  const [, slotMax = 0] = Array.isArray(stats.buildingSlots) ? stats.buildingSlots : [0, 0];
+  const unlocked = unlockedSlots(slotMax, builtLevel(stats, 'road'), builtLevel(stats, 'electricity'), railShare(w, p));
   const civ = stats.civilianFactories || 0;
   const mil = stats.militaryFactories || 0;
-  els.cardSlotsN.textContent = `${civ + mil}/${unlocked}`;
-  drawSlots(els.cardSlots, unlocked, civ, mil);
+  // Three figures, because they answer three questions: what is built, what can
+  // be built today, and what the province will hold once it is developed.
+  els.cardSlotsN.textContent = slotMax > unlocked
+    ? `${civ + mil}/${unlocked} of ${slotMax}`
+    : `${civ + mil}/${unlocked}`;
+  drawSlots(els.cardSlots, unlocked, civ, mil, slotMax);
   els.cardCivN.textContent = civ;
   els.cardMilN.textContent = mil;
 
@@ -5676,15 +7239,31 @@ function updateReadout(now) {
     statRow('Mask builds', `${perf.maskBuilds} (${Math.floor(clock.tick / TICKS_PER_DAY) + 1} days)`,
       perf.maskBuilds > Math.floor(clock.tick / TICKS_PER_DAY) + 2) +
     statRow('Frame', `${perf.frameMs ? (1000 / perf.frameMs).toFixed(0) : 0} fps`, perf.frameMs > 22) +
+    // Our JavaScript against the wall clock between frames. If js is small and
+    // the gap is large, the time is going to the compositor or to frames we
+    // were never given, and nothing in the rows below will account for it.
+    statRow('  js / gap', `${perf.frameJs.toFixed(1)} ms + ${Math.max(0, perf.frameMs - perf.frameJs).toFixed(1)} ms`,
+      perf.frameMs - perf.frameJs > 8) +
     statRow('Blit', `${perf.draw.toFixed(2)} ms`, perf.draw > 8) +
     statRow('  night', `${perf.night.toFixed(2)} ms`, perf.night > 4) +
     statRow('  labels', `${perf.labels.toFixed(2)} ms`, perf.labels > 3) +
     statRow('  cities', `${perf.cities.toFixed(2)} ms`, perf.cities > 3) +
+    // Only while something is selected. `stroke` happens every frame and should
+    // stay under a millisecond; `traces` counts border traces and should climb
+    // once per selection and never with the zoom.
+    (state.selected || state.county || state.fade
+      ? statRow('  ring', `${perf.ringDraw.toFixed(2)} ms stroke, ${perf.ringBuild.toFixed(1)} ms trace`
+        + `, ${perf.ringBuilds} traces, ${perf.ringPx} segments`, perf.ringDraw > 3)
+      : '') +
     statRow('Last paint', `${perf.paint.toFixed(2)} ms`, perf.paint > 16) +
     (state.mode === 'resources'
       ? statRow('Resources', `${perf.resources.toFixed(2)} ms, ${debug.resourcesDrawn || 0} stacks`
         + `, ${resourceLineCache.size} baked`
         , perf.resources > 4)
+      : '') +
+    (state.mode.startsWith('infra:')
+      ? statRow('Layer', `${state.mode.slice(6)}, ${debug.infrastructure || 0} labelled`
+        + `, ${levelLineCache.size} baked`)
       : '') +
     // Three separate delays, and only the middle one is this page's fault.
     statRow('Click sound', sfx.buffer
@@ -6140,7 +7719,9 @@ function wireInput() {
     // drawn on top of the province and is what the pointer is aiming at, and
     // the province keeps its name in the layer's own colouring anyway.
     const deposit = resourceAtEvent(ev);
+    const building = deposit ? null : markAtEvent(ev);
     if (deposit) showResourceTooltip(deposit, ev);
+    else if (building) showMarkTooltip(building, ev);
     else showTooltip(id, ev, seaId);
   });
 
@@ -6258,8 +7839,11 @@ function wireInput() {
     if (ev.key === '+' || ev.key === '=') zoomCentre(1.4);
     else if (ev.key === '-' || ev.key === '_') zoomCentre(1 / 1.4);
     else if (ev.key === '0') fitToView();
-    else if (ev.key === '`') togglePanel();
-    else if (ev.key >= '1' && ev.key <= String(SPEEDS.length)) setSpeed(Number(ev.key));
+    // The keyboard reaches these controls without ever touching their buttons,
+    // so the delegated pointerdown handler never sees them. A key that works a
+    // control the toolbar also carries should sound the same either way.
+    else if (ev.key === '`') { playClick(ev); togglePanel(); }
+    else if (ev.key >= '1' && ev.key <= String(SPEEDS.length)) { playClick(ev); setSpeed(Number(ev.key)); }
     else if (ev.key === ' ') {
       // A focused button keeps its own keys, which is the rule the start menu
       // follows for Enter. Space is how a button is pressed, and taking it away
@@ -6267,6 +7851,7 @@ function wireInput() {
       // the toolbar for anyone working it from the keyboard.
       if (document.activeElement?.tagName === 'BUTTON') return;
       ev.preventDefault();          // or the page tries to scroll on it
+      playClick(ev);
       setPaused(!clock.paused);
     }
     else if (ev.key === 'Escape') {
@@ -6302,6 +7887,62 @@ function wireInput() {
   document.getElementById('card-close').addEventListener('click', closeCard);
   document.getElementById('county-close').addEventListener('click', () => selectCounty(null));
 
+  // The layer menu and the mode buttons are one choice, so each has to clear
+  // the other. Without that a Road layer would sit on screen with POLITICAL
+  // still lit, and neither control would be telling the truth.
+  //
+  // The menu items carry data-layer and not data-mode, which keeps them out
+  // of the toolbar's own click handler below. Sharing the attribute would have
+  // put every layer in the row of buttons it is meant to sit behind.
+  const infraButton = document.getElementById('infra-button');
+  const infraList = document.getElementById('infra-list');
+  const infraLabel = document.getElementById('infra-label');
+  const openInfra = (open) => {
+    infraList.hidden = !open;
+    infraButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) return;
+    // Placed from the button rect on opening rather than laid out under it,
+    // because #toolbar clips its overflow and would swallow the list whole.
+    // Measured every time: the toolbar is a flex row, so the wordmark and the
+    // clock move the button as the window resizes.
+    const r = infraButton.getBoundingClientRect();
+    infraList.style.left = r.left + 'px';
+    infraList.style.top = (r.bottom + 6) + 'px';
+    infraList.style.minWidth = r.width + 'px';
+  };
+  const clearInfra = () => {
+    infraButton.classList.remove('active');
+    infraLabel.textContent = 'Infrastructure';
+    for (const b of infraList.querySelectorAll('button')) b.classList.remove('active');
+  };
+
+  // stopPropagation, or the document listener that closes the menu would see
+  // the very click that opened it and shut it again in the same tick.
+  infraButton.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    openInfra(infraList.hidden);
+  });
+
+  infraList.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-layer]');
+    if (!b) return;
+    state.mode = b.dataset.layer;
+    state.selectedSea = null; state.hoveredSea = null;
+    for (const other of els.toolbar.querySelectorAll('button[data-mode]')) other.classList.remove('active');
+    for (const other of infraList.querySelectorAll('button')) other.classList.toggle('active', other === b);
+    infraButton.classList.add('active');
+    // The button names the layer once one is chosen. A control that still says
+    // "Infrastructure" while the map shows roads is not reporting its state.
+    infraLabel.textContent = b.textContent;
+    openInfra(false);
+    invalidateBuffer();
+  });
+
+  // A menu left open over the map is in the way of the thing it was opened to
+  // look at.
+  document.addEventListener('click', () => openInfra(false));
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') openInfra(false); });
+
   els.toolbar.addEventListener('click', (ev) => {
     const b = ev.target.closest('button[data-mode]');
     if (!b) return;                                // a click on some other button
@@ -6313,6 +7954,7 @@ function wireInput() {
     for (const other of els.toolbar.querySelectorAll('button[data-mode]')) {
       other.classList.toggle('active', other === b);
     }
+    clearInfra();
     invalidateBuffer();      // a mode change recolours every province at once
   });
 
@@ -6359,10 +8001,14 @@ async function init() {
 
   // All four fetched together. The imagery is by far the largest, and waiting
   // for it after the others would add its whole download to the load time.
-  const [raw, pngBytes, cacheBytes, satellite, rivers, night, cities, cityIcon, capitalIcon,
-    resourceSheet, stats, resources, quotes,
+  const [raw, polityRaw, pngBytes, cacheBytes, satellite, rivers, night, cities, cityIcon, capitalIcon,
+    eyrieIcon, dockyardIcon, syntheticOilIcon, syntheticRubberIcon, plantIcon,
+    resourceSheet, stats, startInfra, startAttitude, polityValues, resources, quotes,
     seaRaw, seaPngBytes, countyRaw, countyPngBytes, subPngBytes] = await Promise.all([
       loadJSON('./data/json/provinces.json'),
+      // The list of countries, kept apart from the province table because it is a
+      // different kind of fact and changes for different reasons.
+      loadJSON('./data/json/polities.json'),
       loadBytes('./data/img/provinces.png'),
       loadBytes(`./data/${CACHE_FILE}`, true),
       loadBitmap('./data/img/satellite.png'),
@@ -6379,13 +8025,31 @@ async function init() {
       loadJSON('./data/json/cities.json', true),
       loadBitmap('./data/icons/city.png'),
       loadBitmap('./data/icons/capital.png'),
+      // Drawn on any province holding one. Optional: without it eyries are still
+      // in the data and simply have no mark.
+      loadBitmap('./data/icons/Eyrie.png'),
+      // Likewise on any province holding a naval dockyard.
+      loadBitmap('./data/icons/Dockyard.png'),
+      // The two synthetic plants, and the plain works that stands in for any
+      // building with no art of its own.
+      loadBitmap('./data/icons/Synthetic-plant_oil.png'),
+      loadBitmap('./data/icons/Synthetic-plant_rubber.png'),
+      loadBitmap('./data/icons/Synthetic-plant.png'),
       // The eighteen resource icons on one sheet, six across and three down at
       // 64px a cell. Optional: without it the layer falls back to the short
       // words it used before there was any art.
       loadBitmap('./data/icons/resources.png'),
       // What has been built on each province. Optional: without it the card shows
       // zeros rather than refusing to open.
+      // Three files, one shape. province-stats holds what the map and the
+      // authoring fix; the two starting-value files hold what a game begins with
+      // and what a save therefore has to carry.
       loadJSON('./data/json/province-stats.json', true),
+      loadJSON('./data/json/provinces-starting-infrastructure.json', true),
+      loadJSON('./data/json/provinces-starting-attitude.json', true),
+      // Ten national values per polity, who it is at war with, and its war
+      // weariness. Optional: without it nobody is at war and nobody is weary.
+      loadJSON('./data/json/polities-starting-values.json', true),
       // Every deposit on the map, for the resource layer. Optional: without it
       // the layer draws nothing and the rest of the map is unaffected.
       loadJSON('./data/json/resources.json', true),
@@ -6404,6 +8068,10 @@ async function init() {
       // the bitmap the Navy mode draws whole regions as it did before.
       loadBytes('./data/img/sea_subregions.png', true),
     ]);
+
+  // Put back on the table the rest of the file expects to find them on. Done
+  // before the hash so the cache covers the same fields the build script hashes.
+  raw.polities = polityRaw.polities;
 
   // Hashed before normaliseTable(), which rewrites the colours in place — the
   // build script hashes the same fields in the same form.
@@ -6508,7 +8176,13 @@ async function init() {
   world.cities = cities?.cities ?? [];
   linkInternationalCities(world.cities);
   world.cityIcons = { city: cityIcon, capital: capitalIcon };
-  world.stats = stats?.provinces ?? null;
+  world.buildingIcons = {
+    eyrie: eyrieIcon, dockyard: dockyardIcon,
+    syntheticOil: syntheticOilIcon, syntheticRubber: syntheticRubberIcon, plain: plantIcon,
+  };
+  world.stats = stats ? mergeStats(stats, startInfra, startAttitude) : null;
+  world.polityValues = polityValues?.polities ?? null;
+  world.wearinessMeans = new Map();   // per polity, filled on first use
   world.resources = resources?.provinces ?? null;
   world.resourceKinds = resources?.kinds ?? [];
   world.resourceSheet = resourceSheet;
@@ -6569,6 +8243,37 @@ async function init() {
     setOwner: (province, owner) => changeOwners([[province, owner]]),
     setOwners: changeOwners,
     world: () => state.world,
+
+    // Buildings, the same way. A building belongs to a COUNTY, not a province,
+    // so these take a county id. buildings() takes either and answers whichever
+    // was asked:
+    //   game.build('bolletarn_3', 'dockyard')
+    //   game.demolish('bolletarn_3', 'dockyard')
+    //   game.buildings('bolletarn_3')   what that county holds
+    //   game.buildings('bolletarn')     every county of the province that holds one
+    // The position is worked out here rather than being left to the frame, so
+    // the return value can report it and so a province that has nowhere to put
+    // the mark says so at once instead of silently drawing nothing.
+    build: (county, kind) => setBuilding(county, kind, true),
+    demolish: (county, kind) => setBuilding(county, kind, false),
+    buildings: (where) => {
+      const w = state.world;
+      const c = w?.counties?.byId?.get(where);
+      if (c) {
+        const out = {};
+        for (const k of BUILDINGS) out[k] = c[k] ? { at: c[BUILDING_AT[k]] } : false;
+        return out;
+      }
+      // A province id answers with every county of it that holds anything, since
+      // that is the question somebody typing a province name is really asking.
+      if (!w?.byId?.has(where)) throw new Error(`no county or province "${where}"`);
+      const out = {};
+      for (const q of w.counties?.atIndex || []) {
+        if (!q || q.province !== where) continue;
+        for (const k of BUILDINGS) if (q[k]) (out[q.id] = out[q.id] || {})[k] = { at: q[BUILDING_AT[k]] };
+      }
+      return out;
+    },
 
     // Reading and moving the camera from the console. `view.x` is wrapped by
     // clampPan(), so working out where a map pixel has landed on screen from the
@@ -6943,6 +8648,10 @@ function openStartMenu() {
     // order can leave both of them acting.
     ev.stopImmediatePropagation();
 
+    // preventDefault above stops the focused Enter button ever firing a click,
+    // so the delegated handler cannot sound this one. Play it here instead, and
+    // only here, or a focused button would be heard twice.
+    playClick(ev);
     dismiss();
   });
 }

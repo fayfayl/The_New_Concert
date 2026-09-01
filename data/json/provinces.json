@@ -2,693 +2,6 @@
   "width": 6000,
   "height": 2650,
   "oceanColour": "#ffffff",
-  "polities": [
-    {"id": "NONE", "name": "Unclaimed", "colour": "#5a5a60"},
-    {"id": "KRN", "name": "Kingdom of Krenland", "colour": "#FFECAF"},
-    {
-      "id": "BLA",
-      "name": "Colony of Blaland",
-      "colour": "#FFECAF",
-      "suzerain": "KRN"
-    },
-    {
-      "id": "LEO",
-      "name": "Colony of Leone",
-      "colour": "#FFECAF",
-      "suzerain": "KRN"
-    },
-    {"id": "FNA", "name": "Fellnoro-Avantan Empire", "colour": "#019E4F"},
-    {
-      "id": "FLN",
-      "name": "Kingdom of Fellnor",
-      "colour": "#019E4F",
-      "parent": "FNA"
-    },
-    {
-      "id": "AVN",
-      "name": "Kingdom of Avanta",
-      "colour": "#019E4F",
-      "parent": "FNA"
-    },
-    {
-      "id": "RGC",
-      "name": "Ragcul Territory",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "STN",
-      "name": "Colony of Steensen",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "FAC",
-      "name": "Colony of Fellnoro-Avantan Chiliadnesia",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "KTR",
-      "name": "Protectorate of Kontaria",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "RGA",
-      "name": "Colony of Ringa",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "HLT",
-      "name": "Colony of Hullet",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "SKG",
-      "name": "Skogen Island Territory",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "NNF",
-      "name": "Colony of Nye Nord-Fellnor",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "MLR",
-      "name": "Colony of Mellumren",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "HML",
-      "name": "Colony of Holmlund",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "TPW",
-      "name": "Colony of Thaphakwe",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "BND",
-      "name": "Colony of Bonderland",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "FSP",
-      "name": "Colony of Fellnoro-Avantan South Panathra",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "ADH",
-      "name": "Colony of Aldiocha",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "MBY",
-      "name": "Colony of Muburnyika",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "EMB",
-      "name": "Colony of East Muburnyika",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "GDV",
-      "name": "Colony of Godvind",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "FNY",
-      "name": "Colony of Fellnore Nyinha",
-      "colour": "#019E4F",
-      "suzerain": "FLN"
-    },
-    {
-      "id": "ANY",
-      "name": "Colony of Avantan Nyinha",
-      "colour": "#019E4F",
-      "suzerain": "AVN"
-    },
-    {
-      "id": "HTL",
-      "name": "Colony of Hetland Island",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "HTH",
-      "name": "Colony of Hather",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "AGN",
-      "name": "Colony of Agnarland",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {
-      "id": "BWN",
-      "name": "Colony of Bwanai",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {"id": "KWZ", "name": "Kwanza", "colour": "#447A5D", "suzerain": "FNA"},
-    {"id": "YNK", "name": "Republic of Yunkallpa", "colour": "#82E5A8"},
-    {
-      "id": "HEL",
-      "name": "Helsingdal Islands",
-      "colour": "#019E4F",
-      "suzerain": "FNA"
-    },
-    {"id": "GWR", "name": "Combine of Gwerinlur", "colour": "#595772"},
-    {
-      "id": "NDN",
-      "name": "Colony of New Duncreig",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "TRW",
-      "name": "Colony of Trallwng",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "PWL",
-      "name": "Powles' Island",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "LND",
-      "name": "Colony of Lanyde",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "KYI",
-      "name": "Kenyon Islands",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {"id": "CKP", "name": "Chikup", "colour": "#595772", "suzerain": "GWR"},
-    {
-      "id": "GCB",
-      "name": "Colony of Gwerinish Cribuchel",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "VSW",
-      "name": "Protectorate of Visiwa",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "TMI",
-      "name": "Tirmerion Islands",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "SPK",
-      "name": "Spinekland",
-      "colour": "#393660",
-      "suzerain": "GWR"
-    },
-    {
-      "id": "VUG",
-      "name": "Vaughan Islands",
-      "colour": "#595772",
-      "suzerain": "GWR"
-    },
-    {"id": "SBY", "name": "Duchy of Subeny", "colour": "#BB47FF"},
-    {"id": "KGN", "name": "Kagan Republic", "colour": "#C9FFF8"},
-    {"id": "TWD", "name": "Twadamian Domena", "colour": "#9E4A0E"},
-    {"id": "SWD", "name": "Kingdom of Swanders", "colour": "#FF4447"},
-    {"id": "KAN", "name": "Kingdom of Kanland", "colour": "#9E818B"},
-    {
-      "id": "KVP",
-      "name": "United Colonies of Kanish Vortopaga",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "NDV",
-      "name": "Colony of Nodavanua",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "KNT",
-      "name": "Protectorate of Kantuland",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "ADK",
-      "name": "Colony of Andakland",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "NAS",
-      "name": "Colony of New Ashwood",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "WRL",
-      "name": "Colony of Wrightsland",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "LCL",
-      "name": "Colony of Lacaludo",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "LLT",
-      "name": "Protectorate of Lalut",
-      "colour": "#776269",
-      "suzerain": "KAN"
-    },
-    {
-      "id": "KNY",
-      "name": "Colony of Kanish Nyinha",
-      "colour": "#9E818B",
-      "suzerain": "KAN"
-    },
-    {"id": "PEL", "name": "Duchy of Pelerclore", "colour": "#A551D6"},
-    {"id": "AJX", "name": "Ajaxgul", "colour": "#1A2C9E"},
-    {"id": "OMB", "name": "Omarbati Republic", "colour": "#9E8B86"},
-    {"id": "VOS", "name": "Kingdom of Vosennac", "colour": "#6B2EF7"},
-    {
-      "id": "NPW",
-      "name": "Territory of Nanpowan",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "MZI",
-      "name": "Colony of the Marzon Islands",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "TBI",
-      "name": "Colony of the Thibodeaux Islands",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "SKI",
-      "name": "Colony of the South Kenyon Islands",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "NLV",
-      "name": "Colony of New Levamart",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "VSP",
-      "name": "Federation of Voseni South Panathra",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "VKN",
-      "name": "Crown Territory of Kansilnatu",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {
-      "id": "SVA",
-      "name": "Territory of Sava",
-      "colour": "#6B2EF7",
-      "suzerain": "VOS"
-    },
-    {"id": "SRS", "name": "Principality of Santa Rossa", "colour": "#D6D3A7"},
-    {"id": "SCN", "name": "Socialist Cunaria", "colour": "#F4BD7F"},
-    {"id": "NCN", "name": "Nationalist Cunaria", "colour": "#C3F7D2"},
-    {
-      "id": "NLN",
-      "name": "Colony of New Lendisi",
-      "colour": "#C3F7D2",
-      "suzerain": "NCN"
-    },
-    {
-      "id": "ATT",
-      "name": "Colony of the Attraverso Islands",
-      "colour": "#C3F7D2",
-      "suzerain": "NCN"
-    },
-    {"id": "CFR", "name": "Cunarian Franzonist Remnants", "colour": "#22F4AE"},
-    {"id": "JEN", "name": "Jenensavezin Federation", "colour": "#A4AF4F"},
-    {
-      "id": "JMB",
-      "name": "Jenensavezin Muburnyika",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {
-      "id": "KRT",
-      "name": "Colony of Karatan",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {
-      "id": "DOB",
-      "name": "Colony of Dobranada",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {
-      "id": "JSP",
-      "name": "Jenensavezin South Panathra",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {
-      "id": "JMN",
-      "name": "Jenensavezin Managan",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {
-      "id": "TJV",
-      "name": "Tojvorkopno",
-      "colour": "#A4AF4F",
-      "suzerain": "JEN"
-    },
-    {"id": "LOX", "name": "Principality of Loxunterra", "colour": "#7C9E86"},
-    {"id": "SPT", "name": "Kingdom of Espatana", "colour": "#A177AF"},
-    {"id": "AUS", "name": "Neo-Ausartan Empire", "colour": "#F990B7"},
-    {"id": "SAN", "name": "United States of Sanata", "colour": "#18F949"},
-    {
-      "id": "CAC",
-      "name": "Colony of Costa Acero",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "SVP",
-      "name": "Protectorate of Sanatese Vortopaga",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "TDC",
-      "name": "Colony of Torre de Coina",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "PLT",
-      "name": "Colony of Palatia",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "SCB",
-      "name": "Colony of Sanatese Cribuchel",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "ALG",
-      "name": "Colony of New Aligo",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "SMN",
-      "name": "Colony of Sanatese Managan",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "RDZ",
-      "name": "Colony of Rio de Zafiro",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "SMG",
-      "name": "Colony of Semungo",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "MBR",
-      "name": "Maburia Territory",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "BKA",
-      "name": "Boka Territory",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "NCM",
-      "name": "Protectorate of Nueva Campania",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "ABH",
-      "name": "Colony of Abahodia",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "LVS",
-      "name": "Colony of Lavosuma",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "DAG",
-      "name": "Colony of Dagislaterra",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {
-      "id": "WEI",
-      "name": "Territory of Weilian",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {"id": "EPT", "name": "El Puerto", "colour": "#4F72FF"},
-    {
-      "id": "NNT",
-      "name": "Dominion of Nunattiavak",
-      "colour": "#1B6840",
-      "suzerain": "FNA"
-    },
-    {"id": "CHV", "name": "Kingdom of Chevaho", "colour": "#E27CAA"},
-    {"id": "LPC", "name": "Republic of Los Picos", "colour": "#00E2D0"},
-    {
-      "id": "SPD",
-      "name": "Colony of San Pedro",
-      "colour": "#18F949",
-      "suzerain": "SAN"
-    },
-    {"id": "ARV", "name": "Republic of Arveland", "colour": "#AA81E2"},
-    {"id": "MNT", "name": "Federation of Mantrear", "colour": "#E25158"},
-    {"id": "SNE", "name": "Saint Anne", "colour": "#AF7FE2"},
-    {"id": "VAK", "name": "Vackero", "colour": "#E0644C"},
-    {"id": "ROS", "name": "Rosombe", "colour": "#CB70E0"},
-    {"id": "SUK", "name": "Union of Aoiwa-Sukuishima", "colour": "#998C00"},
-    {"id": "NAH", "name": "Republic of Nova Aheria", "colour": "#8D4EE5"},
-    {"id": "TVC", "name": "Republic of Tavociel", "colour": "#59E3E5"},
-    {"id": "ONW", "name": "Onanwa Nation", "colour": "#CC6968"},
-    {"id": "TRN", "name": "Three Nations", "colour": "#E56498"},
-    {
-      "id": "ATH",
-      "name": "Commonwealth of Athanasia",
-      "colour": "#E56498",
-      "parent": "TRN"
-    },
-    {
-      "id": "NCO",
-      "name": "Territory of New Cona",
-      "colour": "#E56498",
-      "parent": "TRN"
-    },
-    {"id": "DIM", "name": "Dimuro", "colour": "#E56498", "parent": "TRN"},
-    {"id": "SHN", "name": "Republic of Shinchi", "colour": "#A84571"},
-    {"id": "TBR", "name": "United Republic of Tirbryn", "colour": "#74A83C"},
-    {"id": "GRG", "name": "Republic of Giorgia", "colour": "#E5E509"},
-    {"id": "EMS", "name": "Emasic Republic", "colour": "#AD4927"},
-    {"id": "ARY", "name": "Imperial Republic of Aroyan", "colour": "#87ADA5"},
-    {"id": "KWE", "name": "Kingdom of Kewelat", "colour": "#AD5666"},
-    {"id": "JSH", "name": "Kingdom of Jashastan", "colour": "#ADABAD"},
-    {"id": "ILT", "name": "Republic of Ilitaria", "colour": "#8527AD"},
-    {
-      "id": "BUM",
-      "name": "Niroumandist Republic of Bumen",
-      "colour": "#007FFF"
-    },
-    {
-      "id": "SIS",
-      "name": "Federation of the Six Sororal Realms",
-      "colour": "#FFEE00"
-    },
-    {
-      "id": "QRG",
-      "name": "People's Republic of Qorgastan",
-      "colour": "#A97E7E"
-    },
-    {"id": "AGR", "name": "Kingdom of Agaria", "colour": "#AD4169"},
-    {"id": "VRP", "name": "Virupan Empire", "colour": "#FFEE3D"},
-    {"id": "ZAN", "name": "Zania", "colour": "#73AA70"},
-    {"id": "VKD", "name": "Kingdom of Vokanda", "colour": "#4E8FAD"},
-    {"id": "NKO", "name": "Empire of Nekotistan", "colour": "#AD2E98"},
-    {
-      "id": "QCO",
-      "name": "Monarchic Republic of Quoccao",
-      "colour": "#AD4859"
-    },
-    {"id": "TNA", "name": "Kingdom of Trenia", "colour": "#54AD06"},
-    {
-      "id": "BDI",
-      "name": "Bachdan Islands",
-      "colour": "#54AD06",
-      "suzerain": "TNA"
-    },
-    {"id": "ATN", "name": "United Islands of Atinpania", "colour": "#AD4B35"},
-    {"id": "TNG", "name": "Tangmou Republic", "colour": "#FF898F"},
-    {"id": "TNM", "name": "Kingdom of Tanmoia", "colour": "#FB8CFF"},
-    {"id": "UKH", "name": "State of Ukhiava", "colour": "#436B61"},
-    {"id": "THD", "name": "Kingdom of Thidanook", "colour": "#D1FFBC"},
-    {"id": "LNZ", "name": "Kingdom of Lanizemin", "colour": "#69BBBC"},
-    {"id": "KRF", "name": "Kingdom of Karanfold", "colour": "#A89F00"},
-    {"id": "MRI", "name": "Combine of Marimaa", "colour": "#AA7564"},
-    {
-      "id": "ZUN",
-      "name": "Tribal Confederation of Zuungazar",
-      "colour": "#CE6D9F"
-    },
-    {"id": "KLT", "name": "Kingdom of Kaltaina", "colour": "#C15EFF"},
-    {"id": "HNU", "name": "Federation of Henuland", "colour": "#E2FF8C"},
-    {"id": "PMK", "name": "Kingdom of Prathesmiksu", "colour": "#7BCE8F"},
-    {
-      "id": "CAF",
-      "name": "Confederal Alliance of Fuinam",
-      "colour": "#CEC0A1"
-    },
-    {
-      "id": "GAN",
-      "name": "Communities of Gaanseui",
-      "colour": "#CEC0A1",
-      "suzerain": "CAF"
-    },
-    {
-      "id": "MWU",
-      "name": "Mawu Princedom",
-      "colour": "#CEC0A1",
-      "suzerain": "CAF"
-    },
-    {"id": "KOF", "name": "Kingdom of Fuinam", "colour": "#BF9300"},
-    {
-      "id": "MNJ",
-      "name": "Brotherhood Tribes of Munjau",
-      "colour": "#BF9300",
-      "suzerain": "KOF"
-    },
-    {
-      "id": "ETA",
-      "name": "International Commissariat for the Enclave Territories in Angland and Soalang",
-      "colour": "#E2E0E1"
-    },
-    {
-      "id": "SGQ",
-      "name": "Sublime Kingdom of the Great Quan",
-      "colour": "#A984CE"
-    },
-    {"id": "AMR", "name": "Amargigurun", "colour": "#CE4499"},
-    {"id": "SOA", "name": "State of Soalang", "colour": "#3BCEBA"},
-    {"id": "AMY", "name": "Amryn Empire", "colour": "#44ABFF"},
-    {"id": "HNM", "name": "Kingdom of Hunmea", "colour": "#FFCEA3"},
-    {"id": "AKA", "name": "Empire of Akasora", "colour": "#C6B5FF"},
-    {
-      "id": "HMA",
-      "name": "Hamanshima Territory",
-      "colour": "#C6B5FF",
-      "suzerain": "AKA"
-    },
-    {
-      "id": "AKD",
-      "name": "United Imperial Territories of the Akasoran Ditokian",
-      "colour": "#C6B5FF",
-      "suzerain": "AKA"
-    },
-    {"id": "MRD", "name": "Land of Moradzar", "colour": "#FFEED3"},
-    {"id": "JNI", "name": "Holy Kingdom of Jenisia", "colour": "#FF630A"},
-    {"id": "WRK", "name": "Kingdom of Werikia", "colour": "#D8C1BC"},
-    {"id": "AJB", "name": "Kingdom of Anjab", "colour": "#D2FFB5"},
-    {"id": "RKO", "name": "Kingdom of Rorkoth", "colour": "#D6A062"},
-    {"id": "AGL", "name": "Republic of Greater Agalur", "colour": "#509522"},
-    {"id": "CDM", "name": "Republic of Cidiama", "colour": "#CCCCCC"},
-    {"id": "URT", "name": "State of Uratia", "colour": "#8BA0B7"},
-    {"id": "ENY", "name": "Kingdom of Eniya", "colour": "#A9BED8"},
-    {"id": "MBG", "name": "Republic of Mubbanga", "colour": "#FFBF00"},
-    {"id": "AKN", "name": "Akhan State", "colour": "#79AFD8"},
-    {"id": "CIG", "name": "Kingdom of Cigara", "colour": "#CAC4FF"},
-    {"id": "SRV", "name": "Kingdom of Sorovera", "colour": "#BC69AC"},
-    {"id": "XND", "name": "Kingdom of Xanda", "colour": "#88D8C4"},
-    {"id": "KPY", "name": "Kingdom of Kupenya", "colour": "#D86D38"},
-    {"id": "SGA", "name": "Kingdom of Saga", "colour": "#0007D8"},
-    {"id": "IOK", "name": "IOkuomu Tribal Confederation", "colour": "#A7CFD3"},
-    {"id": "OKU", "name": "Okuomu Tribes", "colour": "#8A8A8A"},
-    {
-      "id": "SNG",
-      "name": "Imperial Territory of Shiniwanogan",
-      "colour": "#867BAD",
-      "suzerain": "AKA"
-    },
-    {"id": "NHB", "name": "Kingdom of Nahabatho", "colour": "#BC941E"},
-    {"id": "CSL", "name": "Kingdom of Casalina", "colour": "#A1FF6B"},
-    {"id": "GOI", "name": "Republic of Gioimoi", "colour": "#507F4C"},
-    {"id": "MWK", "name": "Kingdom of Mawaka", "colour": "#CC817A"},
-    {
-      "id": "OKH",
-      "name": "Interim Territory of Onkhuwa",
-      "colour": "#CC817A",
-      "suzerain": "MWK"
-    },
-    {"id": "OWC", "name": "Kingdom of Owerchisia", "colour": "#FFA199"},
-    {
-      "id": "ANH",
-      "name": "Accorded Kingdom of Kaai and Adjacent Realms",
-      "colour": "#E28009"
-    },
-    {"id": "CNC", "name": "Continental Confederation", "colour": "#914A5F"}
-  ],
   "provinces": [
     {
       "id": "fjordic_cape",
@@ -1976,7 +1289,8 @@
       "colour": "#a551d6",
       "terrain": ["Plains"],
       "owner": "PEL",
-      "area": 1976,
+      "area": 2530,
+      "areaFixed": true,
       "centre": [37.5629, -37.6084],
       "climate": ["Oceanic"]
     },
@@ -2296,7 +1610,8 @@
       "colour": "#d6d3a7",
       "terrain": ["Plains"],
       "owner": "SRS",
-      "area": 2455,
+      "area": 2863,
+      "areaFixed": true,
       "centre": [33.3153, -34.1301],
       "climate": ["Mediterranean"]
     },
@@ -3065,8 +2380,8 @@
       "climate": ["Humid subtropical"]
     },
     {
-      "id": "north_godokia",
-      "name": "North Godokia",
+      "id": "north_gordokia",
+      "name": "North Gordokia",
       "colour": "#7c58f4",
       "terrain": ["Hills"],
       "owner": "AUS",
@@ -3310,7 +2625,8 @@
       "colour": "#4f72ff",
       "terrain": ["Plains"],
       "owner": "EPT",
-      "area": 1167,
+      "area": 535,
+      "areaFixed": true,
       "centre": [32.2151, -22.1663],
       "climate": ["Mediterranean"]
     },
@@ -3525,8 +2841,8 @@
       "climate": ["Desert"]
     },
     {
-      "id": "south_bajo_guseco",
-      "name": "South Bajo Guseco",
+      "id": "south_bajo_guseco_penian_highlands",
+      "name": "South Bajo Guseco Penian Highlands",
       "colour": "#5d6d29",
       "terrain": ["Hills"],
       "owner": "SAN",
@@ -4220,7 +3536,8 @@
       "colour": "#af7fe2",
       "terrain": ["Plains"],
       "owner": "SNE",
-      "area": 351,
+      "area": 324,
+      "areaFixed": true,
       "centre": [9.4425, 105.5551],
       "climate": ["Monsoon"]
     },
@@ -4230,7 +3547,8 @@
       "colour": "#e0644c",
       "terrain": ["Plains"],
       "owner": "VAK",
-      "area": 309,
+      "area": 331,
+      "areaFixed": true,
       "centre": [7.1271, 106.5729],
       "climate": ["Monsoon"]
     },
@@ -4240,7 +3558,8 @@
       "colour": "#cb70e0",
       "terrain": ["Plains"],
       "owner": "ROS",
-      "area": 666,
+      "area": 720,
+      "areaFixed": true,
       "centre": [4.47, 106.47],
       "climate": ["Rainforest"]
     },
@@ -4600,7 +3919,8 @@
       "colour": "#923e9b",
       "terrain": ["Plains"],
       "owner": "GDV",
-      "area": 1866,
+      "area": 2037,
+      "areaFixed": true,
       "centre": [3.5187, 50.2081],
       "climate": ["Rainforest"]
     },
@@ -4770,7 +4090,8 @@
       "colour": "#9b0913",
       "terrain": ["Plains"],
       "owner": "HTL",
-      "area": 1063,
+      "area": 1079,
+      "areaFixed": true,
       "centre": [-23.28, 82.4192],
       "climate": ["Savanna"]
     },
@@ -5515,11 +4836,11 @@
       "climate": ["Oceanic"]
     },
     {
-      "id": "north_tirbryn",
-      "name": "North Tirbryn",
+      "id": "north_tirgoyan",
+      "name": "North Tirgoyan",
       "colour": "#bab65b",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 220498,
       "centre": [-17.5705, 136.773],
       "climate": ["Monsoon"]
@@ -5529,7 +4850,7 @@
       "name": "Nanes",
       "colour": "#949974",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 98673,
       "centre": [-18.7235, 134.6584],
       "climate": ["Savanna"]
@@ -5539,27 +4860,27 @@
       "name": "East Denude",
       "colour": "#ba5d75",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 56151,
       "centre": [-20.0558, 133.0791],
       "climate": ["Desert"]
     },
     {
-      "id": "east_tirbryn",
-      "name": "East Tirbryn",
+      "id": "east_tirgoyan",
+      "name": "East Tirgoyan",
       "colour": "#86ba84",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 58926,
       "centre": [-22.1624, 139.8743],
       "climate": ["Monsoon"]
     },
     {
-      "id": "central_tirbryn",
-      "name": "Central Tirbryn",
+      "id": "central_tirgoyan",
+      "name": "Central Tirgoyan",
       "colour": "#ba6039",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 232485,
       "centre": [-22.2367, 136.8253],
       "climate": ["Savanna", "Humid subtropical"]
@@ -5569,17 +4890,17 @@
       "name": "Malmara",
       "colour": "#ba5780",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 16800,
       "centre": [-25.1588, 135.5884],
       "climate": ["Humid subtropical"]
     },
     {
-      "id": "south_tirbryn",
-      "name": "South Tirbryn",
+      "id": "south_tirgoyan",
+      "name": "South Tirgoyan",
       "colour": "#74a83c",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 121420,
       "centre": [-25.5202, 138.2444],
       "climate": ["Savanna", "Humid subtropical"]
@@ -5599,7 +4920,7 @@
       "name": "Andy Island",
       "colour": "#24b71f",
       "terrain": ["Plains"],
-      "owner": "TBR",
+      "owner": "TGY",
       "area": 1156,
       "centre": [-26.4547, 134.8458],
       "climate": ["Humid subtropical"]
@@ -6465,8 +5786,8 @@
       "climate": ["Savanna"]
     },
     {
-      "id": "nekuah",
-      "name": "Nekuah",
+      "id": "pishfar",
+      "name": "Pishfar",
       "colour": "#a82b5f",
       "terrain": ["Plains", "Hills"],
       "owner": "BUM",
@@ -6475,8 +5796,8 @@
       "climate": ["Savanna"]
     },
     {
-      "id": "aftaha",
-      "name": "Aftaha",
+      "id": "kian",
+      "name": "Kian",
       "colour": "#52a86c",
       "terrain": ["Plains"],
       "owner": "BUM",
@@ -6495,8 +5816,8 @@
       "climate": ["Rainforest"]
     },
     {
-      "id": "khomejil",
-      "name": "Khomejil",
+      "id": "mandasht",
+      "name": "Mandasht",
       "colour": "#ff402b",
       "terrain": ["Plains"],
       "owner": "BUM",
@@ -6505,8 +5826,8 @@
       "climate": ["Savanna"]
     },
     {
-      "id": "smutkaw",
-      "name": "Smutkaw",
+      "id": "bishabestan",
+      "name": "Bishabestan",
       "colour": "#a82a32",
       "terrain": ["Plains", "Hills"],
       "owner": "BUM",
@@ -6515,8 +5836,8 @@
       "climate": ["Rainforest"]
     },
     {
-      "id": "zakuteh",
-      "name": "Zakuteh",
+      "id": "north_sabzegan",
+      "name": "North Sabzegan",
       "colour": "#f8cdba",
       "terrain": ["Plains"],
       "owner": "BUM",
@@ -6535,8 +5856,8 @@
       "climate": ["Savanna"]
     },
     {
-      "id": "liyoveh",
-      "name": "Liyoveh",
+      "id": "south_sabzegan",
+      "name": "South Sabzegan",
       "colour": "#ff6370",
       "terrain": ["Plains"],
       "owner": "BUM",
@@ -8120,8 +7441,8 @@
       "colour": "#cccc55",
       "terrain": ["Hills"],
       "owner": "UKH",
-      "area": 56973,
-      "centre": [17.6129, -92.711],
+      "area": 51583,
+      "centre": [17.6211, -92.6267],
       "climate": ["Humid subtropical"]
     },
     {
@@ -8140,8 +7461,8 @@
       "colour": "#cc687f",
       "terrain": ["Plains"],
       "owner": "UKH",
-      "area": 20067,
-      "centre": [16.4227, -93.0382],
+      "area": 18012,
+      "centre": [16.4796, -92.9942],
       "climate": ["Savanna"]
     },
     {
@@ -8900,8 +8221,8 @@
       "colour": "#87518c",
       "terrain": ["Hills"],
       "owner": "KLT",
-      "area": 50070,
-      "centre": [18.7528, -92.7084],
+      "area": 53202,
+      "centre": [18.7109, -92.6996],
       "climate": ["Steppe"]
     },
     {
@@ -8920,8 +8241,8 @@
       "colour": "#8e4948",
       "terrain": ["Plains"],
       "owner": "HNU",
-      "area": 69841,
-      "centre": [16.2014, -96.3419],
+      "area": 72227,
+      "centre": [16.2208, -96.2915],
       "climate": ["Savanna"]
     },
     {
@@ -8940,8 +8261,8 @@
       "colour": "#595491",
       "terrain": ["Plains"],
       "owner": "HNU",
-      "area": 86625,
-      "centre": [14.5721, -91.357],
+      "area": 86754,
+      "centre": [14.5738, -91.3588],
       "climate": ["Savanna"]
     },
     {
@@ -8950,8 +8271,8 @@
       "colour": "#668e8c",
       "terrain": ["Plains"],
       "owner": "HNU",
-      "area": 62866,
-      "centre": [14.507, -95.2526],
+      "area": 63978,
+      "centre": [14.5334, -95.2266],
       "climate": ["Savanna"]
     },
     {
@@ -8970,8 +8291,8 @@
       "colour": "#6b5b91",
       "terrain": ["Plains"],
       "owner": "HNU",
-      "area": 56157,
-      "centre": [14.1146, -93.6973],
+      "area": 56842,
+      "centre": [14.1344, -93.6876],
       "climate": ["Savanna"]
     },
     {
@@ -9160,7 +8481,8 @@
       "colour": "#f79825",
       "terrain": ["Plains"],
       "owner": "WEI",
-      "area": 714,
+      "area": 378,
+      "areaFixed": true,
       "centre": [19.3288, -112.7594],
       "climate": ["Savanna"]
     },
@@ -11075,7 +10397,7 @@
     },
     {
       "id": "northeast_jugmunics_2",
-      "name": "Northeast Jugmunics",
+      "name": "Northwest Jugmunics",
       "colour": "#890019",
       "terrain": ["Mountains"],
       "owner": "AMY",
@@ -11909,7 +11231,8 @@
       "colour": "#ff596c",
       "terrain": ["Plains"],
       "owner": "NPW",
-      "area": 685,
+      "area": 657,
+      "areaFixed": true,
       "centre": [15.93, -115.0875],
       "climate": ["Savanna"]
     },
@@ -12549,7 +11872,8 @@
       "colour": "#8c3235",
       "terrain": ["Plains"],
       "owner": "TMI",
-      "area": 2626,
+      "area": 2758,
+      "areaFixed": true,
       "centre": [10.4702, 2.3648],
       "climate": ["Rainforest"]
     },
@@ -12559,8 +11883,8 @@
       "colour": "#ad6148",
       "terrain": ["Plains"],
       "owner": "TJV",
-      "area": 3890,
-      "centre": [10.9255, -5.0213],
+      "area": 2971,
+      "centre": [10.9834, -5.0081],
       "climate": ["Rainforest"]
     },
     {
@@ -12569,8 +11893,8 @@
       "colour": "#894879",
       "terrain": ["Plains", "Hills"],
       "owner": "LVS",
-      "area": 171304,
-      "centre": [10.1138, -6.4601],
+      "area": 172223,
+      "centre": [10.1172, -6.4527],
       "climate": ["Rainforest"]
     },
     {
@@ -13459,7 +12783,8 @@
       "colour": "#cc439e",
       "terrain": ["Plains"],
       "owner": "ADH",
-      "area": 1921,
+      "area": 2162,
+      "areaFixed": true,
       "centre": [-23.3624, 12.5902],
       "climate": ["Monsoon"]
     },
@@ -14609,7 +13934,8 @@
       "colour": "#59cc8b",
       "terrain": ["Plains"],
       "owner": "SKG",
-      "area": 587,
+      "area": 535,
+      "areaFixed": true,
       "centre": [-42.8699, 63.91],
       "climate": ["Humid continental"]
     },
@@ -15199,7 +14525,8 @@
       "colour": "#b5936a",
       "terrain": ["Plains"],
       "owner": "KYI",
-      "area": 1706,
+      "area": 1827,
+      "areaFixed": true,
       "centre": [-26.9382, -77.1549],
       "climate": ["Mediterranean"]
     },
@@ -15209,7 +14536,8 @@
       "colour": "#58b55a",
       "terrain": ["Plains"],
       "owner": "SKI",
-      "area": 1731,
+      "area": 1575,
+      "areaFixed": true,
       "centre": [-32.2811, -80.8445],
       "climate": ["Humid continental"]
     },
@@ -15532,8 +14860,9 @@
       "colour": "#665eff",
       "terrain": ["Plains"],
       "owner": "ATT",
-      "area": 1996,
-      "centre": [-54.9179, -85.2344],
+      "area": 822,
+      "areaFixed": true,
+      "centre": [-54.882, -85.0092],
       "climate": ["Humid continental"]
     },
     {
@@ -15862,7 +15191,8 @@
       "colour": "#aeabcc",
       "terrain": ["Plains"],
       "owner": "NDV",
-      "area": 1120,
+      "area": 1045,
+      "areaFixed": true,
       "centre": [-29.7809, -166.0098],
       "climate": ["Humid continental", "Savanna"]
     },
@@ -15952,7 +15282,8 @@
       "colour": "#a34aba",
       "terrain": ["Plains"],
       "owner": "PWL",
-      "area": 638,
+      "area": 640,
+      "areaFixed": true,
       "centre": [-32.5146, 169.5158],
       "climate": ["Savanna"]
     }
