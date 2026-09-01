@@ -3557,7 +3557,7 @@ const DOCKYARD_AT = 0.90;           // dockyards arrive with the eyries
 const DOCKYARD_ICON_PX = 16;        // and are drawn at the same size
 const DOCKYARD_OUTLINE_PX = 0.4;    // and take the same white edge
 const EYRIE_OUTLINE_PX = 0.4;       // white edge traced round it, on top of
-                                    // the thin keyline the icon carries itself
+// the thin keyline the icon carries itself
 const SYNTHETIC_AT = 0.90;          // synthetic plants arrive with them too
 const SYNTHETIC_ICON_PX = 16;       // at the same size
 const SYNTHETIC_OUTLINE_PX = 0.4;   // and with the same white edge
@@ -3978,8 +3978,8 @@ const PIT = new Set(['coal', 'naturalGas']);
 // it and reaches nobody else, which is what subsistence farming is, so it shows
 // as nothing rather than as tonnage the country can never draw on.
 const yieldOf = (kind, amount, dev, devPit, connected = true) =>
-  (ALWAYS_FULL.has(kind) ? (connected ? amount : 0)
-    : Math.round(amount * Math.max(FLOOR[kind] ?? 0, PIT.has(kind) ? devPit : dev) * 10) / 10);
+(ALWAYS_FULL.has(kind) ? (connected ? amount : 0)
+  : Math.round(amount * Math.max(FLOOR[kind] ?? 0, PIT.has(kind) ? devPit : dev) * 10) / 10);
 
 function buildResourceLines(world) {
   const out = new Map();
@@ -6396,7 +6396,7 @@ function showTooltip(id, ev, seaId = null) {
     tipTail = '</div>' +
       (county
         ? `<div class="sub">${county.name} &middot; ${county.terrain.join(' + ')}`
-          + ` &middot; ${county.climate}</div>`
+        + ` &middot; ${county.climate}</div>`
         : `<div class="sub">${[...p.terrain, ...p.climate].join(' &middot; ')}</div>`);
     els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
   } else {
@@ -6420,7 +6420,7 @@ function showTooltip(id, ev, seaId = null) {
         // is on its own; adding "deep" beside a band called Deep said it twice and
         // said it badly.
         ? `<div class="sub">${sub.name}${sub.depth ? ` &middot; ${sub.depth}` : ''}`
-          + ` &middot; ${Math.round(sub.area).toLocaleString()} km²</div>`
+        + ` &middot; ${Math.round(sub.area).toLocaleString()} km²</div>`
         : '');
   }
   placeTooltip(ev);
@@ -7188,7 +7188,7 @@ function updatePanel() {
 
 // Bumped whenever this file is edited, and shown in the debug menu. If what is
 // on screen does not match what is in the file, this is how you find out.
-const BUILD = 'v0.7-indev';
+const BUILD = 'v0.8-indev';
 
 /** The size a ring was traced at, for the readout. */
 const ringShape = (holder) => (holder.silhouette
@@ -7268,10 +7268,10 @@ function updateReadout(now) {
     // Three separate delays, and only the middle one is this page's fault.
     statRow('Click sound', sfx.buffer
       ? `${(sfx.offset * 1000).toFixed(0)}ms trimmed, ${(sfx.attack * 1000).toFixed(0)}ms attack,`
-        + ` ${(sfxDelay * 1000).toFixed(0)}ms held,`
-        + ` ${sfx.lag.toFixed(1)}ms to answer,`
-        + ` ${sfx.base + sfx.output ? `${((sfx.base + sfx.output) * 1000).toFixed(0)}ms device` : 'device n/a'}`
-        + `, peak ${sfx.peak.toFixed(2)}`
+      + ` ${(sfxDelay * 1000).toFixed(0)}ms held,`
+      + ` ${sfx.lag.toFixed(1)}ms to answer,`
+      + ` ${sfx.base + sfx.output ? `${((sfx.base + sfx.output) * 1000).toFixed(0)}ms device` : 'device n/a'}`
+      + `, peak ${sfx.peak.toFixed(2)}`
       : 'not loaded', sfx.lag > 8) +
     // The single number that decides whether a frame can be delivered on time.
     // Everything above is JavaScript, and it is now small; what costs the rest is
@@ -7292,15 +7292,15 @@ function updateReadout(now) {
     statRow('Zoom', `${view.scale.toFixed(2)}  (${Math.round(view.scale * 100)}%)`) +
     statRow('Cursor', debug.cursor
       ? `x ${debug.cursor.x}, y ${debug.cursor.y}` +
-        `${debug.cursor.copy ? ` (copy ${debug.cursor.copy > 0 ? '+' : ''}${debug.cursor.copy})` : ''}` +
-        `${debug.cursor.y < 0 || debug.cursor.y >= state.world.height ? ' — off the map' : ''}`
+      `${debug.cursor.copy ? ` (copy ${debug.cursor.copy > 0 ? '+' : ''}${debug.cursor.copy})` : ''}` +
+      `${debug.cursor.y < 0 || debug.cursor.y >= state.world.height ? ' — off the map' : ''}`
       : '—') +
     // Both rings, and the SHAPE each one is traced from. A ring with no shape
     // behind it draws nothing and looks exactly like a ring that was never asked
     // for, which is how the county highlight stayed missing.
     statRow('Sea subregions', state.world.subs
       ? `${(state.world.subs.atIndex.length - 1).toLocaleString()} drawn`
-        + `${state.hoveredSub ? `, over ${state.hoveredSub}` : ''}`
+      + `${state.hoveredSub ? `, over ${state.hoveredSub}` : ''}`
       : 'none — run: node sync-provinces.js --regen-sea-subs --write --cache') +
     statRow('Highlighted', [
       state.selected ? `province ${state.selected} ${ringShape(state)}` : null,
