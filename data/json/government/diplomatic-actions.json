@@ -1,0 +1,116 @@
+{
+  "note": "The diplomatic actions offered against another country. Costs and needs are the table in plans 16 Relations between polities. `cost` is the listed opening price in political power and is not what is finally paid: world tension discounts a guarantee and an alliance under `tensionDiscount`, Improve relations and Sanctions charge a share of income every day on top, Develop their ground is charged a level and weighted by relations, Justify a war is paid over its days and is cheaper on a claim, and Declare war costs nothing at all with a casus belli. An action carrying options is one act with a kind chosen at the time, and each kind has its own cost and its own band; the panel draws it as a menu rather than as one row a kind.",
+  "tensionDiscount": {
+    "note": "Every point of world tension takes this much political power off the act, floored at `floor` of the listed cost. A world that has watched somebody march finds it cheaper to combine.",
+    "floor": 0.5,
+    "perPoint": {
+      "Guarantee": 1,
+      "Alliance": 2
+    }
+  },
+  "actions": [
+    {
+      "name": "Improve relations",
+      "cost": 25,
+      "needs": "not at war",
+      "effect": "+0.1 relations a day while it runs, to a ceiling of +30 from this source. Costs 1% of income a day on top of the opening charge"
+    },
+    {
+      "name": "Denounce",
+      "cost": 20,
+      "effect": "-20 relations at once, and the other side may not improve relations for 90 days"
+    },
+    {
+      "name": "Guarantee",
+      "cost": 50,
+      "needs": "+25 relations",
+      "effect": "the guarantor enters any war declared on the guaranteed. Refusing costs 40 stability and every guarantee it holds"
+    },
+    {
+      "name": "Alliance",
+      "options": [
+        {
+          "name": "Economic",
+          "cost": 60,
+          "needs": "+30 relations with every member",
+          "effect": "suspended between belligerents rather than broken, and resumes at peace"
+        },
+        {
+          "name": "Technological",
+          "cost": 80,
+          "needs": "+40 relations with every member",
+          "effect": "suspended between belligerents rather than broken, and resumes at peace"
+        },
+        {
+          "name": "Military",
+          "cost": 100,
+          "needs": "+50 relations with every member, and not barred",
+          "effect": "the members enter one another's wars. Two members may not declare on each other"
+        }
+      ],
+      "effect": "founds an alliance of the kind chosen, or joins one that already stands. A country may belong to as many as it can meet the terms for"
+    },
+    {
+      "name": "Leave an alliance",
+      "cost": 20,
+      "effect": "-40 relations with every member"
+    },
+    {
+      "name": "Military access",
+      "cost": 40,
+      "needs": "+30 relations",
+      "effect": "divisions may cross and draw supply through. Withdrawn at any time, at -25 relations"
+    },
+    {
+      "name": "Sanctions",
+      "cost": 30,
+      "effect": "the target's exportable surplus and importable shortfall fall 0.25 for as long as they hold, -30 relations. Costs 2% of income a day on top of the opening charge"
+    },
+    {
+      "name": "Lend lease",
+      "cost": 20,
+      "needs": "not at war with them",
+      "effect": "a standing daily transfer of equipment points, ship points or a named resource. +0.05 relations a day"
+    },
+    {
+      "name": "Develop",
+      "cost": 15,
+      "needs": "0 relations",
+      "effect": "one level of road or electricity, or one railed county, built in the other country's province at the investor's expense. The level is the host's. 15 a level, weighted by relations"
+    },
+    {
+      "name": "Lease deposit",
+      "cost": 30,
+      "needs": "+15 relations",
+      "effect": "an agreed number of a deposit's units is worked by the lessee for a term of years, at a rent"
+    },
+    {
+      "name": "Request deposit lease",
+      "cost": 30,
+      "needs": "+15 relations",
+      "effect": "asks the other country to lease out an agreed number of a named deposit's units for a term of years, at a rent. Theirs to accept or refuse"
+    },
+    {
+      "name": "Send volunteers",
+      "cost": 30,
+      "needs": "the target at war",
+      "effect": "up to 3 divisions fight under the target's command without a war. Losses are yours. -25 relations with the other side"
+    },
+    {
+      "name": "Expeditionary force",
+      "cost": 50,
+      "needs": "an alliance or access",
+      "effect": "divisions pass under the other's command entirely, and count against their supply and not yours"
+    },
+    {
+      "name": "Justify a war",
+      "cost": 60,
+      "effect": "a casus belli against one country, good for a year. 60 over 60 days, or 25 over 25 days on a claim"
+    },
+    {
+      "name": "Declare war",
+      "cost": 200,
+      "effect": "war. Free with a casus belli, 200 without one"
+    }
+  ]
+}

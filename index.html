@@ -16,7 +16,7 @@
     screen is the first thing drawn and this is what it is drawn on, so the fetch
     has to start while the HTML is still being read.
   -->
-  <link rel="preload" as="image" href="./data/img/start_menu_bg.jpg">
+  <link rel="preload" as="image" href="./data/img/ui/start_menu_bg.jpg">
   <link rel="stylesheet" href="./src/style.css">
 </head>
 
@@ -35,6 +35,7 @@
            and a panel with no wiring of its own. -->
       <div class="start-buttons">
         <button id="start-enter">Enter</button>
+        <button class="start-secondary" data-dialog="controls">Controls</button>
         <button class="start-secondary" data-dialog="changelog">Changelog</button>
         <button class="start-secondary" data-dialog="about">About</button>
       </div>
@@ -60,6 +61,24 @@
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.8.a <span>30 Sep 2026</span></h3>
+            <ul>
+              <li>Added country information/diplomacy panels.</li>
+              <li>Added already existing flags to countries, some still have placeholders right
+                now.</li>
+              <li>Added laws and national spirits to some countries, still work in progress. Sakan,
+                Meridon, Telmanland, and Therundia are done. Panathra is ongoing.</li>
+              <li>Some national spirits have custom icons: Krenland, Twadamia, Subeny, and
+                Kaganland.</li>
+              <li>Laws have custom icons, but not doctrines yet.</li>
+              <li>Overhauled forts so they now work on the county level.</li>
+              <li>Added "Controls" button to see controls in-game.</li>
+              <li>Added "Ideology" layer where each province's ideological popularity/make up is
+                shown.</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.8 <span>1 Sep 2026</span></h3>
             <ul>
@@ -164,7 +183,7 @@
         </div>
 
         <div class="dialog-body about-body">
-          <img class="about-seal" src="./data/img/seal.png" width="2300" height="2300"
+          <img class="about-seal" src="./data/img/ui/seal.png" width="2300" height="2300"
             alt="Seal of the Chronic Worldbuilding Authority">
           <p>
             This game is part of the Chron Project, created by
@@ -230,6 +249,7 @@
       <button data-mode="county" hidden>Counties</button>
       <button data-mode="navy" hidden>Navy</button>
       <button data-mode="resources">Resources</button>
+      <button data-mode="ideology" hidden>Ideology</button>
 
       <!--
         The infrastructure layers. A native select rather than seven more
@@ -243,7 +263,8 @@
         <div id="infra-list" hidden>
           <button data-layer="infra:road">Road</button>
           <button data-layer="infra:electricity">Electricity</button>
-          <button data-layer="infra:fortification">Fortification</button>
+          <button data-layer="infra:radar">Radar station</button>
+          <button data-layer="infra:fortNew">Fort</button>
           <button data-layer="infra:supplyHub">Supply hub</button>
           <button data-layer="infra:antiAir">Anti-air</button>
           <button data-layer="infra:airBase">Air base</button>
@@ -322,6 +343,7 @@
 
         <div class="card-row"><span>Terrain</span><span id="county-terrain">&mdash;</span></div>
         <div class="card-row"><span>Climate</span><span id="county-climate">&mdash;</span></div>
+        <div class="card-row"><span>Fort</span><span id="county-fort">&mdash;</span></div>
         <div class="card-row"><span>Railway</span><span id="county-rail">&mdash;</span></div>
         <div class="card-row"><span>Area</span><span id="county-area">&mdash;</span></div>
       </aside>
@@ -387,6 +409,73 @@
           </div>
         </div>
       </aside>
+
+      <!--
+        The country under CTRL + a left click. It answers a different question
+        from the other two panels: not what a piece of ground holds, but what a
+        state is and what may be done to it. It takes the left edge whole rather
+        than the bottom corner, and it is mutually exclusive with both of the
+        others because a diplomatic view of a country is not a look at one of
+        its provinces.
+
+        Two tabs. Diplomacy is the relations a country has and the actions
+        available against it, both under Relations between polities. The Intel
+        Ledger is what is known of its government and its forces, which is why
+        it is a ledger rather than a report: the figures are the ones a foreign
+        office would keep.
+      -->
+      <aside id="diplo" class="milled" aria-hidden="true">
+        <div class="card-head">
+          <h2 id="diplo-name">&mdash;</h2>
+          <button id="diplo-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="diplo-ident">
+          <span class="diplo-flag">
+            <img id="diplo-flag" alt="" src="./data/img/flags/placeholder.png">
+          </span>
+          <div class="diplo-titles">
+            <b id="diplo-polity">&mdash;</b>
+            <i id="diplo-faction">No faction</i>
+            <i id="diplo-leader">&mdash;</i>
+          </div>
+          <div class="diplo-meters">
+            <span><u>Stability</u><b id="diplo-stability">0%</b></span>
+            <span><u>Manpower</u><b id="diplo-manpower">0%</b></span>
+          </div>
+        </div>
+
+        <div class="diplo-portrait-row">
+          <img id="diplo-portrait" class="diplo-portrait" alt=""
+               src="./data/img/portraits/placeholder.png">
+          <div class="diplo-stack">
+            <div class="diplo-party">
+              <b id="diplo-party">Placeholder</b>
+              <i id="diplo-ideology">&mdash;</i>
+              <i id="diplo-election">No Election</i>
+            </div>
+            <div class="diplo-focus" id="diplo-focus">No National Focus set</div>
+          </div>
+        </div>
+
+        <div class="diplo-spirits" id="diplo-spirits"></div>
+
+        <div class="diplo-tabs" id="diplo-tabs">
+          <button type="button" id="diplo-tab-diplomacy" class="on">Diplomacy</button>
+          <button type="button" id="diplo-tab-ledger">Intel Ledger</button>
+        </div>
+
+        <div class="diplo-body">
+          <div class="diplo-pane" id="diplo-pane-diplomacy">
+            <div class="diplo-box" id="diplo-relations"></div>
+            <div class="diplo-box" id="diplo-actions"></div>
+          </div>
+          <div class="diplo-pane" id="diplo-pane-ledger" hidden>
+            <div class="diplo-box" id="diplo-ledger-left"></div>
+            <div class="diplo-box" id="diplo-ledger-right"></div>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 
@@ -402,6 +491,31 @@
     No close button in the head: Resume is the close, and two ways to do the
     same thing on a menu of two buttons is one too many.
   -->
+  <div id="controls" class="start-dialog" aria-hidden="true">
+    <div class="dialog-panel milled" role="dialog" aria-label="Controls">
+      <div class="dialog-head">
+        <h2>Controls</h2>
+        <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="dialog-body controls-body">
+        <dl>
+          <dt>Left click</dt><dd>Select a province</dd>
+          <dt>Right click</dt><dd>Select a county</dd>
+          <dt>Ctrl + left click</dt><dd>Open a country</dd>
+          <dt>Ctrl + right click</dt><dd>Open a member of a realm</dd>
+          <dt>Drag</dt><dd>Pan</dd>
+          <dt>Scroll, + and &minus;</dt><dd>Zoom</dd>
+          <dt>0</dt><dd>Fit the map</dd>
+          <dt>Space</dt><dd>Pause</dd>
+          <dt>1 to 3</dt><dd>Speed</dd>
+          <dt>`</dt><dd>Development inspector</dd>
+          <dt>Esc</dt><dd>Dismiss, pause menu</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
   <div id="pause" aria-hidden="true">
     <div class="dialog-panel" role="dialog" aria-modal="true" aria-label="Paused">
       <div class="dialog-head">
@@ -410,6 +524,7 @@
 
       <div class="dialog-body pause-body">
         <button id="pause-resume">Resume game</button>
+        <button id="pause-controls" class="start-secondary">Controls</button>
         <button id="pause-quit" class="start-secondary">Quit to start menu</button>
       </div>
     </div>
@@ -454,6 +569,7 @@
       <h1>Selected</h1>
       <h2 id="sel-name">&mdash;</h2>
       <div id="sel-body" class="hint">Click a province on the map.</div>
+      <div id="government"></div>
       <div id="neighbours"></div>
     </div>
   </div>

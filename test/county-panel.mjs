@@ -83,6 +83,7 @@ if (!found) {
     province: text('county-province'),
     terrain: text('county-terrain'),
     climate: text('county-climate'),
+    fort: text('county-fort'),
     rail: text('county-rail'),
     area: text('county-area'),
   };
@@ -95,7 +96,7 @@ if (!found) {
   }
 
   // Every row the mechanic promises: owner, terrain, climate and a railway.
-  for (const k of ['name', 'polity', 'province', 'terrain', 'climate', 'rail', 'area']) {
+  for (const k of ['name', 'polity', 'province', 'terrain', 'climate', 'fort', 'rail', 'area']) {
     if (!row[k] || row[k] === '—') problems.push(['panel', new Error(`${k} is empty`)]);
   }
   if (!['Yes', 'No'].includes(row.rail)) {

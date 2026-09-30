@@ -1,0 +1,111 @@
+{
+  "note": "The standing relations between polities on the start date. A relation is a thing two countries are in together, so it is recorded once here rather than twice in either country's government entry. Every kind the diplomacy panel groups by is listed under bands, and a band with nothing in it for a country is not shown for that country. Alliances, guarantees, access, sanctions and wars are all empty on the start date and are listed so the shape is there to fill; leases are not, and are the table under Relations in plans 16.",
+  "bands": [
+    {
+      "id": "allies",
+      "name": "Allies",
+      "of": "both"
+    },
+    {
+      "id": "guarantee",
+      "name": "Guaranteeing",
+      "of": "first",
+      "mirror": "Guaranteed by"
+    },
+    {
+      "id": "access",
+      "name": "Military access",
+      "of": "both"
+    },
+    {
+      "id": "sanctions",
+      "name": "Sanctioned",
+      "of": "second"
+    },
+    {
+      "id": "war",
+      "name": "At war",
+      "of": "both"
+    },
+    {
+      "id": "lease",
+      "name": "Leased out",
+      "of": "first",
+      "mirror": "Leased from"
+    }
+  ],
+  "relations": [
+    {
+      "band": "lease",
+      "first": "OMB",
+      "second": "KAN",
+      "resource": "oil",
+      "province": "smotlas",
+      "amount": 4,
+      "until": 1937,
+      "rent": {
+        "money": 160
+      }
+    },
+    {
+      "band": "lease",
+      "first": "OMB",
+      "second": "KAN",
+      "resource": "oil",
+      "province": "gotim",
+      "amount": 3,
+      "until": 1937,
+      "rent": {
+        "money": 120
+      }
+    },
+    {
+      "band": "lease",
+      "first": "JSH",
+      "second": "VOS",
+      "resource": "oil",
+      "province": "north_arbus_desert",
+      "amount": 3,
+      "until": 1938,
+      "rent": {
+        "money": 120
+      }
+    },
+    {
+      "band": "lease",
+      "first": "JSH",
+      "second": "VOS",
+      "resource": "oil",
+      "province": "south_arbus_desert",
+      "amount": 3,
+      "until": 1938,
+      "rent": {
+        "money": 120
+      }
+    },
+    {
+      "band": "lease",
+      "first": "NKO",
+      "second": "ZAN",
+      "resource": "iron",
+      "province": "sardo",
+      "amount": 2,
+      "until": 1938,
+      "rent": {
+        "money": 260
+      }
+    },
+    {
+      "band": "lease",
+      "first": "NKO",
+      "second": "ZAN",
+      "resource": "baseMetals",
+      "province": "sardo",
+      "amount": 1,
+      "until": 1938,
+      "rent": {
+        "money": 130
+      }
+    }
+  ]
+}

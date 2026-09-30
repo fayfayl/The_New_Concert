@@ -1,0 +1,863 @@
+{
+  "timing": {
+    "ramp": 0,
+    "fade": 30
+  },
+  "decrees": [
+    {
+      "name": "Amnesty",
+      "description": "Political prisoners of MOVEMENT_NAME are released.",
+      "target": "ideology",
+      "cost": 60,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        -15
+      ],
+      "available": {
+        "afterDecree": [
+          "Ban parties",
+          "Martial law"
+        ]
+      },
+      "note": "The mirror of Ban parties. There is nobody to release until somebody has been locked up.",
+      "felt": "support",
+      "compassAll": [
+        0,
+        -20
+      ],
+      "effects": {
+        "happiness": 10,
+        "stability": -5,
+        "ideologySupportPerDay": {
+          "target": 0.02
+        }
+      }
+    },
+    {
+      "name": "Literacy campaign",
+      "description": "Schools and evening classes are opened to teach the population to read.",
+      "target": null,
+      "cost": 60,
+      "durationDays": 365,
+      "compass": [
+        -8,
+        0
+      ],
+      "available": "any",
+      "felt": "rural",
+      "thenPermanent": true,
+      "permanent": [
+        "research"
+      ],
+      "effects": {
+        "research": 0.1,
+        "happiness": 5
+      }
+    },
+    {
+      "name": "Prospect for resources",
+      "description": "Survey teams are sent to find new deposits of RESOURCE_NAME.",
+      "target": "resource",
+      "cost": 70,
+      "durationDays": 180,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "unprospected": true
+      },
+      "effects": {
+        "revealsUnprospected": {
+          "first": [
+            0.25,
+            0.75
+          ],
+          "again": [
+            0.5,
+            1
+          ]
+        }
+      },
+      "note": "Completes rather than holds. It reveals a random share of the unprospected deposits of the resource named and is then done. Later surveys of the same resource use the higher band, so a country that keeps looking finds everything in the end."
+    },
+    {
+      "name": "Censor the press",
+      "description": "All newspapers are watched by the state.",
+      "target": null,
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        20
+      ],
+      "available": "any",
+      "felt": "urbanisation",
+      "factor": "press censorship",
+      "effects": {
+        "stability": 8,
+        "happiness": -6,
+        "againstEnemyOperations": 0.25
+      }
+    },
+    {
+      "name": "Lift the censorship",
+      "description": "The state stops watching the newspapers.",
+      "target": null,
+      "cost": 160,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Censor the press",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Censor the press"
+        ]
+      },
+      "effects": {}
+    },
+    {
+      "name": "State religion",
+      "description": "One church is established by law.",
+      "target": null,
+      "cost": 100,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        12
+      ],
+      "available": {
+        "unless": {
+          "form": [
+            "One-party state"
+          ],
+          "economicBelow": -50
+        }
+      },
+      "note": "A state that has abolished religion cannot establish one. That is a one-party state on the far left, so both have to be true to bar it. A fascist one-party state establishes one and so does a socialist republic.",
+      "felt": "rural",
+      "effects": {
+        "stability": 5,
+        "happiness": 5,
+        "research": -0.2
+      },
+      "lobbyable": true
+    },
+    {
+      "name": "Secularise the state",
+      "description": "The church is separated from the state.",
+      "target": null,
+      "cost": 200,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "State religion",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "State religion"
+        ],
+        "unless": {
+          "spiritTag": "establishedChurch"
+        }
+      },
+      "effects": {},
+      "lobbyable": true
+    },
+    {
+      "name": "Bust the unions",
+      "description": "The police break up the trade unions.",
+      "target": null,
+      "factor": "union busting activity",
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        12,
+        15
+      ],
+      "available": "any",
+      "felt": "industry",
+      "spread": 1,
+      "effects": {
+        "factoryOutput": 0.08,
+        "happiness": -6,
+        "manpowerGrowth": -0.2
+      },
+      "lobbyable": true
+    },
+    {
+      "name": "Legalise the unions",
+      "description": "Trade unions may organise.",
+      "target": null,
+      "cost": 180,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Bust the unions",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Bust the unions"
+        ]
+      },
+      "effects": {},
+      "lobbyable": true
+    },
+    {
+      "name": "Martial law",
+      "description": "The army takes over civil government.",
+      "target": null,
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        25
+      ],
+      "available": "any",
+      "note": "Secret police stops unrest accumulating because informers prevent it. Martial law removes unrest already there because troops are in the street. Neither replaces the other. The cost and the happiness scale with what the country faces. The unrest and stability figures do not.",
+      "scaling": {
+        "cost": {
+          "atWar": -0.3,
+          "occupied": -0.6
+        },
+        "happiness": {
+          "atWar": -0.5,
+          "occupied": -1
+        }
+      },
+      "felt": "urbanisation",
+      "fade": 60,
+      "effects": {
+        "unrestPerDay": -1,
+        "happiness": -12,
+        "stability": 8
+      }
+    },
+    {
+      "name": "Lift martial law",
+      "description": "The army withdraws from civil government.",
+      "target": null,
+      "cost": 180,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Martial law",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Martial law"
+        ]
+      },
+      "effects": {}
+    },
+    {
+      "name": "Establish a general staff",
+      "description": "A permanent body of officers is formed to plan campaigns.",
+      "target": null,
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        8
+      ],
+      "available": {
+        "spiritTag": "noGeneralStaff",
+        "unless": {
+          "spiritTag": "disarmed"
+        }
+      },
+      "effects": {},
+      "note": "A country is assumed to keep a general staff unless it carries No General Staff, which a treaty that dissolves an army leaves behind and a newly formed state begins with. The penalty is on that spirit, so enacting this puts the country level with the rest and no higher and it carries nothing of its own. Command power is bought with Officer training.",
+      "endsSpiritTag": "noGeneralStaff"
+    },
+    {
+      "name": "Ban parties",
+      "description": "The parties of MOVEMENT_NAME are outlawed.",
+      "target": "ideology",
+      "cost": 100,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        18
+      ],
+      "available": "any",
+      "note": "Acts on the drift multiplier, because a country’s ideology is derived from what it does. Banning communist parties does not stop a country adopting communist laws; it doubles what those laws cost.",
+      "felt": "support",
+      "compassAll": [
+        0,
+        35
+      ],
+      "effects": {
+        "driftMultiplierTowardTarget": 2,
+        "ideologySupportPerDay": {
+          "target": -0.05
+        },
+        "happiness": -10,
+        "relationsWithHolders": -30
+      }
+    },
+    {
+      "name": "Legalise the parties",
+      "description": "The parties of MOVEMENT_NAME are legal.",
+      "target": "ideology",
+      "cost": 200,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Ban parties",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Ban parties"
+        ]
+      },
+      "effects": {}
+    },
+    {
+      "name": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+      "description": "The armed leagues of MOVEMENT_NAME are disbanded.",
+      "target": "ideology",
+      "cost": 100,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        15
+      ],
+      "available": {
+        "spiritTag": "paramilitaries"
+      },
+      "note": "The only standing counter to a spirit that feeds an ideology daily. A country with no paramilitaries has nothing to dissolve.",
+      "felt": "support",
+      "compassAll": [
+        0,
+        0
+      ],
+      "effects": {
+        "stability": 8,
+        "happiness": -5,
+        "ideologySupportPerDay": {
+          "target": -0.02
+        },
+        "relationsWithHolders": -20
+      }
+    },
+    {
+      "name": "Enrol the IDEOLOGY_DEMONYM paramilitaries",
+      "description": "The armed leagues of MOVEMENT_NAME are taken into the army under their own officers.",
+      "target": "ideology",
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        10
+      ],
+      "available": {
+        "spiritTag": "paramilitaries",
+        "unless": {
+          "afterDecree": [
+            "Dissolve the IDEOLOGY_DEMONYM paramilitaries"
+          ]
+        }
+      },
+      "note": "The other thing a state can do about an armed league it cannot beat. Dissolving one costs 100 and a state that could enforce it would not need it; this costs 80 and buys the men instead, at the price of their politics. Taken narrowly it arms one party, which is picking a side and reads authoritarian. Taken against all of them it is the state conceding that it shares the monopoly on force, which is why compassAll is negative rather than nothing.",
+      "felt": "support",
+      "compassAll": [
+        0,
+        -5
+      ],
+      "effects": {
+        "manpower": 0.15,
+        "conscriptionRaiseCost": -0.2,
+        "stability": 4,
+        "unrestPerDay": -0.02,
+        "ideologySupportPerDay": {
+          "target": 0.02
+        }
+      }
+    },
+    {
+      "name": "Legalise the IDEOLOGY_DEMONYM paramilitaries",
+      "description": "The armed leagues of MOVEMENT_NAME may form.",
+      "target": "ideology",
+      "cost": 200,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Dissolve the IDEOLOGY_DEMONYM paramilitaries"
+        ]
+      },
+      "effects": {}
+    },
+    {
+      "name": "Land reform",
+      "description": "The great estates are divided among the peasants who work them.",
+      "target": null,
+      "cost": 120,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        -20,
+        0
+      ],
+      "available": {
+        "unless": {
+          "form": [
+            "Absolute monarchy"
+          ]
+        }
+      },
+      "note": "A crown resting on the landed interest does not expropriate it.",
+      "felt": "rural",
+      "effects": {
+        "happiness": 5,
+        "taxRevenue": -0.1,
+        "resourceYield": {
+          "fertileLand": 0.15
+        }
+      },
+      "lobbyable": true
+    },
+    {
+      "name": "Nationalise the INDUSTRY_NAME",
+      "description": "Ownership of the INDUSTRY_NAME passes from private hands to the state.",
+      "target": "industry",
+      "cost": 120,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "available": {
+        "unless": [
+          {
+            "targetIndustry": "farmed"
+          },
+          {
+            "targetStateOwned": true
+          }
+        ]
+      },
+      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "costWeightedBy": "economic",
+      "felt": "target",
+      "effects": {},
+      "spread": 1,
+      "lobbyable": true
+    },
+    {
+      "name": "Privatise the INDUSTRY_NAME",
+      "description": "Ownership of the INDUSTRY_NAME passes from the state to private hands.",
+      "target": "industry",
+      "cost": 100,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "available": {
+        "targetStateOwned": true,
+        "unless": {
+          "targetIndustry": "farmed"
+        }
+      },
+      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "costWeightedBy": "economicInverse",
+      "felt": "target",
+      "effects": {},
+      "spread": 1,
+      "lobbyable": true
+    },
+    {
+      "name": "Collectivise the INDUSTRY_NAME",
+      "description": "The INDUSTRY_NAME is taken from its smallholders and worked as one holding.",
+      "target": "industry",
+      "cost": 140,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "available": {
+        "targetIndustry": "farmed",
+        "economicBelow": -50,
+        "unless": {
+          "targetStateOwned": true
+        }
+      },
+      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "costWeightedBy": "economic",
+      "felt": "target",
+      "effects": {},
+      "spread": 1,
+      "lobbyable": true
+    },
+    {
+      "name": "Decollectivise the INDUSTRY_NAME",
+      "description": "The INDUSTRY_NAME is returned to its smallholders.",
+      "target": "industry",
+      "cost": 160,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "available": {
+        "targetIndustry": "farmed",
+        "targetStateOwned": true
+      },
+      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "costWeightedBy": "economicInverse",
+      "felt": "target",
+      "effects": {},
+      "spread": 1,
+      "lobbyable": true
+    },
+    {
+      "name": "Repudiate the reparations",
+      "description": "The government of POLITY_NAME declares that no further reparations will be paid.",
+      "target": null,
+      "cost": 150,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        10
+      ],
+      "available": {
+        "polity": [
+          "TWD"
+        ],
+        "spiritTag": "reparations"
+      },
+      "effects": {
+        "taxRevenue": 0.08,
+        "relationsWithHolders": -40,
+        "stability": 5
+      },
+      "note": "Turns \"no intention of paying indefinitely\" into an act. It cancels the reparations The Terms of Larajevo charges and makes an enemy of every signatory. Germany defaulting in 1923 brought French troops into the Ruhr, so the relations figure is a threat and not a number."
+    },
+    {
+      "name": "Ponogoran language rights",
+      "description": "Ponogoran is made an official language in schools, courts and administration.",
+      "target": null,
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        -12
+      ],
+      "available": {
+        "polity": [
+          "TWD"
+        ]
+      },
+      "effects": {
+        "happiness": 6,
+        "stability": -5,
+        "ideologySupportPerDay": {
+          "Fascism": -0.01
+        }
+      },
+      "note": "Twadamia is two nations under one crown, 59.6% Twadamian to 31.3% Ponogoran by the figures its successor still reports. Recognising the second buys quiet in the east and offends the first, and it takes the wind out of the Narodists in particular."
+    },
+    {
+      "name": "Moderate reforms",
+      "description": "The trade unions are promised eight-hour work days and the owners are promised no further nationalisation will occur.",
+      "target": null,
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        -10,
+        -3
+      ],
+      "available": {
+        "polity": [
+          "KAN"
+        ]
+      },
+      "effects": {
+        "happiness": 4,
+        "taxRevenue": -0.06,
+        "stability": -3,
+        "ideologySupportPerDay": {
+          "governing": -0.015
+        }
+      },
+      "factor": "social reforms",
+      "note": "Newill's package of 1922. The daily loss of governing support is why the Socialists lose to the New Fatherland Party in 1927."
+    },
+    {
+      "name": "Arm the communities",
+      "description": "Each Community keeps its own weapons and trains its own militia.",
+      "target": null,
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        -8
+      ],
+      "available": {
+        "polity": [
+          "AJX"
+        ]
+      },
+      "effects": {
+        "manpower": 0.15,
+        "defence": 0.1,
+        "conscriptionRaiseCost": -0.3
+      },
+      "note": "Ajaxgul has held armed neutrality since the Peace of Kostrava in 1557 and holds it with a militia. The six Communities are its administrative divisions and each raises its own."
+    },
+    {
+      "name": "Right of asylum",
+      "description": "Foreign nationals may claim residence and will not be extradited for political offences.",
+      "target": null,
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        -15
+      ],
+      "available": {
+        "polity": [
+          "AJX"
+        ]
+      },
+      "effects": {
+        "populationGrowth": 0.2,
+        "research": 0.08,
+        "stability": -4
+      },
+      "note": "Kanland begins systematic anti-non-andran oppression in 1927 and borders Ajaxgul to the east. Ajaxgul is an Avisian state."
+    },
+    {
+      "name": "Secular schools",
+      "description": "Schools and the registers of birth, marriage and death are transferred from the church to the state.",
+      "target": null,
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        8
+      ],
+      "available": {
+        "polity": [
+          "OMB"
+        ]
+      },
+      "effects": {
+        "research": 0.08,
+        "stability": -3
+      },
+      "note": "The mirror of State religion, which Omarbat cannot secularise because it never established one. Neo-Idimism holds 71% of the country by 2001 against 27% who profess nothing."
+    },
+    {
+      "name": "Bank secrecy",
+      "description": "Banks may not disclose a customer's affairs to a foreign government.",
+      "target": null,
+      "cost": 90,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": [
+        12,
+        0
+      ],
+      "available": {
+        "polity": [
+          "SRS"
+        ]
+      },
+      "effects": {
+        "taxRevenue": 0.2,
+        "tradeIncome": 0.15
+      },
+      "note": "Liechtenstein's company law of 1926 is what made it a haven, and Monaco has charged no income tax since 1869. What it costs is what other governments think of it, which needs the relations system."
+    },
+    {
+      "name": "Repeal the language rights",
+      "description": "Ponogoran loses its official standing.",
+      "target": null,
+      "cost": 180,
+      "durationDays": null,
+      "thenPermanent": false,
+      "ends": "Ponogoran language rights",
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "afterDecree": [
+          "Ponogoran language rights"
+        ]
+      },
+      "effects": {}
+    },
+    {
+      "name": "Forced labour",
+      "description": "The population of the occupied provinces is put to work under guard.",
+      "target": null,
+      "cost": 80,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": null,
+      "available": {
+        "occupation": true
+      },
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "factor": "forced labour",
+      "effects": {
+        "occupationEfficiency": 0.2,
+        "happiness": -15,
+        "compliance": -0.15,
+        "unrestPerDay": 0.05
+      },
+      "note": "An occupation law. It applies in occupied provinces and nowhere else, and carries no compass, since what a country does to a conquered population says nothing about how it governs its own."
+    },
+    {
+      "name": "Military governor",
+      "description": "An officer of the army administers the occupied provinces in place of their own officials.",
+      "target": null,
+      "cost": 60,
+      "durationDays": null,
+      "thenPermanent": false,
+      "compass": null,
+      "available": {
+        "occupation": true
+      },
+      "effects": {
+        "compliance": 0.15,
+        "occupationEfficiency": 0.1,
+        "commandPowerIncome": -0.25
+      },
+      "note": "An occupation law. The command power is the general it ties up governing instead of fighting."
+    },
+    {
+      "name": "Hand over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
+      "description": "What we built in PROVINCE_NAME is left to its own government to keep up.",
+      "target": "infrastructure in a province",
+      "cost": 40,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "targetInfrastructure": true
+      },
+      "effects": {},
+      "note": "An act, not a state. Under Developing another country's ground in 16 Relations between polities. The target is {infrastructure, province}, both named, because a builder may hand over its roads in a province and go on maintaining its railway there. `targetInfrastructure` reads both: it is true only where the country holds levels of that kind in that province and still maintains them. A level built abroad is the host's property from the day it stands and the builder's charge until this is enacted. The host does not consent to it, so a host with a foreign power carrying the bill for its roads has no say in how long that lasts."
+    },
+    {
+      "name": "Take over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
+      "description": "What was built here at another country's expense is ours to keep up from today.",
+      "target": "infrastructure in a province",
+      "cost": 60,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        6
+      ],
+      "available": {
+        "targetForeignInfrastructure": true
+      },
+      "effects": {
+        "relationsWithTarget": -15
+      },
+      "note": "An act, not a state. The host end of Hand over. The builder is not asked, which is what the relations cost is for, and the country named by relationsWithTarget is the builder of the infrastructure and not a polity given in the target. A host does this to get a foreign power off its ground, and pays for the privilege in upkeep it was not carrying before."
+    },
+    {
+      "name": "Request hand over of INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
+      "description": "The country that built here is asked to leave its infrastructure to us.",
+      "target": "infrastructure in a province",
+      "cost": 20,
+      "durationDays": 0,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "targetForeignInfrastructure": true
+      },
+      "effects": {},
+      "note": "An act, not a state. The polite form of Take over: the builder decides, and on acceptance the upkeep moves exactly as Hand over moves it. A refusal costs nothing and the infrastructure stays where it is."
+    }
+  ],
+  "stateOwnership": {
+    "unscaled": [
+      "targetYield"
+    ],
+    "whole": [
+      "rail",
+      "manufacturing"
+    ],
+    "byTarget": {
+      "rail": {
+        "maintenance": 0.1,
+        "construction": 0.05,
+        "taxRevenue": 0.03,
+        "happiness": 1
+      },
+      "manufacturing": {
+        "consumerSharePoints": 5,
+        "targetYield": -0.06,
+        "taxRevenue": 0.05,
+        "happiness": 1
+      },
+      "resource": {
+        "taxRevenue": 0.2,
+        "targetYield": -0.05,
+        "happiness": 2
+      },
+      "farmed": {
+        "taxRevenue": 0.1,
+        "targetYield": -0.15,
+        "happiness": -9,
+        "unrestPerDay": 0.02
+      }
+    },
+    "compass": {
+      "rail": [
+        -4,
+        2
+      ],
+      "manufacturing": [
+        -10,
+        2
+      ],
+      "resource": [
+        -8,
+        2
+      ],
+      "farmed": [
+        -12,
+        3
+      ]
+    }
+  }
+}

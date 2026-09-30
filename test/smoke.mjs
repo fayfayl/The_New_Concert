@@ -60,6 +60,18 @@ function run(n, label) {
 
 console.log(`initial frames: ${run(30, 'load')} ran`);
 
+// A layer nobody can click is a layer that does not exist. Every mode that has
+// its data has to be visible by the time the map is up. The ideology button was
+// tested against world.stats before world.stats was assigned, so it stayed
+// hidden and the whole layer was unreachable.
+{
+  const shown = dom.modeButtons.filter((b) => !b.hidden).map((b) => b.dataset.mode);
+  console.log('toolbar: ' + shown.join(', '));
+  for (const m of ['political', 'province', 'terrain', 'resources', 'county', 'navy', 'ideology']) {
+    if (!shown.includes(m)) problems.push(['toolbar', new Error('the ' + m + ' button is hidden')]);
+  }
+}
+
 for (const button of dom.modeButtons) {
   const mode = button.dataset.mode;
   // The toolbar listens on the bar, not the button, so go through the same path
@@ -132,7 +144,7 @@ for (const button of dom.modeButtons) {
   if (near === null) {
     problems.push(['rivers', new Error('the debug panel has no Rivers row')]);
   } else if (near.includes('no rivers.png')) {
-    problems.push(['rivers', new Error('data/img/rivers.png did not load — run: node sync-provinces.js --rivers --write')]);
+    problems.push(['rivers', new Error('data/img/bitmap/rivers.png did not load — run: node sync-provinces.js --rivers --write')]);
   } else {
     const fade = (t) => Number((String(t).match(/^([0-9.]+)/) || [])[1]);
     if (!(fade(near) > 0.9)) {

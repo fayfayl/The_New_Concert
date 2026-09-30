@@ -367,7 +367,7 @@ export function install(root) {
     return byId.get(id);
   };
 
-  const modeButtons = ['political', 'province', 'terrain', 'county', 'navy'].map((m) => {
+  const modeButtons = ['political', 'province', 'terrain', 'county', 'navy', 'resources', 'ideology'].map((m) => {
     const b = makeEl('button');
     b.dataset.mode = m;
     return b;
@@ -459,6 +459,13 @@ export function install(root) {
   globalThis.AudioContext = FakeAudioContext;
   globalThis.HTMLCanvasElement = FakeCanvas;
   globalThis.Image = class { set src(_) { this.onload?.(); } };
+  // A path is only ever built and handed to fill or stroke, which draw nothing
+  // here, so it records nothing either. Without it the outline of a selection
+  // threw the first time anything was selected.
+  globalThis.Path2D = class {
+    moveTo() {} lineTo() {} closePath() {} rect() {} arc() {} arcTo() {}
+    ellipse() {} bezierCurveTo() {} quadraticCurveTo() {} addPath() {}
+  };
 
   // Real bytes for the real files.
   globalThis.fetch = async (url) => {

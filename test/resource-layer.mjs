@@ -87,7 +87,7 @@ ok(deposits.every((d) => d > 0), 'every deposit is above 0');
 // Every deposit written has to exist as a KNOWN figure somewhere in the file.
 // This is what catches a layer that reads the wrong box: unprospected, offshore
 // and stranded are all deliberately absent.
-const doc = JSON.parse(fs.readFileSync(path.join(root, 'data/json/resources.json'), 'utf8'));
+const doc = JSON.parse(fs.readFileSync(path.join(root, 'data/json/province/resources.json'), 'utf8'));
 const w = game.world();
 const lines = w.resourceLines;
 ok(lines.size > 1000, `the world holds a stack for ${lines.size} provinces`);

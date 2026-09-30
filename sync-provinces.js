@@ -1,11 +1,11 @@
 /*
- * sync-provinces.js — reconcile data/json/provinces.json with data/img/provinces.png.
+ * sync-provinces.js — reconcile data/json/geography/provinces.json with data/img/bitmap/provinces.png.
  *
  * Run:  node sync-provinces.js             report only, writes nothing
  *       node sync-provinces.js --write     apply the changes
  *       node sync-provinces.js --reslug    regenerate ids from names, provinces and cities alike
  *       node sync-provinces.js --prune     delete entries no longer in the bitmap
- *       node sync-provinces.js --rivers    redraw data/img/rivers.png for the map layer
+ *       node sync-provinces.js --rivers    redraw data/img/bitmap/rivers.png for the map layer
  *       node sync-provinces.js --snap-rivers  pull county boundaries onto nearby rivers
  *       node sync-provinces.js --regen-sea-subs  draw the sea subregions from nothing
  *       node sync-provinces.js --sea-subs   read a hand-edited sea_subregions.png back
@@ -23,7 +23,7 @@
  * It also writes each province's true surface area in km2 and the latitude and
  * longitude of its centre. Those two are DERIVED and rewritten every run, so
  * editing them by hand achieves nothing. They are measured from
- * data/img/true_area.png; without that file they are left alone.
+ * data/img/bitmap/true_area.png; without that file they are left alone.
  * See src/geo.js for why a pixel count is not an area.
  *
  * Because it matches on colour, you can redraw the map as often as you like
@@ -47,7 +47,7 @@ import {
   normaliseSeaTable, buildSeaWorld, normaliseCountyTable, buildCountyWorld,
   normaliseSubTable, buildSubWorld,
 } from './src/mapdata.js';
-import { CACHE_FILE, hashInputs, buildCacheMeta, packCache, buildSubMeta } from './src/mapcache.js';
+import { CACHE_FILE, hashInputs, applyCountyOccupation, buildCacheMeta, packCache, buildSubMeta } from './src/mapcache.js';
 import { mergeStats, splitStats } from './src/provincestats.js';
 import { makeProjection, toDegrees, MAP_NORTH_ROW, MAP_GLOBE_HEIGHT, mapLatAt, mapLonAt } from './src/geo.js';
 import {
@@ -92,8 +92,9 @@ const LANDSCAPE = (() => {
   const arg = process.argv.find((a) => a === '--landscape' || a.startsWith('--landscape='));
   return arg === undefined ? null : (arg.split('=')[1] || '');
 })();
-// data/ is sorted by KIND rather than by subject: bitmaps under img/, tables
-// under json/. So the two files describing provinces live apart, which is the
+// data/ is sorted by KIND rather than by subject: bitmaps under img/bitmap/, the
+// images they are measured against under img/reference/, and tables under json/.
+// So the two files describing provinces live apart, which is the
 // point — provinces.png and provinces.json are the two sources of truth this
 // script exists to reconcile, and they are edited with completely different
 // tools.
@@ -103,42 +104,44 @@ const LANDSCAPE = (() => {
 // authored. main.js fetches it from there as `./data/${CACHE_FILE}`, so the two
 // have to agree about that.
 const DIR = path.join(__dirname, 'data');
-const IMG = path.join(DIR, 'img');
+const IMG = path.join(DIR, 'img', 'bitmap');
+const REFERENCE = path.join(DIR, 'img', 'reference');
 const TABLES = path.join(DIR, 'json');
 
 const PNG = path.join(IMG, 'provinces.png');
-const JSON_PATH = path.join(TABLES, 'provinces.json');
+const JSON_PATH = path.join(TABLES, 'geography/provinces.json');
 const CACHE_PATH = path.join(DIR, CACHE_FILE);
 const CITIES_PNG = path.join(IMG, 'cities.png');
 const SEA_PNG = path.join(IMG, 'sea.png');
-const SEA_GLOBE = path.join(IMG, 'sea_true_area.png');
-const SEA_JSON = path.join(TABLES, 'sea.json');
-const SEA_ELEVATION = path.join(IMG, 'sea_elevation.png');
+const SEA_GLOBE = path.join(REFERENCE, 'sea_true_area.png');
+const SEA_JSON = path.join(TABLES, 'geography/sea.json');
+const SEA_ELEVATION = path.join(REFERENCE, 'sea_elevation.png');
 const SUBS_PNG = path.join(IMG, 'sea_subregions.png');
-const TERRAIN_PNG = path.join(IMG, 'terrain.png');
-const CLIMATE_PNG = path.join(IMG, 'climate.png');
-const RIVERS_PNG = path.join(IMG, 'true_water_bodies_and_rivers.png');
+const TERRAIN_PNG = path.join(REFERENCE, 'terrain.png');
+const CLIMATE_PNG = path.join(REFERENCE, 'climate.png');
+const RIVERS_PNG = path.join(REFERENCE, 'true_water_bodies_and_rivers.png');
 const RIVER_LAYER_PNG = path.join(IMG, 'rivers.png');
 const COUNTIES_PNG = path.join(IMG, 'counties.png');
-const COUNTIES_JSON = path.join(TABLES, 'counties.json');
+const COUNTIES_JSON = path.join(TABLES, 'geography/counties.json');
 // The buildings a county can hold, which this file must know about twice over:
 // once to carry them across a counties.png read-back and once to write them out
 // again. The writer builds each county from a named field list, so a building
 // missing from here is silently demolished by a --counties --write however
 // carefully the read preserved it. Kept in step with BUILDINGS in
 // src/provincestats.js, which this cannot import.
-const BUILDING_KINDS = ['eyrie', 'dockyard', 'syntheticOil', 'syntheticRubber'];
 // Polities live in their own file: they are a list of countries, not a fact about
 // any province, and keeping them here means a resync of the bitmap cannot touch them.
-const POLITIES_JSON = path.join(TABLES, 'polities.json');
+const POLITIES_JSON = path.join(TABLES, 'geography/polities.json');
 const readPolities = () => (fs.existsSync(POLITIES_JSON)
   ? JSON.parse(fs.readFileSync(POLITIES_JSON, 'utf8')).polities
   : [{ id: 'NONE', name: 'Unclaimed', colour: '#5a5a60' }]);
-const CITIES_JSON = path.join(TABLES, 'cities.json');
-const STATS_JSON = path.join(TABLES, 'province-stats.json');
+const CITIES_JSON = path.join(TABLES, 'geography/cities.json');
+const STATS_JSON = path.join(TABLES, 'province/province-stats.json');
 // What a game starts with, kept apart from what the map fixes. See src/provincestats.js.
-const START_INFRA_JSON = path.join(TABLES, 'provinces-starting-infrastructure.json');
-const START_ATTITUDE_JSON = path.join(TABLES, 'provinces-starting-attitude.json');
+const START_INFRA_JSON = path.join(TABLES, 'province/provinces-starting-infrastructure.json');
+const START_ATTITUDE_JSON = path.join(TABLES, 'province/provinces-starting-attitude.json');
+const START_SUPPORT_JSON = path.join(TABLES, 'province/provinces-starting-support.json');
+const COUNTY_VALUES_JSON = path.join(TABLES, 'province/counties-starting-values.json');
 const readJSONIf = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null);
 // The whole world on a 2:1 globe, poles included. Areas are measured from this
 // rather than from provinces.png — see the note at the top of src/geo.js.
@@ -1244,7 +1247,8 @@ const BLANK_STATS = {
   annexedOn: null,
 };
 
-const oldStats = { provinces: mergeStats(readJSONIf(STATS_JSON), readJSONIf(START_INFRA_JSON), readJSONIf(START_ATTITUDE_JSON)) };
+const oldStats = { provinces: mergeStats(readJSONIf(STATS_JSON), readJSONIf(START_INFRA_JSON),
+  readJSONIf(START_ATTITUDE_JSON), readJSONIf(START_SUPPORT_JSON)) };
 const statsById = oldStats.provinces || {};
 
 // --reslug renames ids, and this file is keyed by id, so every entry has to
@@ -1313,6 +1317,11 @@ if (statsKept.length) {
 const ceilingSource = fs.existsSync(COUNTIES_JSON)
   ? (JSON.parse(fs.readFileSync(COUNTIES_JSON, 'utf8')).counties || [])
   : [];
+// Rail decides part of the slot figure below and is no longer in counties.json.
+const countyValues = fs.existsSync(COUNTY_VALUES_JSON)
+  ? (JSON.parse(fs.readFileSync(COUNTY_VALUES_JSON, 'utf8')).counties || {})
+  : {};
+for (const c of ceilingSource) Object.assign(c, countyValues[c.id] || {});
 const cityProvinces = new Set(
   (fs.existsSync(CITIES_JSON) ? (JSON.parse(fs.readFileSync(CITIES_JSON, 'utf8')).cities || []) : [])
     .map((c) => c.province),
@@ -1420,7 +1429,8 @@ if (WRITE) {
   writeJSON(STATS_JSON, { provinces: split.stats });
   writeJSON(START_INFRA_JSON, { provinces: split.infrastructure });
   writeJSON(START_ATTITUDE_JSON, { provinces: split.attitude });
-  for (const f of [STATS_JSON, START_INFRA_JSON, START_ATTITUDE_JSON]) console.log(`wrote ${path.relative(process.cwd(), f)}`);
+  writeJSON(START_SUPPORT_JSON, { provinces: split.support });
+  for (const f of [STATS_JSON, START_INFRA_JSON, START_ATTITUDE_JSON, START_SUPPORT_JSON]) console.log(`wrote ${path.relative(process.cwd(), f)}`);
 } else {
   console.log(`\n(dry run — nothing written. re-run with --write to apply)`);
 }
@@ -1450,6 +1460,12 @@ if (CACHE) {
     const countyBytes = fs.existsSync(COUNTIES_PNG) ? fs.readFileSync(COUNTIES_PNG) : null;
     const countyRaw = fs.existsSync(COUNTIES_JSON) ? JSON.parse(fs.readFileSync(COUNTIES_JSON, "utf8")) : null;
     const subBytes = fs.existsSync(SUBS_PNG) ? fs.readFileSync(SUBS_PNG) : null;
+    // Occupation is held by county. Each province's occupier is derived from its
+    // counties exactly as the page derives it, before the hash, or the two would
+    // disagree about what the map is coloured by.
+    const countyValuesFile = fs.existsSync(COUNTY_VALUES_JSON)
+      ? JSON.parse(fs.readFileSync(COUNTY_VALUES_JSON, 'utf8')) : {};
+    applyCountyOccupation(raw, countyRaw, countyValuesFile.occupation);
     const hash = hashInputs(fs.readFileSync(PNG), raw, seaBytes, seaRaw, countyBytes, countyRaw, subBytes);
 
     // The decoder above keeps a packed colour per pixel, which is all the rest
@@ -2238,7 +2254,7 @@ function naming(was, regionId, regionName, seq, takenIds, takenNames) {
 }
 
 /**
- * Turns data/img/cities.png into data/json/cities.json.
+ * Turns data/img/bitmap/cities.png into data/json/geography/cities.json.
  *
  * The bitmap holds one pixel per city — black for a capital, mid-grey for an
  * ordinary city — and its position, read against provinces.png, says which
@@ -2704,9 +2720,10 @@ if (COUNTIES) {
         //
         // counties.png is the authority from here on. Paint one county's colour
         // over another and the two merge; move a boundary and the areas follow.
-        // Only the id, the name, the railway and the buildings are kept from the
-        // table, because only those are typed in; everything else is read back
-        // off the map.
+        // Only the id and the name are kept from the table, because only those
+        // are typed in here; everything else is read back off the map. Rail, the
+        // buildings and their marks are in counties-starting-values.json, which
+        // this never touches.
         const oldFile = fs.existsSync(COUNTIES_JSON)
           ? JSON.parse(fs.readFileSync(COUNTIES_JSON, "utf8")) : { counties: [] };
         const oldByColour = new Map((oldFile.counties || []).map((c) => [parseHex(c.colour), c]));
@@ -2735,17 +2752,9 @@ if (COUNTIES) {
             if (!prev) continue;
             c.id = prev.id;
             c.name = prev.name;
-            // Rail is built, not measured. It survives a read-back for the
-            // same reason the name does: nothing on any bitmap records it.
-            if (prev.rail) c.rail = prev.rail;
-            // Buildings likewise, with the pixel their mark stands on. Losing
-            // these to a boundary edit would silently demolish every building on
-            // the map, so they are carried across with the name.
-            for (const b of BUILDING_KINDS) {
-              if (!prev[b]) continue;
-              c[b] = true;
-              if (Array.isArray(prev[b + 'At'])) c[b + 'At'] = prev[b + 'At'];
-            }
+            // Rail and strikes are not here any more. They live in
+            // counties-starting-values.json, keyed by id, so a boundary edit
+            // cannot touch them and this loop has nothing to carry across.
             const m = /_(\d+)$/.exec(prev.id);
             if (m) taken.set(c.province.id, Math.max(taken.get(c.province.id) || 0, Number(m[1])));
           }
@@ -2801,14 +2810,6 @@ if (COUNTIES) {
                 province: c.province.id,
                 terrain: [c.terrain, ...(c.urban ? [URBAN] : [])],
                 climate: c.climate,
-                ...(c.rail ? { rail: c.rail } : {}),
-                // Buildings, on the same terms as rail: carried across the read
-                // above and written out here. This object is built field by
-                // field, so anything not named here is dropped however carefully
-                // it was preserved.
-                ...Object.fromEntries(BUILDING_KINDS.flatMap((b) => (c[b]
-                  ? [[b, true], [b + 'At', c[b + 'At']]]
-                  : []))),
                 riverShare: shareOf(c.riverShare),
                 lakeShare: shareOf(c.lakeShare),
                 riverBorders: bordersOf(c.riverBorders),

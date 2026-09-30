@@ -1,0 +1,347 @@
+{
+  "timing": {
+    "ramp": 60,
+    "fade": 60
+  },
+  "policies": [
+    {
+      "name": "Rationing",
+      "description": "We will ration food and consumer goods, and every household will receive its share by coupon.",
+      "target": null,
+      "start": 25,
+      "upkeep": 0.02,
+      "compass": [
+        -10,
+        8
+      ],
+      "available": "any",
+      "felt": "urbanisation",
+      "ramp": 7,
+      "fade": 7,
+      "effects": {
+        "consumerSharePoints": -5
+      },
+      "note": "The consumer share it takes is what the population feels, through the consumer goods shortage curve under Resources. A flat happiness figure on top would charge the same goods twice."
+    },
+    {
+      "name": "Lobby for a law",
+      "description": "Our ministers, editors and party members will campaign for a new law.",
+      "target": "law or decree",
+      "start": 25,
+      "upkeep": 0.03,
+      "compass": [
+        0,
+        0
+      ],
+      "effects": {
+        "lawAdoptionCost": -0.5,
+        "decreeCost": -0.5
+      },
+      "available": {
+        "elections": true
+      },
+      "note": "Lobbying persuades people who can be voted out, so it needs a government that can be. Elections are read from the form of government, or from the polity's own entry where it departs from the form. The target is a law as {law, option}, both named because an option name alone is ambiguous, or a decree as {decree}. Only decrees marked lobbyable may be named: property, land, the church and labour law are what a chamber fights over, and martial law is a thing a government does. The target decides which of the two costs is charged. Where the decree names a target of its own the discount covers it whichever one is chosen, since what is being lobbied for is nationalisation and not one particular pit."
+    },
+    {
+      "name": "War bonds",
+      "description": "We will sell war bonds to our people to fund our war effort.",
+      "target": null,
+      "start": 30,
+      "upkeep": 0.03,
+      "compass": [
+        0,
+        3
+      ],
+      "available": {
+        "atWar": true
+      },
+      "felt": "urbanisation",
+      "effects": {
+        "taxRevenue": 0.15,
+        "happiness": -2
+      }
+    },
+    {
+      "name": "Officer training",
+      "description": "Our staff colleges will train more officers than our army needs.",
+      "target": null,
+      "start": 30,
+      "upkeep": 0.03,
+      "compass": [
+        0,
+        3
+      ],
+      "effects": {
+        "commandPowerIncome": 0.5
+      },
+      "available": "any"
+    },
+    {
+      "name": "Civil defence",
+      "description": "We will build air-raid shelters, train wardens and move our industry out of the cities.",
+      "target": null,
+      "start": 30,
+      "upkeep": 0.04,
+      "compass": [
+        0,
+        0
+      ],
+      "effects": {
+        "airBaseRecovery": 0.25,
+        "bombingDamage": -0.1
+      },
+      "available": "any"
+    },
+    {
+      "name": "Improve worker conditions",
+      "description": "We will limit working hours and set wages and safety standards in our factories by law.",
+      "target": null,
+      "start": 30,
+      "upkeep": 0.06,
+      "compass": [
+        -15,
+        -8
+      ],
+      "available": "any",
+      "felt": "factories",
+      "factor": "improved worker conditions",
+      "ramp": 90,
+      "fade": 180,
+      "effects": {
+        "happiness": 6,
+        "factoryOutput": -0.06
+      }
+    },
+    {
+      "name": "Foreign investment",
+      "description": "We will invest state money in another country's industry.",
+      "target": "country",
+      "start": 30,
+      "upkeep": 0.04,
+      "compass": [
+        12,
+        -5
+      ],
+      "effects": {
+        "tradeIncomeWithTarget": 0.15,
+        "relationsWithTarget": "better",
+        "construction": -0.05
+      },
+      "available": {
+        "unless": {
+          "targetAtWar": true
+        }
+      }
+    },
+    {
+      "name": "Consolidate the colonies",
+      "description": "We will send administrators, garrisons and teachers out to our colonies.",
+      "target": null,
+      "start": 40,
+      "upkeep": 0.06,
+      "compass": [
+        0,
+        5
+      ],
+      "effects": {
+        "relationsWithColonies": 15,
+        "colonialUnrestPerDay": -0.05,
+        "revenueFromColonies": -0.3
+      },
+      "available": {
+        "colonies": true
+      },
+      "note": "The answer to an empire slipping away, and it is paid for out of the empire. A country stops taking three tenths of what its colonies remit, on top of the upkeep, so holding them by administration costs about what holding them by extraction earned. A country with no colonies cannot start it."
+    },
+    {
+      "name": "Public works",
+      "description": "We will put the unemployed to work building roads, canals and public buildings.",
+      "target": null,
+      "start": 40,
+      "upkeep": 0.06,
+      "compass": [
+        -10,
+        0
+      ],
+      "effects": {
+        "construction": 0.1
+      },
+      "available": "any"
+    },
+    {
+      "name": "Propaganda",
+      "description": "Our information office will supply the press and cinemas with official material.",
+      "target": null,
+      "start": 40,
+      "upkeep": 0.04,
+      "compass": [
+        0,
+        12
+      ],
+      "available": "any",
+      "ramp": 30,
+      "fade": 90,
+      "effects": {
+        "stability": 10,
+        "ideologySupportPerDay": {
+          "governing": 0.02
+        },
+        "happinessPenalties": -0.3
+      }
+    },
+    {
+      "name": "Industrial subsidies",
+      "description": "We will pay our manufacturers a fixed sum for every unit they produce.",
+      "target": null,
+      "start": 50,
+      "upkeep": 0.08,
+      "compass": [
+        -8,
+        0
+      ],
+      "effects": {
+        "factoryOutput": 0.05
+      },
+      "available": "any"
+    },
+    {
+      "name": "Armaments drive",
+      "description": "We will pay for extra shifts in our arms factories.",
+      "target": null,
+      "start": 50,
+      "upkeep": 0.07,
+      "compass": [
+        0,
+        5
+      ],
+      "effects": {
+        "militaryFactoryOutput": 0.1,
+        "civilianFactoryOutput": -0.1
+      },
+      "available": {
+        "unless": {
+          "spiritTag": "disarmed"
+        }
+      }
+    },
+    {
+      "name": "Secret police",
+      "description": "Our political police and their informers will keep watch on our people.",
+      "target": null,
+      "start": 60,
+      "upkeep": 0.05,
+      "compass": [
+        0,
+        30
+      ],
+      "available": "any",
+      "felt": "urbanisation",
+      "ramp": 30,
+      "fade": 90,
+      "effects": {
+        "unrestAccumulates": false,
+        "happiness": -5
+      }
+    },
+    {
+      "name": "Border war",
+      "description": "Our troops will fight over a disputed border without either side declaring war.",
+      "target": "neighbour",
+      "start": 60,
+      "upkeep": 0.07,
+      "compass": [
+        0,
+        10
+      ],
+      "effects": {
+        "claimProgress": true,
+        "equipmentLosses": true,
+        "manpowerLosses": true,
+        "relationsWithTarget": -40
+      },
+      "available": {
+        "targetNeighbour": true,
+        "unless": {
+          "targetAtWar": true
+        }
+      }
+    },
+    {
+      "name": "Extend direct rule",
+      "description": "Our head of state will appoint salaried governors and tax collectors to run our provinces directly.",
+      "target": null,
+      "start": 50,
+      "upkeep": 0.08,
+      "compass": [
+        -5,
+        14
+      ],
+      "available": {
+        "form": [
+          "Absolute monarchy",
+          "Military dictatorship"
+        ]
+      },
+      "felt": "rural",
+      "factor": "direct rule",
+      "ramp": 90,
+      "fade": 180,
+      "effects": {
+        "taxRevenue": 0.15,
+        "conscriptionRaiseCost": -0.1,
+        "happiness": -4,
+        "unrestPerDay": 0.01
+      },
+      "note": "The counterpart of Consolidate the colonies, for ground a country holds in its own name but does not administer. Only a government that answers to nobody can post its own men over a district's own authority."
+    },
+    {
+      "name": "Improve mining conditions",
+      "description": "We will limit miners' hours and set their wages and safety standards by law.",
+      "target": null,
+      "start": 25,
+      "upkeep": 0.05,
+      "compass": [
+        -12,
+        -6
+      ],
+      "available": "any",
+      "felt": "dug",
+      "factor": "improved mining conditions",
+      "ramp": 90,
+      "fade": 180,
+      "effects": {
+        "happiness": 6,
+        "resourceYield": {
+          "coal": -0.05,
+          "oil": -0.05,
+          "naturalGas": -0.05,
+          "iron": -0.05,
+          "baul": -0.05,
+          "aluminium": -0.05,
+          "rareMetals": -0.05,
+          "gold": -0.05,
+          "goizederium": -0.05,
+          "tazkuri": -0.05,
+          "nitrates": -0.05,
+          "tungsten": -0.05,
+          "baseMetals": -0.05
+        }
+      },
+      "note": "The counterpart of Improve worker conditions, for the pits. Felt by what a province digs rather than by its factories, since the men a mine act reaches are not on a factory floor. The yield is named resource by resource because resourceYield is a map and there is no key for every dug kind at once."
+    },
+    {
+      "name": "State of Alert",
+      "description": "We will keep our garrisons manned and our reserves at readiness the year round.",
+      "target": null,
+      "start": 40,
+      "upkeep": 0.06,
+      "compass": [-5, 6],
+      "available": "any",
+      "effects": {
+        "defence": 0.08,
+        "manpower": -0.1,
+        "supplyUse": 0.05
+      }
+    }
+  ]
+}

@@ -1,0 +1,3749 @@
+{
+  "defaults": {
+    "laws": {
+      "conscription": "Volunteer only",
+      "economy": "Civilian economy",
+      "personalTax": "Moderate taxation",
+      "corporateTax": "Moderate taxation",
+      "colonialTax": "Moderate taxation",
+      "monetary": "Gold standard",
+      "trade": "Free trade"
+    },
+    "doctrine": {
+      "land": "Defensive",
+      "air": "Battlefield support",
+      "naval": "Fleet in being",
+      "magical": "Warded lines"
+    },
+    "policies": [],
+    "decrees": [],
+    "spirits": []
+  },
+  "polities": [
+    {
+      "id": "TWD",
+      "form": "Absolute monarchy",
+      "leader": "adrianna",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Propaganda",
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal"
+      ],
+      "spirits": [
+        "the_terms_of_larajevo",
+        "a_queen_without_an_heir",
+        "extremist_agitation",
+        "no_general_staff"
+      ]
+    },
+    {
+      "id": "KRN",
+      "form": "Constitutional monarchy",
+      "leader": "alice_wahlstrom",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "colonialTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Consolidate the colonies"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail",
+        "timber"
+      ],
+      "spirits": [
+        "general_corruption",
+        "gridlocked",
+        "street_violence",
+        "legacy_of_the_kreno_twadamian_war"
+      ]
+    },
+    {
+      "id": "KGN",
+      "form": "Parliamentary republic",
+      "leader": "hans_brickner",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        "Establish a general staff"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "ungervan_constitution",
+        "the_podderonskie_question",
+        "marketless_industry",
+        "the_kagan_revival"
+      ]
+    },
+    {
+      "id": "SBY",
+      "form": "Absolute monarchy",
+      "leader": "skenobard",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Officer training"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail",
+        "iron"
+      ],
+      "spirits": [
+        "twadamian_expulsion",
+        "strategic_neutrality",
+        "a_long_generation"
+      ]
+    },
+    {
+      "id": "FNA",
+      "form": "Constitutional monarchy",
+      "elections": false,
+      "laws": {
+        "conscription": "Limited conscription",
+        "colonialTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Gem ordnance"
+      },
+      "policies": [
+        "Officer training",
+        "Consolidate the colonies"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "the_cost_of_victory",
+        "house_of_brumunvik",
+        "uneasy_throne",
+        "the_black_twenties"
+      ]
+    },
+    {
+      "id": "FLN",
+      "form": "Constitutional monarchy",
+      "leader": "hugo_tangen",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation"
+      },
+      "policies": [
+        "Improve worker conditions",
+        "Armaments drive"
+      ],
+      "decrees": [
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "AVN",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation"
+      },
+      "policies": [
+        "Improve worker conditions",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Literacy campaign",
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "GWR",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Early mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "colonialTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Strategic bombing",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Armaments drive",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "constitution_of_1920",
+        "ruin_of_two_victories",
+        "the_slums"
+      ]
+    },
+    {
+      "id": "SWD",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        },
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail",
+        "oil",
+        "iron"
+      ],
+      "spirits": [
+        "crippling_debt",
+        "economic_downturn",
+        "shell_shocked_caution"
+      ]
+    },
+    {
+      "id": "KAN",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "colonialTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Mobile warfare",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Gem ordnance"
+      },
+      "policies": [
+        "Consolidate the colonies",
+        "Improve worker conditions"
+      ],
+      "decrees": [
+        "Moderate reforms"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "political_violence",
+        "victors_of_the_continuation_war",
+        "weak_government",
+        "the_great_slump",
+        "thomas_ii"
+      ]
+    },
+    {
+      "id": "AJX",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Industrial subsidies",
+        {
+          "policy": "Foreign investment",
+          "target": "KAN"
+        }
+      ],
+      "decrees": [
+        "Arm the communities",
+        "Right of asylum"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "peace_of_kostrava",
+        "deronic_wall",
+        "winged_communities"
+      ]
+    },
+    {
+      "id": "PEL",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        {
+          "policy": "Foreign investment",
+          "target": "KAN"
+        },
+        {
+          "policy": "Foreign investment",
+          "target": "VOS"
+        }
+      ],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "house_of_clore"
+      ]
+    },
+    {
+      "id": "VOS",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "colonialTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Gem ordnance"
+      },
+      "policies": [
+        "Secret police",
+        "Propaganda",
+        "Public works"
+      ],
+      "decrees": [
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal"
+      ],
+      "spirits": [
+        "the_blueshirts",
+        "l_epoque_troublante",
+        "aurore_ii",
+        "outdated_military_industry"
+      ]
+    },
+    {
+      "id": "OMB",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Improve worker conditions",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Literacy campaign",
+        "Secular schools",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        },
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "corrupt_bureaucracy",
+        "foreign_concessions",
+        "ducal_estates"
+      ]
+    },
+    {
+      "id": "CFR",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Partial mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "War bonds",
+        "Officer training"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "death_of_franzone",
+        "squabbling_command",
+        "recognised_government"
+      ]
+    },
+    {
+      "id": "NCN",
+      "form": "Military dictatorship",
+      "startingIdeology": "Military junta",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Partial mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "colonialTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Officer training",
+        "Industrial subsidies",
+        "Armaments drive",
+        "Civil defence"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "big_tent_right",
+        "army_of_1918",
+        "bitterness_of_larajevo",
+        "reprisals"
+      ]
+    },
+    {
+      "id": "SCN",
+      "form": "Provisional government",
+      "startingIdeology": "Socialism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "War economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Managed currency",
+        "trade": "Limited exports"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Rationing",
+        "War bonds",
+        "Improve worker conditions"
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal"
+      ],
+      "spirits": [
+        "divided_left",
+        "workers_militias",
+        "requisition"
+      ]
+    },
+    {
+      "id": "SRS",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Plutocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Minimal taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        {
+          "policy": "Foreign investment",
+          "target": "VOS"
+        },
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Bank secrecy"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "palace_guard",
+        "cunarian_capital"
+      ]
+    },
+    {
+      "id": "LOX",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "loxunlans_abroad",
+        "syndicates",
+        "neutral_foreign_policy"
+      ]
+    },
+    {
+      "id": "SPT",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        {
+          "policy": "Lobby for a law",
+          "target": {
+            "law": "personalTax",
+            "option": "Moderate"
+          }
+        },
+        "Public works"
+      ],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "elective_crown",
+        "winged_kingdom",
+        "the_great_slump_spt"
+      ]
+    },
+    {
+      "id": "JEN",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "colonialTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [
+        "Land reform",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "five_nations",
+        "exhausted_army",
+        "widespread_unemployment",
+        "crown_in_exile"
+      ]
+    },
+    {
+      "id": "SAN",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "colonialTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Communications strike",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions",
+        "Consolidate the colonies"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail",
+        "coal",
+        "baseMetals"
+      ],
+      "spirits": [
+        "from_malejos_to_yakakana",
+        "continental_revolution",
+        "death_of_a_leader",
+        "cost_of_living"
+      ]
+    },
+    {
+      "id": "EPT",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Libertarianism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Minimal taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "air": "Air superiority",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Civil defence",
+        {
+          "policy": "Foreign investment",
+          "target": "SAN"
+        }
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "free_port",
+        "metropolis"
+      ]
+    },
+    {
+      "id": "AUS",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works",
+        "Propaganda",
+        "Secret police"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail",
+        "oil"
+      ],
+      "spirits": [
+        "heir_of_the_guzogalic_empire",
+        "shadow_of_aroyan",
+        "economic_downturn_aus",
+        "declared_neutrality",
+        "brown_water_navy"
+      ]
+    },
+    {
+      "id": "EMS",
+      "form": "One-party state",
+      "startingIdeology": "Fascism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Communications strike",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Propaganda",
+        "Public works"
+      ],
+      "decrees": [
+        {
+          "decree": "Ban parties",
+          "target": "all"
+        },
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail",
+        "baseMetals"
+      ],
+      "spirits": [
+        "aroyani_irredentism",
+        "recovering_from_civil_war",
+        "political_corruption",
+        "strait_of_malos"
+      ]
+    },
+    {
+      "id": "KWE",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works",
+        "Officer training"
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail",
+        "gold",
+        "iron"
+      ],
+      "spirits": [
+        "hymn_of_the_martyrs",
+        "standard_kewish",
+        "bumish_exiles"
+      ]
+    },
+    {
+      "id": "JSH",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Extend direct rule"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "loyalty_of_the_tribes",
+        "disorganized_armed_forces",
+        "the_arbus_concessions"
+      ]
+    },
+    {
+      "id": "ARY",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Propaganda"
+      ],
+      "decrees": [
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "gatafolk_empire",
+        "unfair_treatment",
+        "economic_devastation",
+        "oversized_bureaucracy",
+        "political_violence_ary",
+        "disaffected_officers"
+      ]
+    },
+    {
+      "id": "ILT",
+      "form": "Provisional government",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "voseni_mandate",
+        "self_rule_movement",
+        "defence_force"
+      ]
+    },
+    {
+      "id": "BUM",
+      "form": "Military dictatorship",
+      "leader": "sohrab_niroumand",
+      "startingIdeology": "Fascism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Limited exports"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Secret police",
+        "Industrial subsidies",
+        "Propaganda"
+      ],
+      "decrees": [
+        {
+          "decree": "Ban parties",
+          "target": "all"
+        },
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail",
+        "aluminium",
+        "oil"
+      ],
+      "spirits": [
+        "centralised_economy",
+        "reformist_association",
+        "home_waters"
+      ]
+    },
+    {
+      "id": "VKD",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "kedar_illeri",
+        "kratumant",
+        "aroyani_inheritance"
+      ]
+    },
+    {
+      "id": "QRG",
+      "form": "One-party state",
+      "startingIdeology": "Communism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Managed currency",
+        "trade": "Limited exports"
+      },
+      "doctrine": {
+        "land": "Mobile warfare",
+        "air": "Communications strike",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Secret police",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail",
+        "iron",
+        "baseMetals",
+        "timber",
+        "textiles",
+        "livestock",
+        "goizederium"
+      ],
+      "spirits": [
+        "traditionalist_resistance",
+        "qorgastani_army",
+        "communist_infighting"
+      ]
+    },
+    {
+      "id": "NKO",
+      "form": "Military dictatorship",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Armaments drive",
+        "Extend direct rule"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "gotzmen_nationalism",
+        "burgeoning_bureaucracy",
+        "incompetent_officers",
+        "mixed_stock"
+      ]
+    },
+    {
+      "id": "ZAN",
+      "form": "Presidential republic",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mobile warfare",
+        "air": "Communications strike",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Propaganda"
+      ],
+      "decrees": [
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        },
+        "Land reform"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "corporate_partnerships",
+        "restive_unions",
+        "the_great_war",
+        "zanian_leisure",
+        "outdated_naval_tradition"
+      ]
+    },
+    {
+      "id": "AGR",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "coal"
+        },
+        "Literacy campaign",
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal",
+        "iron"
+      ],
+      "spirits": [
+        "conservative_high_command",
+        "emre_iii",
+        "agrarian_tradition"
+      ]
+    },
+    {
+      "id": "MRI",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Public works",
+        "Propaganda"
+      ],
+      "decrees": [
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail",
+        "fertileLand"
+      ],
+      "spirits": [
+        "the_grey_army",
+        "street_violence_mri",
+        "the_mari_navy",
+        "five_year_plan",
+        "spirit_of_the_north",
+        "the_asuultmaa_question",
+        "klemetti_vii"
+      ]
+    },
+    {
+      "id": "KRF",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "foreign_monopolies",
+        "botond_v"
+      ]
+    },
+    {
+      "id": "LNZ",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail",
+        "iron"
+      ],
+      "spirits": [
+        "tripolar_neutrality"
+      ]
+    },
+    {
+      "id": "VRP",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Armaments drive",
+        "Propaganda"
+      ],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail",
+        "oil"
+      ],
+      "spirits": [
+        "rudrabhuti_iv",
+        "recovering_from_economic_depression",
+        "scars_of_the_great_war",
+        "agrarian_society",
+        "language_barriers"
+      ]
+    },
+    {
+      "id": "ZUN",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Prospect for resources",
+          "target": "iron"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "decentralised_rule",
+        "pastoral_economy",
+        "open_country"
+      ]
+    },
+    {
+      "id": "VKN",
+      "form": "Colony",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "race_based_castes",
+        "extraction_colony",
+        "the_great_slump_vkn"
+      ]
+    },
+    {
+      "id": "QCO",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Industrial subsidies",
+        {
+          "policy": "Foreign investment",
+          "target": "VRP"
+        }
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "savat_sea_trade"
+      ]
+    },
+    {
+      "id": "TNM",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training",
+        "Public works"
+      ],
+      "decrees": [
+        "State religion",
+        "Censor the press",
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail",
+        "timber"
+      ],
+      "spirits": [
+        "foreign_monopolies_tnm"
+      ]
+    },
+    {
+      "id": "TNG",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "THD",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Public works",
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "cost_of_the_savat_sea_war"
+      ]
+    },
+    {
+      "id": "SVA",
+      "form": "Colony",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Officer training"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "TNA",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Minimal taxation",
+        "colonialTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Gem ordnance"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "shame_of_1889",
+        "economic_downturn_tna"
+      ]
+    },
+    {
+      "id": "ATN",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Plutocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "HNU",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "virupan_railway",
+        "economic_downturn_hnu"
+      ]
+    },
+    {
+      "id": "UKH",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "PMK",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Public works",
+        "Secret police"
+      ],
+      "decrees": [
+        "Literacy campaign",
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "five_year_plan_pmk",
+        "undecided_kingdom",
+        "buruthainad"
+      ]
+    },
+    {
+      "id": "KLT",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KOF",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Partial mobilisation",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "government_corruption",
+        "ruined_trade_routes",
+        "commonplace_looting"
+      ]
+    },
+    {
+      "id": "MNJ",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Early mobilisation",
+        "personalTax": "Low taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "government_corruption"
+      ]
+    },
+    {
+      "id": "CAF",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Service by requirement",
+        "economy": "Partial mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Mobile warfare",
+        "air": "Battlefield support",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "government_corruption",
+        "ruined_trade_routes",
+        "military_dominance"
+      ]
+    },
+    {
+      "id": "GAN",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "government_corruption",
+        "ruined_trade_routes"
+      ]
+    },
+    {
+      "id": "MWU",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "government_corruption",
+        "ruined_trade_routes"
+      ]
+    },
+    {
+      "id": "SGQ",
+      "form": "Theocracy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Literacy campaign",
+          "expired": true
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "mandate_of_heaven",
+        "armed_neutrality",
+        "communist_guerrillas",
+        "ethnic_question",
+        "tongmu"
+      ]
+    },
+    {
+      "id": "WEI",
+      "form": "Colony",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "entrepot"
+      ]
+    },
+    {
+      "id": "SOA",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "high_unemployment",
+        "grand_secretariat",
+        "soalangi_army"
+      ]
+    },
+    {
+      "id": "AMR",
+      "form": "Military dictatorship",
+      "startingIdeology": "Military junta",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Armaments drive",
+        "Officer training"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_treaty_of_chuhai",
+        "foxfolk_senses",
+        "yelungge"
+      ]
+    },
+    {
+      "id": "AMY",
+      "form": "One-party state",
+      "startingIdeology": "National syndicalism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Partial mobilisation",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Limited exports"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Secret police",
+        "Propaganda",
+        "Armaments drive",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Ban parties",
+          "target": "all"
+        },
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail",
+        "coal",
+        "iron",
+        "baseMetals",
+        "tungsten",
+        "oil"
+      ],
+      "spirits": [
+        "populist_front",
+        "vykvan_ii",
+        "state_monopolies",
+        "amargi_coast",
+        "foxfolk_senses"
+      ]
+    },
+    {
+      "id": "ETA",
+      "form": "Provisional government",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "scheduled_handover",
+        "congress_of_legations",
+        "mandate_of_the_association"
+      ]
+    },
+    {
+      "id": "HNM",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Literacy campaign",
+          "expired": true
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "foxfolk_franchise",
+        "open_ports",
+        "foxfolk_senses"
+      ]
+    },
+    {
+      "id": "AKA",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "colonialTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Consolidate the colonies",
+        "Improve worker conditions"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "taneko",
+        "foxfolk_minorities",
+        "akasoran_identity",
+        "imperial_navy",
+        "conservative_air_force"
+      ]
+    },
+    {
+      "id": "NPW",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        {
+          "policy": "Foreign investment",
+          "target": "VOS"
+        }
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "voseni_customs",
+        "akasoran_majority"
+      ]
+    },
+    {
+      "id": "DAG",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "rubber_estates",
+        "dagisla_nationalism"
+      ]
+    },
+    {
+      "id": "JNI",
+      "form": "Theocracy",
+      "elections": false,
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Rationing",
+        "Public works"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "holy_makitate",
+        "sacred_neutrality",
+        "sotiria_kyrie_xxxiv",
+        "falcons_and_ravens",
+        "refugee_influx"
+      ]
+    },
+    {
+      "id": "VUG",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "baul"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "anatanic_station"
+      ]
+    },
+    {
+      "id": "NNT",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works",
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "home_rule_movement",
+        "nunattiavaki_identity",
+        "economic_downturn_nnt",
+        "therundian_migration",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "HEL",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "CHV",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Secret police",
+        "Extend direct rule"
+      ],
+      "decrees": [
+        "State religion",
+        "Censor the press",
+        "Bust the unions",
+        {
+          "decree": "Dissolve the IDEOLOGY_DEMONYM paramilitaries",
+          "target": "all"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "house_of_salrosa",
+        "frente_rojo",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "LPC",
+      "form": "Presidential republic",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Secret police",
+        "Propaganda"
+      ],
+      "decrees": [
+        "Censor the press",
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "foreign_monopolies_lpc",
+        "government_corruption",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "SPD",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "baseMetals"
+      ],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "ARV",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "Bust the unions",
+        {
+          "decree": "Prospect for resources",
+          "target": "nitrates"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "foreign_monopolies_arv",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "MNT",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "naturalGas"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "SNE",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "mytosi_independence",
+        "informal_defence_force",
+        "cash_crop_economy",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "ROS",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "mytosi_independence",
+        "informal_defence_force",
+        "cash_crop_economy",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "VAK",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Minimal taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "baul"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "mytosi_independence",
+        "informal_defence_force",
+        "cash_crop_economy",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "AGN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "nitrates"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "economic_downturn_agn",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "ANH",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_black_twenties_anh",
+        "inexperienced_navy",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "YNK",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "aluminium"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "slite_minority",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "NAH",
+      "form": "One-party state",
+      "startingIdeology": "Fascism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Limited exports"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Secret police",
+        "Improve worker conditions",
+        "Industrial subsidies",
+        "Armaments drive"
+      ],
+      "decrees": [
+        {
+          "decree": "Ban parties",
+          "target": "all"
+        },
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "institutionalised_corruption",
+        "recovering_from_economic_downturn",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "GDV",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "anatanic_station"
+      ]
+    },
+    {
+      "id": "HTL",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "SKG",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "TVC",
+      "form": "Presidential republic",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Base strike",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Propaganda"
+      ],
+      "decrees": [
+        "Censor the press",
+        "Bust the unions"
+      ],
+      "stateOwned": [
+        "rail",
+        "gold"
+      ],
+      "spirits": [
+        "treaty_of_santa_ania",
+        "economic_downturn_tvc",
+        "co_existence_accord",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "TRN",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Superior firepower",
+        "air": "Battlefield support",
+        "naval": "Base strike",
+        "magical": "Wizard corps"
+      },
+      "policies": [
+        "Improve worker conditions",
+        {
+          "policy": "Foreign investment",
+          "target": "SHN"
+        }
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_black_twenties_trn",
+        "never_again",
+        "tambasco_doctrine_enforcer"
+      ]
+    },
+    {
+      "id": "ATH",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Public works"
+      ],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "pheonixburg_stock_exchange",
+        "disorganised_national_guard"
+      ]
+    },
+    {
+      "id": "NCO",
+      "form": "Presidential republic",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Punitive taxation"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [
+        "Improve mining conditions"
+      ],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "coal"
+        },
+        "Land reform"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "annexed_umokavinia",
+        "bosquet_hill"
+      ]
+    },
+    {
+      "id": "DIM",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "nitrates"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "annexed_umokavinia"
+      ]
+    },
+    {
+      "id": "ONW",
+      "form": "Parliamentary republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "baul"
+        }
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "treaty_of_santa_ania",
+        "cost_of_the_great_war",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "SUK",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "island_rivalry",
+        "militia_army",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "SHN",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "iron"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "newly_gained_independence",
+        "economic_downturn_mer",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "GRG",
+      "form": "Presidential republic",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_long_peace",
+        "trinational_orbit",
+        "economic_downturn_mer",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "TGY",
+      "form": "Presidential republic",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [
+        "Land reform",
+        {
+          "decree": "Prospect for resources",
+          "target": "iron"
+        }
+      ],
+      "stateOwned": [
+        "rail",
+        "coal",
+        "iron",
+        "rareMetals"
+      ],
+      "spirits": [
+        "hagan_socialism",
+        "economic_downturn_mer",
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "RGA",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "AKD",
+      "form": "Colony",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rubber"
+      ],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "TBI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "MZI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rareMetals"
+      ],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "NDV",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "FAC",
+      "form": "Colony",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "PWL",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "KRT",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tambasco_doctrine"
+      ]
+    },
+    {
+      "id": "MRD",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Social democracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Industrial subsidies",
+        "Officer training"
+      ],
+      "decrees": [
+        "Literacy campaign",
+        "Land reform",
+        {
+          "decree": "Prospect for resources",
+          "target": "coal"
+        }
+      ],
+      "stateOwned": [
+        "rail",
+        "coal"
+      ],
+      "spirits": [
+        "corrupt_bureaucracy_mrd",
+        "jenisian_frontier"
+      ]
+    },
+    {
+      "id": "WRK",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training",
+        "Public works"
+      ],
+      "decrees": [
+        "State religion",
+        {
+          "decree": "Prospect for resources",
+          "target": "oil"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "disputed_border",
+        "imperial_court"
+      ]
+    },
+    {
+      "id": "AJB",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Officer training"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "disputed_border_ajb"
+      ]
+    },
+    {
+      "id": "RGC",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "baseMetals"
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "URT",
+      "form": "Provisional government",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Literacy campaign",
+          "expired": true
+        }
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "inefficient_economy",
+        "local_justice",
+        "agrarian_society_urt",
+        "mandate_of_the_association_of_nations"
+      ]
+    },
+    {
+      "id": "AGL",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Literacy campaign",
+        "Land reform"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "economic_downturn_agl",
+        "mubbangan_agitation"
+      ]
+    },
+    {
+      "id": "RKO",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "unification_drive"
+      ]
+    },
+    {
+      "id": "SPK",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Plutocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "CDM",
+      "form": "Provisional government",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "sanatese_mandate"
+      ]
+    },
+    {
+      "id": "MBG",
+      "form": "Presidential republic",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Extensive conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Air superiority",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Propaganda",
+        "State of Alert"
+      ],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "avisian_heartland",
+        "tattered_military",
+        "aftermath_of_the_cordial_war"
+      ]
+    }
+  ]
+}

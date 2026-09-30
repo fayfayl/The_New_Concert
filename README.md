@@ -8,9 +8,9 @@ It runs in a browser and requires no installation.
 
 The map is finished, in provinces, counties, cities and sea regions alike. There are no other mechanics yet such as armies, combat and events.
 
-Province statistics are complete. `data/json/province-stats.json` holds the maximums the terrain allows, and `data/json/provinces-starting-infrastructure.json` holds what a game begins with. The world carries 2,220,000,000 people across 1,514 provinces at the 1926 figure, 19 resource types across 1,521 provinces, and road, electricity, supply hub, fortification, anti-air and air base levels across 1,504 provinces. 1,995 civilian and 295 military factories occupy 8,194 building slots, 4,008 counties are railed, and 106 eyries, 156 naval dockyards and 1 synthetic rubber plant are built.
+Province statistics are complete. `data/json/province/province-stats.json` holds the maximums the terrain allows, and `data/json/province/provinces-starting-infrastructure.json` holds what a game begins with. The world carries 2,220,000,000 people across 1,514 provinces at the 1926 figure, 19 resource types across 1,521 provinces, and road, electricity, supply hub, fortification, anti-air and air base levels across 1,504 provinces. 1,995 civilian and 295 military factories occupy 8,194 building slots, 4,008 counties are railed, and 106 eyries, 156 naval dockyards and 1 synthetic rubber plant are built.
 
-Sea regions are drawn and named in `data/json/sea.json`, which also records which of them are lakes.
+Sea regions are drawn and named in `data/json/geography/sea.json`, which also records which of them are lakes.
 
 ## Local running
 

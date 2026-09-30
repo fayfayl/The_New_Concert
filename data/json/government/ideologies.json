@@ -1,0 +1,514 @@
+{
+  "anchorPull": 0.25,
+  "escapeThreshold": 10,
+  "supportHappiness": {
+    "baseline": 21,
+    "perPoint": 0.6
+  },
+  "policySlots": [
+    {
+      "authorityBelow": -60,
+      "slots": 1
+    },
+    {
+      "authorityBelow": 20,
+      "slots": 2
+    },
+    {
+      "authorityBelow": 60,
+      "slots": 3
+    },
+    {
+      "authorityBelow": null,
+      "slots": 4
+    }
+  ],
+  "ideologies": [
+    {
+      "name": "Anarcho-communism",
+      "movement": "the anarcho-communist movement",
+      "colour": "#6E0F1E",
+      "economic": -92,
+      "authority": -88,
+      "urban": 0.6,
+      "factory": 0.35,
+      "mining": 0.6,
+      "harsh": 0.35,
+      "effects": {
+        "politicalPower": -0.5,
+        "militaryProduction": -0.3,
+        "conscriptionRaiseCost": 1.5,
+        "consumerShare": 0.5,
+        "maintenance": 0.3
+      }
+    },
+    {
+      "name": "Council communism",
+      "movement": "the council communist movement",
+      "colour": "#E8763C",
+      "economic": -88,
+      "authority": -20,
+      "urban": 0.9,
+      "factory": 0.95,
+      "mining": 0.8,
+      "harsh": 0.1,
+      "effects": {
+        "factoryOutput": 0.15,
+        "politicalPower": -0.3,
+        "militaryProduction": -0.2,
+        "consumerShare": -0.1,
+        "maintenance": -0.1
+      }
+    },
+    {
+      "name": "Communism",
+      "movement": "the communist movement",
+      "colour": "#C1272D",
+      "economic": -85,
+      "authority": 75,
+      "urban": 0.85,
+      "factory": 0.8,
+      "mining": 0.8,
+      "harsh": 0.2,
+      "effects": {
+        "factoryOutput": 0.2,
+        "manpower": 0.1,
+        "tradeIncome": -0.25,
+        "consumerShare": -0.5,
+        "maintenance": -0.2
+      }
+    },
+    {
+      "name": "Syndicalism",
+      "movement": "the syndicalist movement",
+      "colour": "#8C1C2B",
+      "economic": -70,
+      "authority": -60,
+      "urban": 0.9,
+      "factory": 0.7,
+      "mining": 0.85,
+      "harsh": 0.3,
+      "effects": {
+        "construction": 0.1,
+        "militaryProduction": -0.2,
+        "consumerShare": 0.2,
+        "maintenance": 0.05
+      }
+    },
+    {
+      "name": "Anarchism",
+      "movement": "the anarchist movement",
+      "colour": "#232323",
+      "economic": -60,
+      "authority": -90,
+      "urban": 0.5,
+      "factory": 0.2,
+      "mining": 0.4,
+      "harsh": 0.55,
+      "effects": {
+        "politicalPower": -0.4,
+        "conscriptionRaiseCost": 1,
+        "consumerShare": 0.6,
+        "maintenance": 0.3
+      }
+    },
+    {
+      "name": "Socialism",
+      "movement": "the socialist movement",
+      "colour": "#E0524A",
+      "economic": -55,
+      "authority": 20,
+      "urban": 0.8,
+      "factory": 0.8,
+      "mining": 0.7,
+      "harsh": 0.2,
+      "effects": {
+        "factoryOutput": 0.1,
+        "militaryProduction": -0.1,
+        "consumerShare": -0.3,
+        "maintenance": -0.1
+      }
+    },
+    {
+      "name": "National syndicalism",
+      "movement": "the national syndicalist movement",
+      "colour": "#7B3F2E",
+      "economic": -45,
+      "authority": 72,
+      "urban": 0.7,
+      "factory": 0.8,
+      "mining": 0.7,
+      "harsh": 0.25,
+      "effects": {
+        "factoryOutput": 0.15,
+        "militaryProduction": 0.15,
+        "tradeIncome": -0.15,
+        "consumerShare": -0.4,
+        "maintenance": -0.15
+      }
+    },
+    {
+      "name": "Social democracy",
+      "movement": "the social democratic movement",
+      "colour": "#E2679C",
+      "economic": -35,
+      "authority": -25,
+      "urban": 0.8,
+      "factory": 0.85,
+      "mining": 0.55,
+      "harsh": 0.1,
+      "effects": {
+        "stability": 5,
+        "factoryOutput": -0.1,
+        "maintenance": 0.05
+      }
+    },
+    {
+      "name": "Agrarianism",
+      "movement": "the agrarian movement",
+      "colour": "#4F8F3A",
+      "economic": -30,
+      "authority": 42,
+      "urban": 0.05,
+      "factory": 0,
+      "mining": 0.05,
+      "harsh": 0.3,
+      "effects": {
+        "manpower": 0.1,
+        "factoryOutput": -0.1,
+        "research": -0.1,
+        "consumerShare": 0.1,
+        "maintenance": 0.15
+      }
+    },
+    {
+      "name": "Mutualism",
+      "movement": "the mutualist movement",
+      "colour": "#8A6FB0",
+      "economic": -25,
+      "authority": -78,
+      "urban": 0.5,
+      "factory": 0.15,
+      "mining": 0.35,
+      "harsh": 0.45,
+      "effects": {
+        "construction": 0.1,
+        "politicalPower": -0.25,
+        "taxRevenue": -0.15,
+        "consumerShare": 0.4,
+        "maintenance": 0.2
+      }
+    },
+    {
+      "name": "Distributism",
+      "movement": "the distributist movement",
+      "colour": "#7FB069",
+      "economic": 5,
+      "authority": -65,
+      "urban": 0.3,
+      "factory": 0.05,
+      "mining": 0.15,
+      "harsh": 0.35,
+      "effects": {
+        "taxRevenue": 0.1,
+        "factoryOutput": -0.15,
+        "militaryProduction": -0.1,
+        "consumerShare": 0.4,
+        "maintenance": 0.15
+      }
+    },
+    {
+      "name": "Military junta",
+      "movement": "the militarist movement",
+      "colour": "#6B6F4A",
+      "economic": 0,
+      "authority": 70,
+      "urban": 0.5,
+      "factory": 0.35,
+      "mining": 0.5,
+      "harsh": 0.55,
+      "effects": {
+        "landCombat": 0.2,
+        "construction": -0.15,
+        "politicalPower": -0.25,
+        "consumerShare": -0.3,
+        "maintenance": 0.1
+      }
+    },
+    {
+      "name": "Fascism",
+      "movement": "the fascist movement",
+      "colour": "#5C4033",
+      "economic": 15,
+      "authority": 85,
+      "urban": 0.25,
+      "factory": 0.55,
+      "mining": 0.45,
+      "harsh": 0.35,
+      "effects": {
+        "militaryProduction": 0.25,
+        "occupationEfficiency": 0.2,
+        "tradeIncome": -0.2,
+        "consumerShare": -0.4,
+        "maintenance": -0.1
+      }
+    },
+    {
+      "name": "Corporatism",
+      "movement": "the corporatist movement",
+      "colour": "#9C7A3C",
+      "economic": 25,
+      "authority": 52,
+      "urban": 0.6,
+      "factory": 0.8,
+      "mining": 0.55,
+      "harsh": 0.25,
+      "effects": {
+        "factoryOutput": 0.15,
+        "stability": 10,
+        "research": -0.1,
+        "consumerShare": -0.3,
+        "maintenance": -0.1
+      }
+    },
+    {
+      "name": "Liberalism",
+      "movement": "the liberal movement",
+      "colour": "#E8C33A",
+      "economic": 35,
+      "authority": -40,
+      "urban": 0.85,
+      "factory": 0.35,
+      "mining": 0.5,
+      "harsh": 0.15,
+      "effects": {
+        "tradeIncome": 0.2,
+        "stability": 5,
+        "militaryProduction": -0.1,
+        "consumerShare": 0.3,
+        "maintenance": 0.1
+      }
+    },
+    {
+      "name": "Conservatism",
+      "movement": "the conservative movement",
+      "colour": "#2F5D8C",
+      "economic": 40,
+      "authority": 25,
+      "urban": 0.35,
+      "factory": 0.2,
+      "mining": 0.4,
+      "harsh": 0.6,
+      "effects": {
+        "stability": 5,
+        "taxRevenue": 0.1,
+        "construction": -0.05,
+        "consumerShare": 0.1
+      }
+    },
+    {
+      "name": "Reactionism",
+      "movement": "the reactionary movement",
+      "colour": "#6A3D7A",
+      "economic": 45,
+      "authority": 80,
+      "urban": 0.2,
+      "factory": 0.1,
+      "mining": 0.25,
+      "harsh": 0.8,
+      "effects": {
+        "stability": 10,
+        "occupationEfficiency": 0.15,
+        "construction": -0.2,
+        "consumerShare": -0.1,
+        "maintenance": 0.1
+      }
+    },
+    {
+      "name": "Technocracy",
+      "movement": "the technocratic movement",
+      "colour": "#2F8F8F",
+      "economic": 55,
+      "authority": -5,
+      "urban": 0.95,
+      "factory": 0.9,
+      "mining": 0.7,
+      "harsh": 0.1,
+      "effects": {
+        "research": 0.15,
+        "construction": 0.1,
+        "politicalPower": -0.15,
+        "consumerShare": -0.1,
+        "maintenance": -0.25
+      }
+    },
+    {
+      "name": "National combinatism",
+      "movement": "the national combinatist movement",
+      "colour": "#4A5F8F",
+      "economic": 70,
+      "authority": 80,
+      "urban": 0.6,
+      "factory": 0.85,
+      "mining": 0.75,
+      "harsh": 0.2,
+      "effects": {
+        "factoryOutput": 0.25,
+        "taxRevenue": 0.2,
+        "tradeIncome": -0.1,
+        "consumerShare": -0.3,
+        "maintenance": -0.15
+      }
+    },
+    {
+      "name": "Libertarianism",
+      "movement": "the libertarian movement",
+      "colour": "#D9962F",
+      "economic": 75,
+      "authority": -75,
+      "urban": 0.7,
+      "factory": 0.3,
+      "mining": 0.5,
+      "harsh": 0.4,
+      "effects": {
+        "tradeIncome": 0.3,
+        "taxRevenue": -0.2,
+        "militaryProduction": -0.15,
+        "consumerShare": 0.6,
+        "maintenance": 0.2
+      }
+    },
+    {
+      "name": "Combinatism",
+      "movement": "the combinatist movement",
+      "colour": "#3F7FBF",
+      "economic": 90,
+      "authority": 55,
+      "urban": 0.7,
+      "factory": 0.85,
+      "mining": 0.75,
+      "harsh": 0.2,
+      "effects": {
+        "factoryOutput": 0.2,
+        "tradeIncome": 0.2,
+        "construction": 0.1,
+        "politicalPower": -0.2,
+        "consumerShare": 0.4,
+        "maintenance": -0.15
+      }
+    },
+    {
+      "name": "Plutocracy",
+      "movement": "the plutocratic movement",
+      "colour": "#14524A",
+      "economic": 95,
+      "authority": -18,
+      "urban": 0.9,
+      "factory": 0.35,
+      "mining": 0.75,
+      "harsh": 0.2,
+      "effects": {
+        "tradeIncome": 0.35,
+        "taxRevenue": 0.2,
+        "manpower": -0.2,
+        "consumerShare": 0.5,
+        "maintenance": 0.15
+      }
+    }
+  ],
+  "forms": [
+    {
+      "name": "Absolute monarchy",
+      "economic": 15,
+      "authority": 60,
+      "elections": false,
+      "lawAuthorityAccepted": [
+        -20,
+        60
+      ]
+    },
+    {
+      "name": "Constitutional monarchy",
+      "economic": 10,
+      "authority": 0,
+      "elections": true,
+      "lawAuthorityAccepted": [
+        -30,
+        25
+      ]
+    },
+    {
+      "name": "Parliamentary republic",
+      "economic": 0,
+      "authority": -20,
+      "elections": true,
+      "lawAuthorityAccepted": [
+        -40,
+        15
+      ]
+    },
+    {
+      "name": "Presidential republic",
+      "economic": 5,
+      "authority": -10,
+      "elections": true,
+      "lawAuthorityAccepted": [
+        -40,
+        20
+      ]
+    },
+    {
+      "name": "One-party state",
+      "economic": -10,
+      "authority": 55,
+      "elections": false,
+      "lawAuthorityAccepted": [
+        -10,
+        100
+      ]
+    },
+    {
+      "name": "Military dictatorship",
+      "economic": 0,
+      "authority": 50,
+      "elections": false,
+      "lawAuthorityAccepted": [
+        -5,
+        100
+      ]
+    },
+    {
+      "name": "Theocracy",
+      "economic": 5,
+      "authority": 0,
+      "elections": true,
+      "lawAuthorityAccepted": [
+        -15,
+        100
+      ]
+    },
+    {
+      "name": "Provisional government",
+      "economic": 0,
+      "authority": 10,
+      "elections": false,
+      "lawAuthorityAccepted": [
+        -50,
+        50
+      ]
+    },
+    {
+      "name": "Colony",
+      "economic": 20,
+      "authority": 45,
+      "elections": false,
+      "lawAuthorityAccepted": [
+        0,
+        100
+      ]
+    }
+  ],
+  "unalignedRadius": 15,
+  "unalignedColour": "#8A8A8A",
+  "allMovement": "every movement"
+}

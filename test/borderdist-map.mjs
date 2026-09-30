@@ -17,6 +17,7 @@
 import fs from 'node:fs';
 import zlib from 'node:zlib';
 import { refreshBorderDistance, CHAMFER_ORTH, BORDER_DIST_MAX, OCEAN } from '../src/mapdata.js';
+import { applyCountyOccupation } from '../src/mapcache.js';
 
 // The decoder the sync script uses, lifted rather than duplicated.
 const src = fs.readFileSync('sync-provinces.js', 'utf8');
@@ -28,9 +29,14 @@ for (; e < src.length; e++) {
 }
 const decodePNG = new Function('fs', 'zlib', src.slice(a, e) + '\nreturn decodePNG;')(fs, zlib);
 
-const png = decodePNG('data/img/provinces.png');
-const json = JSON.parse(fs.readFileSync('data/json/provinces.json', 'utf8'));
+const png = decodePNG('data/img/bitmap/provinces.png');
+const json = JSON.parse(fs.readFileSync('data/json/geography/provinces.json', 'utf8'));
 const list = Array.isArray(json) ? json : json.provinces;
+// Occupation is held by county; derive each province's occupier from them as the
+// page does, so the frontiers between occupied ground and the rest are seeded.
+applyCountyOccupation({ provinces: list },
+  JSON.parse(fs.readFileSync('data/json/geography/counties.json', 'utf8')),
+  JSON.parse(fs.readFileSync('data/json/province/counties-starting-values.json', 'utf8')).occupation);
 
 // Colour -> index, in the order the JSON lists them; index 0 stays the sea.
 const indexOf = new Map();

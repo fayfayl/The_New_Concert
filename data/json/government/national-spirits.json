@@ -1,0 +1,4462 @@
+{
+  "spirits": [
+    {
+      "id": "the_terms_of_larajevo",
+      "name": "The Terms of Larajevo",
+      "description": "The Treaty of Larajevo has left our economy broken and our society divided. We must see it altered or abolished for the betterment of Twadamia.",
+      "polity": [
+        "TWD"
+      ],
+      "effects": {
+        "taxRevenue": -0.08,
+        "happiness": -10,
+        "stability": -10,
+        "divisionLimit": 10,
+        "militaryFactoryOutput": -0.75,
+        "dockyardOutput": -0.75,
+        "lawCeiling": {
+          "conscription": "Volunteer only"
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "disarmed",
+        "reparations"
+      ],
+      "factor": "economic turmoil",
+      "image": "the_terms_of_larajevo"
+    },
+    {
+      "id": "a_queen_without_an_heir",
+      "name": "A Queen Without an Heir",
+      "description": "As Queen Adrianna ages, many around her worry for the future of the Twadamian crown while the line of succession remains uncertain.",
+      "polity": [
+        "TWD"
+      ],
+      "effects": {
+        "politicalPower": -0.2,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "a_queen_without_an_heir"
+    },
+    {
+      "id": "extremist_agitation",
+      "name": "Extremist Agitation",
+      "description": "Our society is wracked by mass unemployment and dissatisfaction, which drive many to the parties of the extreme left and right.",
+      "factor": "political violence",
+      "polity": [
+        "TWD"
+      ],
+      "effects": {
+        "ideologySupportPerDay": {
+          "Fascism": 0.025,
+          "Communism": 0.005
+        },
+        "stability": -5,
+        "civilianFactoryOutput": -0.1,
+        "happiness": -6
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ],
+      "image": "extremist_agitation"
+    },
+    {
+      "id": "no_general_staff",
+      "name": "No General Staff",
+      "description": "No permanent body of officers exists to plan a campaign. What planning is done falls to the war ministry.",
+      "polity": [
+        "TWD"
+      ],
+      "effects": {
+        "attack": -0.3,
+        "defence": -0.3
+      },
+      "permanent": false,
+      "tags": [
+        "noGeneralStaff"
+      ],
+      "image": "no_general_staff"
+    },
+    {
+      "id": "general_corruption",
+      "name": "General Corruption",
+      "description": "Corruption and mismanagement run rampant in our government. Popular trust in our democratic institutions is at an all-time low.",
+      "factor": "economic turmoil",
+      "polity": [
+        "KRN"
+      ],
+      "effects": {
+        "happiness": -10,
+        "taxRevenue": -0.12,
+        "construction": -0.1,
+        "militaryFactoryOutput": -0.15,
+        "dockyardOutput": -0.15,
+        "politicalPower": -0.15,
+        "ideologySupportPerDay": {
+          "Fascism": 0.01
+        },
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "general_corruption"
+    },
+    {
+      "id": "gridlocked",
+      "name": "Gridlocked",
+      "description": "Since the death of Velam IV, divisions in the Riksdag have only become wider, and the Conservative government has begun to squabble within itself as well. What we need is a new strong leader who can kick down this rotted structure and rebuild it anew.",
+      "polity": [
+        "KRN"
+      ],
+      "effects": {
+        "politicalPower": -0.2,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "gridlocked"
+    },
+    {
+      "id": "street_violence",
+      "name": "Street Violence",
+      "description": "The Krenish political scene is one of polarisation and street violence as various paramilitaries clash or break up each other's rallies.",
+      "polity": [
+        "KRN"
+      ],
+      "effects": {
+        "happiness": -6,
+        "unrestPerDay": 0.02,
+        "ideologySupportPerDay": {
+          "Syndicalism": 0.01,
+          "Fascism": 0.005,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ],
+      "factor": "political violence",
+      "image": "street_violence"
+    },
+    {
+      "id": "legacy_of_the_kreno_twadamian_war",
+      "name": "Legacy of the Kreno-Twadamian War",
+      "description": "The Kreno-Twadamian War hangs over the nation as one of the greatest humiliations in recent history, and many still dream of retaking our lost capital now that the enemy to the south is at its weakest.",
+      "polity": [
+        "KRN"
+      ],
+      "effects": {
+        "conscriptionRaiseCost": -0.2,
+        "manpower": 0.1,
+        "happiness": -4,
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": [],
+      "factor": "lost war with Twadamia",
+      "image": "legacy_of_the_kreno_twadamian_war"
+    },
+    {
+      "id": "ungervan_constitution",
+      "name": "Ungervan Constitution",
+      "description": "Our republic is young and democracy untried in this part of the world. A legislative majority is hard to come by, but we must make do with what we have.",
+      "polity": [
+        "KGN"
+      ],
+      "effects": {
+        "politicalPower": -0.15,
+        "ministerCost": 0.3,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "ungervan_constitution"
+    },
+    {
+      "id": "the_podderonskie_question",
+      "name": "The Podderońskie Question",
+      "description": "Outer Podderońskie was awarded to Kaganland in the Treaty of Larajevo. But what were once promised as vital territories for resources and industry have proven to be a poisoned chalice instead, and Twadamia wants the land of its people back.",
+      "polity": [
+        "KGN"
+      ],
+      "effects": {
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": [],
+      "inProvinces": {
+        "provinces": [
+          "north_outer_podderonskie",
+          "south_outer_podderonskie"
+        ],
+        "effects": {
+          "happiness": -5
+        }
+      },
+      "factor": "dislikes the state",
+      "image": "the_podderonskie_question"
+    },
+    {
+      "id": "marketless_industry",
+      "name": "Marketless Industry",
+      "description": "Kagan industry was built to serve the Twadamian heartland. Our commerce was left to flounder, and though we have found new markets in Fellnor-Avanta and Swanders, the damage still lingers.",
+      "polity": [
+        "KGN"
+      ],
+      "effects": {
+        "tradeIncome": -0.15,
+        "factoryOutput": -0.1,
+        "surplusOffered": -0.1
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "marketless_industry"
+    },
+    {
+      "id": "the_kagan_revival",
+      "name": "The Kagan Revival",
+      "description": "Kagan writing, music, film, and scholarship are flourishing after more than half a century of Twadamian rule.",
+      "polity": [
+        "KGN"
+      ],
+      "effects": {
+        "happiness": 6,
+        "research": 0.1,
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": [],
+      "exceptProvinces": [
+        "north_outer_podderonskie",
+        "south_outer_podderonskie"
+      ],
+      "factor": "cultural revival",
+      "image": "the_kagan_revival"
+    },
+    {
+      "id": "twadamian_expulsion",
+      "name": "Twadamian Expulsion",
+      "description": "Twadamian settlers were violently expelled from Subeny during the early years of its existence, and the scars have not yet healed.",
+      "polity": [
+        "SBY"
+      ],
+      "effects": {
+        "factoryOutput": -0.1,
+        "politicalPower": -0.15,
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "twadamian_expulsion"
+    },
+    {
+      "id": "strategic_neutrality",
+      "name": "Strategic Neutrality",
+      "description": "War is the last thing we want, and Subeny will do what it must not to be entangled in any foreign quarrels.",
+      "polity": [
+        "SBY"
+      ],
+      "effects": {
+        "stability": 6,
+        "tradeIncome": 0.1,
+        "cannotMilitaryAlly": true
+      },
+      "permanent": false,
+      "tags": [],
+      "image": "strategic_neutrality"
+    },
+    {
+      "id": "a_long_generation",
+      "name": "A Long Generation",
+      "description": "A Subean woman bears a child perhaps once in thirty years. Naturally, the Subean population grows extremely slowly.",
+      "polity": [
+        "SBY"
+      ],
+      "effects": {
+        "populationGrowth": -0.6
+      },
+      "permanent": true,
+      "tags": [],
+      "image": "a_long_generation"
+    },
+    {
+      "id": "the_cost_of_victory",
+      "name": "The Cost of Victory",
+      "description": "With the horrors of the Continuation War still carved into memory, many are reluctant to send another generation of men to die in the trenches.",
+      "polity": [
+        "FNA"
+      ],
+      "effects": {
+        "populationGrowth": -0.25,
+        "manpower": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "house_of_brumunvik",
+      "name": "House of Brumunvik",
+      "description": "The people of Fellnor and Avanta stand proud of their imperial history under the royal House of Brumunvik.",
+      "polity": [
+        "FNA"
+      ],
+      "effects": {
+        "stability": 10
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "uneasy_throne",
+      "name": "Uneasy Throne",
+      "description": "Many in the colonies are unsatisfied by the hand they were dealt after the Continuation War, and their demands are getting louder.",
+      "factor": "colonial demands",
+      "polity": [
+        "FNA"
+      ],
+      "effects": {
+        "colonialStability": -8,
+        "revenueFromColonies": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_black_twenties",
+      "name": "The Black Twenties",
+      "description": "When the Nyhaven exchange collapsed, Fellnor-Avanta's economic output fell drastically. Struggling with high rates of unemployment and inflation, resentment towards politicians are at an all time high.",
+      "factor": "economic turmoil",
+      "polity": [
+        "FNA"
+      ],
+      "effects": {
+        "factoryOutput": -0.12,
+        "tradeIncome": -0.15,
+        "stability": -7,
+        "happiness": -15,
+        "politicalPower": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "constitution_of_1920",
+      "name": "Constitution of 1920",
+      "description": "The mutinies of 1919 brought Gwerinlur to its knees. Though appeasement was bought by reform and a new constitution, old bruises can still be felt today.",
+      "polity": [
+        "GWR"
+      ],
+      "effects": {
+        "stability": 8,
+        "politicalPower": -0.15,
+        "ideologySupportPerDay": {
+          "Syndicalism": 0.01,
+          "Socialism": 0.01
+        },
+        "decreeCost": {
+          "Bust the unions": 0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "ruin_of_two_victories",
+      "name": "Ruin of Two Victories",
+      "description": "Committed in both the Cordial War and the Continuation War, we have had our economy and manpower ravaged by their cost, and many have no appetite for another war on the mainland.",
+      "factor": "economic turmoil",
+      "polity": [
+        "GWR"
+      ],
+      "effects": {
+        "taxRevenue": -0.1,
+        "factoryOutput": -0.3,
+        "manpower": -0.2,
+        "manpowerGrowth": -0.1,
+        "happiness": -10
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_slums",
+      "name": "The Slums",
+      "description": "The cities of Gwerinlur grew quickly during the 19th century, much more quickly than regulation and policing could react.",
+      "factor": "rampant poverty",
+      "polity": [
+        "GWR"
+      ],
+      "felt": {
+        "happiness": "urbanisation",
+        "unrestPerDay": "factories"
+      },
+      "effects": {
+        "happiness": -6,
+        "unrestPerDay": 0.01
+      },
+      "permanent": false,
+      "tags": [],
+      "spread": {
+        "unrestPerDay": 1
+      }
+    },
+    {
+      "id": "crippling_debt",
+      "name": "Crippling Debt",
+      "description": "Swanders is heavily indebted to both its people and foreign investors from the war effort, which means that until we find a way to pay back our debt, a proverbial sword hangs over our heads.",
+      "polity": [
+        "SWD"
+      ],
+      "effects": {
+        "interest": 1.4,
+        "debtThresholds": 0.8,
+        "revenueFromPeople": -0.15,
+        "stability": -10
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn",
+      "name": "Economic Downturn",
+      "description": "Our economy is in tatters since the last war. Recovery has only been further impeded by the great slump we are still in.",
+      "factor": "economic turmoil",
+      "polity": [
+        "SWD"
+      ],
+      "effects": {
+        "factoryOutput": -0.2,
+        "revenueFromFactories": -0.1,
+        "happiness": -15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "shell_shocked_caution",
+      "name": "Shell-shocked Caution",
+      "description": "Though we did not suffer as much as our allies in the Great War, its horrors have largely shattered any drive for aggressive military action among the populace.",
+      "polity": [
+        "SWD"
+      ],
+      "effects": {
+        "conscriptionRaiseCost": 0.5,
+        "lawCeiling": {
+          "conscription": "Limited conscription"
+        },
+        "stability": 4,
+        "militaryFactoryOutput": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "political_violence",
+      "name": "Political Violence",
+      "description": "Extremist leagues are quick to resort to violence to further their political causes.",
+      "factor": "political violence",
+      "polity": [
+        "KAN"
+      ],
+      "effects": {
+        "happiness": -5,
+        "unrestPerDay": 0.02,
+        "stability": -4,
+        "ideologySupportPerDay": {
+          "Fascism": 0.02,
+          "Socialism": 0.01,
+          "Communism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ]
+    },
+    {
+      "id": "victors_of_the_continuation_war",
+      "name": "Victors of the Continuation War",
+      "description": "Although Kanland emerged victorious after the last war, its high andran and economic cost has greatly scarred our people.",
+      "polity": [
+        "KAN"
+      ],
+      "effects": {
+        "taxRevenue": 0.08,
+        "stability": 5,
+        "manpower": -0.2,
+        "populationGrowth": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "weak_government",
+      "name": "Weak Government",
+      "description": "Newill's government is a divided institution, prone to stumbling over its own feet. Little would be needed to topple it.",
+      "factor": "weak government",
+      "polity": [
+        "KAN"
+      ],
+      "effects": {
+        "happiness": -2,
+        "politicalPower": -0.2,
+        "lawAdoptionCost": 0.3,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_great_slump",
+      "name": "The Great Slump",
+      "description": "The costs of war have only been exacerbated by the onset of the great slump. The Hulldon exchange was among the first to fall during its early weeks, and the economy has yet to recover.",
+      "factor": "economic turmoil",
+      "polity": [
+        "KAN"
+      ],
+      "felt": "urbanisation",
+      "effects": {
+        "factoryOutput": -0.12,
+        "tradeIncome": -0.15,
+        "happiness": -8,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "thomas_ii",
+      "name": "Thomas II",
+      "description": "Thomas II ascended to the Kanish throne after the death of his father in 1904. His political and military mettle was proven during the Cordial War and later the Continuation War and its aftermath. However, the government's weak policies have undermined his popularity in recent years and he must decide whether to take more decisive action or wait out the current uncertainty.",
+      "polity": [
+        "KAN"
+      ],
+      "effects": {
+        "stability": 6,
+        "politicalPower": 0.1,
+        "ideologySupportPerDay": {
+          "Conservatism": 0.01,
+          "Reactionism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "peace_of_kostrava",
+      "name": "Peace of Kostrava",
+      "description": "Since 1557, we have maintained a policy of armed neutrality toward our neighbours. We do not intend to break it now.",
+      "polity": [
+        "AJX"
+      ],
+      "effects": {
+        "cannotMilitaryAlly": true,
+        "stability": 10,
+        "cannotGrantAccess": true,
+        "cannotIntervene": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "deronic_wall",
+      "name": "Deronic Wall",
+      "description": "The Deronics are our shield and no state has conquered Ajaxgul since our independence.",
+      "polity": [
+        "AJX"
+      ],
+      "effects": {
+        "defence": 0.35,
+        "construction": -0.15,
+        "maintenance": 0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "winged_communities",
+      "name": "Winged Communities",
+      "description": "We are the last bastions of the old Ausartan Empire. No pass in the Deronics divides one Community from another, even now that the Empire is gone.",
+      "polity": [
+        "AJX"
+      ],
+      "effects": {
+        "movement": 0.15,
+        "movementInTerrain": {
+          "mountains": 0.75,
+          "alpine": 1.5
+        },
+        "maintenance": -0.1
+      },
+      "permanent": true,
+      "tags": []
+    },
+    {
+      "id": "house_of_clore",
+      "name": "House of Clore",
+      "description": "The House of Clore has been a steady hand of the Duchy since the time of the Sacred Kingdom. Dukes have come and gone, yet the Duchy is still run much as it was a hundred years ago.",
+      "polity": [
+        "PEL"
+      ],
+      "effects": {
+        "stability": 8,
+        "politicalPower": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_blueshirts",
+      "name": "The Blueshirts",
+      "description": "Any opposition in the streets and in Parliament is silenced or beaten up by the so-called Blueshirts of Seyrès' National Party.",
+      "factor": "political violence",
+      "polity": [
+        "VOS"
+      ],
+      "felt": "urbanisation",
+      "effects": {
+        "stability": 8,
+        "happiness": -6
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ]
+    },
+    {
+      "id": "l_epoque_troublante",
+      "name": "L'Epoque Troublante",
+      "description": "Florent Seyrès' parliamentary majority in 1924 heralded an era of blatant authoritarianism and populism in our country, trading the freedom of our people with the health of the economy. So far, the country has accepted this trade.",
+      "factor": "solved economic turmoil",
+      "polity": [
+        "VOS"
+      ],
+      "effects": {
+        "politicalPower": 0.1,
+        "stability": 6,
+        "research": -0.1,
+        "happiness": 8,
+        "happinessPenalties": 0.4,
+        "ideologySupportPerDay": {
+          "Corporatism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": [],
+      "scaling": {
+        "happinessPenalties": {
+          "governingLeads": -1
+        }
+      }
+    },
+    {
+      "id": "aurore_ii",
+      "name": "Aurore II",
+      "description": "Aurore II ascended to the throne after her uncle Justin VII's death in 1917, and her early reign was tenuous at best. Now she has said nothing about the rise of the National Party, and many have taken her silence for a tentative endorsement.",
+      "polity": [
+        "VOS"
+      ],
+      "effects": {
+        "stability": 5,
+        "politicalPower": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "outdated_military_industry",
+      "name": "Outdated Military Industry",
+      "description": "Our domestic military complex has been largely outpaced by our former allies. The industry must be rebuilt if the forces are to be a match for them again.",
+      "polity": [
+        "VOS"
+      ],
+      "effects": {
+        "militaryFactoryOutput": -0.15,
+        "dockyardOutput": -0.15,
+        "conversionDays": 20
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "corrupt_bureaucracy",
+      "name": "Corrupt Bureaucracy",
+      "description": "Omarbat has been plagued by blatant corruption within its institutions since the time of the Grand Duchy. A slew of high-profile embezzlement and bribery scandals have reached the papers and calls for reform of the civil service are growing.",
+      "factor": "blatant corruption",
+      "polity": [
+        "OMB"
+      ],
+      "effects": {
+        "ministerCost": 0.3,
+        "taxRevenue": -0.1,
+        "politicalPower": -0.1,
+        "construction": -0.08,
+        "factoryOutput": -0.05,
+        "research": -0.08,
+        "happiness": -4,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foreign_concessions",
+      "name": "Foreign Concessions",
+      "description": "The oilfields at Smotlas and Gotim are operated under leases the last Grand Duke granted to Kanish companies. The Republic has honoured every one of them.",
+      "polity": [
+        "OMB"
+      ],
+      "effects": {
+        "research": 0.1,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Syndicalism": 0.005,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "ducal_estates",
+      "name": "Ducal Estates",
+      "description": "The revolution of 1907 toppled the Omarbati monarchy. However, concessions to the nobility have kept their estates intact, leaving much of the peasantry dissatisfied.",
+      "factor": "great estates",
+      "polity": [
+        "OMB"
+      ],
+      "felt": {
+        "happiness": "rural"
+      },
+      "effects": {
+        "happiness": -6,
+        "ideologySupportPerDay": {
+          "Agrarianism": 0.01,
+          "Socialism": 0.005
+        },
+        "resourceYield": {
+          "fertileLand": -0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "death_of_franzone",
+      "name": "Death of Franzone",
+      "description": "President Emilio Franzone died in 1925 without a clear successor the loyalists could agree on. Now, Faustino Oderico holds the chair in name only.",
+      "polity": [
+        "CFR"
+      ],
+      "effects": {
+        "politicalPower": -0.25,
+        "stability": -8,
+        "lawAdoptionCost": 0.3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "squabbling_command",
+      "name": "Squabbling Command",
+      "description": "Every member of the high command has his own idea of how to manage a failing front.",
+      "polity": [
+        "CFR"
+      ],
+      "effects": {
+        "commandPowerIncome": -0.35,
+        "landCombat": -0.1,
+        "ministerCost": 0.25
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "recognised_government",
+      "name": "Recognised Government",
+      "description": "We are still the legitimate government in the eyes of international law and the Association of Nations.",
+      "factor": "economic turmoil",
+      "polity": [
+        "CFR"
+      ],
+      "effects": {
+        "militaryFactoryOutput": 0.15,
+        "tradeIncome": 0.1,
+        "taxRevenue": -0.15,
+        "happiness": -5
+      },
+      "permanent": false,
+      "tags": [
+        "reparations"
+      ]
+    },
+    {
+      "id": "big_tent_right",
+      "name": "Big Tent Right",
+      "description": "Monarchists, conservatives, reactionaries and fascists all stand in the same cause, a bettered Cunaria willing to reclaim what was lost at Larajevo.",
+      "polity": [
+        "NCN"
+      ],
+      "effects": {
+        "politicalPower": -0.1,
+        "lawAdoptionCost": 0.2,
+        "ideologySupportPerDay": {
+          "Fascism": 0.015,
+          "Reactionism": 0.01,
+          "Conservatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "army_of_1918",
+      "name": "Army of 1918",
+      "description": "Our officer corps, which overthrew the king in the 1918 Caitponte Revolution, rallied to Godino almost entirely on his promise to punish the traitorous politicians, who stabbed us in the back over the terms of peace.",
+      "polity": [
+        "NCN"
+      ],
+      "effects": {
+        "commandPowerIncome": 0.3,
+        "landCombat": 0.05,
+        "stability": 4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "bitterness_of_larajevo",
+      "name": "Bitterness of Larajevo",
+      "description": "Bitterness over Cunaria's defeat in the Continuation War dominate our society.",
+      "polity": [
+        "NCN"
+      ],
+      "effects": {
+        "conscriptionRaiseCost": -0.2,
+        "stability": 4,
+        "ideologySupportPerDay": {
+          "Liberalism": -0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "reprisals",
+      "name": "Reprisals",
+      "description": "Prisoners and people of suspicion are shot in the towns the Nationalists take.",
+      "factor": "extrajudicial killings",
+      "polity": [
+        "NCN"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "compliance": 0.2,
+        "happiness": -5,
+        "unrestPerDay": 0.02,
+        "ideologySupportPerDay": {
+          "Socialism": -0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "divided_left",
+      "name": "Divided Left",
+      "description": "Four factions direct the Socialist war effort, and each views the others with suspicion.",
+      "polity": [
+        "SCN"
+      ],
+      "effects": {
+        "politicalPower": -0.2,
+        "lawAdoptionCost": 0.3,
+        "stability": -6
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "workers_militias",
+      "name": "Workers' Militias",
+      "description": "Every battalion was raised by a union or town committee.",
+      "polity": [
+        "SCN"
+      ],
+      "effects": {
+        "manpower": 0.15,
+        "conscriptionRaiseCost": -0.3,
+        "commandPowerIncome": -0.4,
+        "attack": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "requisition",
+      "name": "Requisition",
+      "description": "Food, equipment and machinery are confiscated for the war effort from the towns and villages the Socialist Army passes through.",
+      "factor": "looting",
+      "polity": [
+        "SCN"
+      ],
+      "felt": {
+        "happiness": "rural"
+      },
+      "effects": {
+        "happiness": -8,
+        "taxRevenue": 0.08,
+        "unrestPerDay": 0.01
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "palace_guard",
+      "name": "Palace Guard",
+      "description": "The armed force of the Principality is small but highly trained. It has not been reorganised since the time of the Sacred Kingdom.",
+      "polity": [
+        "SRS"
+      ],
+      "effects": {
+        "lawCeiling": {
+          "conscription": "Limited conscription"
+        },
+        "defence": 0.15,
+        "manpower": -0.4,
+        "maintenance": -0.2,
+        "stability": 5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "cunarian_capital",
+      "name": "Cunarian Capital",
+      "description": "With the outbreak of civil war in Cunaria, Santa Rossa has been overrun by refugees from the east and the money they brought with them.",
+      "factor": "refugee crisis",
+      "polity": [
+        "SRS"
+      ],
+      "effects": {
+        "tradeIncome": 0.2,
+        "taxRevenue": 0.15,
+        "populationGrowth": 0.2,
+        "happiness": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "loxunlans_abroad",
+      "name": "Loxunlans Abroad",
+      "description": "More than a third of all Loxunlans reside in our neighbours. We still pay for their schools and newspapers in all three countries.",
+      "polity": [
+        "LOX"
+      ],
+      "effects": {
+        "tradeIncome": 0.12,
+        "stability": -4,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "syndicates",
+      "name": "Syndicates",
+      "description": "Every mill and every well is organised. Wages and hours are settled directly between the syndicates and the owners' associations.",
+      "factor": "empowered worker's syndicates",
+      "polity": [
+        "LOX"
+      ],
+      "felt": {
+        "happiness": "industry"
+      },
+      "effects": {
+        "happiness": 4,
+        "factoryOutput": -0.08,
+        "stability": -4,
+        "ideologySupportPerDay": {
+          "Syndicalism": 0.015,
+          "Socialism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "neutral_foreign_policy",
+      "name": "Neutral Foreign Policy",
+      "description": "Loxunterra believes that once the dust has settled, those who do not take sides will emerge better off than those who do.",
+      "polity": [
+        "LOX"
+      ],
+      "effects": {
+        "stability": 6,
+        "conscriptionRaiseCost": 0.3,
+        "militaryAllianceTension": 90
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "elective_crown",
+      "name": "Elective Crown",
+      "description": "The people elects the monarch of Espatana, and the current king has enjoyed high popularity since the beginning of his reign.",
+      "polity": [
+        "SPT"
+      ],
+      "effects": {
+        "politicalPower": 0.15,
+        "lawAdoptionCost": -0.2,
+        "stability": 4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "winged_kingdom",
+      "name": "Winged Kingdom",
+      "description": "With fewer than six million Espatans spread over half a million square kilometres. Travel has been largely limited to wings and dragons.",
+      "polity": [
+        "SPT"
+      ],
+      "effects": {
+        "taxRevenue": 0.1,
+        "politicalPower": 0.1,
+        "movement": 0.15,
+        "movementInTerrain": {
+          "mountains": 0.7,
+          "alpine": 1.1
+        }
+      },
+      "permanent": true,
+      "tags": []
+    },
+    {
+      "id": "the_great_slump_spt",
+      "name": "The Great Slump",
+      "description": "Though Espatana never participated in the Continuation War, its economic impact has bled its way into Espatan industry and the workers are paying for it.",
+      "factor": "economic turmoil",
+      "polity": [
+        "SPT"
+      ],
+      "felt": {
+        "happiness": "industry"
+      },
+      "effects": {
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.12,
+        "happiness": -6
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "five_nations",
+      "name": "Five Nations",
+      "description": "The Jenensavezin Civil War has ended, yet our people still nurse grievances against each other, which must be addressed before they boil over again.",
+      "polity": [
+        "JEN"
+      ],
+      "effects": {
+        "stability": -6,
+        "lawAdoptionCost": 0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "exhausted_army",
+      "name": "Exhausted Army",
+      "description": "After three years of war, the army of Jenensavez has been all but spent, and it will take years for it to be whipped back into shape.",
+      "polity": [
+        "JEN"
+      ],
+      "effects": {
+        "manpower": -0.2,
+        "manpowerGrowth": -0.15,
+        "conscriptionRaiseCost": 0.4,
+        "attack": -0.15,
+        "supplyUse": 0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "widespread_unemployment",
+      "name": "Widespread Unemployment",
+      "description": "Despite efforts by the current government to address the affects of the great slump, widespread unemployment and homelessness still persists in major cities.",
+      "factor": "economic turmoil",
+      "polity": [
+        "JEN"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "happiness": -10,
+        "taxRevenue": -0.1,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "crown_in_exile",
+      "name": "Crown in Exile",
+      "description": "The royal family of Jenensavez was overthrown in the civil war, but many among the populace still quietly support them and work towards their return.",
+      "polity": [
+        "JEN"
+      ],
+      "effects": {
+        "ideologySupportPerDay": {
+          "Reactionism": 0.01,
+          "Conservatism": 0.005
+        },
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "from_malejos_to_yakakana",
+      "name": "From Malejos to Yakakana",
+      "description": "With the completion of the Trans-Kantic Railway, Sanata's control over its Panathran holdings has never been stronger.",
+      "polity": [
+        "SAN"
+      ],
+      "effects": {
+        "manpower": -0.15,
+        "tradeIncome": 0.25,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "continental_revolution",
+      "name": "Continental Revolution",
+      "description": "As our government sinks more and more money into keeping our colonies in Vortopaga together, the war of pacification grows increasingly unpopular among the populace.",
+      "factor": "war abroad",
+      "polity": [
+        "SAN"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "happiness": -4,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Communism": 0.005,
+          "Conservatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "death_of_a_leader",
+      "name": "Death of a Leader",
+      "description": "President Gabriel Cubero died in 1920, and the fragile political structure crumbled soon after. Under Markel Corredor, it is only starting to reconsolidate.",
+      "polity": [
+        "SAN"
+      ],
+      "effects": {
+        "politicalPower": -0.15,
+        "lawAdoptionCost": 0.25,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "cost_of_living",
+      "name": "Cost of Living",
+      "description": "Sanata managed to solve the worst of the great slump under Markel Corredor's government, yet many workers and their families still find themselves unable to afford rent and food.",
+      "factor": "economic turmoil",
+      "polity": [
+        "SAN"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "happiness": -6,
+        "factoryOutput": -0.1,
+        "dockyardOutput": -0.1,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "free_port",
+      "name": "Free Port",
+      "description": "El Puerto prides itself on being the free trade centre of Therundia. Nothing that passes through the port pays customs duty except arms.",
+      "polity": [
+        "EPT"
+      ],
+      "effects": {
+        "tradeIncome": 0.25,
+        "tariffCeiling": {
+          "resources": 0,
+          "consumerGoods": 0
+        },
+        "lawCeiling": {
+          "trade": "Free trade"
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "metropolis",
+      "name": "Metropolis",
+      "description": "There have always been more people in El Puerto than apartments. The great slump has amplified this problem, and our people are paying the price for it. We must find a way to economise our limited land before the situation becomes unmanageable.",
+      "factor": "cost of living",
+      "polity": [
+        "EPT"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "deficitFilled": 0.15,
+        "happiness": -11
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "heir_of_the_guzogalic_empire",
+      "name": "Heir of the Guzogalic Empire",
+      "description": "We are the true heir of the First Penian Empire. The Curoans and Azalurs in our western provinces are only temporary guests in it.",
+      "polity": [
+        "AUS"
+      ],
+      "effects": {
+        "stability": 5,
+        "ideologySupportPerDay": {
+          "Fascism": 0.015,
+          "Reactionism": 0.005
+        },
+        "movement": 0.15,
+        "movementInTerrain": {
+          "mountains": 0.7,
+          "alpine": 1.2
+        },
+        "maintenance": -0.1
+      },
+      "permanent": false,
+      "tags": [],
+      "factor": "racial discrimination",
+      "inProvinces": {
+        "provinces": [
+          "west_servia",
+          "south_servia",
+          "tiradec",
+          "zenga_island",
+          "azalurian_deronics",
+          "east_servia",
+          "zabianice",
+          "chyqume",
+          "mamurta",
+          "dovita",
+          "grisona_island",
+          "simonici_busui",
+          "azaleasca",
+          "agiesti",
+          "konac",
+          "spatan"
+        ],
+        "effects": {
+          "happiness": -6
+        }
+      }
+    },
+    {
+      "id": "shadow_of_aroyan",
+      "name": "Shadow of Aroyan",
+      "description": "The Penian revolution at the end of the Continuation War overthrew the Aroyani Empire in Therundia. Now, we must pick up the pieces of what it left behind and forge a brighter future.",
+      "polity": [
+        "AUS"
+      ],
+      "effects": {
+        "construction": -0.15,
+        "taxRevenue": -0.12,
+        "ministerCost": 0.25
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_aus",
+      "name": "Economic Downturn",
+      "description": "Our economy has been in tatters since our independence. Recovery has only been further impeded by the great slump we are still in.",
+      "factor": "economic turmoil",
+      "polity": [
+        "AUS"
+      ],
+      "effects": {
+        "factoryOutput": -0.15,
+        "tradeIncome": -0.15,
+        "happiness": -8,
+        "stability": -10
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "declared_neutrality",
+      "name": "Declared Neutrality",
+      "description": "We will not stoop to the politicking of andran states, but we cannot hope to reclaim our lost glory without allies.",
+      "polity": [
+        "AUS"
+      ],
+      "effects": {
+        "stability": 4,
+        "cannotMilitaryAlly": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "brown_water_navy",
+      "name": "Brown-water Navy",
+      "description": "The ships we claimed from the Aroyani Empire will not be able to stand against the might of our closest neighbours. A grand naval reform must be undertaken before we project our true strength.",
+      "polity": [
+        "AUS"
+      ],
+      "effects": {
+        "capitalShipCombat": -0.35,
+        "againstConvoys": 0.2,
+        "dockyardOutput": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "aroyani_irredentism",
+      "name": "Aroyani Irredentism",
+      "description": "Aroyan has not accepted the loss of the Emasic territories it gave up at Jaran. We are the only thing that stands between the Republic and a return to gatafolk rule.",
+      "polity": [
+        "EMS"
+      ],
+      "target": "ARY",
+      "effects": {
+        "stability": 8,
+        "conscriptionRaiseCost": -0.2,
+        "relationsWithTarget": -30,
+        "ideologySupportPerDay": {
+          "Fascism": 0.012,
+          "Conservatism": 0.004
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "recovering_from_civil_war",
+      "name": "Recovering From Civil War",
+      "description": "The fighting has finally ended, but recovery  has been slow, especially with the great slump ongoing.",
+      "factor": "economic turmoil",
+      "polity": [
+        "EMS"
+      ],
+      "effects": {
+        "stability": -10,
+        "happiness": -8,
+        "manpower": -0.15,
+        "manpowerGrowth": -0.1,
+        "factoryOutput": -0.1,
+        "construction": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "political_corruption",
+      "name": "Political Corruption",
+      "description": "Our government is rife with corruption, and funds for recovery and other projects frequently go missing.",
+      "polity": [
+        "EMS"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "taxRevenue": -0.15,
+        "ministerCost": 0.3,
+        "politicalPower": -0.15,
+        "construction": -0.08
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "strait_of_malos",
+      "name": "Strait of Malos",
+      "description": "The strait has been the chokepoint of trade between the Stumathalassan and the rest of the world for almost the entirety of its history, and in the modern day, nothing has changed.",
+      "polity": [
+        "EMS"
+      ],
+      "effects": {
+        "tradeIncome": 0.2,
+        "againstConvoys": 0.15,
+        "dockyardOutput": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "hymn_of_the_martyrs",
+      "name": "Hymn of the Martyrs",
+      "description": "The acts of our brave revolutionaries against the Bumish Empire are taught in every school in the country. The men and women who sacrificed themselves for the realisation of a Kewish state are read out by name on the anniversary.",
+      "polity": [
+        "KWE"
+      ],
+      "effects": {
+        "stability": 6,
+        "conscriptionRaiseCost": -0.25,
+        "manpowerRecovery": 0.15,
+        "ideologySupportPerDay": {
+          "Conservatism": 0.01,
+          "Agrarianism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "standard_kewish",
+      "name": "Standard Kewish",
+      "description": "The Central dialect is the one uniting language of our country. But in the northern and southern regions, there are accusations of language erasure and suppression.",
+      "factor": "language suppression",
+      "polity": [
+        "KWE"
+      ],
+      "felt": {
+        "happiness": "rural"
+      },
+      "effects": {
+        "stability": -5,
+        "happiness": -3,
+        "research": -0.08
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "bumish_exiles",
+      "name": "Bumish Exiles",
+      "description": "Kewelat has never recognised the government General Niroumand installed in Bumen. The ministers who escaped the Takht-e Shahanshahi still hold their offices in Opul.",
+      "polity": [
+        "KWE"
+      ],
+      "target": "BUM",
+      "effects": {
+        "relationsWithTarget": -40,
+        "tradeIncomeWithTarget": -0.5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "loyalty_of_the_tribes",
+      "name": "Loyalty of the Tribes",
+      "description": "Jashastan's hold beyond the cities is tenuous at best, and the government relies largely on the goodwill of the tribal chiefs to maintain the law of the land.",
+      "polity": [
+        "JSH"
+      ],
+      "effects": {
+        "manpower": 0.05,
+        "conscriptionRaiseCost": 0.3,
+        "taxRevenue": -0.15,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "disorganized_armed_forces",
+      "name": "Disorganized Armed Forces",
+      "description": "The Jashastani Armed Forces are young and inexperienced. Even though we emerged victorious against the Bumish, there has been little thirst for war and the military has fallen into disrepair.",
+      "polity": [
+        "JSH"
+      ],
+      "effects": {
+        "commandPowerIncome": -0.4,
+        "trainingTime": 0.1,
+        "movement": -0.15,
+        "supplyUse": 0.25,
+        "attack": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_arbus_concessions",
+      "name": "The Arbus Concessions",
+      "description": "The oilfields of the Arbus region were leased to Voseni corporations during the late 1910s. Since then, they have established roads, oilwells and police forces across the region. To the west, the Atarian Islands answer to the Voseni corporations before Bazersidu.",
+      "factor": "Voseni control",
+      "polity": [
+        "JSH"
+      ],
+      "target": "VOS",
+      "effects": {
+        "relationsWithTarget": 25,
+        "politicalPower": -0.1,
+        "research": 0.08
+      },
+      "inProvinces": {
+        "provinces": [
+          "north_arbus_desert",
+          "south_arbus_desert",
+          "atarian_islands"
+        ],
+        "effects": {
+          "happiness": -8,
+          "taxRevenue": -0.2,
+          "ideologySupportPerDay": {
+            "Socialism": 0.008
+          }
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "gatafolk_empire",
+      "name": "Gatafolk Empire",
+      "description": "The gatafolks have ruled the west Stumathalassan region since the ancient era. We intend for that to remain so.",
+      "polity": [
+        "ARY"
+      ],
+      "effects": {
+        "stability": 5,
+        "defence": 0.1,
+        "trainingTime": -0.1,
+        "movement": 0.1,
+        "attack": -0.1,
+        "nightPenalty": -0.6,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.01,
+          "Conservatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "unfair_treatment",
+      "name": "Unfair Treatment",
+      "description": "As the Aroyani Empire crumbled in the wake of the Continuation War, various peoples rose up against us. The frontiers were lost to us, but we have retained control of the heartlands. However, simmering anger remains.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "ARY"
+      ],
+      "effects": {
+        "politicalPower": -0.1,
+        "stability": -6
+      },
+      "inProvinces": {
+        "provinces": [
+          "east_mijinzeh",
+          "west_mijinzeh",
+          "southwest_mijinzeh",
+          "gohar",
+          "zenuzeno",
+          "east_qorgastan",
+          "south_qorgic_desert",
+          "north_katina",
+          "south_katina",
+          "south_gaezdanty",
+          "komcaeh",
+          "gaezdanty",
+          "zalang",
+          "karz",
+          "helage"
+        ],
+        "effects": {
+          "happiness": -5,
+          "unrestPerDay": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_devastation",
+      "name": "Economic Devastation",
+      "description": "The war devastated our economy and industry, and the subsequent splintering of the empire and the great slump have not allowed us to heal.",
+      "factor": "economic turmoil",
+      "polity": [
+        "ARY"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "factoryOutput": -0.2,
+        "construction": -0.2,
+        "taxRevenue": -0.2,
+        "tradeIncome": -0.15,
+        "happiness": -6
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "oversized_bureaucracy",
+      "name": "Oversized Bureaucracy",
+      "description": "Our government has grown bloated over the course of centuries of idiosyncrasies and politicking. It is clumsy and slow; the fat must be trimmed before we can begin to govern efficiently again.",
+      "polity": [
+        "ARY"
+      ],
+      "effects": {
+        "ministerCost": 0.3,
+        "politicalPower": -0.1,
+        "lawAdoptionCost": 0.25,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "political_violence_ary",
+      "name": "Political Violence",
+      "description": "Extremist leagues are quick to resort to violence to further their political causes.",
+      "factor": "political violence",
+      "polity": [
+        "ARY"
+      ],
+      "effects": {
+        "happiness": -5,
+        "unrestPerDay": 0.03,
+        "stability": -10,
+        "ideologySupportPerDay": {
+          "Fascism": 0.015,
+          "Communism": 0.01,
+          "Syndicalism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ]
+    },
+    {
+      "id": "disaffected_officers",
+      "name": "Disaffected Officers",
+      "description": "The military holds the Overseer personally responsible for the unfair terms signed at Jaran.",
+      "polity": [
+        "ARY"
+      ],
+      "effects": {
+        "commandPowerIncome": 0.2,
+        "stability": -6,
+        "politicalPower": -0.1,
+        "ideologySupportPerDay": {
+          "Military junta": 0.015,
+          "Reactionism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "voseni_mandate",
+      "name": "Voseni Mandate",
+      "description": "Ilitaria came under the Association of Nations following the 1907 revolt and it remains under a provisional government to this day.",
+      "polity": [
+        "ILT"
+      ],
+      "target": "VOS",
+      "effects": {
+        "relationsWithTarget": 40,
+        "taxRevenue": -0.2,
+        "politicalPower": -0.2,
+        "cannotMilitaryAlly": true,
+        "cannotIntervene": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "self_rule_movement",
+      "name": "Self-rule Movement",
+      "description": "Two decades have passed since the failed revolt. Yet, the spirit of revolution has not been crushed.",
+      "factor": "foreign administration",
+      "polity": [
+        "ILT"
+      ],
+      "effects": {
+        "stability": -6,
+        "unrestPerDay": 0.02,
+        "happiness": -4,
+        "ideologySupportPerDay": {
+          "Socialism": 0.012,
+          "Syndicalism": 0.008,
+          "Reactionism": 0.005,
+          "Fascism": 0.003,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "defence_force",
+      "name": "Defence Force",
+      "description": "Territories mandated by the Association of Nations are prohibited from having armed forces.",
+      "polity": [
+        "ILT"
+      ],
+      "effects": {
+        "divisionLimit": 3,
+        "conscriptionRaiseCost": 0.5,
+        "manpowerGrowth": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "centralised_economy",
+      "name": "Centralised Economy",
+      "description": "Since the reforms of 1923 the state has set the course for our industry and economy. Our output has grown every year while the rest of the world sinks into the great slump, though our workers have seen little benefit at home.",
+      "polity": [
+        "BUM"
+      ],
+      "effects": {
+        "factoryOutput": 0.2,
+        "construction": 0.15,
+        "taxRevenue": 0.15,
+        "consumerSharePoints": -8,
+        "research": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "reformist_association",
+      "name": "Reformist Association",
+      "description": "The allied leagues that marched with us in 1923 have never been disbanded, and they remain the most reliable answer to any crisis.",
+      "factor": "paramilitary intimidation",
+      "polity": [
+        "BUM"
+      ],
+      "effects": {
+        "stability": 8,
+        "politicalPower": 0.15,
+        "happiness": -4,
+        "ideologySupportPerDay": {
+          "Fascism": 0.02
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ]
+    },
+    {
+      "id": "home_waters",
+      "name": "Home Waters",
+      "description": "The Bumish navy is but a shadow of its former self. Now, they are incapable of operating far from Bumen; committing them to a foreign war is out of the question.",
+      "polity": [
+        "BUM"
+      ],
+      "effects": {
+        "cannotIntervene": true,
+        "dockyardOutput": -0.15,
+        "defence": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "kedar_illeri",
+      "name": "Kədər İlləri",
+      "description": "Since the assassination of Tural Tofiqgil in 1923, our political scene has fallen into chaos, with several short-lived premierships and widespread political violence.",
+      "factor": "political violence",
+      "polity": [
+        "VKD"
+      ],
+      "effects": {
+        "politicalPower": -0.25,
+        "lawAdoptionCost": 0.3,
+        "taxRevenue": -0.15,
+        "stability": -8,
+        "happiness": -10,
+        "unrestPerDay": 0.03,
+        "ideologySupportPerDay": {
+          "Fascism": 0.02,
+          "Communism": 0.01,
+          "Combinatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": [
+        "paramilitaries"
+      ]
+    },
+    {
+      "id": "kratumant",
+      "name": "Kratumant",
+      "description": "King Kratumant was installed on the new Vokandan throne by Virupa as a puppet monarch. However, he has all but cut ties with the empire and sought closer ones to the north with Zania instead.",
+      "polity": [
+        "VKD"
+      ],
+      "target": "VRP",
+      "effects": {
+        "stability": 5,
+        "relationsWithTarget": -20
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "aroyani_inheritance",
+      "name": "Aroyani Inheritance",
+      "description": "We inherited a shattered economy and a war-torn land, and reconstruction has been slow thanks to the Great Slump.",
+      "polity": [
+        "VKD"
+      ],
+      "factor": "economic turmoil",
+      "effects": {
+        "construction": -0.15,
+        "factoryOutput": -0.12,
+        "happiness": -10,
+        "research": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "traditionalist_resistance",
+      "name": "Traditionalist Resistance",
+      "description": "The villages and the grazing lands still resist the communist revolution, no matter how closely we watch them or how hard we quell them.",
+      "polity": [
+        "QRG"
+      ],
+      "effects": {
+        "stability": -6,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.015,
+          "Conservatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "qorgastani_army",
+      "name": "Qorgastani Army",
+      "description": "The army of the revolution has been hardened by conflict against the Aroyani state. It is eager to defend the homeland, yet limited by our outdated hardware and training doctrine.",
+      "polity": [
+        "QRG"
+      ],
+      "effects": {
+        "defence": 0.1,
+        "conscriptionRaiseCost": -0.25,
+        "manpower": 0.1,
+        "organisation": -0.15,
+        "equipmentUse": 0.2,
+        "commandPowerIncome": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "communist_infighting",
+      "name": "Communist Infighting",
+      "description": "Since its inception, the factions of the Communist Party have clawed at and betrayed one another to become the shepherd of the revolution.",
+      "polity": [
+        "QRG"
+      ],
+      "effects": {
+        "politicalPower": -0.15,
+        "lawAdoptionCost": 0.25,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "gotzmen_nationalism",
+      "name": "Gotzmen Nationalism",
+      "description": "Anti-Nekotistani elements remain prevalent in the eastern oasis cities, especially among the Gotzmen quarters. They are a hindrance to our new nation.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "NKO"
+      ],
+      "effects": {
+        "stability": -5,
+        "politicalPower": -0.08
+      },
+      "inProvinces": {
+        "provinces": [
+          "south_gotzmenistan",
+          "jasdanya",
+          "janitesik",
+          "hanisan"
+        ],
+        "effects": {
+          "unrestPerDay": 0.01,
+          "happiness": -6
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "burgeoning_bureaucracy",
+      "name": "Burgeoning Bureaucracy",
+      "description": "Kimsanogli has doubled the civil service since the beginning of the modernisation efforts. The administration now reaches from Sardo to Jasdanya, from Dasht to Qoramulla.",
+      "polity": [
+        "NKO"
+      ],
+      "effects": {
+        "taxRevenue": 0.15,
+        "politicalPower": 0.15,
+        "construction": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "incompetent_officers",
+      "name": "Incompetent Officers",
+      "description": "Our officers are not yet up to the task of managing a modernising military. Educating them will have to be part of a larger program of army reform.",
+      "polity": [
+        "NKO"
+      ],
+      "effects": {
+        "commandPowerIncome": -0.4,
+        "organisation": -0.15,
+        "trainingTime": 0.15,
+        "attack": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mixed_stock",
+      "name": "Mixed Stock",
+      "description": "Centuries of Aroyani rule have left Nekotistan with a large gatafolk population alongside the Andran Gozetci. The two have grown accustomed to one another, and speciesist tension has largely evaporated.",
+      "polity": [
+        "NKO"
+      ],
+      "effects": {
+        "nightPenalty": -0.4,
+        "movement": 0.05,
+        "attack": -0.05,
+        "trainingTime": -0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "corporate_partnerships",
+      "name": "Corporate Partnerships",
+      "description": "As reconstruction efforts continued, more responsibility was shifted to our corporations, thus encouraging post-war growth. In practice, it has led to an increase in their authority as well.",
+      "polity": [
+        "ZAN"
+      ],
+      "effects": {
+        "factoryOutput": 0.2,
+        "construction": 0.15,
+        "research": 0.1,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "restive_unions",
+      "name": "Restive Unions",
+      "description": "Reconstruction has come at the cost of labourers' rights, leading to discontent among the citizenry and growing support for leftist groups.",
+      "polity": [
+        "ZAN"
+      ],
+      "factor": "labour disputes",
+      "effects": {
+        "stability": -10,
+        "happiness": -4,
+        "factoryOutput": -0.05,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Syndicalism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_great_war",
+      "name": "The Great War",
+      "description": "Although Zania emerged victorious in the Great War against Aroyan, its horror and cost have removed much of the support for far-right parties as well as the populace's hunger for war.",
+      "polity": [
+        "ZAN"
+      ],
+      "effects": {
+        "stability": 5,
+        "conscriptionRaiseCost": 0.4,
+        "manpower": -0.15,
+        "militaryFactoryOutput": -0.15,
+        "ideologySupportPerDay": {
+          "Fascism": -0.01,
+          "Reactionism": -0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "zanian_leisure",
+      "name": "Zanian Leisure",
+      "description": "Rapid recovery has generated a substantial economic boom for Zanian society, freeing many to spend their time and money on entertainment and the arts.",
+      "polity": [
+        "ZAN"
+      ],
+      "effects": {
+        "happiness": 8,
+        "consumerSharePoints": 10,
+        "research": 0.08
+      },
+      "permanent": false,
+      "tags": [],
+      "factor": "economic prosperity"
+    },
+    {
+      "id": "outdated_naval_tradition",
+      "name": "Outdated Naval Tradition",
+      "description": "The poor performance of our navy during the Great War has exposed major flaws in our military. We must reform the fleet before it is called on again.",
+      "polity": [
+        "ZAN"
+      ],
+      "effects": {
+        "fleetCombat": -0.1,
+        "doctrineCost": {
+          "naval": 0.3
+        },
+        "shipRepair": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "conservative_high_command",
+      "name": "Conservative High Command",
+      "description": "There is no need to change what has been effective for the last few decades. The superiority of Agarian morale and numbers will always win the day.",
+      "polity": [
+        "AGR"
+      ],
+      "effects": {
+        "stability": 4,
+        "lawAdoptionCost": 0.2,
+        "doctrineCost": {
+          "land": 0.3
+        },
+        "commanderCost": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "emre_iii",
+      "name": "Emre III",
+      "description": "Emre III succeeded his father, Aziz I, in 1906. He has always been a sickly individual, and the stress of ruling has only worsened his health.",
+      "polity": [
+        "AGR"
+      ],
+      "effects": {
+        "politicalPower": -0.1,
+        "stability": -2,
+        "ministerCost": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "agrarian_tradition",
+      "name": "Agrarian Tradition",
+      "description": "Despite modernisation efforts in the past few decades, much of the population still lives by farming, fishing and grazing.",
+      "polity": [
+        "AGR"
+      ],
+      "effects": {
+        "factoryOutput": -0.05,
+        "research": -0.05,
+        "ideologySupportPerDay": {
+          "Agrarianism": 0.015
+        },
+        "resourceYield": {
+          "fertileLand": 0.1,
+          "livestock": 0.1,
+          "fish": 0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_grey_army",
+      "name": "The Grey Army",
+      "description": "The army of Marimaa was whipped into shape during the Great War and adapted to modern combat during the civil war. Now the Grey Army rules the country in all but name, despite rampant factionalism.",
+      "polity": [
+        "MRI"
+      ],
+      "effects": {
+        "stability": 5,
+        "politicalPower": -0.2,
+        "commandPowerIncome": 0.3,
+        "ideologySupportPerDay": {
+          "Corporatism": 0.01,
+          "Combinatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "street_violence_mri",
+      "name": "Street Violence",
+      "description": "Mari politics remains divisive, as various paramilitaries and their subfactions resort to violence to further their causes.",
+      "polity": [
+        "MRI"
+      ],
+      "factor": "political violence",
+      "effects": {
+        "happiness": -8,
+        "unrestPerDay": 0.02,
+        "stability": -8,
+        "ideologySupportPerDay": {
+          "Military junta": 0.01,
+          "Fascism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_mari_navy",
+      "name": "The Mari Navy",
+      "description": "Our naval forces remain in disrepair and our officers set in their ways, despite the humiliating losses at the Battle of Kotimaa.",
+      "polity": [
+        "MRI"
+      ],
+      "effects": {
+        "capitalShipCombat": -0.3,
+        "fleetCombat": -0.15,
+        "dockyardOutput": -0.3,
+        "shipRepair": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "five_year_plan",
+      "name": "Five Year Plan",
+      "description": "The first Five Year Plan began in 1925 under Prime Minister Miettinen and has been largely successful in expanding infrastructure in the backwater west, redistributing land and liberalising the political landscape.",
+      "polity": [
+        "MRI"
+      ],
+      "effects": {
+        "factoryOutput": 0.1,
+        "construction": 0.12,
+        "consumerSharePoints": -8,
+        "research": 0.05,
+        "taxRevenue": -0.05,
+        "ideologySupportPerDay": {
+          "Corporatism": 0.01,
+          "Combinatism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "spirit_of_the_north",
+      "name": "Spirit of the North",
+      "description": "Mari and Velese gatafolks have called this country home for thousands of years, and our spirit runs free in the earth, the wind and the rivers of the motherland.",
+      "polity": [
+        "MRI"
+      ],
+      "effects": {
+        "nightPenalty": -0.6,
+        "movement": 0.1,
+        "trainingTime": -0.1,
+        "attack": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_asuultmaa_question",
+      "name": "The Asuultmaa Question",
+      "description": "Asuultmaa is home to the heart of the old Zuunic empires, and with the rise of nationalism since the 19th century, its people are beginning to remember that fact.",
+      "polity": [
+        "MRI"
+      ],
+      "factor": "ethnic tensions",
+      "effects": {
+        "stability": -4
+      },
+      "inProvinces": {
+        "provinces": [
+          "south_yla_asuultmaa",
+          "west_ala_asuultmaa",
+          "north_asuult_lowlands",
+          "north_yla_asuultmaa",
+          "east_ala_asuultmaa"
+        ],
+        "effects": {
+          "happiness": -5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "klemetti_vii",
+      "name": "Klemetti VII",
+      "description": "Klemetti VII has reigned as a puppet of the Grey Army since the assassination of his father, Artturi III, in 1919. Despite this, he, and by extension the royal house, is still seen as the popular embodiment of the Mari state's continuity.",
+      "polity": [
+        "MRI"
+      ],
+      "effects": {
+        "stability": 3,
+        "lawAdoptionCost": -0.15,
+        "ministerCost": -0.1,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foreign_monopolies",
+      "name": "Foreign Monopolies",
+      "description": "The charters over Karanfold's iron and railways were sold to foreign companies decades ago, and output has risen steadily since. However, its profits are to the benefit of such companies, and little industry has actually been developed for the benefit of our citizens.",
+      "polity": [
+        "KRF"
+      ],
+      "effects": {
+        "revenueFromFactories": -0.25,
+        "construction": -0.1,
+        "resourceYield": {
+          "iron": 0.15
+        },
+        "lawAdoptionCost": {
+          "trade": 0.5,
+          "economy": 0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "botond_v",
+      "name": "Botond V",
+      "description": "Botond V succeeded his father, Botond IV, in 1901. He has always kept the crown out of politics, leaving much of the public discontent to fall on the elected government.",
+      "polity": [
+        "KRF"
+      ],
+      "effects": {
+        "stability": 6,
+        "ministerCost": -0.1,
+        "ideologySupportPerDay": {
+          "Conservatism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "tripolar_neutrality",
+      "name": "Tripolar Neutrality",
+      "description": "Caught between the spheres of influence of Zania, Marimaa, and Virupa, Lanizemin has best served itself as the mediating ground between the three powers, and has ensured this by maintaining its neutrality through a strict foreign policy.",
+      "polity": [
+        "LNZ"
+      ],
+      "effects": {
+        "stability": 5,
+        "militaryAllianceTension": 60,
+        "cannotGrantAccess": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "rudrabhuti_iv",
+      "name": "Rudrabhuti IV",
+      "description": "An old man by the end of the last war, Rudrabhuti IV is a steady symbol of the perseverance of the Virupan Empire in these uncertain times.",
+      "polity": [
+        "VRP"
+      ],
+      "effects": {
+        "stability": 5,
+        "politicalPower": 0.1
+      },
+      "permanent": false,
+      "tags": [
+        "establishedChurch"
+      ]
+    },
+    {
+      "id": "recovering_from_economic_depression",
+      "name": "Recovering From Economic Depression",
+      "description": "The recovery from the great slump of the early decade has been slow, but it seems Virupa is regaining its pre-war economic levels.",
+      "factor": "economic turmoil",
+      "polity": [
+        "VRP"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "factoryOutput": -0.1,
+        "taxRevenue": -0.05,
+        "happiness": -6,
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "scars_of_the_great_war",
+      "name": "Scars of the Great War",
+      "description": "Virupa emerged from the Great War at a hefty economic and sapientarian cost, and the trauma of war is only just beginning to heal.",
+      "polity": [
+        "VRP"
+      ],
+      "effects": {
+        "manpowerGrowth": -0.15,
+        "populationGrowth": -0.1,
+        "militaryFactoryOutput": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "agrarian_society",
+      "name": "Agrarian Society",
+      "description": "Much of the Virupan population lives on the edge of urban society, making recruits of any kind simply too expensive or too hard to reach.",
+      "polity": [
+        "VRP"
+      ],
+      "effects": {
+        "factoryOutput": -0.05,
+        "research": -0.05,
+        "manpower": -0.25,
+        "trainingTime": 0.3,
+        "conscriptionRaiseCost": 0.4,
+        "resourceYield": {
+          "fertileLand": 0.1,
+          "livestock": 0.1,
+          "textiles": 0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "language_barriers",
+      "name": "Language Barriers",
+      "description": "Virupa is made up of more than ten separate races with vastly different languages. All are exceptionally proud of their heritage, despite Virupan attempts to instil a single lingua commercii among them, and it has made administrative and military actions more complicated than they need to be.",
+      "polity": [
+        "VRP"
+      ],
+      "effects": {
+        "commandPowerIncome": -0.15,
+        "politicalPower": -0.1,
+        "research": -0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "decentralised_rule",
+      "name": "Decentralised Rule",
+      "description": "This confederation was founded on the principle of collective defence and organisation among the tribes of Zuungazar. It has worked for more than half a century, and we can ensure it works for a century more.",
+      "polity": [
+        "ZUN"
+      ],
+      "effects": {
+        "stability": 5,
+        "taxRevenue": -0.3,
+        "politicalPower": -0.1,
+        "lawAdoptionCost": {
+          "conscription": 0.5,
+          "personalTax": 0.75
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "pastoral_economy",
+      "name": "Pastoral Economy",
+      "description": "Zuungazar has lived on the grazing lands of its animals for hundreds of generations. We have little interest in changing our way of life.",
+      "polity": [
+        "ZUN"
+      ],
+      "felt": {
+        "construction": "rural"
+      },
+      "effects": {
+        "factoryOutput": -0.05,
+        "research": -0.05,
+        "manpower": -0.15,
+        "construction": -0.3,
+        "resourceYield": {
+          "livestock": 0.15
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "open_country",
+      "name": "Open Country",
+      "description": "The land is vast but empty; thus we have learned to cross it quickly from one settlement to the next, either by horse or by dragon.",
+      "polity": [
+        "ZUN"
+      ],
+      "effects": {
+        "movementInTerrain": {
+          "Plains": 0.15
+        },
+        "supplyUse": -0.1,
+        "defence": -0.05,
+        "eyrieBatches": 2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "race_based_castes",
+      "name": "Race-based Castes",
+      "description": "The ruling Kansils cooperate with colonial authorities on a regular basis, making the island's subjugation vastly easier than that of other territories.",
+      "polity": [
+        "VKN"
+      ],
+      "effects": {
+        "stability": 5,
+        "taxRevenue": 0.1,
+        "research": -0.15,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "extraction_colony",
+      "name": "Extraction Colony",
+      "description": "Kansilnatu is coveted for its large deposits of resources such as rubber, aluminium, and baul, which serve the domestic market of its suzerain. This has come at the cost of the conditions of the common worker and farmer of our territory.",
+      "polity": [
+        "VKN"
+      ],
+      "factor": "forced labour",
+      "felt": {
+        "happiness": "resourceYield"
+      },
+      "spread": {
+        "happiness": 1
+      },
+      "effects": {
+        "factoryOutput": -0.15,
+        "research": -0.1,
+        "construction": -0.1,
+        "happiness": -6,
+        "resourceYield": {
+          "gold": 0.15,
+          "baul": 0.15,
+          "aluminium": 0.15,
+          "baseMetals": 0.15,
+          "rubber": 0.15
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_great_slump_vkn",
+      "name": "The Great Slump",
+      "description": "The great slump has been devastating for Kansil society, and we are only just starting to recover.",
+      "polity": [
+        "VKN"
+      ],
+      "factor": "economic turmoil",
+      "felt": {
+        "happiness": "industry"
+      },
+      "effects": {
+        "tradeIncome": -0.25,
+        "taxRevenue": -0.15,
+        "factoryOutput": -0.1,
+        "happiness": -10,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "savat_sea_trade",
+      "name": "Savat Sea Trade",
+      "description": "We inherited a strong position in the Trenian Ocean upon our independence. Thanks to our northern ally, that position has gone unchallenged for nearly half a century.",
+      "polity": [
+        "QCO"
+      ],
+      "target": "VRP",
+      "effects": {
+        "tradeIncome": 0.25,
+        "dockyardOutput": 0.15,
+        "defence": 0.1,
+        "relationsWithTarget": 15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foreign_monopolies_tnm",
+      "name": "Foreign Monopolies",
+      "description": "Virupa has an iron grip on much of Tanmoia's industry, especially coal and iron.",
+      "polity": [
+        "TNM"
+      ],
+      "target": "VRP",
+      "effects": {
+        "relationsWithTarget": 20,
+        "tradeIncomeWithTarget": 0.3,
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.15,
+        "resourceYield": {
+          "timber": 0.15,
+          "coal": 0.15,
+          "iron": 0.15
+        },
+        "lawAdoptionCost": {
+          "trade": 0.5,
+          "corporateTax": 0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "cost_of_the_savat_sea_war",
+      "name": "Cost of the Savat Sea War",
+      "description": "The war ended decades ago, but in it we lost our coast, most of our territory, and most of our army. We are still feeling its effects on our people to this day.",
+      "polity": [
+        "THD"
+      ],
+      "target": "VRP",
+      "effects": {
+        "manpower": -0.1,
+        "populationGrowth": -0.05,
+        "relationsWithTarget": -20,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "shame_of_1889",
+      "name": "Shame of 1889",
+      "description": "The war of 1889 was the final nail in the coffin of the Trenian Empire, confining us largely to our home islands and a single overseas territory.",
+      "polity": [
+        "TNA"
+      ],
+      "target": "VRP",
+      "effects": {
+        "tradeIncome": -0.15,
+        "relationsWithTarget": -20,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_tna",
+      "name": "Economic Downturn",
+      "description": "The effects of the global economic downturn have only been worsened by the mismanagement of our leaders.",
+      "factor": "economic turmoil",
+      "polity": [
+        "TNA"
+      ],
+      "effects": {
+        "factoryOutput": -0.1,
+        "revenueFromFactories": -0.1,
+        "happiness": -8
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "virupan_railway",
+      "name": "Virupan Railway",
+      "description": "Our railroads were built by Virupan corporations and they remain under their control. This has garnered much resentment among our populace, who call for their immediate nationalisation or handover to Henu companies.",
+      "polity": [
+        "HNU"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "target": "VRP",
+      "effects": {
+        "relationsWithTarget": 15,
+        "tradeIncomeWithTarget": 0.3,
+        "happiness": -4,
+        "stability": -3,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_hnu",
+      "name": "Economic Downturn",
+      "description": "Our economy has been in an underdeveloped state since the turn of the century. It has only been further hampered by the great slump.",
+      "factor": "economic turmoil",
+      "polity": [
+        "HNU"
+      ],
+      "effects": {
+        "factoryOutput": -0.1,
+        "tradeIncome": -0.15,
+        "happiness": -8,
+        "politicalPower": -0.15,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "five_year_plan_pmk",
+      "name": "Five Year Plan",
+      "description": "Modelled after the Mari policy of the same name, the first Miksan Five Year Plan began in 1924. It has been highly successful in modernising our nation so far.",
+      "polity": [
+        "PMK"
+      ],
+      "effects": {
+        "construction": 0.15,
+        "factoryOutput": 0.1,
+        "research": 0.05,
+        "populationGrowth": 0.05,
+        "consumerSharePoints": -6
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "undecided_kingdom",
+      "name": "Undecided Kingdom",
+      "description": "Our foreign policy under Jainukul has revolved around improving our relations with as many powers as we can, while giving offence to none. This has gained us the derision of many politicians behind closed doors, and gained us the nickname of the 'Undecided Kingdom'.",
+      "polity": [
+        "PMK"
+      ],
+      "effects": {
+        "militaryAllianceTension": 80,
+        "tradeIncome": 0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "buruthainad",
+      "name": "Buruthainad",
+      "description": "An indecisive king, Buruthainad has let the power-hungry advisors and opportunistic ministers around him steer much of his reign. Since he appointed Jainukul as Prime Minister, he has kept to the background, though the monarchy is still a national symbol and remains popular among the common people.",
+      "polity": [
+        "PMK"
+      ],
+      "effects": {
+        "stability": 4,
+        "lawAdoptionCost": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "government_corruption",
+      "name": "Government Corruption",
+      "description": "Our government is full of corrupt politicians and civil servants, and it isn't unusual to see state money disappear into the pockets of local officials.",
+      "polity": [
+        "KOF",
+        "CAF",
+        "GAN",
+        "MWU",
+        "MNJ",
+        "LPC"
+      ],
+      "effects": {
+        "taxRevenue": -0.1,
+        "politicalPower": -0.2,
+        "ministerCost": 0.2,
+        "construction": -0.08
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "ruined_trade_routes",
+      "name": "Ruined Trade Routes",
+      "description": "The civil war has disrupted the trade routes running across and through the country.",
+      "polity": [
+        "KOF",
+        "CAF",
+        "GAN",
+        "MWU"
+      ],
+      "effects": {
+        "tradeIncome": -0.2,
+        "surplusOffered": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "commonplace_looting",
+      "name": "Commonplace Looting",
+      "description": "Owing to military disorganisation and the collapse of royalist authority, the looting of local produce has become commonplace.",
+      "factor": "looting",
+      "polity": [
+        "KOF"
+      ],
+      "effects": {
+        "happiness": -6,
+        "unrestPerDay": 0.01,
+        "taxRevenue": -0.1,
+        "civilianFactoryOutput": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "military_dominance",
+      "name": "Military Dominance",
+      "description": "The military holds authority over much of confederal Fuinam, especially in occupied territories. The People's Assembly in Singjong grows increasingly wary of the lack of civilian oversight.",
+      "polity": [
+        "CAF"
+      ],
+      "effects": {
+        "compliance": 0.2,
+        "commandPowerIncome": 0.2,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mandate_of_heaven",
+      "name": "Mandate of Heaven",
+      "description": "The archangel Aquilo proclaimed the Sublime Kingdom the holder of the Mandate of Heaven in 1914. Since then our Representative has ruled in the name of the Old Creator and the Kyrie.",
+      "polity": [
+        "SGQ"
+      ],
+      "effects": {
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": [
+        "establishedChurch"
+      ]
+    },
+    {
+      "id": "armed_neutrality",
+      "name": "Armed Neutrality",
+      "description": "Since the Modernisation of 1923, we have maintained a policy armed neutrality towards every other power that only answers nominally to Heaven.",
+      "polity": [
+        "SGQ"
+      ],
+      "effects": {
+        "militaryAllianceTension": 80
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "communist_guerrillas",
+      "name": "Communist Guerrillas",
+      "description": "The bulk of the Communist Party of Angland surrendered in 1912. However, smaller guerrilla cells continue to stir trouble in the northwest to this day.",
+      "factor": "communist guerrillas",
+      "polity": [
+        "SGQ"
+      ],
+      "effects": {
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": [],
+      "inProvinces": {
+        "provinces": [
+          "south_xintai",
+          "north_nachuan"
+        ],
+        "effects": {
+          "unrestPerDay": 0.01,
+          "ideologySupportPerDay": {
+            "Communism": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": "ethnic_question",
+      "name": "Ethnic Question",
+      "description": "The Nanwa, the Mangan and our other minorities pestered for self-governance throughout the Sublime Kingdom's infancy, and even the concessions of autonomy in 1923 have not satiated their appetite.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "SGQ"
+      ],
+      "effects": {
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": [],
+      "inProvinces": {
+        "provinces": [
+          "north_nanwa",
+          "central_nanwa",
+          "west_mangajiang",
+          "east_mangajiang"
+        ],
+        "effects": {
+          "happiness": -5
+        }
+      }
+    },
+    {
+      "id": "tongmu",
+      "name": "Tongmu",
+      "description": "Kong Xuefeng led the Minshenghui through the Angese War and has reigned as Representative Tongmu since 1914. He has centralised the country's administration and keeps a close interest in the army.",
+      "polity": [
+        "SGQ"
+      ],
+      "effects": {
+        "politicalPower": 0.1,
+        "commandPowerIncome": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "entrepot",
+      "name": "Entrepôt",
+      "description": "Weilian's economy is based almost entirely on its geography at the entrance to the Angese Sea. This has served us thus far, and it is unlikely to change for the foreseeable future.",
+      "polity": [
+        "WEI"
+      ],
+      "effects": {
+        "tradeIncome": 0.25,
+        "factoryOutput": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "high_unemployment",
+      "name": "High Unemployment",
+      "description": "The shock of the great slump has done lasting damage to our kingdom and society, damage that will take years of political will to undo.",
+      "polity": [
+        "SOA"
+      ],
+      "factor": "economic turmoil",
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "happiness": -6,
+        "taxRevenue": -0.1,
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "grand_secretariat",
+      "name": "Grand Secretariat",
+      "description": "The institutions of governance are strong and unified under our Grand Secretariat. It has ruled for more than a century, and similar institutions have ruled for centuries more. We need not fix what is not broken.",
+      "polity": [
+        "SOA"
+      ],
+      "effects": {
+        "lawAdoptionCost": 0.2,
+        "ministerCost": 0.15,
+        "research": -0.2,
+        "policyCost": 0.1,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "soalangi_army",
+      "name": "Soalangi Army",
+      "description": "The army has grown weak over decades of inaction and is now mainly a revolving door of nepotism and easy ladder-climbing.",
+      "polity": [
+        "SOA"
+      ],
+      "effects": {
+        "organisation": -0.1,
+        "equipmentUse": 0.15,
+        "trainingTime": 0.1,
+        "commandPowerIncome": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_treaty_of_chuhai",
+      "name": "The Treaty of Chuhai",
+      "description": "Galmboo was unjustly seized from us in the one-sided treaty of 1924. Our leaders are weak and fine with selling away our freedom as long as it lines their pockets.",
+      "polity": [
+        "AMR"
+      ],
+      "target": "AMY",
+      "effects": {
+        "tradeIncome": -0.1,
+        "relationsWithTarget": -25,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foxfolk_senses",
+      "name": "Foxfolk Senses",
+      "description": "Our natural traits give us an edge over men of andran parentage, especially in spotting a trap before it is sprung.",
+      "polity": [
+        "AMR",
+        "AMY",
+        "HNM"
+      ],
+      "effects": {
+        "nightPenalty": -0.5,
+        "defence": 0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "yelungge",
+      "name": "Yelungge",
+      "description": "A prisoner in the capital in all but name, King Yelungge stamps his seal on every decree the military junta issues. The royalists tolerate the regime for his sake alone.",
+      "polity": [
+        "AMR"
+      ],
+      "effects": {
+        "stability": 3,
+        "lawAdoptionCost": -0.15,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "populist_front",
+      "name": "Populist Front",
+      "description": "Celgylyn built a large following among the common populace, which let him seize control of the state with virtually no opposition in 1919. That support still aids him in restoring Amryn power.",
+      "polity": [
+        "AMY"
+      ],
+      "effects": {
+        "stability": 8,
+        "politicalPower": 0.15,
+        "ideologySupportPerDay": {
+          "National syndicalism": 0.015
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "vykvan_ii",
+      "name": "Vykvan II",
+      "description": "The emperor personally supports the National Salvation Front in eliminating the impotence of our state's political apparatus.",
+      "polity": [
+        "AMY"
+      ],
+      "effects": {
+        "stability": 4,
+        "lawAdoptionCost": -0.1,
+        "policyCost": -0.1,
+        "decreeCost": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "state_monopolies",
+      "name": "State Monopolies",
+      "description": "Industry is bound to the institutions of our government. While we believe in empowering the common man, certain steps must be taken for the greater good.",
+      "polity": [
+        "AMY"
+      ],
+      "effects": {
+        "taxRevenue": 0.15,
+        "militaryFactoryOutput": 0.1,
+        "consumerSharePoints": -6,
+        "research": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "amargi_coast",
+      "name": "Amargi Coast",
+      "description": "Galmboo was seized for its port and resources. Though we share foxfolk heritage, they do not take kindly to being governed by foreign forces.",
+      "polity": [
+        "AMY"
+      ],
+      "factor": "ethnic tensions",
+      "effects": {
+        "stability": -3
+      },
+      "inProvinces": {
+        "provinces": [
+          "galmboo"
+        ],
+        "effects": {
+          "happiness": -8,
+          "unrestPerDay": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "scheduled_handover",
+      "name": "Scheduled Handover",
+      "description": "The mission of the Commissariat is to oversee the handover of the Enclave Territories to the Great Quan and Soalang under the Enclave Bond Act of 1916.",
+      "polity": [
+        "ETA"
+      ],
+      "effects": {
+        "construction": -0.2,
+        "factoryOutput": -0.1,
+        "stability": 5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "congress_of_legations",
+      "name": "Congress of Legations",
+      "description": "A council of companies and state representatives leads the negotiations over the fate of the Enclave Territories, though few of them share the same agenda.",
+      "polity": [
+        "ETA"
+      ],
+      "effects": {
+        "taxRevenue": -0.2,
+        "tradeIncome": 0.2,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mandate_of_the_association",
+      "name": "Mandate of the Association",
+      "description": "The Commissariat answers to the Secretariat of the Association of Nations, which mandates it to govern the territories until the negotiations are concluded.",
+      "polity": [
+        "ETA"
+      ],
+      "effects": {
+        "stability": 8,
+        "manpower": -0.3,
+        "lawCeiling": {
+          "conscription": "Volunteer only"
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foxfolk_franchise",
+      "name": "Foxfolk Franchise",
+      "description": "Only those of foxfolk parentage are granted the right to vote, much to the satisfaction of our more nationalistic elements.",
+      "polity": [
+        "HNM"
+      ],
+      "effects": {
+        "stability": 5,
+        "lawAdoptionCost": -0.15,
+        "ideologySupportPerDay": {
+          "Conservatism": 0.01,
+          "Fascism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "open_ports",
+      "name": "Open Ports",
+      "description": "The ports of Hunmea are dominated by foreign companies and merchants. Although this has led to a boom in commercial interest, it has stifled the domestic industry of our country.",
+      "polity": [
+        "HNM"
+      ],
+      "effects": {
+        "tradeIncome": 0.15,
+        "factoryOutput": -0.08,
+        "research": 0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "taneko",
+      "name": "Tanekō",
+      "description": "Emperor Tanekō began his reign in 1917, and has since taken a firm hand in steadying the listing ship that is the Empire of Akasora. Though several colonies were lost during the early 1920s, he has enjoyed relative popularity among the andran core of the Empire.",
+      "polity": [
+        "AKA"
+      ],
+      "effects": {
+        "stability": 5,
+        "lawAdoptionCost": -0.1,
+        "ideologySupportPerDay": {
+          "Conservatism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foxfolk_minorities",
+      "name": "Foxfolk Minorities",
+      "description": "The Mosir and Sirsenrit foxfolks grow restless through nationalist agitation, and many are calling for their own independence from the empire.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "AKA"
+      ],
+      "effects": {
+        "stability": -4,
+        "nightPenalty": -0.25,
+        "defence": 0.1
+      },
+      "inProvinces": {
+        "provinces": [
+          "kewsiri",
+          "koraru",
+          "tumutursat",
+          "aripecan",
+          "emusnipkat",
+          "mawuna",
+          "hicucini",
+          "retarkotan",
+          "east_tumutursat",
+          "south_jugmunics",
+          "east_mawuna",
+          "central_jugmunics",
+          "seseksuma",
+          "pirkamaw",
+          "tucikur",
+          "turnamna",
+          "sinekiraw",
+          "menaskar",
+          "yamayama_island",
+          "gusukunaichi",
+          "north_iijinoutashi",
+          "chiimui",
+          "hagiijima",
+          "kiotsukeijima",
+          "uikeifa",
+          "mannakubi",
+          "north_konmoni",
+          "akasanijima",
+          "kijiridinaga",
+          "faakubi",
+          "kuugayaa",
+          "uraijima",
+          "iibijima",
+          "surutii"
+        ],
+        "effects": {
+          "happiness": -4,
+          "unrestPerDay": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "akasoran_identity",
+      "name": "Akasoran Identity",
+      "description": "We have managed to avoid the worst of the great slump, and our society has prospered in the years following the end of the Great War, both in the arts and in labour.",
+      "factor": "solved economic turmoil",
+      "polity": [
+        "AKA"
+      ],
+      "effects": {
+        "stability": 6,
+        "research": 0.1
+      },
+      "inProvinces": {
+        "provinces": [
+          "koyo_island",
+          "funasaki",
+          "furusato",
+          "fujikumo",
+          "kiyostukawa",
+          "matsubiro",
+          "junkou",
+          "midoriyama",
+          "north_utoshima_islands",
+          "toriyama",
+          "kenwara",
+          "iwamoto",
+          "inuisuna",
+          "kuronagi",
+          "yokoshiri",
+          "funa_islands",
+          "nerabetsu",
+          "south_nanpo",
+          "enkita",
+          "okukonai"
+        ],
+        "effects": {
+          "happiness": 5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "imperial_navy",
+      "name": "Imperial Navy",
+      "description": "The Imperial Navy of Akasora is one of the most powerful navies on Earth, allowing us to project our power throughout the entire Ditokian and Trenese Oceans.",
+      "polity": [
+        "AKA"
+      ],
+      "effects": {
+        "dockyardOutput": 0.15,
+        "capitalShipCombat": 0.15,
+        "shipRepair": 0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "conservative_air_force",
+      "name": "Conservative Air Force",
+      "description": "There is a general spirit of reluctance to adopt the flying machines that allowed our allies in Therundia to prevail over the dragons of their enemies. After all, it would put so many eyries out of business. And why change something when no one else has a finer air force than we do?",
+      "polity": [
+        "AKA"
+      ],
+      "effects": {
+        "fighterCombat": -0.3,
+        "airDragonCombat": 0.15,
+        "airBaseRecovery": -0.2,
+        "doctrineCost": {
+          "air": 0.4
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "voseni_customs",
+      "name": "Voseni Customs",
+      "description": "As a permanent Voseni outpost in western Sakan, we have controlled the trade routes from Akasora to Therundia for centuries.",
+      "polity": [
+        "NPW"
+      ],
+      "effects": {
+        "tradeIncome": 0.1,
+        "factoryOutput": -0.08,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "akasoran_majority",
+      "name": "Akasoran Majority",
+      "description": "More than eighty percent of the Nanpowanese population is Akasoran, and many of them resent the rule of a foreign state despite our best efforts at welfare and labour improvements.",
+      "factor": "foreign administration",
+      "polity": [
+        "NPW"
+      ],
+      "effects": {
+        "happiness": -5,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "rubber_estates",
+      "name": "Rubber Estates",
+      "description": "The colonial administration has bled Dagislaterra dry of its rubber for decades, imposing conditions of labour harsh enough to incite unrest among the native population.",
+      "factor": "forced labour",
+      "polity": [
+        "DAG"
+      ],
+      "effects": {
+        "resourceYield": {
+          "rubber": 0.15
+        },
+        "factoryOutput": -0.1,
+        "research": -0.1,
+        "happiness": -10
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "dagisla_nationalism",
+      "name": "Dagisla Nationalism",
+      "description": "Nationalist sentiments among the Dagisla people have become a thorn in the side of the Sanatese administration, with civil disobedience and street violence becoming increasingly common.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "DAG"
+      ],
+      "effects": {
+        "stability": -5,
+        "happiness": -5,
+        "politicalPower": -0.08,
+        "unrestPerDay": 0.01
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "holy_makitate",
+      "name": "Holy Makitate",
+      "description": "Jenisia is the heart of the Neo-Idimist faith, and has been for more than three millennia.",
+      "polity": [
+        "JNI"
+      ],
+      "effects": {
+        "stability": 6,
+        "politicalPower": 0.1,
+        "research": -0.1
+      },
+      "permanent": false,
+      "tags": [
+        "establishedChurch"
+      ]
+    },
+    {
+      "id": "sacred_neutrality",
+      "name": "Sacred Neutrality",
+      "description": "Jenisia has maintained its current policy of neutrality since the end of the Hemneterian Civil War in 1394, on the principle that the Kyrie's kingdom cannot take a side in wars between her believers.",
+      "polity": [
+        "JNI"
+      ],
+      "effects": {
+        "stability": 8,
+        "conscriptionRaiseCost": 1,
+        "cannotMilitaryAlly": true,
+        "cannotIntervene": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "sotiria_kyrie_xxxiv",
+      "name": "Sotiria Kyrie XXXIV",
+      "description": "The current incarnation of the Kyrie announced a temporary absence to attend to matters in Heaven. Factionalism has grown in her absence, as officials disagree over the conduct of state policy.",
+      "polity": [
+        "JNI"
+      ],
+      "effects": {
+        "stability": -4,
+        "politicalPower": -0.15,
+        "lawAdoptionCost": 0.25
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "falcons_and_ravens",
+      "name": "Falcons and Ravens",
+      "description": "Two camps over the handling of Jenisian foreign policy have emerged, with the Falcons advocating for a more assertive stance abroad. The two sides have since fought frequently, both in the streets and in the Assembly.",
+      "factor": "political violence",
+      "polity": [
+        "JNI"
+      ],
+      "effects": {
+        "stability": -5,
+        "happiness": -5,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "refugee_influx",
+      "name": "Refugee Influx",
+      "description": "The Great War and its end have brought vast waves of refugees to our country, and our treasury has grown dangerously strained because of it.",
+      "factor": "refugee crisis",
+      "polity": [
+        "JNI"
+      ],
+      "effects": {
+        "happiness": -5,
+        "taxRevenue": -0.3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "anatanic_station",
+      "name": "Anatanic Station",
+      "description": "These islands have been the mid-way stop between Therundia and the New World for generations, and they continue to live off these routes.",
+      "polity": [
+        "VUG",
+        "GDV"
+      ],
+      "effects": {
+        "tradeIncome": 0.2,
+        "factoryOutput": -0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "home_rule_movement",
+      "name": "Home Rule Movement",
+      "description": "By the end of the Continuation War, self-rule had become one of the most highly debated topics in Nunattiavaki politics, a debate that has only been exacerbated by the rise of anti-colonial sentiment and the influx of immigrants from Therundia.",
+      "polity": [
+        "NNT"
+      ],
+      "effects": {
+        "stability": -5,
+        "lawAdoptionCost": 0.2,
+        "ideologySupportPerDay": {
+          "Liberalism": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "nunattiavaki_identity",
+      "name": "Nunattiavaki Identity",
+      "description": "The current period has seen a boom in local culture, driven by a developed youth-driven urban society and an interest in the development of local cinema and other media.",
+      "factor": "cultural prosperity",
+      "polity": [
+        "NNT"
+      ],
+      "effects": {
+        "happiness": 6,
+        "research": 0.1,
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_nnt",
+      "name": "Economic Downturn",
+      "description": "The great slump and its consequences have been largely mitigated by the swift work of our government; however, the influx of migrants from Therundia and the generally low purchasing power of our citizens have yet to go away.",
+      "factor": "economic turmoil",
+      "polity": [
+        "NNT"
+      ],
+      "effects": {
+        "tradeIncome": -0.2,
+        "factoryOutput": -0.08,
+        "happiness": -6,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "therundian_migration",
+      "name": "Therundian Migration",
+      "description": "The sudden wave of migrants from the Old World has raised the cost of housing and provisions across the Dominion and lowered wages as labour has cheapened.",
+      "factor": "cost of living",
+      "polity": [
+        "NNT"
+      ],
+      "effects": {
+        "populationGrowth": 0.2,
+        "happiness": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "tambasco_doctrine",
+      "name": "Tambasco Doctrine",
+      "description": "The Three Nations guarantees the states of the New World against interference from the Old. This protection is not unconditional, and a government whose politics no longer align with theirs can expect its withdrawal.",
+      "target": "TRN",
+      "polity": [
+        "NNT",
+        "CHV",
+        "LPC",
+        "ARV",
+        "MNT",
+        "SNE",
+        "VAK",
+        "ROS",
+        "YNK",
+        "NAH",
+        "SUK",
+        "SHN",
+        "TVC",
+        "ONW",
+        "TGY",
+        "GRG",
+        "SPD",
+        "AGN",
+        "HTL",
+        "RGA",
+        "PWL",
+        "KRT",
+        "NDV",
+        "FAC",
+        "ANH",
+        "MZI",
+        "AKD",
+        "TBI"
+      ],
+      "effects": {
+        "guaranteedBy": {
+          "polity": "TRN",
+          "whileIndependent": true,
+          "whileForm": [
+            "Constitutional monarchy",
+            "Parliamentary republic",
+            "Presidential republic",
+            "Theocracy",
+            "Provisional government"
+          ]
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "house_of_salrosa",
+      "name": "House of Salrosa",
+      "description": "The House of Salrosa has been the ruling dynasty of Chevaho since its independence. Its grip on our country has never been stronger.",
+      "polity": [
+        "CHV"
+      ],
+      "effects": {
+        "politicalPower": 0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "frente_rojo",
+      "name": "Frente Rojo",
+      "description": "The Frente Rojo de Chevaho was founded in 1881, and has since persisted as an underground movement determined to overthrow the tyrannical monarchy and establish a proletarian state.",
+      "factor": "political violence",
+      "polity": [
+        "CHV"
+      ],
+      "effects": {
+        "stability": -6,
+        "happinessPenalties": 0.2,
+        "unrestPerDay": 0.02,
+        "ideologySupportPerDay": {
+          "Socialism": 0.01,
+          "Communism": 0.005
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foreign_monopolies_lpc",
+      "name": "Foreign Monopolies",
+      "description": "Industry in Los Picos is largely dominated by Trinational corporations, which are free to violate as many labour laws and sapient rights as they like, as long as they turn a profit.",
+      "target": "TRN",
+      "polity": [
+        "LPC"
+      ],
+      "effects": {
+        "relationsWithTarget": 20,
+        "tradeIncomeWithTarget": 0.4,
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.2,
+        "resourceYield": {
+          "coal": 0.15,
+          "gold": 0.15,
+          "oil": 0.15
+        },
+        "lawAdoptionCost": {
+          "trade": 0.5,
+          "corporateTax": 0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "foreign_monopolies_arv",
+      "name": "Foreign Monopolies",
+      "description": "The majority of our economy is in the hands of private Trinational companies, who do not care about the living conditions of their local workers.",
+      "target": "TRN",
+      "factor": "cost of living",
+      "polity": [
+        "ARV"
+      ],
+      "effects": {
+        "relationsWithTarget": 20,
+        "tradeIncomeWithTarget": 0.2,
+        "tradeIncome": -0.1,
+        "taxRevenue": -0.1,
+        "happiness": -4,
+        "resourceYield": {
+          "nitrates": 0.2
+        },
+        "lawAdoptionCost": {
+          "trade": 0.5,
+          "corporateTax": 0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mytosi_independence",
+      "name": "Mytosi Independence",
+      "description": "The Mytosi Crisis is well behind us. Now, we are free to forge our own path without the hindrance of our fellow cousins.",
+      "polity": [
+        "SNE",
+        "ROS",
+        "VAK"
+      ],
+      "effects": {
+        "politicalPower": -0.15,
+        "ministerCost": 0.3,
+        "lawAdoptionCost": 0.25,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "informal_defence_force",
+      "name": "Informal Defence Force",
+      "description": "The security of our home remains the responsibility of the local militias and the constabulary. No armed force has been formally organised yet.",
+      "polity": [
+        "SNE",
+        "ROS",
+        "VAK"
+      ],
+      "effects": {
+        "commandPowerIncome": -0.3,
+        "organisation": -0.2,
+        "attack": -0.2,
+        "trainingTime": 0.2,
+        "maintenance": -0.2
+      },
+      "permanent": false,
+      "tags": [
+        "noGeneralStaff"
+      ]
+    },
+    {
+      "id": "cash_crop_economy",
+      "name": "Cash Crop Economy",
+      "description": "Cash crops such as sugar and cotton form the backbone of our economy and take up much of our islands' limited land.",
+      "polity": [
+        "SNE",
+        "ROS",
+        "VAK"
+      ],
+      "effects": {
+        "tradeIncome": 0.2,
+        "research": -0.08,
+        "construction": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_agn",
+      "name": "Economic Downturn",
+      "description": "The effects of the global economic downturn have only been worsened by the mismanagement of our leaders.",
+      "factor": "economic turmoil",
+      "polity": [
+        "AGN"
+      ],
+      "effects": {
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.12,
+        "happiness": -8,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_black_twenties_anh",
+      "name": "The Black Twenties",
+      "description": "The onset of the global slump has decreased the volume of trade that stops in our ports, and so our economy falters.",
+      "factor": "economic turmoil",
+      "polity": [
+        "ANH"
+      ],
+      "effects": {
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.1,
+        "happiness": -8,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "inexperienced_navy",
+      "name": "Inexperienced Navy",
+      "description": "More than seventy years have passed since our last conflict, and naval warfare has changed substantially since then, yet our sailors have never had the chance to learn it at sea.",
+      "polity": [
+        "ANH"
+      ],
+      "effects": {
+        "fleetCombat": -0.2,
+        "doctrineCost": {
+          "naval": 0.3
+        },
+        "trainingTime": 0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "slite_minority",
+      "name": "Slite Minority",
+      "description": "Yunkallpa is the homeland of the slite race, who have been treated as a revered people by the indigenous andrans for millennia. Although our colonial masters have left, their ideas still plague our society to this day.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "YNK"
+      ],
+      "felt": "rural",
+      "effects": {
+        "stability": -8,
+        "happiness": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "institutionalised_corruption",
+      "name": "Institutionalised Corruption",
+      "description": "A smooth-running machine needs to be well oiled, and what better oil is there than the exchange of wealth?",
+      "polity": [
+        "NAH"
+      ],
+      "effects": {
+        "taxRevenue": -0.1,
+        "construction": -0.1,
+        "ministerCost": 0.25
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "recovering_from_economic_downturn",
+      "name": "Recovering From Economic Downturn",
+      "description": "The recovery from the great slump has been accelerated by the rise of the National Salvation Movement. However, some of the slump's effects still linger in the cities.",
+      "factor": "cost of living",
+      "polity": [
+        "NAH"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "factoryOutput": -0.06,
+        "taxRevenue": -0.05,
+        "happiness": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "treaty_of_santa_ania",
+      "name": "Treaty of Santa Ania",
+      "description": "Santa Ania is a black mark on our nation's proud history. We must strive to undo this humiliation and tear up this treaty, no matter the cost.",
+      "polity": [
+        "TVC",
+        "ONW"
+      ],
+      "effects": {
+        "divisionLimit": 8,
+        "lawCeiling": {
+          "conscription": "Volunteer only"
+        },
+        "militaryFactoryOutput": -0.5,
+        "dockyardOutput": -0.5,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": [
+        "disarmed",
+        "reparations"
+      ]
+    },
+    {
+      "id": "economic_downturn_tvc",
+      "name": "Economic Downturn",
+      "description": "The effects of the global economic downturn have only been worsened by our losses in the Great War.",
+      "factor": "economic turmoil",
+      "polity": [
+        "TVC"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "factoryOutput": -0.1,
+        "taxRevenue": -0.08,
+        "happiness": -8,
+        "stability": -6
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "co_existence_accord",
+      "name": "Co-Existence Accord",
+      "description": "Though the Tavocielo Civil War is long behind us, its traumas can still be seen in our society today, and many Aturkuna still remember the horrors they faced at the hands of the Tavocielo Army.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "TVC"
+      ],
+      "effects": {
+        "stability": -4
+      },
+      "inProvinces": {
+        "provinces": [
+          "intiraymi",
+          "chakapuyu",
+          "east_citta_nel_nulla",
+          "ettore_da_gadine",
+          "inner_costa_auro"
+        ],
+        "effects": {
+          "taxRevenue": -0.3,
+          "happiness": -5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_black_twenties_trn",
+      "name": "The Black Twenties",
+      "description": "The economic downturn of the decade has caused great hardship for our people. Though we have managed to recover in recent years, we have yet to bounce back to pre-slump figures.",
+      "factor": "economic turmoil",
+      "polity": [
+        "TRN"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "factoryOutput": -0.08,
+        "taxRevenue": -0.05,
+        "happiness": -7,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "never_again",
+      "name": "Never Again",
+      "description": "Our population has seen first-hand the horrors of war against the Tavocielos in the Great War. Many are reluctant to repeat the experience.",
+      "polity": [
+        "TRN"
+      ],
+      "effects": {
+        "conscriptionRaiseCost": 0.5,
+        "manpower": -0.15,
+        "wearinessModifier": 0.25
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "tambasco_doctrine_enforcer",
+      "name": "Tambasco Doctrine Enforcer",
+      "description": "We strive to ensure that no state of the New World has to experience the interference of those from the Old. It is of course up to their own governments to determine whether they would accept this aid.",
+      "polity": [
+        "TRN"
+      ],
+      "effects": {
+        "guarantees": {
+          "spirit": "tambasco_doctrine"
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "pheonixburg_stock_exchange",
+      "name": "Pheonixburg Stock Exchange",
+      "description": "The Pheonixburg Stock Exchange is one of the most robust financial centres in the world, and it has weathered the storm that is the great slump better than most.",
+      "polity": [
+        "ATH"
+      ],
+      "effects": {
+        "factoryOutput": 0.05,
+        "research": 0.05,
+        "ideologySupportPerDay": {
+          "Plutocracy": 0.004,
+          "Liberalism": 0.004
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "disorganised_national_guard",
+      "name": "Disorganised National Guard",
+      "description": "Our National Guard has lagged behind those of our sister states ever since the end of the last war. If we are to bring the defence of our nation back into shape, a lot of changes will have to be made.",
+      "polity": [
+        "ATH"
+      ],
+      "effects": {
+        "organisation": -0.2,
+        "trainingTime": 0.2,
+        "commandPowerIncome": -0.15,
+        "maintenance": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "annexed_umokavinia",
+      "name": "Annexed Umokavinia",
+      "description": "Umokavinia was partitioned and annexed by New Cona and Dimuro following the conclusion of the Great War. Unsurprisingly, native unrest has persisted to the present day.",
+      "polity": [
+        "NCO",
+        "DIM"
+      ],
+      "effects": {
+        "stability": -3
+      },
+      "inProvinces": {
+        "provinces": [
+          "east_umokavinia",
+          "west_umokavinia"
+        ],
+        "effects": {
+          "happiness": -6,
+          "unrestPerDay": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "bosquet_hill",
+      "name": "Bosquet Hill",
+      "description": "The institutions of the Three Nations, including the presidency and the Senate, have been based in Marillac since 1761, and our proximity to confederal power is to the benefit of our state.",
+      "polity": [
+        "NCO"
+      ],
+      "effects": {
+        "politicalPower": 0.1,
+        "ministerCost": -0.1,
+        "lawAdoptionCost": -0.1,
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "cost_of_the_great_war",
+      "name": "Cost of the Great War",
+      "description": "The Onanwa Nation lost large tracts of territory and much of its population to the imperialist west following the Great War. But we have rebuilt, however slowly, and with our allies in the east and north we may reclaim what was once ours.",
+      "factor": "economic turmoil",
+      "polity": [
+        "ONW"
+      ],
+      "effects": {
+        "manpower": -0.2,
+        "populationGrowth": -0.05,
+        "taxRevenue": -0.15,
+        "stability": -6,
+        "happiness": -8
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "island_rivalry",
+      "name": "Island Rivalry",
+      "description": "The divide between the two islands of our union has only grown wider over the last few years. It has become apparent to many that this union is unlikely to survive the decade.",
+      "polity": [
+        "SUK"
+      ],
+      "effects": {
+        "ministerCost": 0.3,
+        "lawAdoptionCost": 0.25,
+        "stability": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "militia_army",
+      "name": "Militia Army",
+      "description": "The defence of our islands is the responsibility of the local militias. They are informal and lightly trained, but they do just fine for now.",
+      "polity": [
+        "SUK"
+      ],
+      "effects": {
+        "manpower": 0.1,
+        "organisation": -0.2,
+        "attack": -0.25,
+        "maintenance": -0.2
+      },
+      "permanent": false,
+      "tags": [
+        "noGeneralStaff"
+      ]
+    },
+    {
+      "id": "newly_gained_independence",
+      "name": "Newly Gained Independence",
+      "description": "In 1925 we finally won our freedom after years of conflict, and for that, our people and our government are united in shared victory.",
+      "polity": [
+        "SHN"
+      ],
+      "effects": {
+        "stability": 6,
+        "ministerCost": 0.25,
+        "lawAdoptionCost": 0.2,
+        "conscriptionRaiseCost": -0.3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_long_peace",
+      "name": "The Long Peace",
+      "description": "We have not been involved in any conflict for centuries, and with the shock and horrors of the Great War still in living memory, our people are reluctant to militarise in any capacity.",
+      "polity": [
+        "GRG"
+      ],
+      "effects": {
+        "stability": 8,
+        "manpower": -0.2,
+        "conscriptionRaiseCost": 0.4,
+        "research": 0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "trinational_orbit",
+      "name": "Trinational Orbit",
+      "description": "The Three Nations are our only neighbours. People have travelled across our borders for centuries for business, pleasure, or labour. Our standing as a sovereign state depends on their goodwill.",
+      "target": "TRN",
+      "polity": [
+        "GRG"
+      ],
+      "effects": {
+        "tradeIncomeWithTarget": 0.25,
+        "relationsWithTarget": 20,
+        "politicalPower": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "hagan_socialism",
+      "name": "Hagan Socialism",
+      "description": "The land and the factories are owned in common, as our gods intend. Our councils govern by this philosophy, whatever it may cost us.",
+      "polity": [
+        "TGY"
+      ],
+      "effects": {
+        "ideologySupportPerDay": {
+          "Social democracy": 0.01,
+          "Socialism": 0.008,
+          "Syndicalism": 0.004
+        },
+        "factoryOutput": -0.08,
+        "research": -0.05
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_mer",
+      "name": "Economic Downturn",
+      "description": "The great slump has severely hampered our economy, and recovery has been slow so far, though bearable thanks to our connection to the Trinational market.",
+      "factor": "economic turmoil",
+      "polity": [
+        "SHN",
+        "TGY",
+        "GRG"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "tradeIncome": -0.1,
+        "factoryOutput": -0.08,
+        "happiness": -6,
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "corrupt_bureaucracy_mrd",
+      "name": "Corrupt Bureaucracy",
+      "description": "Moradzar is plagued by institutional corruption at almost all levels of government. It is said that no project is important unless at least a third of its funds disappears throughout its entire duration.",
+      "factor": "blatant corruption",
+      "polity": [
+        "MRD"
+      ],
+      "felt": {
+        "happiness": "rural"
+      },
+      "effects": {
+        "taxRevenue": -0.15,
+        "ministerCost": 0.25,
+        "politicalPower": -0.1,
+        "stability": -4,
+        "happiness": -5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "jenisian_frontier",
+      "name": "Jenisian Frontier",
+      "description": "The demarcation of the boundary with our southwestern neighbour has been contentious, particularly around the border villages.",
+      "factor": "border tensions",
+      "polity": [
+        "MRD"
+      ],
+      "target": "JNI",
+      "effects": {
+        "relationsWithTarget": -30,
+        "stability": -3
+      },
+      "inProvinces": {
+        "provinces": [
+          "gallamitri",
+          "temisef"
+        ],
+        "effects": {
+          "happiness": -4
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "disputed_border",
+      "name": "Disputed Border",
+      "description": "Relations with Anjab have been tense in recent history thanks in part to the disputed border through the Werikian Desert. It is but a line in the sand, but its exact position is uncertain.",
+      "factor": "border tensions",
+      "polity": [
+        "WRK"
+      ],
+      "target": "AJB",
+      "effects": {
+        "relationsWithTarget": -30,
+        "conscriptionRaiseCost": -0.2,
+        "stability": -2
+      },
+      "inProvinces": {
+        "provinces": [
+          "urban_werikia"
+        ],
+        "effects": {
+          "happiness": -4
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "imperial_court",
+      "name": "Imperial Court",
+      "description": "The current royal institutions descend from the lineage of those who ruled the Werikian Empires. They are the shining symbol of our proud kingdom.",
+      "polity": [
+        "WRK"
+      ],
+      "effects": {
+        "stability": 5,
+        "taxRevenue": -0.15,
+        "construction": -0.1,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.012,
+          "Conservatism": 0.004
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "disputed_border_ajb",
+      "name": "Disputed Border",
+      "description": "Relations with Werikia have been tense in recent years thanks to disputes over the desert frontier.",
+      "factor": "border tensions",
+      "polity": [
+        "AJB"
+      ],
+      "target": "WRK",
+      "effects": {
+        "relationsWithTarget": -30,
+        "conscriptionRaiseCost": -0.25,
+        "stability": -2
+      },
+      "inProvinces": {
+        "provinces": [
+          "layinti"
+        ],
+        "effects": {
+          "happiness": -4
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "inefficient_economy",
+      "name": "Inefficient Economy",
+      "description": "The industrialisation of our economy has been stunted by the onset of the great slump and by our government's mismanagement. Solving this will take many years.",
+      "factor": "economic turmoil",
+      "polity": [
+        "URT"
+      ],
+      "effects": {
+        "factoryOutput": -0.15,
+        "construction": -0.12,
+        "research": -0.08,
+        "happiness": -8,
+        "stability": -6,
+        "resourceYield": {
+          "iron": -0.1,
+          "baul": -0.1,
+          "baseMetals": -0.1,
+          "gold": -0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "local_justice",
+      "name": "Local Justice",
+      "description": "We rely on the towns and villages of our state to police themselves due to the treacherous routes of our highland mountains.",
+      "factor": "weak government",
+      "polity": [
+        "URT"
+      ],
+      "effects": {
+        "stability": 4,
+        "taxRevenue": -0.2,
+        "politicalPower": -0.1,
+        "lawAdoptionCost": 0.25,
+        "happiness": 5
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "agrarian_society_urt",
+      "name": "Agrarian Society",
+      "description": "The Uratian population lives largely in the rural regions of our country, with little to no industry and development despite our great potential.",
+      "polity": [
+        "URT"
+      ],
+      "effects": {
+        "manpower": -0.2,
+        "research": -0.1,
+        "construction": -0.2,
+        "factoryOutput": -0.2
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_agl",
+      "name": "Economic Downturn",
+      "description": "Our country's burgeoning economy has since faltered due to the great slump, though trade with our western and northern neighbours has aided in our recovery.",
+      "factor": "economic turmoil",
+      "polity": [
+        "AGL"
+      ],
+      "effects": {
+        "taxRevenue": -0.15,
+        "factoryOutput": -0.1,
+        "happiness": -7,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mubbangan_agitation",
+      "name": "Mubbangan Agitation",
+      "description": "Though some years have passed since our independence, many in our country, particularly those of Avisian heritage, still wish for the death of our state and the return to the Empire.",
+      "factor": "political violence",
+      "polity": [
+        "AGL"
+      ],
+      "target": "MBG",
+      "effects": {
+        "stability": -5,
+        "politicalPower": -0.08,
+        "relationsWithTarget": -25
+      },
+      "inProvinces": {
+        "provinces": [
+          "agalur"
+        ],
+        "effects": {
+          "happiness": -4,
+          "unrestPerDay": 0.01
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "unification_drive",
+      "name": "Unification Drive",
+      "description": "Growing calls for unification among the people with our Agala brethren have greatly destabilised our society.",
+      "polity": [
+        "RKO"
+      ],
+      "target": "AGL",
+      "effects": {
+        "stability": -5,
+        "politicalPower": -0.15,
+        "relationsWithTarget": 40,
+        "cannotMilitaryAlly": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "mandate_of_the_association_of_nations",
+      "name": "Mandate of the Association of Nations",
+      "description": "Uratia came under the joint administration of Kanland and Gwerinlur through the Association of Nations in 1925 after we defaulted on our debts and the Lafaadii Crisis ensued.",
+      "polity": [
+        "URT"
+      ],
+      "effects": {
+        "politicalPower": -0.15,
+        "cannotMilitaryAlly": true,
+        "cannotIntervene": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "sanatese_mandate",
+      "name": "Sanatese Mandate",
+      "description": "Following the collapse of governmental authority in the Cidiam Crisis of 1920, Sanata led a peacekeeping force to stabilise the country. It remains under the control of the Association of Nations to this day.",
+      "polity": [
+        "CDM"
+      ],
+      "target": "SAN",
+      "effects": {
+        "relationsWithTarget": 40,
+        "politicalPower": -0.15,
+        "cannotMilitaryAlly": true,
+        "cannotIntervene": true
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "avisian_heartland",
+      "name": "Avisian Heartland",
+      "description": "Mubbanga has been the centre of Avisian civilisation for centuries. Though our empire has been lost to traitors and criminals, we are proud of our state and history. Soon we will reclaim our former glory.",
+      "factor": "ethnic tensions",
+      "polity": [
+        "MBG"
+      ],
+      "effects": {
+        "movement": 0.15,
+        "movementInTerrain": {
+          "mountains": 0.7,
+          "alpine": 1.2
+        },
+        "stability": 4,
+        "manpower": -0.15
+      },
+      "inProvinces": {
+        "provinces": [
+          "karamtafkin",
+          "abinabi"
+        ],
+        "effects": {
+          "happiness": -6
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "tattered_military",
+      "name": "Tattered Military",
+      "description": "The recovery of our Armed Forces after the disintegration of Greater Mubbanga has been slow, handicapped by the shock of the sudden loss of industry, strategic resources, and the Mubbangan Navy.",
+      "polity": [
+        "MBG"
+      ],
+      "effects": {
+        "trainingTime": 0.25,
+        "equipmentUse": 0.2,
+        "attack": -0.15,
+        "organisation": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "aftermath_of_the_cordial_war",
+      "name": "Aftermath of the Cordial War",
+      "description": "We are surrounded by the pieces of our fractured empire, many hostile or wary of our intentions. That, combined with the onset of the great slump, has made the current decade one of continued social and economic hardship in our country.",
+      "factor": "economic turmoil",
+      "polity": [
+        "MBG"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "tradeIncome": -0.2,
+        "taxRevenue": -0.15,
+        "construction": -0.15,
+        "populationGrowth": -0.08,
+        "stability": -5,
+        "happiness": -7
+      },
+      "permanent": false,
+      "tags": []
+    }
+  ]
+}

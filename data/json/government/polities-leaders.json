@@ -1,0 +1,113 @@
+{
+  "note": "Everyone who can lead a country, whether they hold office or not. Who holds it is `leader` in a polity's entry in polities-starting-government.json, the way `spirits` and `decrees` are, and an event, a focus or a coup changes it. `effects` are the leader's own traits and apply only while they hold office. `portrait` names a file in data/img/portraits without the extension. `party` is null for a leader who governs without one.",
+  "leaders": [
+    {
+      "id": "adrianna",
+      "polity": "TWD",
+      "name": "Adrianna",
+      "title": "Queen",
+      "house": "House of Sobolówski",
+      "portrait": "adrianna",
+      "party": null,
+      "effects": {
+        "politicalPowerPerDay": 1,
+        "stability": 5,
+        "decreeCost": -0.2,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.01
+        }
+      }
+    },
+    {
+      "id": "izydor_malczewski",
+      "polity": "TWD",
+      "name": "Izydor Malczewski",
+      "title": "Prime Minister",
+      "portrait": "izydor_malczewski",
+      "party": "Restoration Party",
+      "effects": {
+        "politicalPowerPerDay": 2,
+        "stability": 10,
+        "lawAdoptionCost": -0.15,
+        "decreeCost": -0.3,
+        "ideologySupportPerDay": {
+          "Fascism": 0.01
+        },
+        "ministerCost": -0.25,
+        "commanderCost": -0.25,
+        "policyCost": -0.25,
+        "policyUpkeep": -0.25
+      }
+    },
+    {
+      "id": "alice_wahlstrom",
+      "polity": "KRN",
+      "name": "Alice Wahlström",
+      "title": "Prime Minister",
+      "portrait": "alice_wahlstrom",
+      "party": "Conservative Party",
+      "effects": {
+        "politicalPowerPerDay": 1,
+        "decreeCost": -0.25,
+        "stability": -3
+      }
+    },
+    {
+      "id": "skenobard",
+      "polity": "SBY",
+      "name": "Skenobard",
+      "title": "Grand Duke",
+      "portrait": "skenobard",
+      "house": "House of Celikbardhyll",
+      "effects": {
+        "politicalPowerPerDay": 1,
+        "lawAdoptionCost": -0.1,
+        "policyCost": -0.1,
+        "decreeCost": -0.2,
+        "stability": 5
+      }
+    },
+    {
+      "id": "hugo_tangen",
+      "polity": "FLN",
+      "name": "Hugo Tangen",
+      "title": "Prime Minister",
+      "portrait": "hugo_tangen",
+      "party": "Union Party",
+      "effects": {
+        "politicalPower": 0.1,
+        "stability": -4
+      }
+    },
+    {
+      "id": "hans_brickner",
+      "polity": "KGN",
+      "name": "Hans Brickner",
+      "title": "Prime Minister",
+      "portrait": "hans_brickner",
+      "party": "Social Liberal Party",
+      "effects": {
+        "stability": 5,
+        "politicalPower": 0.1,
+        "ideologySupportPerDay": {
+          "Liberalism": 0.01,
+          "Social democracy": 0.005
+        }
+      }
+    },
+    {
+      "id": "sohrab_niroumand",
+      "polity": "BUM",
+      "name": "Sohrab Niroumand",
+      "title": "General",
+      "portrait": "sohrab_niroumand",
+      "party": null,
+      "effects": {
+        "politicalPowerPerDay": 2,
+        "lawAdoptionCost": -0.2,
+        "decreeCost": -0.3,
+        "unrestPerDay": -0.02
+      }
+    }
+  ]
+}

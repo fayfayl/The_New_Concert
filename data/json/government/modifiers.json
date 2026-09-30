@@ -1,0 +1,491 @@
+{
+  "modifiers": {
+    "taxRevenue": {
+      "unit": "fraction",
+      "means": "all money the treasury takes in",
+      "shown": "PERCENTAGE tax revenue"
+    },
+    "revenueFromPeople": {
+      "unit": "fraction",
+      "means": "the population term of provincial tax",
+      "shown": "PERCENTAGE personal tax"
+    },
+    "revenueFromFactories": {
+      "unit": "fraction",
+      "means": "the factory term of provincial tax",
+      "shown": "PERCENTAGE corporate tax"
+    },
+    "revenueFromColonies": {
+      "unit": "fraction",
+      "means": "tax taken from provinces of colonies",
+      "shown": "PERCENTAGE colonial tax"
+    },
+    "tradeIncomeWithTarget": {
+      "unit": "fraction",
+      "means": "trade income with the country named",
+      "shown": "PERCENTAGE trade income with POLITY_NAME"
+    },
+    "interest": {
+      "unit": "multiplier",
+      "level": "law",
+      "means": "the daily debt * 0.0002 charged under Treasury",
+      "shown": "MULTIPLIER debt interest"
+    },
+    "debtThresholds": {
+      "unit": "multiplier",
+      "level": "law",
+      "means": "how much debt is allowed before each penalty, default included",
+      "shown": "MULTIPLIER debt allowance"
+    },
+    "factoryOutput": {
+      "unit": "fraction",
+      "means": "what every factory produces",
+      "shown": "PERCENTAGE factory output"
+    },
+    "civilianFactoryOutput": {
+      "unit": "fraction",
+      "means": "civilian factories only",
+      "shown": "PERCENTAGE civilian factory output"
+    },
+    "militaryFactoryOutput": {
+      "unit": "fraction",
+      "means": "military factories only",
+      "shown": "PERCENTAGE military factory output"
+    },
+    "dockyardOutput": {
+      "unit": "fraction",
+      "means": "naval dockyards only",
+      "shown": "PERCENTAGE dockyard output"
+    },
+    "eyrieBatches": {
+      "unit": "absolute",
+      "means": "batches an eyrie raises side by side, added to the figure it computes from road, supply hub and rail, and capped at the same 3. Every batch is 12 dragons and takes 548 days, and nothing changes that",
+      "shown": "NUMBER eyrie batches"
+    },
+    "shipRepair": {
+      "unit": "fraction",
+      "means": "how fast a damaged ship is repaired",
+      "shown": "PERCENTAGE ship repair"
+    },
+    "militaryProduction": {
+      "unit": "fraction",
+      "means": "equipment and ship points produced",
+      "shown": "PERCENTAGE military production"
+    },
+    "construction": {
+      "unit": "fraction",
+      "means": "construction points produced",
+      "shown": "PERCENTAGE construction"
+    },
+    "consumerShare": {
+      "unit": "absolute",
+      "level": "law",
+      "means": "the share of civilian factories making consumer goods, before the ideology modifier",
+      "shown": "PERCENTAGE consumer share"
+    },
+    "consumerSharePoints": {
+      "unit": "points",
+      "means": "percentage points taken off the consumer share",
+      "shown": "POINTS consumer share"
+    },
+    "conversionDays": {
+      "unit": "days",
+      "level": "always",
+      "means": "days to convert one factory between civilian and military. null is not allowed",
+      "shown": "DAYS factory conversion"
+    },
+    "resourceYield": {
+      "unit": "fraction",
+      "means": "what the named resources yield from their deposits, as a map of resource name to the change",
+      "shown": "PERCENTAGE RESOURCE_NAME yield"
+    },
+    "targetYield": {
+      "unit": "fraction",
+      "means": "what the industry named as the target yields. On a resource that is its deposits, on `rail` the throughput of its lines, on `manufacturing` its factories.",
+      "shown": "PERCENTAGE INDUSTRY_NAME yield"
+    },
+    "revealsUnprospected": {
+      "unit": "fraction",
+      "means": "the share of the unprospected deposits of the resource named that becomes known, rolled between the two figures of `first` on the first survey of that resource and `again` on every later one",
+      "shown": "PERCENTAGE deposits discovered"
+    },
+    "happiness": {
+      "unit": "points",
+      "means": "provincial happiness, 0 to 100",
+      "shown": "POINTS happiness"
+    },
+    "happinessPenalties": {
+      "unit": "fraction",
+      "means": "happiness taken from a province by the country’s own laws, policies and decrees. A national spirit may add to it, and may key it to the province under `scaling`",
+      "shown": "PERCENTAGE self-inflicted unhappiness"
+    },
+    "stability": {
+      "unit": "points",
+      "means": "national stability, 0 to 100",
+      "shown": "PERCENT stability"
+    },
+    "unrest": {
+      "unit": "points",
+      "means": "provincial unrest",
+      "shown": "POINTS unrest"
+    },
+    "unrestAccumulates": {
+      "unit": "flag",
+      "means": "whether unrest builds up at all",
+      "shown": "unrest builds up"
+    },
+    "colonialUnrestPerDay": {
+      "unit": "perDay",
+      "means": "unrest added daily in every colonial province",
+      "shown": "PERDAY colonial unrest per day"
+    },
+    "colonialStability": {
+      "unit": "points",
+      "means": "stability in every colony",
+      "shown": "PERCENT colonial stability"
+    },
+    "unrestPerDay": {
+      "unit": "perDay",
+      "means": "unrest added daily. On a law, a policy or a decree it is charged in every province; on a national spirit it is the country's mean and is spread over the provinces, the way a spirit's happiness is.",
+      "shown": "PERDAY unrest per day"
+    },
+    "compliance": {
+      "unit": "fraction",
+      "means": "compliance in occupied provinces",
+      "shown": "PERCENTAGE compliance"
+    },
+    "ideologySupportPerDay": {
+      "unit": "perDay",
+      "means": "points of support added daily to the named ideologies in every province, taken from the rest in proportion to what they already hold. The value is a map of ideology to points, under Government, Ideological support",
+      "shown": "PERDAY support per day"
+    },
+    "occupationEfficiency": {
+      "unit": "fraction",
+      "means": "what occupied ground yields to its occupier",
+      "shown": "PERCENTAGE occupation efficiency"
+    },
+    "manpower": {
+      "unit": "absolute",
+      "level": "law",
+      "means": "the manpower pool. A conscription law sets it outright, as the share of the population of controlled provinces that can be called up. Every other source adds that fraction of the pool the law gives, so 0.1 on a spirit or an ideology is a tenth more men and not a tenth of the population.",
+      "shown": "PERCENTAGE manpower"
+    },
+    "populationGrowth": {
+      "unit": "fraction",
+      "means": "how fast the population of every province grows. The manpower pool is drawn from the population, so this reaches recruitment through it rather than beside it.",
+      "shown": "PERCENTAGE population growth"
+    },
+    "manpowerGrowth": {
+      "unit": "fraction",
+      "means": "how fast the manpower pool refills for reasons other than births: men returning from hospital, from reserved trades, from prison. Population growth is `populationGrowth`.",
+      "shown": "PERCENTAGE manpower growth"
+    },
+    "divisionLimit": {
+      "unit": "absolute",
+      "level": "always",
+      "means": "the greatest number of divisions the polity may field at once. A polity with no source of it is uncapped",
+      "shown": "NUMBER divisions allowed"
+    },
+    "manpowerRecovery": {
+      "unit": "fraction",
+      "means": "manpower returned after a battle",
+      "shown": "PERCENTAGE manpower recovery"
+    },
+    "manpowerLosses": {
+      "unit": "flag",
+      "means": "the action costs manpower",
+      "shown": "costs men"
+    },
+    "equipmentLosses": {
+      "unit": "flag",
+      "means": "the action costs equipment from the stockpile",
+      "shown": "costs equipment"
+    },
+    "equipmentUse": {
+      "unit": "fraction",
+      "means": "equipment consumed in combat",
+      "shown": "PERCENTAGE equipment use"
+    },
+    "supplyUse": {
+      "unit": "fraction",
+      "means": "supply a division draws a day, against what its ground can pass",
+      "shown": "PERCENTAGE supply use"
+    },
+    "politicalPowerPerDay": {
+      "unit": "absolute",
+      "means": "political power a day, added to the base 2",
+      "shown": "POINTS political power per day"
+    },
+    "politicalPower": {
+      "unit": "fraction",
+      "means": "political power income",
+      "shown": "PERCENTAGE political power"
+    },
+    "commandPowerIncome": {
+      "unit": "fraction",
+      "means": "command power income",
+      "shown": "PERCENTAGE command power income"
+    },
+    "research": {
+      "unit": "fraction",
+      "means": "research points produced",
+      "shown": "PERCENTAGE research"
+    },
+    "enchantmentEffect": {
+      "unit": "fraction",
+      "means": "what a runecraft enchantment does, under Resources, Tazkuri",
+      "shown": "PERCENTAGE enchantment effect"
+    },
+    "lawAdoptionCost": {
+      "unit": "fraction",
+      "means": "the political power a law costs to adopt, drift multiplier included. A flat figure applies to every category; a map of category name to the change applies only to the categories named",
+      "shown": "PERCENTAGE law adoption cost"
+    },
+    "decreeCost": {
+      "unit": "fraction",
+      "means": "the political power a named decree costs to enact, as a map of decree name to the change, on top of the weighting its own compass earns",
+      "shown": "PERCENTAGE decree cost"
+    },
+    "policyCost": {
+      "unit": "fraction",
+      "means": "the political power starting a policy costs",
+      "shown": "PERCENTAGE policy cost"
+    },
+    "policyUpkeep": {
+      "unit": "fraction",
+      "means": "the political power a policy costs every day it runs",
+      "shown": "PERCENTAGE policy upkeep"
+    },
+    "commanderCost": {
+      "unit": "fraction",
+      "means": "the political power appointing a named commander to a group of units costs",
+      "shown": "PERCENTAGE commander cost"
+    },
+    "ministerCost": {
+      "unit": "fraction",
+      "means": "the political power an appointment to a government or military post costs. Their daily salary is money and is not touched",
+      "shown": "PERCENTAGE minister cost"
+    },
+    "lawCeiling": {
+      "unit": "option",
+      "means": "the furthest a law category may be raised, as a map of category to the name of the highest option allowed. A country holding a higher one keeps it and cannot return to it.",
+      "shown": "OPTION law ceiling"
+    },
+    "driftMultiplierTowardTarget": {
+      "unit": "multiplier",
+      "means": "multiplies the drift multiplier for moving toward the ideology named, under Government, Going against the ideology",
+      "shown": "MULTIPLIER drift cost toward MOVEMENT_NAME"
+    },
+    "maintenance": {
+      "unit": "fraction",
+      "means": "maintenance owed on everything built",
+      "shown": "PERCENTAGE maintenance"
+    },
+    "tradeIncome": {
+      "unit": "fraction",
+      "means": "what a country earns from trade routes crossing its ground: coal, water, provisions, warehousing and repairs bought where the traffic stops. It follows how much crosses and is not a rate the country sets. The tariff is separate",
+      "shown": "PERCENTAGE trade income"
+    },
+    "conscriptionRaiseCost": {
+      "unit": "fraction",
+      "means": "the political power cost of raising the conscription law",
+      "shown": "PERCENTAGE conscription cost"
+    },
+    "doctrineCost": {
+      "unit": "fraction",
+      "means": "the political power a doctrine costs to adopt, as a map of branch name to the change",
+      "shown": "PERCENTAGE doctrine cost"
+    },
+    "trainingTime": {
+      "unit": "fraction",
+      "means": "the time a unit spends in training before it is ready. A negative figure shortens it",
+      "shown": "PERCENTAGE training time"
+    },
+    "attack": {
+      "unit": "fraction",
+      "means": "land attack",
+      "shown": "PERCENTAGE land attack"
+    },
+    "organisation": {
+      "unit": "fraction",
+      "means": "the organisation a division holds, 0 to 100. A battle drains it before men are lost and a division at 0 withdraws",
+      "shown": "PERCENTAGE organisation"
+    },
+    "defence": {
+      "unit": "fraction",
+      "means": "land defence",
+      "shown": "PERCENTAGE land defence"
+    },
+    "againstFortification": {
+      "unit": "fraction",
+      "means": "the defender's fortification effect, as the attacker sees it",
+      "shown": "PERCENTAGE against fortification"
+    },
+    "againstEnemySupply": {
+      "unit": "fraction",
+      "means": "supply delivered to the enemy, as it reaches a province you can fly over",
+      "shown": "PERCENTAGE against enemy supply"
+    },
+    "nightPenalty": {
+      "unit": "fraction",
+      "means": "the night penalty a division takes on attack and movement, under Night in plans 14",
+      "shown": "PERCENTAGE night penalty"
+    },
+    "movement": {
+      "unit": "fraction",
+      "means": "how fast divisions move",
+      "shown": "PERCENTAGE movement"
+    },
+    "movementInTerrain": {
+      "unit": "fraction",
+      "means": "how fast divisions move over one kind of ground, as a map of terrain to the change, on top of the general movement figure",
+      "shown": "PERCENTAGE movement"
+    },
+    "landCombat": {
+      "unit": "fraction",
+      "means": "land combat, attack and defence together",
+      "shown": "PERCENTAGE land combat"
+    },
+    "claimProgress": {
+      "unit": "flag",
+      "means": "progresses a claim on a province of the country named",
+      "shown": "claim progress"
+    },
+    "fighterCombat": {
+      "unit": "fraction",
+      "means": "air to air combat",
+      "shown": "PERCENTAGE air to air combat"
+    },
+    "airDragonCombat": {
+      "unit": "fraction",
+      "means": "combat by dragon squadrons, the dragons of the air force rather than those in land divisions",
+      "shown": "PERCENTAGE air dragon combat"
+    },
+    "groundAttack": {
+      "unit": "fraction",
+      "means": "attacks on ground units from the air",
+      "shown": "PERCENTAGE ground attack"
+    },
+    "industryDamage": {
+      "unit": "fraction",
+      "means": "damage done to industry from the air",
+      "shown": "PERCENTAGE industry damage"
+    },
+    "airBaseDamage": {
+      "unit": "fraction",
+      "means": "damage done to air bases from the air",
+      "shown": "PERCENTAGE air base damage"
+    },
+    "airBaseRecovery": {
+      "unit": "fraction",
+      "means": "how fast a damaged air base is repaired",
+      "shown": "PERCENTAGE air base recovery"
+    },
+    "bombingDamage": {
+      "unit": "fraction",
+      "means": "damage taken from enemy bombing",
+      "shown": "PERCENTAGE bombing damage"
+    },
+    "capitalShipCombat": {
+      "unit": "fraction",
+      "means": "battleship, battlecruiser and heavy cruiser combat",
+      "shown": "PERCENTAGE capital ship combat"
+    },
+    "fleetCombat": {
+      "unit": "fraction",
+      "means": "fleet combat generally",
+      "shown": "PERCENTAGE fleet combat"
+    },
+    "againstConvoys": {
+      "unit": "fraction",
+      "means": "attacks on convoys",
+      "shown": "PERCENTAGE against convoys"
+    },
+    "carrierAndAirLaunchedAttack": {
+      "unit": "fraction",
+      "means": "carrier aircraft and air-launched torpedoes",
+      "shown": "PERCENTAGE carrier and air-launched attack"
+    },
+    "surplusOffered": {
+      "unit": "absolute",
+      "level": "law",
+      "means": "the share of a surplus put on the automatic market. A trade law sets it outright; every other source adds that fraction of what the law gives, so -0.1 on a spirit is a tenth less on the market and not a tenth of the surplus.",
+      "shown": "PERCENTAGE exportable surplus"
+    },
+    "deficitFilled": {
+      "unit": "absolute",
+      "level": "law",
+      "means": "the share of a deficit the market may fill",
+      "shown": "PERCENTAGE importable shortfall"
+    },
+    "tariffCeiling": {
+      "unit": "absolute",
+      "level": "always",
+      "means": "the highest tariff the polity may charge a foreign flag. A trade law sets one figure for everything; anything else may instead give a map of product class to ceiling, and a class the map does not name keeps the law's figure. The classes are resources, equipment and consumerGoods, under Tariffs",
+      "shown": "PERCENTAGE maximum tariff"
+    },
+    "relationsWithTarget": {
+      "unit": "points",
+      "means": "relations with the country named",
+      "shown": "POINTS relations with POLITY_NAME"
+    },
+    "relationsWithHolders": {
+      "unit": "points",
+      "means": "relations with every country holding the ideology named",
+      "shown": "POINTS relations with IDEOLOGY_DEMONYM countries"
+    },
+    "relationsWithColonies": {
+      "unit": "points",
+      "means": "relations with every colony the polity holds",
+      "shown": "POINTS relations with its colonies"
+    },
+    "cannotMilitaryAlly": {
+      "unit": "flag",
+      "means": "the polity cannot enter a military alliance while this is held. An economic or a technological one is open to it, as is being guaranteed, traded with and declared upon.",
+      "shown": "may not join a military alliance"
+    },
+    "cannotGrantAccess": {
+      "unit": "flag",
+      "means": "no foreign division may cross the polity or draw supply through it while this is held",
+      "shown": "may not grant military access"
+    },
+    "cannotIntervene": {
+      "unit": "flag",
+      "means": "the polity may send neither volunteers nor an expeditionary force while this is held",
+      "shown": "may not intervene"
+    },
+    "militaryAllianceTension": {
+      "unit": "points",
+      "means": "the world tension the polity requires before it may enter a military alliance. It may enter an economic or a technological one at any tension",
+      "shown": "POINTS world tension needed to ally"
+    },
+    "againstEnemyOperations": {
+      "unit": "fraction",
+      "means": "resistance to enemy intelligence operations",
+      "shown": "PERCENTAGE against enemy operations"
+    },
+    "guaranteedBy": {
+      "unit": "option",
+      "level": "always",
+      "means": "the polity under `polity` guarantees the holder without the guarantee being bought, entering any war declared on it and paying what refusing a guarantee costs if it does not. It stands only while the holder's form of government is one of those listed in `whileForm`, and lapses the moment it is not, returning when the form does. With `whileIndependent` it also stands only while the holder answers to no suzerain, since a puppet's independence is its suzerain's to answer for.",
+      "shown": "guaranteed by POLITY_NAME"
+    },
+    "guarantees": {
+      "unit": "option",
+      "level": "always",
+      "means": "the guarantor's half of a guarantee a spirit hands out: the holder guarantees every polity holding the spirit under `spirit`, on that spirit's own `guaranteedBy` terms. Where a spirit carries this, those guarantees stand only while the guarantor holds it, and lapse together if it is lost.",
+      "shown": "guarantees every country under SPIRIT_NAME"
+    },
+    "wearinessModifier": {
+      "unit": "fraction",
+      "means": "how fast war weariness builds. It multiplies baseWeariness, and every source is multiplied together with the polity's own wearinessModifier in polities-starting-values.json, so +0.25 is a war tiring the country a quarter faster",
+      "shown": "PERCENTAGE war weariness"
+    }
+  },
+  "tags": {
+    "establishedChurch": {
+      "means": "the state church cannot be disestablished while this is held: Secularise the state is barred",
+      "shown": "State religion cannot be abolished"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "provinces": {
+    "bokeo": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["bokeo_1", "bokeo_2", "bokeo_4", "bokeo_5", "bokeo_8"]
+      }
+    },
+    "pahainy": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["pahainy_1", "pahainy_4", "pahainy_5", "pahainy_7"]
+      }
+    },
+    "phanivong": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["phanivong_1", "phanivong_2", "phanivong_3", "phanivong_4", "phanivong_5"]
+      }
+    },
+    "nayouai": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["nayouai_1", "nayouai_2", "nayouai_4", "nayouai_7"]
+      }
+    },
+    "sangri": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["sangri_1", "sangri_5", "sangri_7"]
+      }
+    },
+    "xaignabouli": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["xaignabouli_1", "xaignabouli_2", "xaignabouli_4", "xaignabouli_6", "xaignabouli_7"]
+      }
+    },
+    "phumrak": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["phumrak_1", "phumrak_2", "phumrak_3", "phumrak_6"]
+      }
+    },
+    "khoktalid": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["khoktalid_1", "khoktalid_7"]
+      }
+    },
+    "phanpheung": {
+      "rail": {
+        "builder": "VRP",
+        "counties": ["phanpheung_4", "phanpheung_8"]
+      }
+    },
+    "diradolo": {
+      "rail": {
+        "builder": "AMY",
+        "counties": ["diradolo_4", "diradolo_2", "diradolo_6"]
+      }
+    },
+    "eldenwehe": {
+      "rail": {
+        "builder": "AMY",
+        "counties": ["eldenwehe_3"]
+      }
+    },
+    "niyaman": {
+      "rail": {
+        "builder": "AMY",
+        "counties": ["niyaman_7", "niyaman_1", "niyaman_2", "niyaman_4"]
+      }
+    },
+    "hetugurun": {
+      "rail": {
+        "builder": "AMY",
+        "counties": ["hetugurun_7", "hetugurun_17", "hetugurun_5"]
+      }
+    },
+    "huwesibira": {
+      "rail": {
+        "builder": "AMY",
+        "counties": ["huwesibira_4", "huwesibira_15", "huwesibira_26", "huwesibira_20", "huwesibira_2", "huwesibira_13"]
+      }
+    }
+  }
+}

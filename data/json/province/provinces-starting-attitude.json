@@ -1,0 +1,20 @@
+{
+  "provinces": {
+    "campania_superior": {"resistance": 0.295, "compliance": 0.693},
+    "vallmiria": {"resistance": 0.3, "compliance": 0.688},
+    "luminara": {"resistance": 0.302, "compliance": 0.686},
+    "fatiras": {"resistance": 0.298, "compliance": 0.69},
+    "gongyuk": {"resistance": 0.097, "compliance": 0.822},
+    "jeung": {"resistance": 0.097, "compliance": 0.822},
+    "sinsan": {"resistance": 0.094, "compliance": 0.813},
+    "north_dong_desert": {"resistance": 0.09, "compliance": 0.803},
+    "kok": {"resistance": 0.084, "compliance": 0.791},
+    "yi": {"resistance": 0.081, "compliance": 0.784},
+    "augum": {"resistance": 0.072, "compliance": 0.77},
+    "south_dong_desert": {"resistance": 0.061, "compliance": 0.753},
+    "onciu": {"resistance": 0.045, "compliance": 0.736},
+    "south_latoma": {"resistance": 0.079, "compliance": 0.885},
+    "nemilaroo": {"resistance": 0.078, "compliance": 0.838},
+    "south_odelago": {"resistance": 0.063, "compliance": 0.818}
+  }
+}

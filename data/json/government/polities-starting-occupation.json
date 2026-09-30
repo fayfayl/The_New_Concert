@@ -1,0 +1,22 @@
+{
+  "notes": [
+    "The occupation laws in force on 10 Ungerbruni 1926, under Occupation laws in 04 Ownership change.md.",
+    "",
+    "Keyed occupier, then the country whose ground is held. Each occupied country is",
+    "governed separately: a power holding two countries picks a set for each, and",
+    "taking ground off a third country starts that one from nothing.",
+    "",
+    "`laws` holds up to three. Each is the name of a policy or decree the occupier",
+    "already has in force, or one of Martial law, Secret police, Forced labour and",
+    "Military governor, which may be taken here whatever it does at home. They apply",
+    "in the occupied provinces alone and carry no compass.",
+    "",
+    "`stateOwned` is optional and overrides what the occupier does with the industries",
+    "it has taken. Without it the ground keeps the ownership its own country gave it."
+  ],
+  "occupations": {
+    "VOS": {
+      "CFR": { "laws": ["Bust the unions", "Secret police", "Military governor"] }
+    }
+  }
+}

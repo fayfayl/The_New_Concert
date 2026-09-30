@@ -1,0 +1,734 @@
+{
+  "categories": {
+    "conscription": {
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Manpower is the share of the population of controlled provinces that can be called up. The peace multiplier prices raising the law while not at war. Happiness is the peacetime figure, halved at war and falling to nothing as the country is occupied.",
+      "options": [
+        {
+          "name": "Volunteer only",
+          "description": "Only those who come forward are taken.",
+          "image": "volunteer_only",
+          "cost": 50,
+          "peaceMultiplier": 1,
+          "compass": [
+            0,
+            -10
+          ],
+          "effects": {
+            "manpower": 0.015
+          }
+        },
+        {
+          "name": "Limited conscription",
+          "description": "A lottery takes a small intake each year.",
+          "image": "limited_conscription",
+          "cost": 75,
+          "peaceMultiplier": 1,
+          "compass": [
+            0,
+            -3
+          ],
+          "felt": "rural",
+          "factor": "limited conscription",
+          "scaling": {
+            "happiness": {
+              "atWar": -0.5,
+              "occupied": -1
+            }
+          },
+          "effects": {
+            "manpower": 0.025,
+            "happiness": -2
+          }
+        },
+        {
+          "name": "Extensive conscription",
+          "description": "Every man fit for service serves a term.",
+          "image": "extensive_conscription",
+          "cost": 100,
+          "peaceMultiplier": 2,
+          "compass": [
+            0,
+            5
+          ],
+          "felt": "rural",
+          "factor": "extensive conscription",
+          "scaling": {
+            "happiness": {
+              "atWar": -0.5,
+              "occupied": -1
+            }
+          },
+          "effects": {
+            "manpower": 0.05,
+            "factoryOutput": -0.05,
+            "construction": -0.05,
+            "happiness": -5
+          }
+        },
+        {
+          "name": "Service by requirement",
+          "description": "Men are conscripted on demand without exemption.",
+          "image": "service_by_requirement",
+          "cost": 150,
+          "peaceMultiplier": 4,
+          "compass": [
+            0,
+            12
+          ],
+          "felt": "rural",
+          "factor": "conscription by requirement",
+          "scaling": {
+            "happiness": {
+              "atWar": -0.5,
+              "occupied": -1
+            }
+          },
+          "effects": {
+            "manpower": 0.1,
+            "factoryOutput": -0.15,
+            "construction": -0.15,
+            "happiness": -10
+          }
+        },
+        {
+          "name": "Total mobilisation",
+          "description": "Women are conscripted and the age limit widens.",
+          "image": "total_mobilisation",
+          "cost": 200,
+          "peaceMultiplier": 8,
+          "compass": [
+            0,
+            20
+          ],
+          "felt": "rural",
+          "factor": "total mobilisation",
+          "scaling": {
+            "happiness": {
+              "atWar": -0.5,
+              "occupied": -1
+            }
+          },
+          "effects": {
+            "manpower": 0.2,
+            "factoryOutput": -0.3,
+            "construction": -0.3,
+            "happiness": -20
+          }
+        }
+      ],
+      "costWeightedBy": "authority"
+    },
+    "economy": {
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Consumer share is the share of civilian factories making goods for the population and taking no state orders. It is multiplied by the holding ideology's modifier. Conversion is days per factory changed between civilian and military. The peace multiplier prices raising the law while not at war.",
+      "options": [
+        {
+          "name": "Civilian economy",
+          "description": "Industry produces for civilian demand.",
+          "image": "civilian_economy",
+          "cost": 50,
+          "peaceMultiplier": 1,
+          "compass": [
+            20,
+            -5
+          ],
+          "effects": {
+            "consumerShare": 0.35,
+            "conversionDays": null,
+            "construction": 0
+          }
+        },
+        {
+          "name": "Early mobilisation",
+          "description": "Civilian factories begin taking military orders.",
+          "image": "early_mobilisation",
+          "cost": 75,
+          "peaceMultiplier": 1,
+          "compass": [
+            10,
+            0
+          ],
+          "effects": {
+            "consumerShare": 0.3,
+            "conversionDays": 30,
+            "construction": 0.05
+          }
+        },
+        {
+          "name": "Partial mobilisation",
+          "description": "State demands are prioritised ahead of civilian ones.",
+          "image": "partial_mobilisation",
+          "cost": 100,
+          "peaceMultiplier": 2,
+          "compass": [
+            0,
+            3
+          ],
+          "effects": {
+            "consumerShare": 0.25,
+            "conversionDays": 20,
+            "construction": 0.1
+          }
+        },
+        {
+          "name": "War economy",
+          "description": "The state controls what every factory produces.",
+          "image": "war_economy",
+          "cost": 150,
+          "peaceMultiplier": 4,
+          "compass": [
+            -15,
+            8
+          ],
+          "effects": {
+            "consumerShare": 0.2,
+            "conversionDays": 10,
+            "construction": 0.15
+          }
+        },
+        {
+          "name": "Total war",
+          "description": "Everything except essential services is directed to war.",
+          "image": "total_war",
+          "cost": 200,
+          "peaceMultiplier": 8,
+          "compass": [
+            -30,
+            12
+          ],
+          "effects": {
+            "consumerShare": 0.1,
+            "conversionDays": 5,
+            "construction": 0.2
+          }
+        }
+      ],
+      "costWeightedBy": "ideologyTable"
+    },
+    "personalTax": {
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Revenue is the multiplier on the population term of provincial tax.",
+      "options": [
+        {
+          "name": "Minimal taxation",
+          "description": "Income is barely taxed.",
+          "image": "minimal_taxation_personal",
+          "cost": 50,
+          "compass": [
+            10,
+            -2
+          ],
+          "felt": "urbanisation",
+          "factor": "minimal income tax",
+          "effects": {
+            "revenueFromPeople": -0.4,
+            "happiness": 10,
+            "stability": 5
+          }
+        },
+        {
+          "name": "Low taxation",
+          "description": "Income is taxed at a low rate, with wide exemptions.",
+          "image": "low_taxation_personal",
+          "cost": 50,
+          "compass": [
+            5,
+            0
+          ],
+          "felt": "urbanisation",
+          "factor": "low income tax",
+          "effects": {
+            "revenueFromPeople": -0.2,
+            "happiness": 5
+          }
+        },
+        {
+          "name": "Moderate taxation",
+          "description": "Income is taxed at an ordinary rate.",
+          "image": "moderate_taxation_personal",
+          "cost": 50,
+          "compass": [
+            0,
+            0
+          ],
+          "effects": {
+            "revenueFromPeople": 0
+          }
+        },
+        {
+          "name": "High taxation",
+          "description": "Income is taxed at a high rate.",
+          "image": "high_taxation_personal",
+          "cost": 75,
+          "compass": [
+            -7,
+            1
+          ],
+          "felt": "urbanisation",
+          "factor": "high income tax",
+          "effects": {
+            "revenueFromPeople": 0.25,
+            "happiness": -8,
+            "stability": -5
+          }
+        },
+        {
+          "name": "Punitive taxation",
+          "description": "Income is taxed at a confiscatory rate.",
+          "image": "punitive_taxation_personal",
+          "cost": 100,
+          "compass": [
+            -12,
+            3
+          ],
+          "felt": "urbanisation",
+          "factor": "punitive income tax",
+          "effects": {
+            "revenueFromPeople": 0.5,
+            "happiness": -15,
+            "stability": -15
+          }
+        }
+      ],
+      "costWeightedBy": "economic"
+    },
+    "corporateTax": {
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Revenue is the multiplier on the factory term of provincial tax.",
+      "options": [
+        {
+          "name": "Minimal taxation",
+          "description": "Profits are barely taxed.",
+          "image": "minimal_taxation_corporate",
+          "cost": 50,
+          "compass": [
+            15,
+            0
+          ],
+          "effects": {
+            "revenueFromFactories": -0.4,
+            "factoryOutput": 0.1
+          }
+        },
+        {
+          "name": "Low taxation",
+          "description": "Profits are taxed at a low rate.",
+          "image": "low_taxation_corporate",
+          "cost": 50,
+          "compass": [
+            8,
+            0
+          ],
+          "effects": {
+            "revenueFromFactories": -0.2,
+            "factoryOutput": 0.05
+          }
+        },
+        {
+          "name": "Moderate taxation",
+          "description": "Profits are taxed at an ordinary rate.",
+          "image": "moderate_taxation_corporate",
+          "cost": 50,
+          "compass": [
+            0,
+            0
+          ],
+          "effects": {
+            "revenueFromFactories": 0
+          }
+        },
+        {
+          "name": "High taxation",
+          "description": "Profits are taxed at a high rate.",
+          "image": "high_taxation_corporate",
+          "cost": 75,
+          "compass": [
+            -10,
+            0
+          ],
+          "effects": {
+            "revenueFromFactories": 0.25,
+            "factoryOutput": -0.08,
+            "stability": -3
+          }
+        },
+        {
+          "name": "Punitive taxation",
+          "description": "Profits are taxed to the point of deterring investment.",
+          "image": "punitive_taxation_corporate",
+          "cost": 100,
+          "compass": [
+            -18,
+            1
+          ],
+          "effects": {
+            "revenueFromFactories": 0.5,
+            "factoryOutput": -0.2,
+            "stability": -8
+          }
+        }
+      ],
+      "costWeightedBy": "economic"
+    },
+    "colonialTax": {
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Applies to provinces of colonies. A polity holding none omits the law entirely. Colonial unrest is a figure a day added in every colonial province.",
+      "options": [
+        {
+          "name": "Minimal taxation",
+          "description": "The colonies retain most of their revenue.",
+          "image": "minimal_taxation_colonial",
+          "cost": 50,
+          "compass": [
+            5,
+            -1
+          ],
+          "effects": {
+            "revenueFromColonies": -0.4,
+            "colonialUnrestPerDay": -0.5
+          }
+        },
+        {
+          "name": "Low taxation",
+          "description": "The colonies remit a small portion of their revenue.",
+          "image": "low_taxation_colonial",
+          "cost": 50,
+          "compass": [
+            2,
+            0
+          ],
+          "effects": {
+            "revenueFromColonies": -0.2,
+            "colonialUnrestPerDay": -0.2
+          }
+        },
+        {
+          "name": "Moderate taxation",
+          "description": "The colonies remit the customary portion of their revenue.",
+          "image": "moderate_taxation_colonial",
+          "cost": 50,
+          "compass": [
+            0,
+            0
+          ],
+          "effects": {
+            "revenueFromColonies": 0,
+            "colonialUnrestPerDay": 0
+          }
+        },
+        {
+          "name": "High taxation",
+          "description": "The colonies remit most of their revenue.",
+          "image": "high_taxation_colonial",
+          "cost": 75,
+          "compass": [
+            -3,
+            2
+          ],
+          "effects": {
+            "revenueFromColonies": 0.25,
+            "colonialUnrestPerDay": 0.2,
+            "stability": -3
+          }
+        },
+        {
+          "name": "Punitive taxation",
+          "description": "The colonies remit all revenue above their administrative costs.",
+          "image": "punitive_taxation_colonial",
+          "cost": 100,
+          "compass": [
+            -5,
+            4
+          ],
+          "effects": {
+            "revenueFromColonies": 0.5,
+            "colonialUnrestPerDay": 0.5,
+            "stability": -8
+          }
+        }
+      ],
+      "costWeightedBy": "economic"
+    },
+    "monetary": {
+      "changeDays": 30,
+      "tightenDays": 180,
+      "wartimeDiscount": true,
+      "compassCarried": false,
+      "note": "Loosening the anchor takes changeDays and tightening it takes tightenDays. Interest multiplies the debt * 0.0002 charged under Treasury. Debt thresholds multiplies where the four ratio penalties fall, so ×0.5 brings them at half the debt. Anything else carrying either multiplies the law figure rather than replacing it. The ladder runs tightest to loosest in the order below.",
+      "options": [
+        {
+          "name": "Gold standard",
+          "description": "The currency is convertible to gold at a fixed rate.",
+          "image": "gold_standard",
+          "cost": 50,
+          "effects": {
+            "interest": 0.5,
+            "debtThresholds": 0.5,
+            "taxRevenue": -0.1,
+            "construction": -0.1,
+            "stability": 10
+          }
+        },
+        {
+          "name": "Devalued parity",
+          "description": "The currency is convertible to gold at a reduced parity.",
+          "image": "devalued_parity",
+          "cost": 50,
+          "effects": {
+            "interest": 0.75,
+            "debtThresholds": 0.75,
+            "stability": 5
+          }
+        },
+        {
+          "name": "Managed currency",
+          "description": "The currency is not convertible and the state sets the rate.",
+          "image": "managed_currency",
+          "cost": 75,
+          "effects": {
+            "interest": 1,
+            "debtThresholds": 1,
+            "taxRevenue": 0.1,
+            "construction": 0.05
+          }
+        },
+        {
+          "name": "Currency expansion",
+          "description": "The state prints money to cover its own spending.",
+          "image": "currency_expansion",
+          "cost": 150,
+          "felt": "urbanisation",
+          "factor": "inflation",
+          "effects": {
+            "interest": 0,
+            "debtThresholds": 2,
+            "taxRevenue": 0.2,
+            "construction": 0.2,
+            "stability": -15,
+            "happiness": -20
+          }
+        }
+      ],
+      "costWeightedBy": null
+    },
+    "trade": {
+      "changeDays": 30,
+      "wartimeDiscount": false,
+      "note": "Surplus offered is the share of a surplus put on the automatic market and deficit filled the share of a deficit the market may fill. Tariff ceiling is the highest rate the country may charge a foreign flag.",
+      "options": [
+        {
+          "name": "Free trade",
+          "description": "Merchants buy and sell without restriction.",
+          "image": "free_trade",
+          "cost": 50,
+          "compass": [
+            30,
+            -8
+          ],
+          "effects": {
+            "surplusOffered": 1,
+            "deficitFilled": 1.2,
+            "tariffCeiling": 0.1,
+            "research": 0.1
+          }
+        },
+        {
+          "name": "Export focus",
+          "description": "Exports are favoured, and what comes the other way is taxed at the border.",
+          "image": "export_focus",
+          "cost": 75,
+          "compass": [
+            15,
+            -3
+          ],
+          "effects": {
+            "surplusOffered": 1,
+            "deficitFilled": 1,
+            "tariffCeiling": 0.25,
+            "research": 0.05
+          }
+        },
+        {
+          "name": "Limited exports",
+          "description": "Exports are limited by quota.",
+          "image": "limited_exports",
+          "cost": 100,
+          "compass": [
+            -10,
+            3
+          ],
+          "effects": {
+            "surplusOffered": 0.4,
+            "deficitFilled": 1,
+            "tariffCeiling": 0.5,
+            "research": 0
+          }
+        },
+        {
+          "name": "Closed economy",
+          "description": "The borders are closed to private trade.",
+          "image": "closed_economy",
+          "cost": 150,
+          "compass": [
+            -25,
+            8
+          ],
+          "effects": {
+            "surplusOffered": 0,
+            "deficitFilled": 0,
+            "tariffCeiling": 1,
+            "research": -0.1
+          }
+        }
+      ],
+      "costWeightedBy": null
+    }
+  },
+  "doctrine": {
+    "changeDays": 90,
+    "cost": 150,
+    "wartimeDiscount": false,
+    "compassCarried": false,
+    "note": "One school per branch, held separately, in four branches: land, air, naval and magical. A country begins with the doctrine its history gives it and most never change. Land dragons take the land schools inside their divisions and a dragon squadron takes the air schools, with strategic bombing at half effect and double anti-air fire.",
+    "branches": {
+      "land": [
+        {
+          "name": "Mobile warfare",
+          "description": "Armour is concentrated to break through and exploit the gap.",
+          "effects": {
+            "movement": 0.15,
+            "defence": -0.1
+          }
+        },
+        {
+          "name": "Superior firepower",
+          "description": "Artillery and materiel are spent over manpower.",
+          "effects": {
+            "attack": 0.15,
+            "equipmentUse": 0.15
+          }
+        },
+        {
+          "name": "Mass assault",
+          "description": "Infantry in numbers takes the place of armour and artillery.",
+          "effects": {
+            "manpowerRecovery": 0.2,
+            "attack": -0.1
+          }
+        },
+        {
+          "name": "Defensive",
+          "description": "Entrenched positions are favoured over offensives.",
+          "effects": {
+            "defence": 0.2,
+            "movement": -0.15
+          }
+        }
+      ],
+      "air": [
+        {
+          "name": "Air superiority",
+          "description": "Fighters clear the sky before any other aerial operations.",
+          "effects": {
+            "fighterCombat": 0.2
+          }
+        },
+        {
+          "name": "Battlefield support",
+          "description": "Ground support is favoured over winning in the air or striking industry.",
+          "effects": {
+            "groundAttack": 0.2
+          }
+        },
+        {
+          "name": "Strategic bombing",
+          "description": "Bombing of industry and bases is prioritised.",
+          "effects": {
+            "industryDamage": 0.25,
+            "airBaseDamage": 0.25
+          }
+        },
+        {
+          "name": "Communications strike",
+          "description": "Roads, railways and columns behind the enemy's front are struck before anything else.",
+          "effects": {
+            "againstEnemySupply": -0.25
+          },
+          "special": "Applies in any province within range of an air base of the polity or of an ally."
+        }
+      ],
+      "naval": [
+        {
+          "name": "Fleet in being",
+          "description": "Concentration of the capital fleet comes before all other tasks.",
+          "effects": {
+            "capitalShipCombat": 0.15
+          },
+          "special": "The figure applies only to a capital ship with more than 2 escorts in its subregion or in one adjacent to it. An escort is a light cruiser, destroyer or submarine of the polity or of an ally."
+        },
+        {
+          "name": "Convoy interdiction",
+          "description": "Sinking the enemy's supply convoys comes before fleet action.",
+          "effects": {
+            "againstConvoys": 0.25,
+            "fleetCombat": -0.1
+          }
+        },
+        {
+          "name": "Trade interdiction",
+          "description": "Closing the enemy's shipping routes are prioritised over fleet action.",
+          "effects": {
+            "fleetCombat": -0.1
+          },
+          "special": "A sea route is normally closed through any region an enemy controls. On this doctrine, a fleet blocks every enemy trade route regardless of regional strength."
+        },
+        {
+          "name": "Base strike",
+          "description": "Striking enemy ships in harbour is favoured over meeting them at sea.",
+          "effects": {
+            "carrierAndAirLaunchedAttack": 0.2
+          }
+        }
+      ],
+      "magical": [
+        {
+          "name": "Warded lines",
+          "description": "Runes are cut into the armour and into the fortifications along the whole front.",
+          "effects": {
+            "enchantmentEffect": 0.25
+          }
+        },
+        {
+          "name": "Advanced legilimency",
+          "description": "Officers are trained to read the enemy and to keep their own minds closed.",
+          "effects": {
+            "againstEnemyOperations": 0.3
+          }
+        },
+        {
+          "name": "Wizard corps",
+          "description": "The country's wizards are gathered into one corps and set on what the enemy has built.",
+          "effects": {
+            "againstFortification": -0.3
+          },
+          "special": "Drawn from souls and not from crystal, so it consumes no tazkuri. What limits it is how few wizards are born."
+        },
+        {
+          "name": "Gem ordnance",
+          "description": "Crystals are fired as incendiary shot, in the manner of the Khorshite pot.",
+          "effects": {
+            "attack": 0.15
+          },
+          "special": "Burns 0.5 tazkuri a day for every division in combat, on top of any enchantment. A country that runs dry loses the figure until it is in supply again."
+        }
+      ]
+    },
+    "costWeightedBy": null
+  }
+}

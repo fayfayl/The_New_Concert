@@ -48,6 +48,9 @@
   --rule-bright: #46566a;
 
   --accent: #7f97b2;
+  /* The ring drawn around a selected province, and the colour a tooltip
+     names its subject in. Those two, the clock, and nothing else. */
+  --gold: #cea35e;
   /* selected / interactive */
   --accent-bright: #a8bdd4;
   --accent-dim: #3f5064;
@@ -177,6 +180,7 @@
 #tooltip::after,
 #card::after,
 #county-card::after,
+#diplo::after,
 #toolbar button::after,
 .toggles button::after,
 .dialog-panel::after,
@@ -202,6 +206,7 @@
 #tooltip,
 #card,
 #county-card,
+#diplo,
 #toolbar button,
 .toggles button,
 .dialog-panel,
@@ -494,7 +499,7 @@ body {
   pointer-events: none;
   /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
      URLs, so moving the CSS into src/ moved the meaning of every path in it. */
-  background: url('../data/img/start_menu_bg.jpg') center / cover no-repeat;
+  background: url('../data/img/ui/start_menu_bg.jpg') center / cover no-repeat;
   transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0);
 }
 
@@ -1425,10 +1430,10 @@ body {
    not furniture: it is the one control that says whether the world is moving,
    and it has to be readable from the far side of the screen without being
    looked for. Both hues are already in the project rather than invented for
-   it — the gold is OUTLINE_COLOUR, the ring drawn around a selected province,
-   and the green is only ever the running state. Nothing else may use either. */
+   it — the gold is OUTLINE_COLOUR, the ring drawn around a selected province
+   and the heading of every tooltip, and the green is only ever the running
+   state. Nothing else may use the green. */
 #clock {
-  --gold: #cea35e;
   --go: #6fbf73;
 
   margin-left: auto;
@@ -1588,17 +1593,87 @@ canvas.panning {
   border: 1px solid var(--rule-bright);
   border-top-color: var(--accent-dim);
   border-radius: 2px;
-  padding: 7px 11px;
+  /* Everything inside the box is set in em against this one size, so the gap
+     round the text stays the same gap whatever the type is set at, and every
+     tooltip in the game wears the same one. */
   font-size: 13px;
+  padding: 0.55em 0.85em;
   line-height: 1.4;
-  white-space: nowrap;
+  /* Prose wraps, which is what most of a tooltip is: a spirit's description, a
+     relation's terms, a sentence naming two countries. The cap is what gives
+     the wrapping something to wrap against. The breakdown rows opt back out
+     below — a label and its figure are one line. */
+  white-space: normal;
+  max-width: 26em;
   color: var(--paper);
   box-shadow: var(--shadow);
 }
 
+/* Whatever a tooltip opens with is the thing it is about, and it is named
+   in the gold of the ring drawn round a selected province. Some tooltips head
+   themselves with a bold line and some with a plain one, so this matches the
+   first child rather than a tag. */
+#tooltip>:first-child {
+  color: var(--gold);
+}
+
 #tooltip .sub {
-  color: var(--dim);
-  font-size: 12px;
+  color: var(--paper);
+  font-size: 0.92em;
+}
+
+/* A country named inside a sentence carries its flag, at the height of the
+   letters beside it so the line keeps its rhythm. */
+#tooltip .mini-flag-box {
+  position: relative;
+  display: inline-block;
+  /* Tighter to its own name than the word space in front of it — a space is
+     about .25em — so the flag reads as part of the name, not as a word. */
+  margin-right: .15em;
+  vertical-align: baseline;
+  border: 1px solid var(--rule-bright);
+  line-height: 0;
+}
+
+#tooltip .mini-flag {
+  /* Sized in em, so the flag tracks whatever the line's type size is rather
+     than staying put when the text around it changes. */
+  display: block;
+  height: .8em;
+  width: auto;
+  max-width: 1.8em;
+}
+
+/* A country with no flag drawn yet: its colour, at the shape a flag would have
+   taken. The province card does the same, and 1.5:1 is the shape of the block
+   there. The image is hidden rather than removed, so the box states its own
+   size instead of collapsing to nothing. */
+#tooltip .mini-flag-box.blank {
+  width: 1.2em;
+  height: .8em;
+  /* The colour only ever stands in for a flag that is not there. It is not
+     painted under one that is, because most of the flags carry an alpha
+     channel and it would show through them. */
+  background-color: var(--flag-colour, rgb(128, 128, 128));
+}
+
+/* The same shading the panel's own flag wears, drawn over this one too — over
+   the colour as well, so a country with no flag looks like the others. */
+#tooltip .mini-flag-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../data/img/flags/overlay.png") no-repeat center / 100% 100%;
+  pointer-events: none;
+}
+
+/* The figure a row is about, read before the name it belongs to. Only the
+   ideology rows use it: the number is what is being compared down the list and
+   the name is the label on it, so the number takes the full text colour and the
+   name keeps the dim one the rest of the line has. */
+#tooltip .sub>b {
+  color: var(--text);
+  font-weight: normal;
 }
 
 /* ================================================ side panel (dev only)
@@ -1679,6 +1754,12 @@ canvas.panning {
   display: flex;
   align-items: center;
   gap: 9px;
+}
+
+/* A second heading inside one container starts a section of its own, so it takes
+   the same 22px the containers take off what is above them. */
+#panel h1:not(:first-child) {
+  margin-top: 22px;
 }
 
 #panel h1::after {
@@ -1787,7 +1868,7 @@ canvas.panning {
   font-size: 13px;
 }
 
-.row span:first-child {
+.row > span:first-child {
   color: var(--dim);
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -1795,16 +1876,20 @@ canvas.panning {
   align-self: center;
 }
 
-.row span:last-child {
+.row > span:last-child {
   color: var(--paper);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .swatch {
+  position: relative;
   display: inline-block;
   width: 9px;
   height: 9px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   border-radius: 1px;
   margin-right: 7px;
   vertical-align: baseline;
@@ -1812,7 +1897,39 @@ canvas.panning {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .07);
 }
 
-/* ------------------------------------------------ neighbour list */
+/* The same shading, at the size of a full stop. It is faint at 9px and that is
+   the point: the square reads as the same object as the flag on the card. Only
+   on the squares that ARE a flag — the same element draws a sea's colour and a
+   movement's, and neither is a flag to be shaded. */
+.swatch.flag::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("../data/img/flags/overlay.png") no-repeat center / 100% 100%;
+  pointer-events: none;
+}
+
+/* The flag fills the square, cropped from its middle the way a background at
+   `cover` did. An image rather than a background so that a flag with
+   transparency in it shows the panel behind and not the map colour. */
+.swatch.flag>img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Only a country with no flag drawn shows its colour, the same rule the
+   tooltip's mini flag follows. */
+.swatch.flag.blank {
+  background-color: var(--flag-colour, rgb(128, 128, 128));
+}
+
+/* The government readout and the neighbour list are sections in their own
+   right, spaced off what is above them the way #perf and #stats are below. */
+#government,
 #neighbours {
   margin-top: 22px;
 }
@@ -1859,8 +1976,8 @@ canvas.panning {
   font-size: 12px;
 }
 
-#perf .row span:last-child,
-#stats .row span:last-child {
+#perf .row > span:last-child,
+#stats .row > span:last-child {
   color: var(--text);
 }
 
@@ -2045,7 +2162,8 @@ canvas.panning {
 .card-head h2 { padding-top: 1px; }
 
 #card-close,
-#county-close {
+#county-close,
+#diplo-close {
   flex: none;
   width: 20px;
   height: 20px;
@@ -2061,7 +2179,8 @@ canvas.panning {
 }
 
 #card-close:hover,
-#county-close:hover {
+#county-close:hover,
+#diplo-close:hover {
   color: var(--paper);
   border-color: var(--rule-bright);
 }
@@ -2076,13 +2195,33 @@ canvas.panning {
 }
 
 .card-flag {
+  position: relative;
   flex: none;
-  width: 30px;
+  display: inline-block;
+  min-width: 30px;
   height: 20px;
   border: 1px solid var(--rule-bright);
   border-radius: 1px;
   background: var(--steel);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .5);
+}
+
+.card-flag img {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+/* The shading every flag in the game wears, on the province card and the county
+   card alike — both use this block. It is drawn over the colour as well as over
+   a flag, so a country with none drawn still looks like the others. */
+.card-flag::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("../data/img/flags/overlay.png") no-repeat center / 100% 100%;
+  pointer-events: none;
 }
 
 .card-owner b {
@@ -2181,12 +2320,24 @@ canvas.panning {
 
 /* The breakdown rides the shared #tooltip rather than opening in place. A card
    that changes height as you read it moves everything under the pointer. */
-#tooltip .cm-line { display: flex; justify-content: space-between; gap: 14px; }
+/* The one thing in a tooltip that does not wrap: what a modifier touches on the
+   left and its figure on the right are one line, and a label that turned would
+   leave its figure stranded on the row below. */
+#tooltip .cm-line { display: flex; justify-content: space-between; gap: 1.1em; white-space: nowrap; }
 #tooltip .cm-line b { font-weight: 600; font-variant-numeric: tabular-nums; }
+/* A national spirit in a breakdown: a condition the country is in rather than
+   an act it chose, so it is set apart from the laws and policies beside it. */
+#tooltip .cm-line i { font-style: italic; }
 #tooltip .up, .cm-note .up   { color: #8fd694; }
 #tooltip .down, .cm-note .down { color: #e0837f; }
 #tooltip .none { color: var(--dim); font-style: italic; }
-#tooltip hr { border: 0; border-top: 1px solid var(--rule); margin: 5px 0; }
+
+/* The things a line names rather than describes: the provinces a spirit is felt
+   in, the forms a condition stands under, the ground and the holder of a lease.
+   The sentence around them is the rule; a reader wants to find their own
+   province in a list of fifteen at a glance. */
+#tooltip .named, .cm-note .named { color: var(--gold); }
+#tooltip hr { border: 0; border-top: 1px solid var(--rule); margin: 0.4em 0; }
 #tooltip .cm-line.sub b, #tooltip .cm-line.sub span { color: var(--dim); }
 
 /* --- the built things, two to a row */
@@ -2360,4 +2511,386 @@ canvas.panning {
 .card-legend .key.mil {
   border-color: #6b5340;
   background: #634d39;
+}
+
+/* ----------------------------------------------------------- diplomacy panel
+ *
+ * The country under CTRL + a left click. It takes the whole left edge, where
+ * the other two panels take the bottom corner, because it is a page about a
+ * state rather than a card about a piece of ground. All three are mutually
+ * exclusive, so nothing ever has to be arranged around anything else.
+ *
+ * Same slide as the cards, but from the side rather than from below.
+ */
+/* Built the same way as #card and #county-card: a box standing off the edge
+   with a border on all four sides, not a slab welded to it like the debug
+   panel. It is taller than the two cards because it has more to say, and it
+   takes the left rather than the bottom corner so it never has to be arranged
+   around them — the three are mutually exclusive anyway. */
+#diplo {
+  /* Twice the diagonal, as the note at the head of the file requires. This is
+     a full-height panel and not a card: 380 wide by the viewport less 24, so
+     the figure is #panel’s and not #card’s. At 900 the overlay reached about
+     the first third of it and the rest of the box was flat. */
+  --tex-span: 4400px;
+  --tex-turn: 21deg;
+  --tex-at: -330px -140px;
+
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  bottom: 12px;
+  z-index: 21;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel-deep));
+  border: 1px solid #000;
+  border-top-color: var(--rule-bright);
+  border-radius: 2px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .6), var(--bevel);
+
+  font-family: var(--ui);
+  font-size: 12px;
+  color: var(--text);
+
+  visibility: hidden;
+  transform: translateX(calc(-100% - 24px));
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s .3s;
+}
+
+#diplo.open {
+  visibility: visible;
+  transform: none;
+  transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #diplo { transition: none; }
+}
+
+
+/* Flag, titles and the two meters, in one band across the top. */
+.diplo-ident {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+  /* Held at what a full-height flag gave it, so a short one does not pull the
+     band up and leave the panel a different height for one country. */
+  min-height: 48px;
+}
+
+/* The flag, under the shading every flag in the panel wears. The overlay is
+   one image drawn over all of them, stretched to the box rather than fitted to
+   its own shape: the flags are not one ratio, and a shadow that kept its own
+   would sit off the edge of a wide one and short of a narrow one. */
+/* 48px high is what every flag wants to be, and the width follows from its own
+   shape — until the shape is long enough to crowd the titles beside it. The
+   band is one flex row, so the width a 5:1 pennant takes at full height comes
+   straight out of the name and the faction line, which then compress to fit it.
+   So the flag gives up height instead: the box caps the width, the image is
+   sized by its own two maxima, and it scales down whole rather than squashing.
+   Jenisia's pennant is 5:1 and reads 160 by 32; the next widest flag on the
+   board is 2.25:1 at 108, so nothing else is touched. */
+.diplo-flag {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  max-width: 160px;
+  border: 1px solid var(--rule-bright);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .5);
+}
+
+.diplo-flag img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 48px;
+}
+
+.diplo-flag::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../data/img/flags/overlay.png") no-repeat center / 100% 100%;
+  pointer-events: none;
+}
+
+.diplo-titles { flex: 1 1 auto; min-width: 0; }
+.diplo-titles b { display: block; font-size: 12.5px; line-height: 15px; }
+.diplo-titles i {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  line-height: 13px;
+  color: var(--text-dim);
+}
+
+.diplo-meters { flex: none; text-align: right; }
+.diplo-meters span { display: block; line-height: 1.25; }
+.diplo-meters u { text-decoration: none; color: var(--text-dim); font-size: 10.5px; margin-right: 5px; }
+.diplo-meters b { font-size: 11.5px; }
+
+/* The leader, and the party box beside him. */
+.diplo-portrait-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.diplo-portrait {
+  flex: none;
+  align-self: flex-start;
+  height: 108px;
+  width: auto;
+  aspect-ratio: 312 / 420;
+  object-fit: cover;
+  border: 1px solid var(--rule-bright);
+  background: var(--steel);
+}
+
+/* The party box and the focus box, stacked beside the portrait. Both are
+   boxes rather than bands: they say what the government IS and what it is
+   working toward, which is a pair of facts about the same column. */
+.diplo-stack {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diplo-party {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  background: rgba(0, 0, 0, .18);
+}
+
+.diplo-party b { display: block; font-size: 12px; }
+.diplo-party i {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.diplo-focus {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  background: rgba(0, 0, 0, .18);
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+/* One cell per spirit held, wrapping. The placeholder below is the fallback:
+   a spirit that names its own art in `image` overrides it inline. */
+.diplo-spirits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--rule);
+  min-height: 20px;
+}
+
+.diplo-spirits .none { color: var(--text-dim); font-size: 11px; }
+
+.diplo-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+}
+
+.diplo-tabs button {
+  flex: 1 1 0;
+  padding: 6px 0;
+  background: linear-gradient(180deg, var(--steel-deep), var(--steel));
+  border: 0;
+  border-right: 1px solid var(--rule);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.diplo-tabs button:last-child { border-right: 0; }
+.diplo-tabs button.on {
+  background: linear-gradient(180deg, var(--steel-raised), var(--steel));
+  color: var(--text);
+  box-shadow: inset 0 1px 0 var(--rule-bright);
+}
+
+/* The two boxes fill whatever is left of the panel and scroll on their own, so
+   a long action list never pushes the country's name off the top. */
+.diplo-body { flex: 1 1 auto; min-height: 0; }
+
+.diplo-pane {
+  display: flex;
+  gap: 6px;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.diplo-pane[hidden] { display: none; }
+
+.diplo-box {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-y: auto;
+  border: 1px solid var(--rule);
+  background: rgba(0, 0, 0, .22);
+  padding: 5px 6px;
+}
+
+.diplo-box h3 {
+  margin: 4px 0 3px;
+  font-family: var(--ui-narrow);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.diplo-box h3:first-child { margin-top: 0; }
+
+.diplo-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  font-size: 11px;
+}
+
+.diplo-row .lab { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diplo-row .val { flex: none; color: var(--text-dim); }
+
+/* A relation names the other country with its flag rather than its name: the
+   list is read down the left for the kind, and a flag is found faster across.
+   It wears the panel flag's own box, shading and edge; only the size differs,
+   and the cap is on the width so a long pennant loses height as it does above. */
+.diplo-flag.small { max-width: 46px; }
+.diplo-flag.small img { max-height: 18px; }
+.diplo-row.none { color: var(--text-dim); font-style: italic; }
+
+.diplo-row i.ico {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background-size: cover;
+  background-image: url("../data/icons/placeholder.png");
+}
+
+/* factories.png is a two-cell sheet at 128x64: civilian first, military second. */
+.diplo-row i.ico.civ {
+  background-image: url("../data/icons/factories.png");
+  background-size: 200% 100%;
+  background-position: 0 0;
+}
+
+.diplo-row i.ico.mil {
+  background-image: url("../data/icons/factories.png");
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.diplo-row i.ico.dock { background-image: url("../data/icons/Dockyard.png"); }
+
+/* The laws are a grid of icons rather than a list of rows. A law is a thing a
+   government IS, and a wall of them reads at a glance the way seven lines of
+   category-and-option does not. What each one is comes from the tooltip, which
+   is where its effects are too — those are the reason to hover in the first
+   place. */
+.diplo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 10px;
+  padding: 4px 2px 8px;
+}
+
+/* No hover highlight and no help cursor, on the rule the card already states:
+   the panel is a readout, the tooltip appearing is its own feedback, and
+   lighting the tiles that answer the pointer would read as a fault. */
+.diplo-tile {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  background: url("../data/img/national_spirits/placeholder.png") no-repeat center / contain;
+}
+
+/* A slot with nothing in it yet. Drawn rather than left out, so the grid says
+   how many there will be. */
+.diplo-tile.empty {
+  background: rgba(0, 0, 0, .25);
+  border: 1px solid var(--rule);
+}
+.diplo-row i.ico.law { background-image: url("../data/img/national_spirits/placeholder.png"); }
+
+/* An action nothing can be done with yet is still listed, so the panel says
+   what the game will let you do rather than only what it lets you do today. */
+.diplo-row.action { cursor: default; }
+.diplo-row.action .val { font-variant-numeric: tabular-nums; }
+
+
+/* One cell of data/icons/resources.png, six across at 64px, drawn at the size a
+   tooltip line reads at. The cell is chosen with background-position inline,
+   since which resource it is is data and not style. */
+.res {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  background-image: url("../data/icons/resources.png");
+  background-size: 84px 56px;
+}
+
+/* The controls list: the key on the left, what it does on the right. A grid
+   rather than a table, so the two columns line up without any markup for it. */
+.controls-body dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 5px 16px;
+  margin: 0;
+}
+
+.controls-body dt,
+.controls-body dd {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.controls-body dt {
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.controls-body dd {
+  color: var(--text);
+}
+
+/* It sits outside the start menu, so it cannot be positioned against it: fixed
+   to the viewport, and above the pause menu at 90, since it is opened from
+   there and has to cover it. */
+#controls {
+  position: fixed;
+  z-index: 110;
 }

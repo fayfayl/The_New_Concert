@@ -120,6 +120,58 @@ export function hashInputs(pngBytes, raw, seaPngBytes = null, seaRaw = null,
   return hashBytes(text, h);
 }
 
+/**
+ * Occupation is held by county, and a province's occupier is derived from them.
+ *
+ * `occupation` is keyed occupier, then the owner whose ground is held, then the
+ * county ids held, as it stands in counties-starting-values.json. Each county
+ * named takes that occupier. A province's `occupier` is then whoever holds the
+ * most of its counties, the owner winning a tie, and `occupied` is the share of
+ * its counties held by anybody but the owner, which is what 04 Ownership change
+ * scales tax, output and resources by.
+ *
+ * Runs before hashInputs, in the page and in sync-provinces.js alike, because the
+ * derived occupier is what the map is coloured by and what the hash reads.
+ * Without counties there is nothing to derive from, and the provinces are left
+ * as they came.
+ */
+export function applyCountyOccupation(raw, countyRaw, occupation) {
+  const counties = countyRaw?.counties;
+  if (!counties?.length) return;
+  const byId = new Map(counties.map((c) => [c.id, c]));
+  for (const [occupier, owners] of Object.entries(occupation || {})) {
+    for (const ids of Object.values(owners || {})) {
+      for (const id of ids || []) {
+        const c = byId.get(id);
+        if (c) c.occupier = occupier;
+      }
+    }
+  }
+  const tally = new Map();
+  for (const c of counties) {
+    if (!tally.has(c.province)) tally.set(c.province, { total: 0, by: new Map() });
+    const t = tally.get(c.province);
+    t.total++;
+    if (c.occupier) t.by.set(c.occupier, (t.by.get(c.occupier) || 0) + 1);
+  }
+  for (const p of raw.provinces || []) {
+    delete p.occupier;
+    delete p.occupied;
+    const t = tally.get(p.id);
+    if (!t || !t.by.size) continue;
+    let taken = 0, top = null, most = 0;
+    for (const [who, n] of t.by) {
+      if (who === p.owner) continue;
+      taken += n;
+      if (n > most || (n === most && who < top)) { top = who; most = n; }
+    }
+    if (!taken) continue;
+    p.occupied = taken / t.total;
+    // The owner keeps whatever nobody else holds, and a tie goes to the owner.
+    if (most > t.total - taken) p.occupier = top;
+  }
+}
+
 // ------------------------------------------------------------------ writing
 
 /**

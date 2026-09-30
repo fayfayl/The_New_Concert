@@ -1,0 +1,1280 @@
+{
+  "polities": [
+    {
+      "id": "NONE",
+      "name": "Unclaimed",
+      "short": "Unclaimed",
+      "colour": "#5a5a60"
+    },
+    {
+      "id": "KRN",
+      "name": "Kingdom of Krenland",
+      "short": "Krenland",
+      "colour": "#FFECAF"
+    },
+    {
+      "id": "BLA",
+      "name": "Colony of Blaland",
+      "short": "Blaland",
+      "colour": "#FFECAF",
+      "suzerain": "KRN"
+    },
+    {
+      "id": "LEO",
+      "name": "Colony of Leone",
+      "short": "Leone",
+      "colour": "#FFECAF",
+      "suzerain": "KRN"
+    },
+    {
+      "id": "FNA",
+      "name": "Fellnoro-Avantan Empire",
+      "short": "Fellnor-Avanta",
+      "colour": "#019E4F"
+    },
+    {
+      "id": "FLN",
+      "name": "Kingdom of Fellnor",
+      "short": "Fellnor",
+      "colour": "#019E4F",
+      "parent": "FNA"
+    },
+    {
+      "id": "AVN",
+      "name": "Kingdom of Avanta",
+      "short": "Avanta",
+      "colour": "#019E4F",
+      "parent": "FNA"
+    },
+    {
+      "id": "RGC",
+      "name": "Ragcul Territory",
+      "short": "Ragcul",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "STN",
+      "name": "Colony of Steensen",
+      "short": "Steensen",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "FAC",
+      "name": "Colony of Fellnoro-Avantan Chiliadnesia",
+      "short": "Fellnoro-Avantan Chiliadnesia",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "KTR",
+      "name": "Protectorate of Kontaria",
+      "short": "Kontaria",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "RGA",
+      "name": "Colony of Ringa",
+      "short": "Ringa",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "HLT",
+      "name": "Colony of Hullet",
+      "short": "Hullet",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "SKG",
+      "name": "Skogen Island Territory",
+      "short": "Skogen Island",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "NNF",
+      "name": "Colony of Nye Nord-Fellnor",
+      "short": "Nye Nord-Fellnor",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "MLR",
+      "name": "Colony of Mellumren",
+      "short": "Mellumren",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "HML",
+      "name": "Colony of Holmlund",
+      "short": "Holmlund",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "TPW",
+      "name": "Colony of Thaphakwe",
+      "short": "Thaphakwe",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "BND",
+      "name": "Colony of Bonderland",
+      "short": "Bonderland",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "FSP",
+      "name": "Colony of Fellnoro-Avantan South Panathra",
+      "short": "Fellnoro-Avantan South Panathra",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "ADH",
+      "name": "Colony of Aldiocha",
+      "short": "Aldiocha",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "MBY",
+      "name": "Colony of Muburnyika",
+      "short": "Muburnyika",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "EMB",
+      "name": "Colony of East Muburnyika",
+      "short": "East Muburnyika",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "GDV",
+      "name": "Colony of God Vind",
+      "short": "God Vind",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "FNY",
+      "name": "Colony of Fellnore Nyinha",
+      "short": "Fellnore Nyinha",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "ANY",
+      "name": "Colony of Avantan Nyinha",
+      "short": "Avantan Nyinha",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "HTL",
+      "name": "Colony of Hetland Island",
+      "short": "Hetland Island",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "HTH",
+      "name": "Colony of Hather",
+      "short": "Hather",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "AGN",
+      "name": "Colony of Agnarland",
+      "short": "Agnarland",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "BWN",
+      "name": "Colony of Bwanai",
+      "short": "Bwanai",
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "KWZ",
+      "name": "Kwanza",
+      "short": "Kwanza",
+      "colour": "#447A5D",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "YNK",
+      "name": "Republic of Yunkallpa",
+      "short": "Yunkallpa",
+      "colour": "#82E5A8"
+    },
+    {
+      "id": "HEL",
+      "name": "Helsingdal Islands",
+      "short": "Helsingdal Islands",
+      "definite": true,
+      "colour": "#019E4F",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "GWR",
+      "name": "Combine of Gwerinlur",
+      "short": "Gwerinlur",
+      "colour": "#595772"
+    },
+    {
+      "id": "NDN",
+      "name": "Colony of New Duncreig",
+      "short": "New Duncreig",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "TRW",
+      "name": "Colony of Trallwng",
+      "short": "Trallwng",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "PWL",
+      "name": "Powles' Island",
+      "short": "Powles' Island",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "LND",
+      "name": "Colony of Lanyde",
+      "short": "Lanyde",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "KYI",
+      "name": "Kenyon Islands",
+      "short": "Kenyon Islands",
+      "definite": true,
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "CKP",
+      "name": "Chikup",
+      "short": "Chikup",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "GCB",
+      "name": "Colony of Gwerinish Cribuchel",
+      "short": "Gwerinish Cribuchel",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "VSW",
+      "name": "Protectorate of Visiwa",
+      "short": "Visiwa",
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "TMI",
+      "name": "Tirmerion Islands",
+      "short": "Tirmerion Islands",
+      "definite": true,
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "SPK",
+      "name": "Spinekland",
+      "short": "Spinekland",
+      "colour": "#393660",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "VUG",
+      "name": "Vaughan Islands",
+      "short": "Vaughan Islands",
+      "definite": true,
+      "colour": "#595772",
+      "suzerain": "GWR"
+    },
+    {
+      "id": "SBY",
+      "name": "Duchy of Subeny",
+      "short": "Subeny",
+      "colour": "#BB47FF"
+    },
+    {
+      "id": "KGN",
+      "name": "Kagan Republic",
+      "short": "Kaganland",
+      "colour": "#C9FFF8"
+    },
+    {
+      "id": "TWD",
+      "name": "Twadamian Domena",
+      "short": "Twadamia",
+      "colour": "#9E4A0E"
+    },
+    {
+      "id": "SWD",
+      "name": "Kingdom of Swanders",
+      "short": "Swanders",
+      "colour": "#FF4447"
+    },
+    {
+      "id": "KAN",
+      "name": "Kingdom of Kanland",
+      "short": "Kanland",
+      "colour": "#9E818B"
+    },
+    {
+      "id": "KVP",
+      "name": "United Colonies of Kanish Vortopaga",
+      "short": "Kanish Vortopaga",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "NDV",
+      "name": "Colony of Nodavanua",
+      "short": "Nodavanua",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "KNT",
+      "name": "Protectorate of Kantuland",
+      "short": "Kantuland",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "ADK",
+      "name": "Colony of Andakland",
+      "short": "Andakland",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "NAS",
+      "name": "Colony of New Ashwood",
+      "short": "New Ashwood",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "WRL",
+      "name": "Colony of Wrightsland",
+      "short": "Wrightsland",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "LCL",
+      "name": "Colony of Lacaludo",
+      "short": "Lacaludo",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "LLT",
+      "name": "Protectorate of Lalut",
+      "short": "Lalut",
+      "colour": "#776269",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "KNY",
+      "name": "Colony of Kanish Nyinha",
+      "short": "Kanish Nyinha",
+      "colour": "#9E818B",
+      "suzerain": "KAN"
+    },
+    {
+      "id": "PEL",
+      "name": "Duchy of Pelerclore",
+      "short": "Pelerclore",
+      "colour": "#A551D6"
+    },
+    {
+      "id": "AJX",
+      "name": "Ajaxgul",
+      "short": "Ajaxgul",
+      "colour": "#1A2C9E"
+    },
+    {
+      "id": "OMB",
+      "name": "Omarbati Republic",
+      "short": "Omarbat",
+      "colour": "#9E8B86"
+    },
+    {
+      "id": "VOS",
+      "name": "Kingdom of Vosennac",
+      "short": "Vosennac",
+      "colour": "#6B2EF7"
+    },
+    {
+      "id": "NPW",
+      "name": "Territory of Nanpowan",
+      "short": "Nanpowan",
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "MZI",
+      "name": "Colony of the Marzon Islands",
+      "short": "Marzon Islands",
+      "definite": true,
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "TBI",
+      "name": "Colony of the Thibodeaux Islands",
+      "short": "Thibodeaux Islands",
+      "definite": true,
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "SKI",
+      "name": "Colony of the South Kenyon Islands",
+      "short": "South Kenyon Islands",
+      "definite": true,
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "NLV",
+      "name": "Colony of New Levamart",
+      "short": "New Levamart",
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "VSP",
+      "name": "Federation of Voseni South Panathra",
+      "short": "Voseni South Panathra",
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "VKN",
+      "name": "Crown Territory of Kansilnatu",
+      "short": "Kansilnatu",
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "SVA",
+      "name": "Territory of Sava",
+      "short": "Sava",
+      "colour": "#6B2EF7",
+      "suzerain": "VOS"
+    },
+    {
+      "id": "SRS",
+      "name": "Principality of Santa Rossa",
+      "short": "Santa Rossa",
+      "colour": "#D6D3A7"
+    },
+    {
+      "id": "SCN",
+      "name": "Socialist Cunaria",
+      "short": "Socialist Cunaria",
+      "colour": "#F4BD7F"
+    },
+    {
+      "id": "NCN",
+      "name": "Nationalist Cunaria",
+      "short": "Nationalist Cunaria",
+      "colour": "#C3F7D2"
+    },
+    {
+      "id": "NLN",
+      "name": "Colony of New Lendisi",
+      "short": "New Lendisi",
+      "colour": "#C3F7D2",
+      "suzerain": "NCN"
+    },
+    {
+      "id": "ATT",
+      "name": "Colony of the Attraverso Islands",
+      "short": "Attraverso Islands",
+      "definite": true,
+      "colour": "#C3F7D2",
+      "suzerain": "NCN"
+    },
+    {
+      "id": "CFR",
+      "name": "Cunarian Franzonist Remnants",
+      "short": "Franzonist Remnants",
+      "definite": true,
+      "colour": "#22F4AE"
+    },
+    {
+      "id": "JEN",
+      "name": "Jenensavezin Federation",
+      "short": "Jenensavez",
+      "colour": "#A4AF4F"
+    },
+    {
+      "id": "JMB",
+      "name": "Jenensavezin Muburnyika",
+      "short": "Jenensavezin Muburnyika",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "KRT",
+      "name": "Colony of Karatan",
+      "short": "Karatan",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "DOB",
+      "name": "Colony of Dobranada",
+      "short": "Dobranada",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "JSP",
+      "name": "Jenensavezin South Panathra",
+      "short": "Jenensavezin South Panathra",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "JMN",
+      "name": "Jenensavezin Managan",
+      "short": "Jenensavezin Managan",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "TJV",
+      "name": "Tojvorkopno",
+      "short": "Tojvorkopno",
+      "colour": "#A4AF4F",
+      "suzerain": "JEN"
+    },
+    {
+      "id": "LOX",
+      "name": "Principality of Loxunterra",
+      "short": "Loxunterra",
+      "colour": "#7C9E86"
+    },
+    {
+      "id": "SPT",
+      "name": "Kingdom of Espatana",
+      "short": "Espatana",
+      "colour": "#A177AF"
+    },
+    {
+      "id": "AUS",
+      "name": "Neo-Ausartan Empire",
+      "short": "Neo-Ausarta",
+      "colour": "#F990B7"
+    },
+    {
+      "id": "SAN",
+      "name": "United States of Sanata",
+      "short": "Sanata",
+      "colour": "#18F949"
+    },
+    {
+      "id": "CAC",
+      "name": "Colony of Costa Acero",
+      "short": "Costa Acero",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "SVP",
+      "name": "Protectorate of Sanatese Vortopaga",
+      "short": "Sanatese Vortopaga",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "TDC",
+      "name": "Colony of Torre de Coina",
+      "short": "Torre de Coina",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "PLT",
+      "name": "Colony of Palatia",
+      "short": "Palatia",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "SCB",
+      "name": "Colony of Sanatese Cribuchel",
+      "short": "Sanatese Cribuchel",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "ALG",
+      "name": "Colony of New Aligo",
+      "short": "New Aligo",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "SMN",
+      "name": "Colony of Sanatese Managan",
+      "short": "Sanatese Managan",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "RDZ",
+      "name": "Colony of Rio de Zafiro",
+      "short": "Rio de Zafiro",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "SMG",
+      "name": "Colony of Semungo",
+      "short": "Semungo",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "MBR",
+      "name": "Maburia Territory",
+      "short": "Maburia",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "BKA",
+      "name": "Boka Territory",
+      "short": "Boka",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "NCM",
+      "name": "Protectorate of Nueva Campania",
+      "short": "Nueva Campania",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "ABH",
+      "name": "Colony of Abahodia",
+      "short": "Abahodia",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "LVS",
+      "name": "Colony of Lavosuma",
+      "short": "Lavosuma",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "DAG",
+      "name": "Colony of Dagislaterra",
+      "short": "Dagislaterra",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "WEI",
+      "name": "Territory of Weilian",
+      "short": "Weilian",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "EPT",
+      "name": "El Puerto",
+      "short": "El Puerto",
+      "colour": "#4F72FF"
+    },
+    {
+      "id": "NNT",
+      "name": "Dominion of Nunattiavak",
+      "short": "Nunattiavak",
+      "colour": "#1B6840",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "CHV",
+      "name": "Kingdom of Chevaho",
+      "short": "Chevaho",
+      "colour": "#E27CAA"
+    },
+    {
+      "id": "LPC",
+      "name": "Republic of Los Picos",
+      "short": "Los Picos",
+      "colour": "#00E2D0"
+    },
+    {
+      "id": "SPD",
+      "name": "Colony of San Pedro",
+      "short": "San Pedro",
+      "colour": "#18F949",
+      "suzerain": "SAN"
+    },
+    {
+      "id": "ARV",
+      "name": "Republic of Arveland",
+      "short": "Arveland",
+      "colour": "#AA81E2"
+    },
+    {
+      "id": "MNT",
+      "name": "Federation of Mantrear",
+      "short": "Mantrear",
+      "colour": "#E25158"
+    },
+    {
+      "id": "SNE",
+      "name": "Saint Anne",
+      "short": "Saint Anne",
+      "colour": "#AF7FE2"
+    },
+    {
+      "id": "VAK",
+      "name": "Vackero",
+      "short": "Vackero",
+      "colour": "#E0644C"
+    },
+    {
+      "id": "ROS",
+      "name": "Rosombe",
+      "short": "Rosombe",
+      "colour": "#CB70E0"
+    },
+    {
+      "id": "SUK",
+      "name": "Union of Aoiwa-Sukuishima",
+      "short": "Aoiwa-Sukuishima",
+      "colour": "#998C00"
+    },
+    {
+      "id": "NAH",
+      "name": "Republic of Nova Aheria",
+      "short": "Nova Aheria",
+      "colour": "#8D4EE5"
+    },
+    {
+      "id": "TVC",
+      "name": "Republic of Tavociel",
+      "short": "Tavociel",
+      "colour": "#59E3E5"
+    },
+    {
+      "id": "ONW",
+      "name": "Onanwa Nation",
+      "short": "Onanwa",
+      "colour": "#CC6968"
+    },
+    {
+      "id": "TRN",
+      "name": "Three Nations",
+      "short": "Three Nations",
+      "definite": true,
+      "colour": "#E56498"
+    },
+    {
+      "id": "ATH",
+      "name": "Commonwealth of Athanasia",
+      "short": "Athanasia",
+      "colour": "#E56498",
+      "parent": "TRN"
+    },
+    {
+      "id": "NCO",
+      "name": "Territory of New Cona",
+      "short": "New Cona",
+      "colour": "#E56498",
+      "parent": "TRN"
+    },
+    {
+      "id": "DIM",
+      "name": "Dimuro",
+      "short": "Dimuro",
+      "colour": "#E56498",
+      "parent": "TRN"
+    },
+    {
+      "id": "SHN",
+      "name": "Republic of Shinchi",
+      "short": "Shinchi",
+      "colour": "#A84571"
+    },
+    {
+      "id": "TGY",
+      "name": "United Republic of Tirgoyan",
+      "short": "Tirgoyan",
+      "colour": "#74A83C"
+    },
+    {
+      "id": "GRG",
+      "name": "Republic of Giorgia",
+      "short": "Giorgia",
+      "colour": "#E5E509"
+    },
+    {
+      "id": "EMS",
+      "name": "Emasic Republic",
+      "short": "Emasen",
+      "colour": "#AD4927"
+    },
+    {
+      "id": "ARY",
+      "name": "Imperial Republic of Aroyan",
+      "short": "Aroyan",
+      "colour": "#87ADA5"
+    },
+    {
+      "id": "KWE",
+      "name": "Kingdom of Kewelat",
+      "short": "Kewelat",
+      "colour": "#AD5666"
+    },
+    {
+      "id": "JSH",
+      "name": "Kingdom of Jashastan",
+      "short": "Jashastan",
+      "colour": "#ADABAD"
+    },
+    {
+      "id": "ILT",
+      "name": "Republic of Ilitaria",
+      "short": "Ilitaria",
+      "colour": "#8527AD"
+    },
+    {
+      "id": "BUM",
+      "name": "Niroumandist Republic of Bumen",
+      "short": "Bumen",
+      "colour": "#007FFF"
+    },
+    {
+      "id": "SIS",
+      "name": "Federation of the Six Sororal Realms",
+      "short": "Six Sisters",
+      "definite": true,
+      "colour": "#FFEE00"
+    },
+    {
+      "id": "QRG",
+      "name": "People's Republic of Qorgastan",
+      "short": "Qorgastan",
+      "colour": "#A97E7E"
+    },
+    {
+      "id": "AGR",
+      "name": "Kingdom of Agaria",
+      "short": "Agaria",
+      "colour": "#AD4169"
+    },
+    {
+      "id": "VRP",
+      "name": "Virupan Empire",
+      "short": "Virupa",
+      "colour": "#FFEE3D"
+    },
+    {
+      "id": "ZAN",
+      "name": "Zania",
+      "short": "Zania",
+      "colour": "#73AA70"
+    },
+    {
+      "id": "VKD",
+      "name": "Kingdom of Vokanda",
+      "short": "Vokanda",
+      "colour": "#4E8FAD"
+    },
+    {
+      "id": "NKO",
+      "name": "Empire of Nekotistan",
+      "short": "Nekotistan",
+      "colour": "#AD2E98"
+    },
+    {
+      "id": "QCO",
+      "name": "Monarchic Republic of Quoccao",
+      "short": "Quoccao",
+      "colour": "#AD4859"
+    },
+    {
+      "id": "TNA",
+      "name": "Kingdom of Trenia",
+      "short": "Trenia",
+      "colour": "#54AD06"
+    },
+    {
+      "id": "BDI",
+      "name": "Bachdan Islands",
+      "short": "Bachdan Islands",
+      "definite": true,
+      "colour": "#54AD06",
+      "suzerain": "TNA"
+    },
+    {
+      "id": "ATN",
+      "name": "United Islands of Atinpania",
+      "short": "Atinpania",
+      "colour": "#AD4B35",
+      "suzerain": "FNA"
+    },
+    {
+      "id": "TNG",
+      "name": "Tangmou Republic",
+      "short": "Tangmon",
+      "colour": "#FF898F"
+    },
+    {
+      "id": "TNM",
+      "name": "Kingdom of Tanmoia",
+      "short": "Tanmoia",
+      "colour": "#FB8CFF"
+    },
+    {
+      "id": "UKH",
+      "name": "State of Ukhiava",
+      "short": "Ukhiava",
+      "colour": "#436B61"
+    },
+    {
+      "id": "THD",
+      "name": "Kingdom of Thidanook",
+      "short": "Thidanook",
+      "colour": "#D1FFBC"
+    },
+    {
+      "id": "LNZ",
+      "name": "Kingdom of Lanizemin",
+      "short": "Lanizemin",
+      "colour": "#69BBBC"
+    },
+    {
+      "id": "KRF",
+      "name": "Kingdom of Karanfold",
+      "short": "Karanfold",
+      "colour": "#A89F00"
+    },
+    {
+      "id": "MRI",
+      "name": "Combine of Marimaa",
+      "short": "Marimaa",
+      "colour": "#AA7564"
+    },
+    {
+      "id": "ZUN",
+      "name": "Tribal Confederation of Zuungazar",
+      "short": "Zuungazar",
+      "colour": "#CE6D9F"
+    },
+    {
+      "id": "KLT",
+      "name": "Kingdom of Kaltaina",
+      "short": "Kaltaina",
+      "colour": "#C15EFF"
+    },
+    {
+      "id": "HNU",
+      "name": "Federation of Henuland",
+      "short": "Henuland",
+      "colour": "#E2FF8C"
+    },
+    {
+      "id": "PMK",
+      "name": "Kingdom of Prathesmiksu",
+      "short": "Prathesmiksu",
+      "colour": "#7BCE8F"
+    },
+    {
+      "id": "CAF",
+      "name": "Confederal Alliance of Fuinam",
+      "short": "Confederal Alliance",
+      "definite": true,
+      "colour": "#CEC0A1"
+    },
+    {
+      "id": "GAN",
+      "name": "Communities of Gaanseui",
+      "short": "Gaanseui",
+      "colour": "#CEC0A1",
+      "suzerain": "CAF"
+    },
+    {
+      "id": "MWU",
+      "name": "Mawu Princedom",
+      "short": "Mawu",
+      "colour": "#CEC0A1",
+      "suzerain": "CAF"
+    },
+    {
+      "id": "KOF",
+      "name": "Kingdom of Fuinam",
+      "short": "Fuinam",
+      "colour": "#BF9300"
+    },
+    {
+      "id": "MNJ",
+      "name": "Brotherhood Tribes of Munjau",
+      "short": "Munjau",
+      "colour": "#BF9300",
+      "suzerain": "KOF"
+    },
+    {
+      "id": "ETA",
+      "name": "International Commissariat for the Enclave Territories in Angland and Soalang",
+      "short": "Enclave Territories",
+      "definite": true,
+      "colour": "#E2E0E1"
+    },
+    {
+      "id": "SGQ",
+      "name": "Sublime Kingdom of the Great Quan",
+      "short": "Great Quan",
+      "definite": true,
+      "colour": "#A984CE"
+    },
+    {
+      "id": "AMR",
+      "name": "Amargigurun",
+      "short": "Amargigurun",
+      "colour": "#CE4499"
+    },
+    {
+      "id": "SOA",
+      "name": "State of Soalang",
+      "short": "Soalang",
+      "colour": "#3BCEBA"
+    },
+    {
+      "id": "AMY",
+      "name": "Amryn Empire",
+      "short": "Nuteamryn",
+      "colour": "#44ABFF"
+    },
+    {
+      "id": "HNM",
+      "name": "Kingdom of Hunmea",
+      "short": "Hunmea",
+      "colour": "#FFCEA3"
+    },
+    {
+      "id": "AKA",
+      "name": "Empire of Akasora",
+      "short": "Akasora",
+      "colour": "#C6B5FF"
+    },
+    {
+      "id": "HMA",
+      "name": "Hamanshima Territory",
+      "short": "Hamanshima",
+      "colour": "#C6B5FF",
+      "suzerain": "AKA"
+    },
+    {
+      "id": "AKD",
+      "name": "United Imperial Territories of the Akasoran Ditokian",
+      "short": "Akasoran Ditokian",
+      "definite": true,
+      "colour": "#C6B5FF",
+      "suzerain": "AKA"
+    },
+    {
+      "id": "MRD",
+      "name": "Land of Moradzar",
+      "short": "Moradzar",
+      "colour": "#FFEED3"
+    },
+    {
+      "id": "JNI",
+      "name": "Holy Kingdom of Jenisia",
+      "short": "Jenisia",
+      "colour": "#FF630A"
+    },
+    {
+      "id": "WRK",
+      "name": "Kingdom of Werikia",
+      "short": "Werikia",
+      "colour": "#D8C1BC"
+    },
+    {
+      "id": "AJB",
+      "name": "Kingdom of Anjab",
+      "short": "Anjab",
+      "colour": "#D2FFB5"
+    },
+    {
+      "id": "RKO",
+      "name": "Kingdom of Rorkoth",
+      "short": "Rorkoth",
+      "colour": "#D6A062"
+    },
+    {
+      "id": "AGL",
+      "name": "Republic of Greater Agalur",
+      "short": "Greater Agalur",
+      "colour": "#509522"
+    },
+    {
+      "id": "CDM",
+      "name": "Republic of Cidiama",
+      "short": "Cidiama",
+      "colour": "#CCCCCC"
+    },
+    {
+      "id": "URT",
+      "name": "State of Uratia",
+      "short": "Uratia",
+      "colour": "#8BA0B7"
+    },
+    {
+      "id": "ENY",
+      "name": "Kingdom of Eniya",
+      "short": "Eniya",
+      "colour": "#A9BED8"
+    },
+    {
+      "id": "MBG",
+      "name": "Republic of Mubbanga",
+      "short": "Mubbanga",
+      "colour": "#FFBF00"
+    },
+    {
+      "id": "AKN",
+      "name": "Akhan State",
+      "short": "Akhan",
+      "colour": "#79AFD8"
+    },
+    {
+      "id": "CIG",
+      "name": "Kingdom of Cigara",
+      "short": "Cigara",
+      "colour": "#CAC4FF"
+    },
+    {
+      "id": "SRV",
+      "name": "Kingdom of Sorovera",
+      "short": "Sorovera",
+      "colour": "#BC69AC"
+    },
+    {
+      "id": "XND",
+      "name": "Kingdom of Xanda",
+      "short": "Xanda",
+      "colour": "#88D8C4"
+    },
+    {
+      "id": "KPY",
+      "name": "Kingdom of Kupenya",
+      "short": "Kupenya",
+      "colour": "#D86D38"
+    },
+    {
+      "id": "SGA",
+      "name": "Kingdom of Saga",
+      "short": "Saga",
+      "colour": "#0007D8"
+    },
+    {
+      "id": "IOK",
+      "name": "IOkuomu Tribal Confederation",
+      "short": "Abantokuomu",
+      "colour": "#A7CFD3"
+    },
+    {
+      "id": "OKU",
+      "name": "Okuomu Tribes",
+      "short": "Okuomuland",
+      "colour": "#8A8A8A"
+    },
+    {
+      "id": "SNG",
+      "name": "Imperial Territory of Shiniwanogan",
+      "short": "Shiniwanogan",
+      "colour": "#867BAD",
+      "suzerain": "AKA"
+    },
+    {
+      "id": "NHB",
+      "name": "Kingdom of Nahabatho",
+      "short": "Nahabatho",
+      "colour": "#BC941E"
+    },
+    {
+      "id": "CSL",
+      "name": "Kingdom of Casalina",
+      "short": "Casalina",
+      "colour": "#A1FF6B"
+    },
+    {
+      "id": "GOI",
+      "name": "Republic of Gioimoi",
+      "short": "Gioimoi",
+      "colour": "#507F4C"
+    },
+    {
+      "id": "MWK",
+      "name": "Kingdom of Mawaka",
+      "short": "Mawaka",
+      "colour": "#CC817A"
+    },
+    {
+      "id": "OKH",
+      "name": "Interim Territory of Onkhuwa",
+      "short": "Onkhuwa",
+      "colour": "#CC817A",
+      "suzerain": "MWK"
+    },
+    {
+      "id": "OWC",
+      "name": "Kingdom of Owerchisia",
+      "short": "Owerchisia",
+      "colour": "#FFA199"
+    },
+    {
+      "id": "ANH",
+      "name": "Accorded Kingdom of Kaai and Adjacent Realms",
+      "short": "Ainahanau",
+      "colour": "#E28009"
+    },
+    {
+      "id": "CNC",
+      "name": "Continental Confederation",
+      "short": "Continental Confederation",
+      "definite": true,
+      "colour": "#914A5F"
+    }
+  ]
+}

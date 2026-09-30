@@ -41,7 +41,7 @@
 const VERSION = new URL(import.meta.url).search;
 
 const {
-  OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH, controllerOf, frontierKeyOf,
+  OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH, controllerOf, frontierKeyOf, realmOf,
   toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
   indexProvinces, attachBlockMembers, addRealmBlocks,
   normaliseSeaTable, buildSeaWorld, indexSea,
@@ -49,8 +49,10 @@ const {
   normaliseSubTable, buildSubWorld, indexSubs,
   setIslandBlocks, computeBlockGeometry,
 } = await import(`./mapdata.js${VERSION}`);
-const { CACHE_FILE, hashInputs, unpackCache, worldFromCache, seaFromCache, countiesFromCache, subsFromCache } = await import(`./mapcache.js${VERSION}`);
+const { CACHE_FILE, hashInputs, applyCountyOccupation, unpackCache, worldFromCache, seaFromCache, countiesFromCache, subsFromCache } = await import(`./mapcache.js${VERSION}`);
 const { mergeStats, BUILDINGS, BUILDING_AT } = await import(`./provincestats.js${VERSION}`);
+const { compass, costWeighting, urbanisation, miningShare, dugDeposits, supportRate, nationalSupport,
+  governingSupport, spreadOverProvinces, spreadByWeight, supportHappiness, actEffects, industryShares, feltFor, nameOf, realmCompass, LAW_LABEL } = await import(`./government.js${VERSION}`);
 const { setOwners } = await import(`./ownership.js${VERSION}`);
 const {
   mapLatAt, mapLonAt, mapRowAt, mapColAt,
@@ -262,6 +264,18 @@ const RESOURCE_MAX_LINE = 13;
 // something, so it falls back to a neutral grey rather than crashing the repaint.
 const polityOf = (w, p) => w.table.polityById.get(controllerOf(p)) || UNKNOWN_POLITY;
 
+/**
+ * A polity's short name, with the article where it takes one.
+ *
+ * The Marzon Islands are the Marzon Islands in a sentence and "Marzon Islands"
+ * on a label, so the article is not part of the name. `definite` on the polity
+ * says it takes one, and only prose asks for it.
+ */
+const shortNameOf = (polity, article = false) => {
+  const short = polity?.short || polity?.name || '';
+  return article && polity?.definite ? 'the ' + short : short;
+};
+
 // The five map modes. Each is just "province -> base [r,g,b]"; highlighting,
 // borders and everything else is applied on top by the shade table.
 const MODES = {
@@ -286,6 +300,12 @@ const MODES = {
   // is being read here is the writing over it and the ground only has to say
   // whose it is. The figures are drawn in drawResources, a level above this.
   resources: (w, p) => polityOf(w, p).colour,
+  // The ideology map. A province is painted with the colours of what its people
+  // want, blended in proportion to how many want it. Unaligned is grey, so a
+  // province with little politics washes out rather than reading as whichever
+  // movement happens to lead a population that mostly wants nothing.
+  ideology: (w, p) => supportColour(w, p),
+
   terrain: (w, p) => {
     // Ground and climate weigh the same, whatever number of each a province has.
     // Averaging all the tags together in one list would let a province that is
@@ -311,7 +331,7 @@ const MODES = {
  * MODES takes the tooltip down with it, and seven near-identical entries are
  * seven chances to leave one out.
  */
-const INFRA_LAYERS = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase', 'factories', 'hydro', 'rail'];
+const INFRA_LAYERS = ['road', 'electricity', 'radar', 'fortNew', 'supplyHub', 'antiAir', 'airBase', 'factories', 'hydro', 'rail'];
 for (const key of INFRA_LAYERS) MODES['infra:' + key] = (w, p) => polityOf(w, p).colour;
 
 // The county map.
@@ -342,6 +362,49 @@ const COUNTY_PROVINCE = 0.34;      // and the province border over the top of th
 // of the original lightness left in as a second axis of separation for two
 // regions that landed on the same hue.
 const NAVY_LAND = [64, 68, 76];
+
+// Ground nobody's politics have been written for yet. Darker than any ideology
+// colour and flatter, so an authored province reads as authored at a glance.
+const SUPPORT_BLANK = [56, 58, 62];
+// Where the wash runs from and to. A movement holding SUPPORT_FULL of a province
+// is painted in its own colour; one holding SUPPORT_FLOOR or less is washed
+// SUPPORT_WASH of the way to white. The figures come off the authored data:
+// leading shares run 14 to 38 with a median of 24, so the range covers them
+// without either end being unreachable.
+const SUPPORT_FLOOR = 12;
+const SUPPORT_FULL = 40;
+const SUPPORT_WASH = 0.85;
+
+/**
+ * A province in the colour of the movement that leads it, washed out by how far
+ * short of leading it that movement is.
+ *
+ * Nothing is blended. Mixing the colours put every province in a country within
+ * a few shades of the same brown, because opposing hues cancel and most of a
+ * province is not its leading movement. One colour says which way the ground
+ * leans and the wash says how far.
+ *
+ * Unaligned is not a candidate. It leads 23 of the 52 authored provinces, so
+ * treating it as a colour would grey out half the map and hide the movement in
+ * a province where it leads by 21 to 16. It shows up as paleness instead: a
+ * province with a large unaligned share has a small leading share by
+ * arithmetic, and comes out near white.
+ */
+function supportColour(w, p) {
+  const s = w.stats?.[p.id]?.support;
+  if (!s) return SUPPORT_BLANK;
+  let lead = null;
+  for (const [name, share] of Object.entries(s)) {
+    if (name === 'unaligned' || !(share > 0)) continue;
+    if (!lead || share > lead[1]) lead = [name, share];
+  }
+  const c = lead && w.ideologyColour?.get(lead[0]);
+  if (!c) return SUPPORT_BLANK;
+
+  const t = Math.max(0, Math.min(1, (lead[1] - SUPPORT_FLOOR) / (SUPPORT_FULL - SUPPORT_FLOOR)));
+  const wash = (1 - t) * SUPPORT_WASH;
+  return c.map((v) => Math.round(v + (255 - v) * wash));
+}
 
 // How far a subregion's shade may wander from its region's, and how much
 // darker its own borders are drawn. The region border stays NAVY_EDGE, which
@@ -562,23 +625,16 @@ function sunShiftPx(world) {
   return ((px % world.width) + world.width) % world.width;
 }
 
-// How hard the night reads, per map mode. The satellite view wants the real
-// thing. The political map is carrying country colours that a heavy wash would
-// bury, so it takes about half, which is enough to see where the line falls
-// without losing which country is which.
-const NIGHT_DARKEN = { political: 0.28, province: 0.31, terrain: 0.33, default: 0.32 };
-const NIGHT_LIGHTS = { political: 0.55, province: 0.75, terrain: 0.75, default: 0.8 };
-
-// The resource and infrastructure layers ARE the political map with writing
-// over them, so they take its night rather than the default. Falling through
-// left them a shade darker than the map they are drawn on, which shows the
-// moment you switch between the two.
-for (const mode of ['resources', ...INFRA_LAYERS.map((k) => 'infra:' + k)]) {
-  NIGHT_DARKEN[mode] = NIGHT_DARKEN.political;
-  NIGHT_LIGHTS[mode] = NIGHT_LIGHTS.political;
-}
-
-const nightStrength = (table) => table[state.mode] ?? table.default;
+// How hard the night reads. One figure for every layer: the terminator moving
+// between two shades as the mode changes read as a fault in the map rather than
+// as a difference between the layers.
+//
+// The figures are the political map's. It carries country colours that a heavy
+// wash would bury, so it takes about half, which is enough to see where the line
+// falls without losing which country is which, and every other layer is either
+// that map with writing over it or wants the same restraint.
+const NIGHT_DARKEN = 0.28;
+const NIGHT_LIGHTS = 0.55;
 
 /* The mask, its pixel buffer, and the trigonometry that depends only on the
  * map. Held across rebuilds rather than made fresh each time.
@@ -895,6 +951,64 @@ function countyShadeTable(counties, selectedProvince) {
 }
 
 /**
+ * Provinces a front runs through: those whose counties are not all held by the
+ * same side. A province takes one colour, its controller's, which is right while
+ * every county in it answers to the same power. Where they do not, shadeTable
+ * gives each of its counties a slot of its own after the provinces, and the
+ * painter reads a pixel there by county.
+ *
+ * `mixed` is per province; `slotOf` and `homeOf` are per county, the slot it is
+ * shaded from and the province it belongs to, both zero for a county outside a
+ * split province. Null when no province is split, which is the usual case and
+ * leaves the political map exactly as it was.
+ *
+ * KEPT between calls, for the reason countyShade is: this is a pass over every
+ * county, and shadeTable runs on every hover. Occupation is set once, at load, by
+ * applyCountyOccupation. Anything that moves it later has to drop this, by
+ * setting splitShade.counties back to null.
+ */
+let splitShade = { counties: null, value: null };
+
+function splitGround(world) {
+  const { counties } = world;
+  if (!counties) return null;
+  if (splitShade.counties === counties) return splitShade.value;
+
+  const n = world.atIndex.length;
+  const m = counties.atIndex.length;
+  const provinceOf = (c) => world.byId.get(c.province);
+
+  // Who holds the first county met in each province, then whether any other
+  // county in it answers to someone else.
+  const first = new Array(n);
+  const mixed = new Uint8Array(n);
+  for (let ci = 1; ci < m; ci++) {
+    const c = counties.atIndex[ci];
+    const p = provinceOf(c);
+    if (!p) continue;
+    const who = c.occupier || p.owner;
+    if (first[p.index] === undefined) first[p.index] = who;
+    else if (first[p.index] !== who) mixed[p.index] = 1;
+  }
+
+  const list = [];
+  const slotOf = new Int32Array(m);
+  const homeOf = new Int32Array(m);
+  for (let ci = 1; ci < m; ci++) {
+    const c = counties.atIndex[ci];
+    const p = provinceOf(c);
+    if (!p || !mixed[p.index]) continue;
+    slotOf[ci] = n + list.length;
+    homeOf[ci] = p.index;
+    list.push({ slot: slotOf[ci], county: c, province: p });
+  }
+
+  const value = list.length ? { mixed, slotOf, homeOf, countyAt: counties.countyAt, list } : null;
+  splitShade = { counties, value };
+  return value;
+}
+
+/**
  * One fill and one border colour per sea SUBREGION.
  *
  * A subregion takes its region's colour and shifts it a little, so the whole
@@ -969,20 +1083,25 @@ function shadeTable(world, mode, selected, hovered) {
   // would disagree about what is lit and leave a patch behind.
   const { atIndex } = world;
   const n = atIndex.length;
-  const rim = new Uint8Array(n * 3);      // interior, hard against a frontier
-  const core = new Uint8Array(n * 3);     // interior, deep inland — the pastel wash
-  const softRim = new Uint8Array(n * 3);  // subdivision line, near a frontier
-  const softCore = new Uint8Array(n * 3); // subdivision line, inland
-  const hard = new Uint8Array(n * 3);     // the frontier line itself
-  const stripe = new Uint8Array(n * 3);   // occupied ground: the owner's colour, for the stripes
-  const striped = new Uint8Array(n);      // and which provinces get them
+  // Provinces a front runs through, whose counties are shaded one by one in
+  // slots after the provinces. Null off the political map and wherever no
+  // province is split, and every table below is then exactly what it was.
+  const split = mode === 'political' ? splitGround(world) : null;
+  const slots = n + (split ? split.list.length : 0);
+  const rim = new Uint8Array(slots * 3);      // interior, hard against a frontier
+  const core = new Uint8Array(slots * 3);     // interior, deep inland — the pastel wash
+  const softRim = new Uint8Array(slots * 3);  // subdivision line, near a frontier
+  const softCore = new Uint8Array(slots * 3); // subdivision line, inland
+  const hard = new Uint8Array(slots * 3);     // the frontier line itself
+  const stripe = new Uint8Array(slots * 3);   // occupied ground: the owner's colour, for the stripes
+  const striped = new Uint8Array(slots);      // and which provinces get them
   const neighbours = selected ? world.adjacency.get(selected) : null;
   const colourOf = MODES[mode];
 
   // Owners as small integers, so the pixel loop can ask "same owner?" with a
   // number comparison rather than a string one. Ocean stays -1, which never
   // matches any province, so every coastline automatically counts as a hard edge.
-  const ownerAt = new Int32Array(n).fill(-1);
+  const ownerAt = new Int32Array(slots).fill(-1);
   const ownerOrdinal = new Map();
 
   // Whether the imagery is showing decides the whole alpha scheme. With it off
@@ -998,6 +1117,34 @@ function shadeTable(world, mode, selected, hovered) {
   const navy = mode === 'navy' && !!world.sea;
   const county = mode === 'county' && !!world.counties;
   const lift = new Uint8Array(n);       // extra opacity for a highlighted province
+  const mixOf = split ? new Float32Array(n) : null;   // each province's highlight, for its counties
+
+  // One slot's colours: the fill at the frontier, the wash inland, the two
+  // subdivision tones and the frontier line. A province's slot and a county's are
+  // made the same way, so a split province matches the ground around it.
+  const tint = (at, c, mix) => {
+    for (let ch = 0; ch < 3; ch++) {
+      const v = c[ch] + (255 - c[ch]) * mix;                       // the country's colour
+      const pale = v + (PASTEL_TOWARD[ch] - v) * PASTEL_MIX;       // washed, for inland
+      const inland = shaped ? pale : v;         // unshaped modes never wash out
+      rim[at * 3 + ch] = v;
+      core[at * 3 + ch] = inland;
+      softRim[at * 3 + ch] = v * BORDER_INTERNAL;
+      softCore[at * 3 + ch] = inland * BORDER_INTERNAL;
+      hard[at * 3 + ch] = v * BORDER_NATIONAL;
+    }
+  };
+
+  // Occupied ground: the stripe colour is the DE JURE owner's, so the ground
+  // reads as the occupier's with the owner showing through.
+  const stripeWith = (at, ownerId, mix) => {
+    const owner = world.table.polityById.get(ownerId);
+    if (!owner) return;
+    striped[at] = 1;
+    for (let ch = 0; ch < 3; ch++) {
+      stripe[at * 3 + ch] = owner.colour[ch] + (255 - owner.colour[ch]) * mix;
+    }
+  };
 
   for (let ix = 1; ix < n; ix++) {
     const p = atIndex[ix];
@@ -1042,32 +1189,29 @@ function shadeTable(world, mode, selected, hovered) {
 
     const mix = role ? LIGHTEN[role] * strength : 0;
     if (over && role) lift[ix] = Math.round(255 * SATELLITE_LIFT[role] * strength);
+    if (mixOf) mixOf[ix] = mix;
 
-    const c = colourOf(world, p);
-    for (let ch = 0; ch < 3; ch++) {
-      const v = c[ch] + (255 - c[ch]) * mix;                       // the country's colour
-      const pale = v + (PASTEL_TOWARD[ch] - v) * PASTEL_MIX;       // washed, for inland
-      const inland = shaped ? pale : v;         // unshaped modes never wash out
-      rim[ix * 3 + ch] = v;
-      core[ix * 3 + ch] = inland;
-      softRim[ix * 3 + ch] = v * BORDER_INTERNAL;
-      softCore[ix * 3 + ch] = inland * BORDER_INTERNAL;
-      hard[ix * 3 + ch] = v * BORDER_NATIONAL;
-    }
+    tint(ix, colourOf(world, p), mix);
 
-    // Occupied ground: the stripe colour is the DE JURE owner's, so the province
-    // reads as the occupier's with the owner showing through. Only the political
-    // map does this. The other two are answering different questions and a
-    // stripe over them would be noise.
-    if (mode === 'political' && p.occupier && p.occupier !== p.owner) {
-      const owner = world.table.polityById.get(p.owner);
-      if (owner) {
-        striped[ix] = 1;
-        for (let ch = 0; ch < 3; ch++) {
-          const v = owner.colour[ch] + (255 - owner.colour[ch]) * mix;
-          stripe[ix * 3 + ch] = v;
-        }
-      }
+    // Occupied ground is striped with its owner's colour (see stripeWith). Only
+    // the political map does this. The other two are answering different
+    // questions and a stripe over them would be noise.
+    if (mode === 'political' && p.occupier && p.occupier !== p.owner) stripeWith(ix, p.owner, mix);
+  }
+
+  // The counties of a split province, each in its own slot: the colour of whoever
+  // holds it, the owner's stripes where that is anyone but the owner, and the
+  // province's highlight. Their frontier keys join the provinces', so a county
+  // meets the rest of the same holder's ground as a subdivision and anyone
+  // else's across a frontier, exactly as a whole province would.
+  if (split) {
+    for (const { slot, county, province: p } of split.list) {
+      const held = { owner: p.owner, occupier: county.occupier };
+      const key = frontierKeyOf(held);
+      if (!ownerOrdinal.has(key)) ownerOrdinal.set(key, ownerOrdinal.size);
+      ownerAt[slot] = ownerOrdinal.get(key);
+      tint(slot, colourOf(world, held), mixOf[p.index]);
+      if (held.occupier && held.occupier !== p.owner) stripeWith(slot, p.owner, mixOf[p.index]);
     }
   }
 
@@ -1088,7 +1232,7 @@ function shadeTable(world, mode, selected, hovered) {
 
   const flat = over ? Math.round(255 * SATELLITE_FLAT) : 255;
   return {
-    rim, core, softRim, softCore, hard, stripe, striped, ownerAt, over, fade, lift,
+    rim, core, softRim, softCore, hard, stripe, striped, ownerAt, over, fade, lift, split,
 
     // The water, for the Navy mode only. seaAt is null on every other mode and
     // whenever sea.png or sea.json is missing, and the painter falls back to the
@@ -1135,7 +1279,7 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
   const { rim, core, softRim, softCore, hard, stripe, striped, ownerAt, over, fade, lift } = t;
   const { aRim, aCore, aInternal, aNational, aSea } = t;
   const { seaAt, base: seaBase, edge: seaEdge, subAt, subBase, subEdge } = t;
-  const { countyAt, countyBase, countyEdge } = t;
+  const { countyAt, countyBase, countyEdge, split } = t;
   // One value for the whole pass rather than a rounding per pixel.
   const countyAlpha = over ? Math.round(255 * SATELLITE_FLAT) : 255;
   const d = scratch.data;
@@ -1215,14 +1359,32 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
       // running down the map's seam is drawn like any other. Below does not:
       // there is nothing past a pole to share an edge with.
       const x = tile.x + lx;
-      const right = provinceAt[x + 1 < width ? i + 1 : y * width];
+      const ri = x + 1 < width ? i + 1 : y * width;
+      const right = provinceAt[ri];
       const below = y + 1 < height ? provinceAt[i + width] : index;
-      const mine = ownerAt[index];
+      // The slot this pixel is shaded from: its province's, or on ground split
+      // between two holders, its county's. See splitGround.
+      let at = index;
       let edge = 0;                                // 0 interior, 1 internal edge, 2 national edge
-      if (right !== index) edge = ownerAt[right] === mine ? 1 : 2;
-      if (below !== index && edge < 2) edge = Math.max(edge, ownerAt[below] === mine ? 1 : 2);
+      if (split === null || (split.mixed[index] | split.mixed[right] | split.mixed[below]) === 0) {
+        const mine = ownerAt[index];
+        if (right !== index) edge = ownerAt[right] === mine ? 1 : 2;
+        if (below !== index && edge < 2) edge = Math.max(edge, ownerAt[below] === mine ? 1 : 2);
+      } else {
+        // The same right-and-below rule, read by county where a province is
+        // split. Between two provinces nothing changes. Inside a split one a
+        // change of holder is a frontier, the front itself, and a change of
+        // county alone is nothing, since the political map draws no county lines.
+        const { mixed, slotOf, homeOf, countyAt: cAt } = split;
+        const slotAt = (j, pj) => (mixed[pj] && homeOf[cAt[j]] === pj ? slotOf[cAt[j]] : pj);
+        at = slotAt(i, index);
+        const mine = ownerAt[at];
+        const edgeTo = (j, pj) => (ownerAt[slotAt(j, pj)] === mine ? (pj === index ? 0 : 1) : 2);
+        edge = edgeTo(ri, right);
+        if (edge < 2 && y + 1 < height) edge = Math.max(edge, edgeTo(i + width, below));
+      }
 
-      const c = index * 3;
+      const c = at * 3;
 
       // The county map. It reads the same right-and-below rule twice: once for
       // the counties, which draw a light line, and once for the provinces above
@@ -1269,7 +1431,7 @@ function paintTileRegion(world, t, tile, lx0, ly0, lx1, ly1) {
       // degrees and never lines up with a border. Map pixels rather than screen
       // ones, so the stripes belong to the ground and travel with it under a
       // zoom instead of crawling across it.
-      if (striped[index] && ((x + y) % STRIPE_PERIOD) < STRIPE_WIDTH) {
+      if (striped[at] && ((x + y) % STRIPE_PERIOD) < STRIPE_WIDTH) {
         d[o] = stripe[c]; d[o + 1] = stripe[c + 1]; d[o + 2] = stripe[c + 2];
       }
 
@@ -3239,7 +3401,7 @@ const RIVER_ALPHA = 0.34;
  * stay bright through the night and read as something on the interface rather
  * than something in the world.
  *
- * data/img/rivers.png is transparent everywhere except the rivers, which is what
+ * data/img/bitmap/rivers.png is transparent everywhere except the rivers, which is what
  * lets this be one blit rather than a mask and a fill. Nothing is tinted here:
  * the colour is in the file. See the rivers pass in sync-provinces.js.
  *
@@ -3359,7 +3521,7 @@ function drawNightLayer(ctx, cssW, cssH) {
   if (!anyNightVisible(w, cssW, cssH)) return;
 
   const originX = view.x + sunShiftPx(w) * view.scale;
-  const dark = nightStrength(NIGHT_DARKEN);
+  const dark = NIGHT_DARKEN;
 
   if (dark > 0.004) {
     ctx.save();
@@ -3369,7 +3531,7 @@ function drawNightLayer(ctx, cssW, cssH) {
     ctx.restore();
   }
 
-  const lit = nightStrength(NIGHT_LIGHTS);
+  const lit = NIGHT_LIGHTS;
   if (w.night && lit > 0.004) drawCityLights(ctx, cssW, cssH, originX, lit);
 }
 
@@ -5205,6 +5367,7 @@ function drawInfrastructure(ctx, cssW, cssH, dx) {
   if (!w?.bounds || !w.stats) return;
   const key = state.mode.slice('infra:'.length);
   if (key === 'rail') return;   // drawn under the labels, above
+  if (key === 'fortNew') { drawCountyForts(ctx, cssW, cssH, dx); return; }
 
   // Below the size a line can be read at the layer says nothing. Zooming out
   // has to thin it rather than bring more provinces on screen and write 6px
@@ -5245,6 +5408,7 @@ function drawInfrastructure(ctx, cssW, cssH, dx) {
     } else {
       if (!Array.isArray(e[key])) return;
       [built, max] = e[key];
+      max = usableCeiling(key, max);
     }
     if (!max) return;
 
@@ -5278,6 +5442,64 @@ function drawInfrastructure(ctx, cssW, cssH, dx) {
   for (const id of w.bounds.keys()) if (id !== state.selected) one(id, false);
   if (state.selected) one(state.selected, true);
   debug.infrastructure = drawn;
+}
+
+/**
+ * Fortification on the COUNTY, the new rule, drawn beside the old province one
+ * so the two can be compared with a switch of the layer.
+ *
+ * Everything about the figure is the province layer's: the same baked line, the
+ * same zoom cutoff, the same overhang test, the same enlargement of the chosen
+ * one. The whole of the difference is where it is anchored and what it counts.
+ * A county carries its own level and its own ceiling, so a mountain county can
+ * read 4/10 while the farmland beside it reads 0/6, which is the thing the
+ * province layer could never show.
+ */
+function drawCountyForts(ctx, cssW, cssH, dx) {
+  const w = state.world, s = view.scale;
+  const cs = w?.counties;
+  if (!cs?.byId || !cs.bounds) return;
+
+  const natural = RESOURCE_LINE * s;
+  if (natural < RESOURCE_MIN_LINE) { debug.infrastructure = 0; return; }
+  const base = Math.round(Math.min(natural, RESOURCE_MAX_LINE));
+  const big = Math.round(base * RESOURCE_SELECTED);
+
+  let drawn = 0;
+  const one = (c, chosen) => {
+    const max = countyFortCeiling(c);
+    if (!max) return;                       // nothing can be dug here, so say nothing
+    const built = c.fortification || 0;
+
+    const bb = cs.bounds.get(c.id);
+    if (!bb) return;
+
+    // The written centre, not the centre of mass, for the reason the rail net
+    // gives: a county bent around a bay puts its mass out in the water and
+    // sync-provinces has already pulled the written centre back onto its ground.
+    const at = Array.isArray(c.centre)
+      ? { x: mapColAt((c.centre[1] * Math.PI) / 180, cs.width), y: mapRowAt((c.centre[0] * Math.PI) / 180) }
+      : { x: bb.cx, y: bb.cy };
+
+    const b = bakedLevelLine(built + '/' + max, chosen ? big : base);
+    const x = at.x * s + view.x;
+    if (x + dx < -160 || x + dx > cssW + 160) return;
+    const y = at.y * s + view.y;
+    if (y + b.h < 0 || y - b.h > cssH) return;
+    if (!chosen && (bb.maxX - bb.minX + 1) * s < b.w * RESOURCE_OVERHANG) return;
+
+    ctx.drawImage(b.canvas, 0, 0, b.canvas.width, b.canvas.height,
+      x - b.w / 2, y - b.h / 2, b.w, b.h);
+    drawn++;
+  };
+
+  // The id, not the selection object: `state.county` holds the silhouette and
+  // the outline beside it, and comparing that against a county id matches
+  // nothing, which left the chosen county drawn at the same size as the rest.
+  const chosen = state.county?.id || null;
+  for (const c of cs.byId.values()) if (c.id !== chosen) one(c, false);
+  if (chosen && cs.byId.has(chosen)) one(cs.byId.get(chosen), true);
+  debug.countyForts = drawn;
 }
 
 /**
@@ -5486,8 +5708,31 @@ const els = {
   perf: document.getElementById('perf'),
   selName: document.getElementById('sel-name'),
   selBody: document.getElementById('sel-body'),
+  government: document.getElementById('government'),
   neighbours: document.getElementById('neighbours'),
   card: document.getElementById('card'),
+  diplo: document.getElementById('diplo'),
+  diploName: document.getElementById('diplo-name'),
+  diploFlag: document.getElementById('diplo-flag'),
+  diploPolity: document.getElementById('diplo-polity'),
+  diploFaction: document.getElementById('diplo-faction'),
+  diploLeader: document.getElementById('diplo-leader'),
+  diploPortrait: document.getElementById('diplo-portrait'),
+  diploStability: document.getElementById('diplo-stability'),
+  diploManpower: document.getElementById('diplo-manpower'),
+  diploParty: document.getElementById('diplo-party'),
+  diploIdeology: document.getElementById('diplo-ideology'),
+  diploElection: document.getElementById('diplo-election'),
+  diploFocus: document.getElementById('diplo-focus'),
+  diploSpirits: document.getElementById('diplo-spirits'),
+  diploTabDiplomacy: document.getElementById('diplo-tab-diplomacy'),
+  diploTabLedger: document.getElementById('diplo-tab-ledger'),
+  diploPaneDiplomacy: document.getElementById('diplo-pane-diplomacy'),
+  diploPaneLedger: document.getElementById('diplo-pane-ledger'),
+  diploRelations: document.getElementById('diplo-relations'),
+  diploActions: document.getElementById('diplo-actions'),
+  diploLedgerLeft: document.getElementById('diplo-ledger-left'),
+  diploLedgerRight: document.getElementById('diplo-ledger-right'),
   countyCard: document.getElementById('county-card'),
   countyName: document.getElementById('county-name'),
   countyPolity: document.getElementById('county-polity'),
@@ -5496,6 +5741,7 @@ const els = {
   countyFlag: document.getElementById('county-flag'),
   countyTerrain: document.getElementById('county-terrain'),
   countyClimate: document.getElementById('county-climate'),
+  countyFort: document.getElementById('county-fort'),
   countyRail: document.getElementById('county-rail'),
   countyArea: document.getElementById('county-area'),
   cardName: document.getElementById('card-name'),
@@ -5540,6 +5786,7 @@ const state = {
   selectedSub: null,      // sea subregion id, or null. Navy mode only
   hoveredSub: null,       // the same, under the pointer
   county: null,           // the county under the right button; see selectCounty
+  diplo: null,            // polity id whose diplomacy panel is open; see openDiplo
   hoveredSea: null,       // sea region id, or null
   world: null,            // the model from buildWorld(), once loaded
   silhouette: null,       // selected province's shape; survives zooming
@@ -6232,7 +6479,7 @@ function updateCountyCard(county) {
   const pol = province ? polityOf(w, province) : UNKNOWN_POLITY;
 
   els.countyName.textContent = county.name;
-  els.countyFlag.style.background = `rgb(${pol.colour})`;
+  paintFlagBlock(els.countyFlag, pol);
   els.countyPolity.textContent = pol.name;
   els.countyProvince.textContent = province ? province.name : '—';
 
@@ -6249,6 +6496,10 @@ function updateCountyCard(county) {
   // Nothing builds railways yet, so this reads No everywhere until something
   // does. The row is here rather than waiting for the mechanic because a
   // county with no railway is a fact about it, not a missing field.
+  // Fortification is a COUNTY level now, so it belongs on the county card and
+  // not the province one. Built over the ceiling the county's own ground allows.
+  els.countyFort.textContent = `${county.fortification || 0}/${countyFortCeiling(county)}`;
+
   els.countyRail.textContent = county.rail ? 'Yes' : 'No';
   // Same wording as the province card, superscript and all — the two sit in the
   // same corner and one saying km2 beside the other saying km² reads as a typo.
@@ -6310,6 +6561,87 @@ function changeOwners(changes) {
 
 const swatch = (rgb) => `<span class="swatch" style="background: rgb(${rgb})"></span>`;
 
+/**
+ * The same square, for a COUNTRY: a piece cut out of the middle of its flag.
+ *
+ * No overlay. The shading in the diplomacy panel is for a flag being shown as
+ * a flag; at nine pixels it would be the whole square.
+ *
+ * The polity colour stays underneath rather than being replaced. Most of the
+ * map has no flag drawn, and a background-image that 404s simply does not
+ * paint, so the colour shows through and the square is never empty. That is
+ * also why this needs no onerror and no second pass.
+ */
+/**
+ * Puts a country's flag on a block, with its colour left underneath.
+ *
+ * The colour is not replaced. Most of the map has no flag drawn and a
+ * background-image that 404s does not paint, so the block is never empty and
+ * this needs no onerror.
+ */
+function paintFlagBlock(el, pol) {
+  if (!el) return;
+
+  // An image rather than a background, so the block takes the flag's own width
+  // at the one height every flag is shown at. A background would have to be
+  // cropped or squashed to a box, and the files are three different shapes.
+  let img = el.firstElementChild;
+  if (!img) { img = document.createElement('img'); img.alt = ''; el.append(img); }
+  const slug = shortNameOf(pol).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  // A country with no flag drawn is the normal case, not an error: the image is
+  // taken out of the flow and the block is its colour at its smallest width.
+  //
+  // The minimum width belongs to that empty case ALONE. The flags are not one
+  // shape, and Fellnor's at 1.25:1 is 25px wide against a 30px minimum, so the
+  // block stood wider than the flag in it and showed a strip of colour down the
+  // side. With a flag the block takes the flag's width and nothing else.
+  const fits = (on) => {
+    el.style.minWidth = on ? '0' : '';
+    el.style.background = on ? 'transparent' : `rgb(${pol?.colour ?? '128,128,128'})`;
+    el.style.boxShadow = on ? 'none' : '';
+  };
+  fits(false);
+  img.hidden = false;
+  img.onerror = () => { img.hidden = true; fits(false); };
+  img.onload = () => { img.hidden = false; fits(true); };
+  if (slug) img.src = './data/img/flags/' + slug + '.png';
+  else { img.hidden = true; fits(false); }
+}
+
+const polSwatch = (pol) => {
+  const slug = shortNameOf(pol).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const under = `rgb(${pol?.colour ?? '128,128,128'})`;
+  const blank = !slug || flagMissing.has(slug);
+  // An image rather than a background-image, for the same reason the mini flag
+  // carries one: a flag with transparency in it must show what is behind the
+  // panel and not the country's map colour. The colour is the stand-in for a
+  // country with no flag drawn and nothing else, so it rides as a custom
+  // property and is painted only under `.blank`, which onerror adds.
+  //
+  // `flag` and not just `swatch`: the shading belongs on a piece of flag, and
+  // the same square is used for a plain colour — a sea, a movement — which has
+  // no flag to shade.
+  return `<span class="swatch flag${blank ? ' blank' : ''}" style="--flag-colour: ${under}">`
+    + (blank ? '' : `<img class="swatch-flag" alt="" src="./data/img/flags/${slug}.png"`
+      + ` onerror="window.flagMiss(this, '${slug}')">`)
+    + '</span>';
+};
+
+/**
+ * What a province's people want, listed largest first.
+ *
+ * Only on the ideology map. Everywhere else the tooltip is answering a different
+ * question and eight more rows would bury it.
+ */
+function supportRows(w, p) {
+  if (state.mode !== 'ideology') return '';
+  const s = w.stats?.[p.id]?.support;
+  if (!s || !Object.keys(s).length) return '<div class="sub">nothing authored</div>';
+  return Object.entries(s).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `<div class="sub">${swatch(w.ideologyColour?.get(k) || [128, 128, 128])}<b>${v}%</b> ${k}</div>`)
+    .join('');
+}
+
 const TOOLTIP_OFFSET = 14;
 
 // Which province the open tooltip is describing, and the local time it is
@@ -6348,6 +6680,62 @@ function localTimeAt(world, id) {
 }
 
 /**
+ * Takes the tooltip in to the text that is actually in it.
+ *
+ * The box is capped at a width and prose wraps against that cap, so a sentence
+ * that runs a little past it leaves the box standing at its full width with a
+ * hole on the right of the line that broke. This measures where the text really
+ * ends and brings the right edge in to meet it.
+ *
+ * Measured from the width the CSS gives it every time, never from the width it
+ * was left at last: that makes fitting one step rather than a loop that walks
+ * the box narrower on every move of the pointer until it is a column of single
+ * words. A breakdown is unaffected — its rows run the full width of the box,
+ * with the figure against the right edge, so there is nothing to take in.
+ */
+function fitTooltip() {
+  const el = els.tooltip;
+  el.style.width = '';
+  if (typeof document.createRange !== 'function'
+    || typeof document.createTreeWalker !== 'function' || !el.getBoundingClientRect) return;
+
+  // The TEXT is measured, one run at a time, and not the elements holding it.
+  // A range taken over the whole box hands back the block boxes as well, and a
+  // div is as wide as the box whatever is written in it — so the widest thing
+  // found was always the box itself and nothing was ever taken in.
+  let right = 0;
+  try {
+    const range = document.createRange();
+    const walk = document.createTreeWalker(el, 4 /* SHOW_TEXT */);
+    for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+      if (!String(node.nodeValue || '').trim()) continue;
+      range.selectNodeContents(node);
+      for (const r of range.getClientRects()) if (r.width) right = Math.max(right, r.right);
+    }
+    // A flag or a resource icon is not text and has no run of its own, so the
+    // few of them are asked directly. A line ending in one is rare but real.
+    for (const q of el.querySelectorAll('img, i')) {
+      const r = q.getBoundingClientRect();
+      if (r.width) right = Math.max(right, r.right);
+    }
+  } catch { return; }
+  if (!right) return;
+
+  const box = el.getBoundingClientRect();
+  const style = getComputedStyle(el);
+  // The right-hand gap is the box's own padding, so what is taken in leaves the
+  // same margin round the text as the left-hand side does.
+  const pad = (parseFloat(style.paddingRight) || 0) + (parseFloat(style.borderRightWidth) || 0);
+  const em = parseFloat(style.fontSize) || 13;
+  const want = right - box.left + pad;
+  // Set in em, like everything else about the box, so a tooltip fitted at one
+  // type size is still fitted at another. A third of a line's height of slack is
+  // not a gap anybody sees, and taking it in risks dropping a word to the next
+  // line for nothing.
+  if (want > 0 && want < box.width - em / 3) el.style.width = `${(want / em).toFixed(3)}em`;
+}
+
+/**
  * Shows the tooltip and puts it beside the pointer.
  *
  * Flipped to the other side of the pointer where it would run off the window.
@@ -6356,6 +6744,7 @@ function localTimeAt(world, id) {
  */
 function placeTooltip(ev) {
   els.tooltip.hidden = false;
+  fitTooltip();
 
   const box = els.wrap.getBoundingClientRect();
   const x = ev.clientX - box.left;
@@ -6392,12 +6781,16 @@ function showTooltip(id, ev, seaId = null) {
     tipTime = time;
     tipHead =
       `<div>${p.name}</div>` +
-      `<div class="sub">${swatch(pol.colour)}${pol.name}`;
+      `<div class="sub">${miniFlag(pol)}${tipName(pol.name)}`;
+    // The ideology map answers one question and the ground is not it. The county
+    // line is dropped there so the movements are the whole of what is read.
     tipTail = '</div>' +
-      (county
-        ? `<div class="sub">${county.name} &middot; ${county.terrain.join(' + ')}`
-        + ` &middot; ${county.climate}</div>`
-        : `<div class="sub">${[...p.terrain, ...p.climate].join(' &middot; ')}</div>`);
+      (state.mode === 'ideology' ? ''
+        : county
+          ? `<div class="sub">${county.name} &middot; ${county.terrain.join(' + ')}`
+          + ` &middot; ${county.climate}</div>`
+          : `<div class="sub">${[...p.terrain, ...p.climate].join(' &middot; ')}</div>`)
+      + supportRows(w, p);
     els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
   } else {
     // Named in every mode, whether or not the water can be picked in this one.
@@ -6460,7 +6853,7 @@ function showResourceTooltip(hit, ev) {
   els.tooltip.innerHTML =
     `<div>${RESOURCE_NAME[hit.kind] ?? hit.kind}</div>` +
     `<div class="sub">deposit ${hit.amount} &middot; yield ${hit.yield ?? 0} a day</div>` +
-    `<div class="sub">${p ? p.name : ''}</div>`;
+    `<div class="sub">${tipName(p ? p.name : '')}</div>`;
   placeTooltip(ev);
 }
 
@@ -6501,10 +6894,14 @@ function showMarkTooltip(hit, ev) {
   // The county is named because the county is what holds it. A building falls
   // with its own county and not with the province around it, so which county is
   // the fact a player needs and the province is only where to look.
+  //
+  // A county is not marked. The gold is for the things the game names across
+  // every tooltip — countries, provinces, resources, forms of government — and
+  // a county is a subdivision of one of them, not another of them.
   els.tooltip.innerHTML =
     `<div>${MARKS[hit.kind].label}</div>` +
-    (pol ? `<div class="sub">${swatch(pol.colour)}${pol.name}</div>` : '') +
-    `<div class="sub">${c ? c.name : (p ? p.name : '')}</div>`;
+    (pol ? `<div class="sub">${miniFlag(pol)}${tipName(pol.name)}</div>` : '') +
+    `<div class="sub">${c ? c.name : tipName(p ? p.name : '')}</div>`;
   placeTooltip(ev);
 }
 
@@ -6710,8 +7107,11 @@ function railShare(w, p) {
   return t && t.n ? t.railed / t.n : 0;
 }
 
-/** Fraction of the province in foreign hands. Occupation is per-province today. */
-function occupiedFraction(w, p) { return p.occupier && p.occupier !== p.owner ? 1 : 0; }
+/**
+ * Fraction of the province in foreign hands: its counties held by anybody but
+ * the owner over all its counties, derived at load by applyCountyOccupation.
+ */
+function occupiedFraction(w, p) { return p.occupied ?? (p.occupier && p.occupier !== p.owner ? 1 : 0); }
 
 /**
  * True while the province's owner is at war, from polities-starting-values.json.
@@ -6745,12 +7145,15 @@ export function collaborationOf(w, p, stats, baseHappiness) {
 /**
  * What a province's weight is when war weariness is handed out: its industry,
  * and how many engagements have been fought over it, and a 1 so that a province
- * with neither still feels the war. The strike count is capped because the
- * deduction divides by the country's mean, and one province accumulating
- * strikes without limit would quietly reduce what every other province suffers.
+ * with neither still feels the war. The strike count is capped so that a
+ * province fought over without limit cannot take unbounded happiness with it.
+ *
+ * The figure is a mean over the province's counties, so the cap of 5 is reached
+ * only where every county has been fought over five times. A province of one
+ * county passes its own count straight through.
  */
-const STRUCK_CAP = 10;
-const STRUCK_HAPPINESS = 1.5;
+const STRUCK_CAP = 5;
+const STRUCK_HAPPINESS = 3;
 
 // Industry only. struck is deliberately NOT in here: inside the weight it was a
 // share of the country's own mean, so raising strikes everywhere changed nothing
@@ -6762,7 +7165,7 @@ function wearinessWeight(stats) {
 
 /** Happiness lost to what happened on this ground, whatever the nation feels. */
 function struckOf(stats) {
-  return STRUCK_HAPPINESS * Math.min(STRUCK_CAP, stats.struck || 0);
+  return STRUCK_HAPPINESS * Math.min(STRUCK_CAP, stats.struckAverage || 0);
 }
 
 /**
@@ -6870,18 +7273,459 @@ function unlockedSlots(maximum, road, electricity, railedShare) {
   return Math.min(maximum, Math.ceil(maximum * share) + (railedShare >= 0.5 ? 1 : 0));
 }
 
+/**
+ * What this province takes from its country's spirits, for one modifier.
+ *
+ * A per-province modifier on a spirit is a change in the national mean rather
+ * than a flat charge on everywhere, so it is spread unevenly and normalised back
+ * to that mean. An `inProvinces` block is the other case: it names its ground
+ * and is applied to it whole. Worked out once per polity and modifier and cached,
+ * since it moves only when a country gains or loses a spirit.
+ */
+/**
+ * A province as the spreaders want it: what it holds of each thing an act or a
+ * spirit can be felt by.
+ */
+function weighForSpread(w, q) {
+  const st = w.stats?.[q.id] || {};
+  const urban = st.urbanisation ?? 0;
+  return {
+    id: q.id,
+    population: st.population || 0,
+    urbanisation: urban,
+    rural: 1 - urban,
+    factories: st.civilianFactories || 0,
+    // What the province digs, on its own. An act for the pits is not felt on a
+    // factory floor, so a mine act weighs by this and not by `industry`.
+    dug: dugDeposits(w.resources?.[q.id]),
+    // Mills and pits are the same kind of work to the people doing it, so an act
+    // felt by industry reaches an oil field as readily as a factory floor.
+    industry: (st.civilianFactories || 0) + dugDeposits(w.resources?.[q.id]),
+    fertileLand: w.resources?.[q.id]?.fertileLand || 0,
+    mining: st.mining ?? 0,
+  };
+}
+
+/**
+ * How many units of the deposits an act names a province holds.
+ *
+ * Which deposits count is the act's own business and not the province's, so this
+ * is built per act rather than sitting on the province the way urbanisation does.
+ * The act has already said what it is about in `resourceYield`, and an act on gold
+ * and rubber is felt at the pit and at the plantation in proportion to what is in
+ * the ground there. Grown and dug are not separated: a rubber estate is worked by
+ * the people who feel it, whatever the extraction table calls it.
+ */
+function namedDeposits(w, id, named) {
+  if (!named) return 0;
+  const dep = w.resources?.[id] || {};
+  let n = 0;
+  // Only the plain figures. `unprospected` is an object and the offshore and
+  // stranded forms are not units anybody is working yet.
+  for (const k of Object.keys(named)) if (typeof dep[k] === 'number') n += dep[k];
+  return n;
+}
+
+const spiritSpreadBy = new Map();
+function spiritEffect(w, p, key) {
+  const owner = polityOf(w, p)?.id;
+  if (!owner || !w.government?.spirits?.spirits) return [];
+  // A realm owns no ground, so a spirit it holds falls on its members instead, and
+  // its mean is taken across the whole realm rather than across either kingdom on
+  // its own. The Black Twenties is the empire's slump, not Fellnor's.
+  const realm = realmOf(w.table, owner);
+  const holders = realm === owner ? [owner] : [owner, realm];
+  if (!holders.some((h) => w.government.byPolity?.get(h)?.spirits?.length)) return [];
+
+  const at = owner + '|' + key;
+  if (!spiritSpreadBy.has(at)) {
+    const out = new Map();
+    // Kept per spirit, not summed. A province card that says "national spirits"
+    // has named the machinery instead of the reason; what a population feels is
+    // the street violence, not the category the street violence is filed under.
+    const bump = (id, name, n) => {
+      if (!n) return;
+      if (!out.has(id)) out.set(id, []);
+      out.get(id).push([name, n]);
+    };
+    for (const holder of holders) {
+      const held = w.government.byPolity?.get(holder)?.spirits || [];
+      if (!held.length) continue;
+      // w.table.provinces, the same list wearinessMean walks. There is no
+      // w.provinces on the world and reading one threw the moment a card opened.
+      const mine = (w.table?.provinces || [])
+        .filter((q) => q.owner === holder || realmOf(w.table, q.owner) === holder)
+        .map((q) => weighForSpread(w, q));
+      for (const name of held) {
+        const s = spiritById(w, name);
+        if (!s) continue;
+        if (s.effects?.[key]) {
+          // A national effect reaches the whole country except the ground it has
+          // nothing to do with. A Kagan cultural revival does not cheer up the two
+          // Twadamian provinces, and normalising over the rest keeps the mean the
+          // figure it says it is for the people it actually reaches.
+          const reach = s.exceptProvinces?.length
+            ? mine.filter((q) => !s.exceptProvinces.includes(q.id))
+            : mine;
+          // A spirit spreads by hash, a mood having no reason to fall where it falls,
+          // unless it says what it is felt by. The slums are felt in the towns and
+          // the unrest they cause in the works, which is one spirit landing two ways.
+          const felt = feltFor(s, key);
+          // Felt by the resources the spirit's own `resourceYield` names, weighted
+          // by how many units of them a province holds, so an extraction colony's
+          // misery falls where the extraction is instead of on whichever province
+          // the hash picked. Named for the field it reads, since a weight called
+          // `deposits` would read as every deposit in the province.
+          const over = felt?.by === 'resourceYield'
+            ? reach.map((q) => ({ ...q, resourceYield: namedDeposits(w, q.id, s.effects.resourceYield) }))
+            : reach;
+          const spread = felt
+            ? spreadByWeight(s.effects[key], over, felt.by, felt.spread)
+            : spreadOverProvinces(s.effects[key], reach, name + '|' + key);
+          for (const [id, n] of spread) bump(id, label(s), n);
+        }
+        // Named ground takes its figure whole. Nothing to spread: the spirit has
+        // already said where it falls.
+        const only = s.inProvinces;
+        if (only?.effects?.[key]) for (const id of only.provinces || []) bump(id, label(s), only.effects[key]);
+      }
+    }
+    spiritSpreadBy.set(at, out);
+  }
+  return spiritSpreadBy.get(at).get(p.id) || [];
+}
+
+/**
+ * What a card calls a spirit's contribution.
+ *
+ * The spirit's own name is a title for a page of national politics. What belongs
+ * on a province card is the thing the population is actually feeling, so a
+ * spirit carries `factor` for it: Street Violence reads as political violence
+ * and The Kagan Revival as a cultural revival. A spirit with no `factor` falls
+ * back to its name, which is a prompt to write one.
+ */
+const label = (s) => s.factor || s.name;
+
+/**
+ * What this province takes from the ideology its country is governed under.
+ *
+ * Spread by the province's own fit rather than evenly, so a movement's rewards
+ * land where its people are and its costs land on everyone else. Cached per
+ * polity, since it moves only when a country changes ideology.
+ */
+/** The ideology a province's owner holds, cached from the position it comes from. */
+const heldIdeologyBy = new Map();
+function heldIdeology(w, id) {
+  const table = w.government?.ideologies?.ideologies;
+  if (!id || !table || !w.government?.byPolity?.has(id)) return null;
+  if (!heldIdeologyBy.has(id)) {
+    let held = null;
+    try { held = table.find((i) => i.name === governmentPosition(w, id).ideology); }
+    catch { held = null; }
+    heldIdeologyBy.set(id, held);
+  }
+  return heldIdeologyBy.get(id);
+}
+
+/**
+ * How content a province is under the government it has, from its own support for
+ * the ruling ideology rather than from any rating of that ideology. An ideology
+ * carries no happiness of its own: what a population feels about being governed a
+ * certain way is a fact about that population, not about the creed.
+ */
+function ideologyHappiness(w, p) {
+  const held = heldIdeology(w, polityOf(w, p)?.id);
+  if (!held) return 0;
+  return supportHappiness(w.stats?.[p.id]?.support, held.name, w.government?.ideologies);
+}
+
+/** The same, summed, for the callers that want one number. */
+function spiritTotal(w, p, key) {
+  return spiritEffect(w, p, key).reduce((a, [, n]) => a + n, 0);
+}
+
+/**
+ * What a province's tax is multiplied by on the way to the treasury.
+ *
+ * Happiness is the term `08 National information and development.md` gives, and
+ * the `taxRevenue` modifiers reaching this province sit on top of it: a spirit's
+ * national figure spread over the country, a spirit's `inProvinces` figure charged
+ * whole on the ground it names, and the laws, policies and decrees the government
+ * runs, which are charged everywhere. Modifiers of one kind add, so they arrive as
+ * a single factor.
+ */
+function taxMultiplier(w, p, happiness) {
+  const parts = [...spiritEffect(w, p, 'taxRevenue'), ...actEffect(w, p, 'taxRevenue')];
+  const mods = parts.reduce((a, [, n]) => a + n, 0);
+  return { value: (0.5 + happiness / 100) * (1 + mods), parts };
+}
+
+/**
+ * What a polity holds in the ground, resource name to amount, which is what says
+ * how much of a sector a nationalisation actually took.
+ */
+const depositsBy = new Map();
+function depositsOf(w, id) {
+  if (!depositsBy.has(id)) {
+    const out = {};
+    for (const q of w.table?.provinces || []) {
+      if (q.owner !== id && realmOf(w.table, q.owner) !== id) continue;
+      for (const [k, v] of Object.entries(w.resources?.[q.id] || {})) {
+        if (typeof v === 'number' && v > 0) out[k] = (out[k] || 0) + v;
+      }
+    }
+    depositsBy.set(id, out);
+  }
+  return depositsBy.get(id);
+}
+
+/**
+ * How much of a country stands behind each movement, as a share of everyone who
+ * stands behind any of them. An act that names one movement acts on that much of
+ * the country, so twenty-two separate acts come to what one act on them all does.
+ */
+const nationalShareBy = new Map();
+function nationalShares(w, id) {
+  if (!nationalShareBy.has(id)) {
+    const sum = {};
+    let people = 0;
+    for (const q of w.table?.provinces || []) {
+      if (q.owner !== id && realmOf(w.table, q.owner) !== id) continue;
+      const st = w.stats?.[q.id];
+      const n = st?.population || 0;
+      if (!st?.support) continue;
+      people += n;
+      for (const [k, v] of Object.entries(st.support)) sum[k] = (sum[k] || 0) + v * n;
+    }
+    const aligned = Object.entries(sum).reduce((a, [k, v]) => a + (k === 'unaligned' ? 0 : v), 0);
+    const out = {};
+    for (const [k, v] of Object.entries(sum)) if (k !== 'unaligned') out[k] = aligned ? v / aligned : 0;
+    nationalShareBy.set(id, people ? out : null);
+  }
+  return nationalShareBy.get(id);
+}
+
+/**
+ * The share of a polity's people under enemy occupation, which is what the
+ * scaling blocks mean by `occupied`.
+ */
+function occupiedShare(w, id) {
+  let held = 0, all = 0;
+  for (const q of w.table?.provinces || []) {
+    if (q.owner !== id) continue;
+    const n = w.stats?.[q.id]?.population || 0;
+    all += n;
+    held += n * occupiedFraction(w, q);
+  }
+  return all ? held / all : 0;
+}
+
+/**
+ * What a province's government has done to it, act by act. Every figure here is
+ * national and lands whole on every province, so it is worked out once per polity.
+ * A member of a realm carries the realm's laws, policies and decrees under its own.
+ */
+/**
+ * How much of an industry a province holds. Rail is the share of its counties
+ * carrying a line, manufacturing is its civilian works, and everything else is
+ * what is in its ground. This is what an act naming an industry is felt by, so a
+ * province with none of it feels nothing.
+ */
+function industryAt(w, id, industry) {
+  if (industry === 'rail') return railShare(w, { id });
+  if (industry === 'manufacturing') return w.stats?.[id]?.civilianFactories || 0;
+  return w.resources?.[id]?.[industry] || 0;
+}
+
+/**
+ * How much of a province stands behind the movement an act names. An act aimed at
+ * every movement at once names none of them, falls flat, and never reaches here.
+ */
+function supportFor(w, id, target) {
+  const s = w.stats?.[id]?.support;
+  if (!s) return 0;
+  return s[target] || 0;
+}
+
+/**
+ * Whether the ideology a country holds is also the one its province backs most.
+ * Unaligned is not a movement and does not lead anything.
+ */
+function governingLeads(w, p) {
+  const held = heldIdeology(w, polityOf(w, p)?.id);
+  const support = w.stats?.[p.id]?.support;
+  if (!held || !support) return true;
+  let top = null, best = -1;
+  for (const [k, v] of Object.entries(support)) {
+    if (k === 'unaligned') continue;
+    if (v > best) { best = v; top = k; }
+  }
+  return top === null || top === held.name;
+}
+
+/**
+ * A spirit by its id. A polity holds spirits by id and not by name, because two
+ * countries may be in the same weather and call it the same thing: Kanland and
+ * Espatana both carry a spirit named The Great Slump and they are not one spirit.
+ * The id doubles as the hash seed for the spread, so for every spirit written
+ * before ids existed the id is the name and no draw has moved.
+ */
+function spiritById(w, id) {
+  return w.government?.spirits?.spirits?.find((x) => (x.id || x.name) === id) || null;
+}
+
+/**
+ * What a country's spirits add to the multiplier on the happiness its own acts
+ * take. Propaganda softens that figure and a spirit may harden it, and a spirit
+ * may key its contribution to whether the province backs the government.
+ */
+function spiritPenalty(w, id, opposed) {
+  const held = w.government?.byPolity?.get(id)?.spirits || [];
+  let n = 0;
+  for (const name of held) {
+    const sp = spiritById(w, name);
+    const v = sp?.effects?.happinessPenalties;
+    if (!v) continue;
+    const by = sp.scaling?.happinessPenalties?.governingLeads || 0;
+    n += v * (1 + by * (opposed ? 0 : 1));
+  }
+  return n;
+}
+
+/**
+ * The occupation laws an occupier has in force over one country's ground, shaped
+ * like any other government so actEffects can read it without knowing what it is.
+ *
+ * Each occupied country is governed separately. A power holding two of them picks
+ * a set for each, and ground taken off a third starts from nothing. The names are
+ * a mix of the occupier's own policies and decrees and the four that exist only
+ * here, so which table a name is in decides which list it goes into. Under
+ * Occupation laws in 04 Ownership change.md.
+ */
+function occupationGovernment(w, occupier, subject) {
+  const set = w.government?.occupation?.[occupier]?.[subject];
+  const names = set?.laws || [];
+  const policies = [], decrees = [];
+  for (const n of names) {
+    if (w.government.policies?.policies?.some((x) => x.name === nameOf(n))) policies.push(n);
+    else decrees.push(n);
+  }
+  // Ground keeps the ownership it had. A mine the Republic held is still a state
+  // mine the morning after it changes hands, so the default is the owner's list and
+  // an occupier that wants it otherwise says so in stateOwned on the occupation.
+  const stateOwned = set?.stateOwned || w.government?.byPolity?.get(subject)?.stateOwned || [];
+  if (!names.length && !stateOwned.length) return null;
+  return { laws: {}, policies, decrees, stateOwned };
+}
+
+const actEffectBy = new Map();
+function actEffect(w, p, key) {
+  // A province its owner does not hold is not governed by its owner, and it is not
+  // governed by whoever took it either, except in whatever that country chose to
+  // impose. So the two cases read different acts over different ground and share
+  // everything after that.
+  const occupied = !!(p.occupier && p.occupier !== p.owner);
+  const holder = polityOf(w, p)?.id;
+  if (!holder) return [];
+  const gov = occupied ? occupationGovernment(w, holder, p.owner)
+    : w.government?.byPolity?.get(holder);
+  if (!gov) return [];
+
+  const opposed = key === 'happiness' && !occupied && !governingLeads(w, p);
+  const at = holder + '|' + (occupied ? p.owner : '') + '|' + key + (opposed ? '|opposed' : '');
+  if (!actEffectBy.has(at)) {
+    const realm = occupied ? holder : realmOf(w.table, holder);
+    const above = occupied || realm === holder ? null : w.government.byPolity.get(realm) || null;
+    // Martial law is resented less by a country already under attack, and says so
+    // in its own scaling block. 09 Government.md gives the two figures.
+    const atWar = (w.polityValues?.[holder]?.atWar?.length ?? 0) > 0 ? 1 : 0;
+    // What a government does to soften what its own acts cost it. Propaganda is
+    // the one that carries it: a censored press is resented less when the same
+    // press is explaining why the censor was necessary. A spirit is never muffled,
+    // being a condition the country is in rather than a thing it has done, and
+    // neither is what the population thinks of the government itself. Nothing
+    // softens an occupation law: a press in the occupier's own capital is not
+    // explaining anything to the population under its army.
+    const muffle = key !== 'happiness' || occupied ? 1
+      : Math.max(0, 1 + actEffects(gov, w.government, 'happinessPenalties', { parent: above })
+        .reduce((a, x) => a + x.figure, 0)
+        + spiritPenalty(w, holder, opposed));
+    const scale = (act) => {
+      const soften = (act?.effects?.[key] || 0) < 0 ? muffle : 1;
+      const by = act?.scaling?.[key];
+      if (!by) return soften;
+      return soften * (1 + (by.atWar || 0) * atWar) * (1 + (by.occupied || 0) * occupiedShare(w, holder));
+    };
+    const label = (name, target) => fillTokens(name, target, w.government, null).toLowerCase();
+    // What an industry is a share of is the country the ground belongs to, whoever
+    // is standing on it.
+    const shares = industryShares(depositsOf(w, occupied ? p.owner : holder), w.government);
+    // An act aimed at a movement is scaled by how much of the population follows
+    // it, and under occupation that is the occupied country's population and not
+    // the occupier's.
+    const movements = nationalShares(w, occupied ? p.owner : holder);
+
+    // What each act is felt by, per province. A law the realm passed averages over
+    // the realm; one the member passed averages over the member. Ground its owner
+    // has lost is out of the owner's reach entirely: a law reaches as far as the
+    // army does.
+    const held = (q) => !(q.occupier && q.occupier !== q.owner);
+    const reach = (id) => (w.table?.provinces || [])
+      .filter((q) => held(q) && (q.owner === id || realmOf(w.table, q.owner) === id))
+      .map((q) => weighForSpread(w, q));
+    // One occupation is one government, so its figures average over the ground
+    // this occupier holds of this owner and over nothing else.
+    const taken = () => (w.table?.provinces || [])
+      .filter((q) => q.occupier === holder && q.owner === p.owner)
+      .map((q) => weighForSpread(w, q));
+    const reaches = occupied
+      ? { own: taken(), realm: [] }
+      : { own: reach(holder), realm: above ? reach(realm) : [] };
+
+    const out = new Map();
+    const bump = (id, name, n) => {
+      if (!n) return;
+      if (!out.has(id)) out.set(id, []);
+      out.get(id).push([name, n]);
+    };
+    for (const a of actEffects(gov, w.government, key, { parent: above, scale, label, shares, movements })) {
+      const over = reaches[a.from] || reaches.own;
+      if (!a.felt) { for (const q of over) bump(q.id, a.label, a.figure); continue; }
+      // A figure whose incidence is the movement the act names has no incidence
+      // when no movement is named. A government putting down every armed league at
+      // once is not picking a side, so no side resents it for having been picked.
+      // What the act does nationally still stands: order is order.
+      if (a.felt.by === 'support' && a.target === 'all') continue;
+      // An act aimed at a movement is felt where that movement is. Banning a party
+      // costs nothing in a province that never voted for it, and everything in the
+      // one that did, and the two still average what the table says.
+      // 'support' and 'target' are both weights the act itself decides, so they are
+      // built here rather than sitting on the province like urbanisation does.
+      const by = a.felt.by === 'support'
+        ? over.map((q) => ({ ...q, support: supportFor(w, q.id, a.target) }))
+        : a.felt.by === 'target'
+          ? over.map((q) => ({ ...q, target: industryAt(w, q.id, a.target) }))
+          : over;
+      for (const [id, n] of spreadByWeight(a.figure, by, a.felt.by, a.felt.spread)) bump(id, a.label, n);
+    }
+    actEffectBy.set(at, out);
+  }
+  return actEffectBy.get(at).get(p.id) || [];
+}
+
 function happinessOf(w, p, stats, today) {
   const parts = [];
   const add = (label, n) => { if (n) parts.push([label, n]); };
 
   const [road = 0] = stats.road || [];
   const [power = 0] = stats.electricity || [];
-  add('road', road * 0.5);
-  add('rail', railShare(w, p) * 4);
-  add('electricity', power * 1);
+  // One line, because a road and a railway are the same thing to the people using
+  // them: whether they can get anywhere.
+  add('services', road * 0.3 + railShare(w, p) * 3);
+  add('electricity', power * 0.8);
   // 'employment', not 'factories'. Nobody is cheered by a factory; they are
   // cheered by the work in it, which is what the figure is measuring.
-  add('employment', (stats.civilianFactories || 0) * 1);
+  add('employment', (stats.civilianFactories || 0) * 0.8);
   // An occupation the population accepts is not felt as one. The penalty runs
   // off compliance rather than off the fact of occupation, so it lifts as the
   // province settles: collaboration only sets where compliance starts.
@@ -6892,6 +7736,10 @@ function happinessOf(w, p, stats, today) {
   add('war weariness', -wearinessOf(w, p, stats));
   add('fought over', -struckOf(stats));
   add('recently annexed', -25 * unsettledShare(stats, today));
+  for (const [name, n] of spiritEffect(w, p, 'happiness')) add(name, n);
+  for (const [name, n] of actEffect(w, p, 'happiness')) add(name, n);
+  const creed = heldIdeology(w, polityOf(w, p)?.id);
+  add(creed ? `${demonymOf(creed)} government` : 'government', ideologyHappiness(w, p));
 
   const raw = HAPPINESS_BASE + parts.reduce((a, [, n]) => a + n, 0);
   return { value: clamp(raw, 0, 100), parts };
@@ -6911,13 +7759,18 @@ function unrestOf(w, p, stats, happiness) {
   const occupation = p?.occupier ? 5 * (stats.resistance || 0) * occupiedFraction(w, p) : 0;
   const national = 0;                              // stability < 20; no national values yet
   const garrison = 0;                              // 3 per unit stationed, capped at 9; no units yet
-  const pressure = local + national + occupation;
+  // A spirit's unrestPerDay is a national mean spread over the provinces, on the
+  // same rule its happiness follows, so a country stirred up by street violence
+  // is stirred up unevenly.
+  const spirits = spiritEffect(w, p, 'unrestPerDay');
+  const pressure = local + national + occupation + spirits.reduce((a, [, n]) => a + n, 0);
   const rising = pressure > garrison;
   const rate = rising ? pressure - garrison : -UNREST_DECAY;
   const parts = [];
   if (local) parts.push(['unhappy', local]);
   if (occupation) parts.push(['resistance', occupation]);
   if (national) parts.push(['instability', national]);
+  for (const [name, n] of spirits) parts.push([name, n]);
   if (garrison) parts.push(['garrison', -garrison]);
   // Only when there is something to settle. A province at 0 was showing a
   // recovery it could not be making.
@@ -6947,12 +7800,20 @@ function unrestColour(v) {
  * card would change its height while being read, moving every row under it and
  * the pointer with them.
  */
-function partsMarkup(title, parts, empty, risingIsGood = true) {
+/** A daily rate, to two decimals below 1 so a slow one is not shown as none. */
+const rateText = (n) => (Math.abs(n) < 1 ? n.toFixed(2) : n.toFixed(1));
+
+function partsMarkup(title, parts, empty, risingIsGood = true, digits = null) {
   const body = parts.length
-    ? parts
+    ? [...parts].sort((a, b) => b[1] - a[1])
       .map(([label, n]) => {
         const sign = n > 0 ? '+' : '';
-        const round = Math.abs(n) < 10 ? n.toFixed(1) : n.toFixed(0);
+        // Two decimals under 1, so a rate of 0.02 a day does not print as 0.0
+        // and read as nothing happening. A caller that knows its own scale says
+        // so instead: happiness runs in whole points and reads to one place.
+        const round = digits !== null ? n.toFixed(digits)
+          : Math.abs(n) < 1 ? n.toFixed(2)
+            : Math.abs(n) < 10 ? n.toFixed(1) : n.toFixed(0);
         // Colour says good or bad, not positive or negative. The two agree on
         // happiness and disagree on unrest, where falling is what you want, so
         // the caller states which way is up rather than the sign deciding.
@@ -6988,8 +7849,8 @@ function paintMeters(w, p, stats) {
   els.cardHappyFill.style.background = moodColour(happy.value);
   // The multiplier is the whole point of the figure and 0.5 + h/100 is not
   // something a player will work out from a number between 0 and 100.
-  els.cardHappyNote.innerHTML = `tax &times;${(0.5 + happy.value / 100).toFixed(2)}`;
-  meterTip(els.cardHappyRow, partsMarkup('Happiness', happy.parts, 'nothing here yet'));
+  els.cardHappyNote.innerHTML = `tax &times;${taxMultiplier(w, p, happy.value).value.toFixed(2)}`;
+  meterTip(els.cardHappyRow, partsMarkup('Happiness', happy.parts, 'nothing here yet', true, 1));
 
   els.cardUnrest.textContent = unrest.value.toFixed(0);
   els.cardUnrestFill.style.width = `${unrest.value}%`;
@@ -7000,9 +7861,9 @@ function paintMeters(w, p, stats) {
   if (unrest.rate > 0) {
     // Just the rate. The next threshold and how far off it is are in the bar's
     // own tooltip, and spelling them out here ran the red text across the card.
-    els.cardUnrestNote.innerHTML = `<span class="down">+${unrest.rate.toFixed(1)}/day</span>`;
+    els.cardUnrestNote.innerHTML = `<span class="down">+${rateText(unrest.rate)}/day</span>`;
   } else if (unrest.value > 0) {
-    els.cardUnrestNote.innerHTML = `<span class="up">${unrest.rate.toFixed(1)}/day, settling</span>`;
+    els.cardUnrestNote.innerHTML = `<span class="up">${rateText(unrest.rate)}/day, settling</span>`;
   } else {
     els.cardUnrestNote.textContent = 'settled';
   }
@@ -7020,7 +7881,7 @@ const CARD_FIELDS = [
   ['road', 'Road'],
   ['airBase', 'Air base'],
   ['supplyHub', 'Supply hub'],
-  ['fortification', 'Fortification'],
+  ['radar', 'Radar station'],
   ['electricity', 'Electricity'],
   ['antiAir', 'Anti-air'],
 ];
@@ -7029,7 +7890,62 @@ const CARD_FIELDS = [
 // of the ground, the ground does not move, so sync-provinces.js settles it once
 // from counties.json and writes it into province-stats.json as a ceiling. Reading it back is
 // the whole of the game's involvement.
-const LEVEL_TYPES = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase'];
+const LEVEL_TYPES = ['road', 'electricity', 'radar', 'supplyHub', 'antiAir', 'airBase'];
+
+// The county fortification ceiling, under Counties, Fortification in the plans.
+// Worked out here rather than stored. counties-starting-values.json is the county
+// answer to provinces-starting-infrastructure.json and holds what a county starts
+// with BUILT; a ceiling is a property of the ground and belongs with the ground,
+// which for provinces is province-stats.json. Until sync-provinces settles this
+// one the same way, deriving it from terrain and climate keeps it honest, since
+// a stored figure would go stale the moment counties.png is read back.
+const FORT_TERRAIN_CEILING = { Plains: 6, Hills: 8, Mountains: 10, Alpine: 8, Urban: 8 };
+const FORT_CLIMATE_CEILING = { Rainforest: 4, Monsoon: 5, Desert: 4, Subarctic: 5, Tundra: 4, 'Ice cap': 3 };
+
+/**
+ * What a county's own ground allows, 0 to 10.
+ *
+ * The HIGHEST of its landforms, not the lowest and not a mean: a county holding
+ * mountains holds the ground works are dug into whatever else is in it, and an
+ * Urban county keeps 8 rather than dropping to the Plains row, because a city is
+ * harder to take than the field outside it. Climate then lowers it and never
+ * raises it, except that subarctic below 50 degrees is altitude and not
+ * permafrost and is left uncapped, which is the exception the province ceilings
+ * already make.
+ */
+function countyFortCeiling(c) {
+  let ceil = 0;
+  for (const t of [].concat(c.terrain || [])) ceil = Math.max(ceil, FORT_TERRAIN_CEILING[t] || 0);
+  if (!ceil) return 0;
+  const cap = FORT_CLIMATE_CEILING[c.climate];
+  const polar = c.climate === 'Subarctic' && Math.abs(c.centre?.[0] ?? 90) < 50;
+  return cap !== undefined && !polar ? Math.min(ceil, cap) : ceil;
+}
+// Four of a radar station's levels sit behind research. `maxRadar` in
+// province-stats.json is what the GROUND allows and never changes; what a
+// country may actually build is that less the locked four, and they come back
+// one at a time as the technology lands. Four rather than two because this is
+// 1926: the ground has always allowed a mast, and almost nobody can build one. Applied here rather than in
+// mergeStats because splitStats writes the ceiling back to the file, and a
+// gate applied at merge would eat two levels off the ground every round trip.
+//
+// Floored at 0, and in 1926 most of the map sits on that floor: it can hold a
+// mast, but nobody yet knows how to build one.
+const RADAR_LOCKED = 4;
+
+/** How many of the locked four the country has researched. Nothing researches yet. */
+function radarUnlocked() { return 0; }
+
+/**
+ * The ceiling a country may build to, as against what the ground allows.
+ *
+ * The five other types are the same figure twice. Radar is the one type whose
+ * ground ceiling and buildable ceiling differ.
+ */
+function usableCeiling(key, ceiling) {
+  return key === 'radar' ? Math.max(0, ceiling - RADAR_LOCKED + radarUnlocked()) : ceiling;
+}
+
 /** What can still be added. The ceiling gates additions and never removes. */
 function buildableLevels(built, ceiling) { return Math.max(0, ceiling - built); }
 
@@ -7041,9 +7957,1189 @@ function pair(v) {
 }
 
 /** Zeroes, for a province the stats file has never heard of. */
-const BLANK_STATS = { claims: [], hydroPotential: 0, population: 0, road: [0, 0], airBase: [0, 0], supplyHub: [0, 0], fortification: [0, 0], electricity: [0, 0], antiAir: [0, 0], buildingSlots: [0, 0], civilianFactories: 0, militaryFactories: 0 };
+const BLANK_STATS = { claims: [], hydroPotential: 0, population: 0, road: [0, 0], airBase: [0, 0], supplyHub: [0, 0], radar: [0, 0], electricity: [0, 0], antiAir: [0, 0], buildingSlots: [0, 0], civilianFactories: 0, militaryFactories: 0 };
 
 const cardOpen = () => els.card.classList.contains('open');
+
+/* ------------------------------------------------------------ the diplomacy
+ * panel
+ *
+ * CTRL and a left click on any province opens the country that owns it. It is
+ * about the state and not the ground, so it takes the left edge whole and puts
+ * both of the ground panels away: three panels answering three questions, and
+ * only ever one of them up.
+ *
+ * Most of what it shows does not exist yet. There is no faction system, no
+ * leader, no national focus and no army, so those read as placeholders rather
+ * than being left out. The panel is the shape the game is being built toward,
+ * and a row saying none tells you a system is coming where a missing row says
+ * nothing at all. Everything that CAN be answered from the files is: the
+ * spirits a country holds, the laws it runs, and what its provinces contain.
+ */
+
+/**
+ * The Actions box.
+ *
+ * Nothing here is playable yet: no act can be taken, no cost can be paid and
+ * no relation can be signed. A list of acts with prices beside them says
+ * otherwise, so the box says what is true instead. The acts and their terms
+ * are diplomatic-actions.json and are waiting on the code, not on the panel.
+ */
+function paintDiploActions() {
+  els.diploActions.innerHTML = '<h3>Actions</h3><div class="diplo-row none">WIP</div>';
+}
+
+/**
+ * The Relations box: who this country stands with, and how.
+ *
+ * A relation is a thing two countries are in together, so it is held once in
+ * polities-relations-fixed.json rather than twice in either government entry.
+ * A band with nothing in it for this country is not drawn — an empty heading
+ * says nothing except that the game has more kinds of relation than this
+ * country is in.
+ *
+ * `of` says which side of the record the band is written from. `first` reads
+ * one way round and `mirror` names the other, so one lease record is Leased out
+ * on Omarbat's panel and Leased from on Kanland's.
+ */
+/**
+ * The guarantees a spirit hands out, written as relation records.
+ *
+ * A guarantee is a relation whichever way it was arrived at, and the Relations
+ * box is where a player looks for who stands behind a country — so one carried
+ * by a spirit belongs there beside the ones in the table. It is not IN the
+ * table because it is not a thing two countries signed: the Tambasco Doctrine
+ * stands while the guaranteed country's form of government is one the spirit
+ * lists, and falls the day it is not, without anybody withdrawing anything.
+ *
+ * Both ends are answered for, so the row shows on the guarantor's panel as
+ * Guaranteeing and on the guaranteed country's as Guaranteed by.
+ */
+function spiritGuarantees(w, polityId) {
+  const held = w.government?.byPolity;
+  if (!held) return [];
+  const out = [];
+  for (const [id, gov] of held) {
+    for (const name of gov?.spirits || []) {
+      const v = spiritById(w, name)?.effects?.guaranteedBy;
+      if (!v || typeof v.polity !== 'string' || v.polity === id) continue;
+      // Dormant unless the form of government is one it stands under. A spirit
+      // that names no forms stands under all of them.
+      if (Array.isArray(v.whileForm) && !v.whileForm.includes(gov.form)) continue;
+      // A guarantee of independence has nothing to stand behind in a puppet,
+      // whose suzerain already answers for it. Nunattiavak is a constitutional
+      // monarchy and a Fellnoran dominion, and the form alone let it through.
+      if (v.whileIndependent && w.table?.polityById?.get(id)?.suzerain) continue;
+      // A guarantee may have a guarantor's half, a spirit naming this one under
+      // `guarantees`. Where one exists the guarantee stands only while the
+      // guarantor holds it, so the Three Nations losing the Tambasco Doctrine
+      // Enforcer lets every Tambasco guarantee go at once. Where none exists
+      // the guarantee stands on the protected side alone, as it always did.
+      const halves = (w.government?.spirits?.spirits || [])
+        .filter((s) => s.effects?.guarantees?.spirit === name).map((s) => s.id || s.name);
+      if (halves.length && !halves.some((e) => held.get(v.polity)?.spirits?.includes(e))) continue;
+      if (id !== polityId && v.polity !== polityId) continue;
+      out.push({ band: 'guarantee', first: v.polity, second: id, spirit: name });
+    }
+  }
+  return out;
+}
+
+function paintDiploRelations(w, polityId) {
+  const box = els.diploRelations;
+  box.replaceChildren();
+  const h = document.createElement('h3');
+  h.textContent = 'Relations';
+  box.append(h);
+
+  const table = w.government?.relations;
+  const carried = spiritGuarantees(w, polityId);
+  const pol = (id) => w.table?.polityById?.get(id);
+  // The short name, because the row is a list and the formal name is not one:
+  // "Le Omarbati Republic" says the same thing as "Omarbat" in three times the
+  // width and pushes the band off the row.
+  const shortName = (id) => shortNameOf(pol(id)) || id;
+
+  let n = 0;
+  for (const band of table?.bands || []) {
+    const rows = (table.relations || []).filter((x) => x.band === band.id)
+      .concat(carried.filter((x) => x.band === band.id));
+    for (const r of rows) {
+      const mine = r.first === polityId;
+      if (!mine && r.second !== polityId) continue;
+      const row = document.createElement('div');
+      row.className = 'diplo-row';
+      row.dataset.band = band.id;
+      const lab = document.createElement('span');
+      lab.className = 'lab';
+      lab.textContent = mine ? band.name : (band.mirror || band.name);
+      const val = document.createElement('span');
+      val.className = 'val';
+      // The flag rather than the name: a list of relations is read down the
+      // left for the kind and across for who, and a flag is found faster than a
+      // word. The name is not lost — it heads the tooltip and sits on the image
+      // for a pointer that rests on it.
+      const other = mine ? r.second : r.first;
+      const flag = document.createElement('img');
+      // No `title`: the browser's own tooltip would sit on top of the panel's,
+      // which already names the country. `alt` is for a flag that fails to load.
+      flag.alt = shortName(other);
+      // A relation may name a polity the table has never heard of, and a missing
+      // name is the ordinary case rather than an error: the placeholder covers it.
+      const slug = String(shortNameOf(pol(other)) || other).toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      flag.onerror = () => window.flagMiss(flag, slug);
+      flag.src = flagSrc(slug);
+      // The same box the panel's own flag sits in, so it wears the same shading
+      // and the same edge; `small` is the only thing a row changes about it.
+      const flagBox = document.createElement('span');
+      flagBox.className = 'diplo-flag small';
+      flagBox.append(flag);
+      val.append(flagBox);
+      row.append(lab, val);
+      // The terms are the tooltip. The row says who and what kind, which is
+      // what a list is for; the deposit, the province and the term are what you
+      // hover to find out.
+      meterTip(row, relationTip(w, band, r, other));
+      box.append(row);
+      n++;
+    }
+  }
+
+  // Nothing at all, which most countries are on the start date.
+  if (!n) {
+    const none = document.createElement('div');
+    none.className = 'diplo-row none';
+    none.textContent = 'No de jure relations';
+    box.append(none);
+  }
+}
+
+/**
+ * A thing a tooltip names rather than describes: a country, a province, a
+ * resource, a form of government. Every tooltip marks them the same way, so a
+ * reader learns the colour once and finds the nouns in any box on the screen.
+ */
+const tipName = (s) => (s || s === 0 ? '<span class="named">' + s + '</span>' : '');
+
+/** What a flag falls back to while the country has none drawn yet. */
+const FLAG_PLACEHOLDER = './data/img/flags/placeholder.png';
+
+/**
+ * Countries already asked for and found to have no flag file.
+ *
+ * A tooltip is rebuilt on every move of the pointer, so without this a country
+ * with no flag drawn yet would ask for the same missing file over and over and
+ * show the placeholder only once each request had failed — which reads as a
+ * blink while the cursor is dragged across the map. A slug that missed once is
+ * asked for as the placeholder from then on.
+ */
+const flagMissing = new Set();
+
+/**
+ * Notes a missing flag and shows what stands in for it. It hangs off `window`
+ * because the handler that calls it is written into markup, which runs in the
+ * global scope and cannot see anything in the module.
+ *
+ * Inside a tooltip's sentence the stand-in is the country's colour, the way the
+ * province card shows a country with no flag drawn. A flag shown as a flag —
+ * the diplomacy panel's, a relation row's — takes the placeholder instead.
+ */
+window.flagMiss = function flagMiss(img, slug) {
+  img.onerror = null;            // or a placeholder that failed would loop
+  if (slug) flagMissing.add(slug);
+  if (img.classList.contains('mini-flag') || img.classList.contains('swatch-flag')) {
+    img.hidden = true;
+    img.parentElement?.classList.add('blank');
+  } else {
+    img.src = FLAG_PLACEHOLDER;
+  }
+};
+
+/**
+ * A country named inside a tooltip's sentence: the article, then the flag, then
+ * the name in gold.
+ *
+ * "the [flag] Three Nations", not "[flag] the Three Nations". The article
+ * belongs to the sentence rather than to the country, so it is neither marked
+ * nor moved behind the flag — the flag stands with the name it belongs to.
+ */
+function flaggedName(polity, name) {
+  const cut = /^(the )(.*)$/i.exec(name || '');
+  return cut ? cut[1] + miniFlag(polity) + tipName(cut[2]) : miniFlag(polity) + tipName(name);
+}
+
+/**
+ * The article at the head of a sentence, capitalised: "The Three Nations
+ * guarantees…", not "the".
+ *
+ * A line of markup is at the head of one when nothing comes before it, when a
+ * full stop does, or when a block tag has just ended the line above — which is
+ * why this reads the markup rather than the words: the article is often the
+ * first thing in a <div>, with the flag and the name inside tags after it.
+ */
+const capitaliseArticle = (html) => String(html).replace(
+  /(^|[.!?]\s*|<div[^>]*>|<br\s*\/?>|<hr\s*\/?>|<\/div>\s*)((?:\s*<[^>]+>)*\s*)the\b/g,
+  (_, before, tags) => before + tags + 'The');
+
+/** The file a country's flag is drawn in, or the placeholder if it has none. */
+function flagSrc(slug) {
+  return slug && !flagMissing.has(slug) ? './data/img/flags/' + slug + '.png' : FLAG_PLACEHOLDER;
+}
+
+/**
+ * A country's flag at the size of the text beside it, for a name inside a
+ * tooltip sentence. The fallback is written as an attribute because a tooltip
+ * is built as markup and has no element to hang a handler on.
+ *
+ * A country with no flag drawn yet shows its map colour instead, at the shape a
+ * flag would have taken, so that it is still the country that is named and not
+ * a blank stood in for every one of them.
+ */
+function miniFlag(polity) {
+  const slug = String(shortNameOf(polity) || '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (!slug) return '';
+  // Wrapped, because the shading every flag in the game wears is drawn by the
+  // box rather than by the image, and an image has nothing to draw it on. The
+  // colour is on the box, under a flag that covers it and showing through where
+  // there is none.
+  const blank = flagMissing.has(slug);
+  // The colour rides as a custom property and the stylesheet paints it only
+  // under `.blank`. Three quarters of the flags carry an alpha channel, and a
+  // colour sitting under one of those showed the map colour through the flag's
+  // own holes — the one thing the box must never do.
+  const box = '<span class="mini-flag-box' + (blank ? ' blank' : '') + '"'
+    + ' style="--flag-colour: rgb(' + (polity?.colour ?? '128,128,128') + ')">';
+  return box + (blank ? '' : '<img class="mini-flag" alt=""'
+    + ' src="./data/img/flags/' + slug + '.png"'
+    + ' onerror="window.flagMiss(this, \'' + slug + '\')">') + '</span>';
+}
+
+/** A resource's icon off the sheet, at the size the tooltip reads at. */
+function resourceIcon(kind) {
+  const cell = RESOURCE_ICON[kind];
+  if (cell === undefined) return '';
+  const px = 14;
+  return '<i class="res" style="background-position:' + (-(cell % 6) * px) + 'px '
+    + (-Math.floor(cell / 6) * px) + 'px"></i>';
+}
+
+/** The terms of one standing relation. `other` is the country at the far end. */
+function relationTip(w, band, r, other = null) {
+  const pol = (id) => w.table?.polityById?.get(id);
+  // The terms read as a sentence, so a country that takes an article gets one.
+  const shortName = (id) => shortNameOf(pol(id), true) || id;
+  // The band as a thing rather than as a column heading: Leased out and
+  // Guaranteeing are how the row is labelled from one side, and the tooltip is
+  // about the relation itself, which is a lease and a guarantee.
+  const head = '<b>' + band.name.replace(/d (out|from)$/, '').replace(/ing$/, '') + '</b>';
+
+  // A guarantee carried by a spirit says both ends the way a lease does. The
+  // spirit that carries it is not named: the country's own tile says that, and
+  // the relation is the relation whatever it was arrived at through.
+  if (r.spirit) {
+    return capitaliseArticle(head + '<div>' + flaggedName(pol(r.first), shortName(r.first))
+      + ' guarantees the independence of '
+      + flaggedName(pol(r.second), shortName(r.second)) + '.</div>');
+  }
+
+  // The row shows a flag and nothing else, so the tooltip has to say whose it
+  // is. A lease names the country in its own sentence below, so only the bands
+  // with nothing else to say carry it beside the heading.
+  if (r.band !== 'lease') {
+    return head + (other ? ' ' + miniFlag(pol(other))
+      + tipName(shortNameOf(pol(other)) || other) : '');
+  }
+
+  const q = (w.table?.provinces || []).find((x) => x.id === r.province);
+  const rent = r.rent?.money != null ? '$' + r.rent.money + ' a day'
+    : r.rent ? Object.entries(r.rent).map(([k, v]) => v + ' ' + k).join(', ') : null;
+  // The lessor's ground is named because the yield is the lessor's development,
+  // not the lessee's: the field is worked where it lies.
+  // The ground and its owner are the two things a reader is looking for in the
+  // sentence, so they are picked out the way a spirit's provinces are.
+  // Both ends are named, or the panel showing the other country's flag never
+  // says whose it is: Omarbat's row carries Kanland's flag and a sentence that
+  // used to mention only Omarbat.
+  // Two lines rather than one that wraps: the sentence has a seam in it — what
+  // is taken and from where, then who takes it and until when — and breaking it
+  // there reads better than a ragged turn in the middle of a country's name.
+  // The icon alone leaves a reader counting pixels to tell oil from natural gas,
+  // so the name stands beside it: 4 [icon] oil.
+  const what = (RESOURCE_NAME[r.resource] ?? r.resource).toLowerCase();
+  return capitaliseArticle(head + '<div>' + r.amount + ' ' + resourceIcon(r.resource) + ' '
+    + tipName(what) + ' from ' + tipName(q ? q.name : r.province) + ', '
+    + flaggedName(pol(r.first), shortName(r.first)) + '</div>'
+    + '<div>to ' + flaggedName(pol(r.second), shortName(r.second)) + ' until ' + r.until + '.</div>')
+    + (rent ? '<div class="sub">' + rent + '</div>' : '');
+}
+
+/** What the panel calls each law, which is the category and nothing else. */
+const DIPLO_LAW_LABEL = {
+  conscription: 'Conscription',
+  economy: 'Economy',
+  personalTax: 'Personal tax',
+  corporateTax: 'Corporate tax',
+  colonialTax: 'Colonial tax',
+  monetary: 'Monetary law',
+  trade: 'Trade',
+};
+
+/**
+ * The modifiers a country wants LESS of.
+ *
+ * Colour says good or bad and not positive or negative, so the sign alone
+ * cannot decide it: -30% on the cost of a law is a gift and -30% on factory
+ * output is not. These are the keys where falling is winning — costs, wear,
+ * unrest, and the figures stated as a share of what an enemy gets.
+ */
+const LOWER_IS_BETTER = new Set([
+  'interest', 'maintenance', 'lawAdoptionCost', 'decreeCost', 'ministerCost',
+  'policyCost', 'policyUpkeep', 'commanderCost', 'doctrineCost', 'driftMultiplierTowardTarget',
+  'conscriptionRaiseCost', 'equipmentUse', 'supplyUse', 'conversionDays',
+  'trainingTime', 'nightPenalty', 'unrest', 'unrestPerDay', 'colonialUnrestPerDay',
+  'bombingDamage', 'happinessPenalties', 'againstEnemySupply', 'againstFortification',
+  'militaryAllianceTension', 'wearinessModifier',
+]);
+
+/**
+ * One modifier, as a line a player reads.
+ *
+ * The wording is not here. `shown` in modifiers.json carries it, beside the
+ * unit and the meaning, because that file is already the one place that
+ * answers what a modifier is — a second list in here would be a second thing
+ * to keep in step. The token in it stands for the figure and names the
+ * notation: PERCENTAGE tax revenue becomes +15% tax revenue.
+ */
+// PERCENTAGE is listed before PERCENT, or the shorter would match the first
+// seven letters of the longer.
+const FIGURE_TOKEN = /\b(PERCENTAGE|PERCENT|POINTS|NUMBER|DAYS|MULTIPLIER|PERDAY|OPTION)\b/;
+
+/**
+ * Whether a figure is a level being stated rather than a change being made. A
+ * level prints bare and is worth printing at zero; a change prints signed and a
+ * zero one is not worth a line.
+ *
+ * `law` keys are the shares a law sets and everything else adds a fraction of:
+ * Free trade offers 100% of the surplus, Marketless Industry offers 10% less
+ * than whatever the law offered. `always` keys are never a change at all. A
+ * spirit gives `tariffCeiling` as a map of ceilings rather than as a change to
+ * one, and a division limit is a cap by its nature.
+ */
+const isLevel = (m, stated) => m?.level === 'always' || (m?.level === 'law' && stated);
+
+function modifierLine(w, key, v, subject, stated, target) {
+  const m = w.government?.modifiers?.modifiers?.[key];
+  const shown = m?.shown || key;
+  const bare = isLevel(m, stated);
+  // A change is signed even at zero: +0% says the share is left where it was,
+  // where a bare 0% colonial revenue read as though the colonies paid nothing.
+  const sign = (n) => (bare ? '' : n >= 0 ? '+' : '');
+  const figure = (token) => {
+    // Anything that is not a number prints as itself. First, so that no token
+    // below can call a number's method on it: a spirit written with "0.01" in
+    // quotes threw out of PERDAY and took the whole panel down with it, which
+    // is a bad figure costing a player the screen.
+    if (typeof v !== 'number') return String(v);
+    if (token === 'PERCENTAGE') return sign(v) + Number((v * 100).toFixed(1)) + '%';
+    // A figure that IS a percentage rather than a fraction of one. Stability
+    // runs 0 to 100 and is read as a percent, so a law moving it by 8 moves it
+    // by 8 and shows +8%. Suffixed, never scaled.
+    if (token === 'PERCENT') return sign(v) + v + '%';
+    if (token === 'MULTIPLIER') return '\u00d7' + v;
+    if (token === 'OPTION') return String(v);
+    // A count of days carries its own noun and never takes a sign, so the
+    // figure reads 30 days where the others read +25%.
+    if (token === 'DAYS') return v + ' days';
+    if (token === 'PERDAY') return sign(v) + Number(v.toFixed(3));
+    // POINTS and NUMBER are both a plain signed figure. Which of the two a
+    // key uses is a statement about what it counts, not about how it prints.
+    return sign(v) + (Math.abs(v) < 1 ? Number(v.toFixed(3)) : v);
+  };
+
+  const hit = shown.match(FIGURE_TOKEN);
+  // Green and red say which way a figure moved things. A stated level did not
+  // move anything, so it is left plain: 100% of the surplus is neither good
+  // news nor bad, it is what the law is. A multiplier turns on 1 rather than
+  // on 0, since 1 is the multiplier that changes nothing.
+  const pivot = m?.unit === 'multiplier' ? 1 : 0;
+  const good = !bare && typeof v === 'number' && v !== pivot
+    ? (v > pivot) !== LOWER_IS_BETTER.has(key) : null;
+  const cls = good === null ? '' : good ? ' class="up"' : ' class="down"';
+  // A value that is a settings object rather than a figure names the country it
+  // is about in a field of its own, which is what POLITY_NAME stands for there:
+  // `guaranteedBy` says who guarantees, and the act's target says nothing.
+  const holder = v && typeof v === 'object' && !Array.isArray(v) && typeof v.polity === 'string'
+    ? v.polity : (typeof target === 'string' ? target : null);
+  const polityOfLine = holder ? w.table?.polityById?.get(holder) : null;
+  // Laid out the way every other breakdown in the game is: what it touches on
+  // the left, the figure on the right, the colour on the figure. A flag carries
+  // no token and has no figure, so the whole line is the label — and it is filled
+  // like any other, or a wording carrying POLITY_NAME reached the screen raw.
+  if (!hit) {
+    return '<div class="cm-line"><span>'
+      + fillTokens(shown, subject ? null : (holder ?? null), w.government, polityOfLine, true)
+      + '</span></div>';
+  }
+  const base = shown.replace(hit[0], '').replace(/\s+/g, ' ').trim();
+  // A key whose value is a map names its subject in the key of that map, so the
+  // subject goes in front of the term: Fascism support per day, mountains
+  // movement, conscription law ceiling.
+  const named = subject ? subject + ' ' + base : base;
+  // Aimed at everything, the demonym is the word "all": a decree drops it and
+  // reads "Dissolve the paramilitaries", but a sentence needs it and reads
+  // "relations with all countries" rather than "relations with countries".
+  const text = target === 'all' ? named.replaceAll('IDEOLOGY_DEMONYM ', 'all ') : named;
+  // On a map line the key has already named the subject, so the act's target has
+  // nothing left to name there but a country. Handing it the resource token as
+  // well turned a spirit aimed at Virupa that raises timber into "timber vrp
+  // yield": the token fell back to the raw polity id. It only read right before
+  // because no spirit with a map of yields had carried a target.
+  const label = fillTokens(text, subject ? null : (holder ?? null), w.government, polityOfLine, true);
+  return '<div class="cm-line"><span>' + label + '</span><b' + cls + '>'
+    + figure(hit[0]) + '</b></div>';
+}
+
+/**
+ * One effect, as one line or as several. Some keys carry a map rather than a
+ * figure, one entry per ideology, terrain, decree or law category, and each of
+ * those is its own line.
+ */
+function modifierLines(w, key, v, stated = false, target = null, keepZero = false) {
+  // A zero is only nothing when it is a change. As a level it is the whole
+  // point: a free port charges 0% and a closed economy offers 0% of its
+  // surplus, and both of those are the line worth reading. `keepZero` keeps
+  // every zero, for a table that writes one on purpose.
+  const m = w.government?.modifiers?.modifiers?.[key];
+  const level = isLevel(m, stated);
+  const dead = (x) => x === null || x === undefined || x === false
+    || (x === 0 && !level && !keepZero);
+  if (dead(v)) return '';
+  // Most object values are maps of subject to figure — a law ceiling per
+  // category, a doctrine cost per branch — and each entry is its own line. A few
+  // are settings for one condition instead, naming a polity or the forms it
+  // stands under, and those are one line. The shape says which: reading it off
+  // the unit called a law ceiling a setting and printed it as [object Object].
+  const settings = v && typeof v === 'object' && !Array.isArray(v)
+    && (typeof v.polity === 'string' || Array.isArray(v.whileForm));
+  if (v && typeof v === 'object' && !Array.isArray(v) && !settings) {
+    // The subject is a key, so it comes camelCased where it is two words.
+    const say = (s) => {
+      // A map keyed by resource — a yield, a ceiling — names a thing the map
+      // draws, so it reads with its own icon and in the colour every other
+      // named thing takes.
+      if (RESOURCE_NAME[s]) return resourceIcon(s) + ' ' + tipName(RESOURCE_NAME[s].toLowerCase());
+      return DIPLO_LAW_LABEL[s] ? DIPLO_LAW_LABEL[s].toLowerCase()
+        : String(s).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+    };
+    return Object.entries(v).filter(([, n]) => !dead(n))
+      .map(([subject, n]) => modifierLine(w, key, n, say(subject), stated, target))
+      .join('');
+  }
+  return modifierLine(w, key, v, null, stated, target);
+}
+
+/** What a spirit tile says when the pointer is on it. */
+function spiritTip(w, id) {
+  const sp = spiritById(w, id);
+  if (!sp) return '<b>' + id + '</b>';
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  // An effect may stand only under certain forms of government, the way the
+  // block below stands only on named ground, so it reads the same way: the
+  // condition on its own line under a rule, and what it does beneath it.
+  const under = (v) => v && typeof v === 'object' && !Array.isArray(v)
+    && (Array.isArray(v.whileForm) || v.whileIndependent === true);
+  // The guarantor's half of a guarantee is a statement of terms, not a figure,
+  // so it is kept out of the figures and said as a sentence of its own below.
+  const guarantor = ([k, v]) => k === 'guarantees' && typeof v?.spirit === 'string';
+  const effects = Object.entries(sp.effects || {});
+  const body = effects.filter(([k, v]) => !under(v) && !guarantor([k, v]))
+    .map(([k, v]) => modifierLines(w, k, v, false, sp.target)).join('');
+  // Each form is named as one would say it: an absolute monarchy, a theocracy.
+  const an = (f) => (/^[aeiou]/i.test(f) ? 'an ' : 'a ')
+    + tipName(esc(f).toLowerCase());
+  const formList = (forms) => forms.map(an).join(', ').replace(/, ([^,]*)$/, ' or $1');
+  const conditional = effects.filter(([, v]) => under(v)).map(([k, v]) => {
+    // Condition and effect are one statement, so they are one sentence: the
+    // forms it stands under, then what it does, rather than a heading and a
+    // figure that have to be read together.
+    const shown = w.government?.modifiers?.modifiers?.[k]?.shown || k;
+    const holder = typeof v.polity === 'string' ? v.polity : (sp.target ?? null);
+    const by = typeof holder === 'string' ? w.table?.polityById?.get(holder) : null;
+    // The country the line names is picked out like the forms beside it, and the
+    // article in front of it is part of the sentence rather than the name.
+    const said = fillTokens(shown, holder, w.government, by, true);
+    const forms = Array.isArray(v.whileForm)
+      ? 'the form of government is ' + formList(v.whileForm) : '';
+    // Not being a puppet goes first, so the list of forms can close the clause
+    // without a second "or" running into the "and".
+    const free = v.whileIndependent === true ? 'the country is not a puppet' : '';
+    return '<hr><div class="sub">If ' + [free, forms].filter(Boolean).join(' and ')
+      + ', it is ' + said + '.</div>';
+  }).join('');
+
+  // Who a guarantor covers is already in the Relations box, one row a country,
+  // so its spirit says only on what terms. The terms are read off the protected
+  // side's own spirit, so the two tooltips cannot come to disagree.
+  const terms = effects.filter(guarantor).map(([, v]) => {
+    const other = spiritById(w, v.spirit);
+    const on = other?.effects?.guaranteedBy || {};
+    const forms = Array.isArray(on.whileForm)
+      ? 'its form of government is ' + formList(on.whileForm) : '';
+    const free = on.whileIndependent === true ? 'it is not a puppet' : '';
+    const when = [free, forms].filter(Boolean).join(' and ');
+    return '<hr><div class="sub">Every country under the '
+      + tipName(esc(other?.name || v.spirit)) + ' is guaranteed by us'
+      + (when ? ' if ' + when : '') + '.</div>';
+  }).join('');
+
+  // A tag is something other data reads, most often a decree barred while the
+  // spirit is held, and most tags tell a player nothing the spirit does not
+  // already say. One that takes something away from the country says so, and
+  // its wording sits in modifiers.json under `tags` beside every other line a
+  // tooltip prints. A tag with no entry there stays unsaid.
+  const said = w.government?.modifiers?.tags || {};
+  const tagged = (sp.tags || []).map((t) => said[t]?.shown).filter(Boolean)
+    .map((s) => '<div class="cm-line"><span>' + esc(s) + '</span></div>').join('');
+
+  // A spirit can also carry effects felt in named provinces only, and those say
+  // nothing at all without the ground they are felt on. Aroyan's Unfair
+  // Treatment is unrest in fifteen named provinces, not unrest everywhere.
+  const local = Object.entries(sp.inProvinces?.effects || {})
+    .map(([k, v]) => modifierLines(w, k, v, false, sp.target)).join('');
+  let where = '';
+  if (local) {
+    const named = sp.inProvinces?.provinces || [];
+    const byId = new Map((w.table?.provinces || []).map((q) => [q.id, q.name]));
+    where = '<hr><div class="sub">' + (named.length
+      ? 'In ' + named.map((q) => tipName(esc(byId.get(q) || q))).join(', ')
+      : 'In some provinces') + '</div>';
+  }
+
+  // The name, then what it does, then why. The prose is the longest thing in
+  // the box and the reason for hovering is the figures, so the figures are what
+  // the eye lands on and the account of them sits under a rule at the foot.
+  const why = sp.description
+    ? '<hr><div class="sub">' + esc(sp.description) + '</div>' : '';
+  return '<b>' + esc(sp.name) + '</b>' + body + tagged + conditional + terms + where + local + why;
+}
+
+/** What a law tile says when the pointer is on it. */
+/** What the panel calls each doctrine branch. */
+const DIPLO_DOCTRINE_LABEL = {
+  land: 'Land doctrine', air: 'Air doctrine',
+  naval: 'Naval doctrine', magical: 'Magical doctrine',
+};
+
+/**
+ * What a doctrine tile says when the pointer is on it.
+ *
+ * Built like a law's: the school named, the branch under it, then its effects.
+ * A school may also carry a `special`, a condition on when the figure applies
+ * at all, and that is the half a bare percentage does not tell you.
+ */
+function doctrineTip(w, branch, school) {
+  const opt = w.government?.laws?.doctrine?.branches?.[branch]?.find((o) => o.name === school);
+  const head = '<b>' + school + '</b><div class="sub">'
+    + (DIPLO_DOCTRINE_LABEL[branch] || branch) + '</div>';
+  const body = Object.entries(opt?.effects || {})
+    .map(([k, v]) => modifierLines(w, k, v)).join('');
+  const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  return head + body
+    + (opt?.special ? '<hr><div class="sub">' + esc(opt.special) + '</div>' : '');
+}
+
+function lawTip(w, category, option) {
+  const opt = w.government?.laws?.categories?.[category]?.options?.find((o) => o.name === option);
+  const head = '<b>' + option + '</b><div class="sub">'
+    + (DIPLO_LAW_LABEL[category] || category) + '</div>';
+
+  // A null figure is a thing the option does not touch, and a false flag is
+  // one it turns off rather than one it carries. Civilian economy takes no
+  // days to convert into, so the line read "null days" rather than not being
+  // there at all.
+  // A zero is written on purpose, though. Moderate taxation moves colonial
+  // revenue by +0% and colonial unrest by +0, the middle of its row, and the
+  // line is what tells a player the neighbouring options move from there.
+  // A law is the thing that states a level, so its shares print bare.
+  return head + Object.entries(opt?.effects || {})
+    .map(([k, v]) => modifierLines(w, k, v, true, null, true)).join('');
+}
+const diploRow = (label, value, icon) =>
+  '<div class="diplo-row">' + (icon ? '<i class="ico ' + icon + '"></i>' : '')
+  + '<span class="lab">' + label + '</span>'
+  + (value == null ? '' : '<span class="val">' + value + '</span>')
+  + '</div>';
+
+/** What a country's own provinces add up to, for the ledger's right box. */
+function diploForces(w, id) {
+  // A realm owns no ground of its own; its members hold all of it. Counting
+  // only what is owned outright gave every empire an empire's worth of nothing.
+  //
+  // The chain is walked rather than realmOf() taken, because realmOf answers
+  // with the top of it. Fellnor's own colonies sit under Fellnor and under the
+  // empire above it, and asking about Fellnor has to reach them: realmOf would
+  // answer Fellnor-Avanta for every one and match none of them to Fellnor.
+  const under = (owner) => {
+    let at = owner;
+    for (let step = 0; step < 8 && at; step++) {
+      if (at === id) return true;
+      const parent = w.table?.polityById?.get(at)?.parent;
+      if (!parent || parent === at) return false;
+      at = parent;
+    }
+    return false;
+  };
+  const held = (w.table?.provinces || []).filter((q) => under(q.owner));
+  const mine = new Set(held.map((q) => q.id));
+  let civ = 0, mil = 0, forts = 0, docks = 0;
+  for (const q of held) {
+    // The starting infrastructure is merged into w.stats at load, not kept
+    // under a name of its own, so this is where a province's buildings live.
+    //
+    // mergeStats stores every LEVEL as a [built, ceiling] pair and every
+    // factory count as a plain number, so the two are read differently. Adding
+    // the pair straight on concatenated it into the row as text.
+    const inf = w.stats?.[q.id] || {};
+    civ += inf.civilianFactories || 0;
+    mil += inf.militaryFactories || 0;
+  }
+  // Forts are counted off the COUNTIES, which is where they are built. A country
+  // holding a level 3 fort in each of four frontier counties has twelve levels,
+  // and the old province reading could not tell that from one province at 3.
+  for (const c of (w.counties?.byId ? w.counties.byId.values() : [])) {
+    if (!mine.has(c.province)) continue;
+    if (c.dockyard) docks++;
+    forts += c.fortification || 0;
+  }
+  return { civ, mil, forts, docks };
+}
+
+/**
+ * Everything the country itself carries of one modifier, summed.
+ *
+ * National, not provincial: the per-province readers weight a spirit over the
+ * ground it reaches, and stability and the manpower pool are neither felt in a
+ * province nor averaged over them. So this walks the government entry straight
+ * — the ideology it holds, the seven laws, the policies, the decrees, the
+ * spirits and the leader — and adds what each carries.
+ *
+ * A spirit's `inProvinces` block is left out. That is the half felt on named
+ * ground only, and a national figure is not the place for it.
+ */
+function nationalModifier(w, polityId, key) {
+  return nationalParts(w, polityId, key).reduce((a, [, n]) => a + n, 0);
+}
+
+/**
+ * The same, itemised: what each one is called and what it carries.
+ *
+ * A total is not a breakdown. "laws, policies and spirits +13" says the figure
+ * came from somewhere without saying where, and the whole use of the row is to
+ * find out which act is doing it.
+ *
+ * A realm is read the way realmCompass reads it. It owns no ground and
+ * legislates only in common, so it carries its common acts once and then what
+ * each member lives under at home, weighted by the people that member speaks
+ * for. The laws the realm passed reach it through its members rather than a
+ * second time on their own. Two members that agree give the realm exactly
+ * their own figure: Fellnor, Avanta and the empire all stand at 63, where the
+ * empire read 66 on its common acts alone and the kingdoms 57 on theirs.
+ */
+function nationalParts(w, polityId, key) {
+  const g = w.government;
+  if (!g) return [];
+  const gov = g.byPolity?.get(polityId) || {};
+  const members = [...(w.table?.polityById?.values() || [])]
+    .filter((q) => q.parent === polityId && q.id !== polityId && g.byPolity.has(q.id))
+    .map((q) => ({ id: q.id, population: populationOf(w, q.id) }));
+  const people = members.reduce((a, m) => a + m.population, 0);
+  if (!people) return partsUnder(w, gov, realmAbove(w, polityId), lawsFor(w, polityId), key);
+
+  const summed = new Map();
+  for (const m of members) {
+    for (const [label, n, kind] of partsUnder(w, g.byPolity.get(m.id), null, lawsFor(w, m.id), key, gov)) {
+      const at = kind + '|' + label;
+      const line = summed.get(at) || [label, 0, kind];
+      line[1] += n * m.population / people;
+      summed.set(at, line);
+    }
+  }
+  return [...partsUnder(w, gov, null, {}, key), ...summed.values()];
+}
+
+/**
+ * What one government entry carries of a modifier, with the realm's acts under
+ * it where it is a member. `skip` is the realm itself when a member is being
+ * read on the realm's behalf, so an act both of them hold is counted once, on
+ * the realm's side.
+ */
+function partsUnder(w, gov, above, laws, key, skip = null) {
+  const g = w.government;
+  const out = [];
+  const take = (label, kind, effects) => {
+    const v = effects?.[key];
+    if (typeof v === 'number' && v !== 0) out.push([label, v, kind]);
+  };
+  const heldBy = (list, x) => (list || []).some((y) => nameOf(y) === nameOf(x));
+  // The realm's acts first, then the member's, each act once under its own holder.
+  const acts = (field) => [above, gov].flatMap((holder) => (holder?.[field] || [])
+    .map((x) => [holder, x]))
+    .filter(([, x], i, all) => all.findIndex(([, y]) => nameOf(y) === nameOf(x)) === i
+      && !heldBy(skip?.[field], x));
+
+  take(gov.startingIdeology, 'ideology', g.ideologies?.ideologies
+    ?.find((i) => i.name === gov.startingIdeology)?.effects);
+  // Named for the option, not the category: "High" is an option in three of
+  // them, so the category is what says which High this is.
+  for (const [cat, chosen] of Object.entries(laws)) {
+    take(chosen + ' ' + (DIPLO_LAW_LABEL[cat] || cat).toLowerCase(), 'law',
+      g.laws?.categories?.[cat]?.options?.find((o) => o.name === chosen)?.effects);
+  }
+  for (const [, p] of acts('policies')) {
+    take(nameOf(p), 'policy', g.policies?.policies?.find((x) => x.name === nameOf(p))?.effects);
+  }
+  for (const [holder, d] of acts('decrees')) {
+    const act = g.decrees?.decrees?.find((x) => x.name === nameOf(d));
+    // An expired campaign keeps only what it lists as permanent: the schools have
+    // closed, but the people they taught to read are still reading.
+    const effects = d?.expired
+      ? Object.fromEntries(Object.entries(act?.effects || {})
+        .filter(([k]) => (act?.permanent || []).includes(k)))
+      : act?.effects;
+    // A decree naming a target carries the token in its own name.
+    take(fillTokens(nameOf(d), d?.target, w.government, w.table?.polityById?.get(holder.id)),
+      'decree', effects);
+  }
+  const skipped = new Set(skip?.spirits || []);
+  for (const id of new Set([...(above?.spirits || []), ...(gov.spirits || [])])) {
+    if (skipped.has(id)) continue;
+    const sp = spiritById(w, id);
+    // The NAME, not the factor. The factor is what a province card calls the
+    // contribution, where the reader is asking what they are feeling. A national
+    // breakdown is asking which spirit did it, and only the name answers that.
+    take(sp?.name || id, 'spirit', sp?.effects);
+  }
+  // The realm's head of state reigns over the member as well as its own premier.
+  for (const holder of [above, gov]) {
+    if (!holder?.leader || holder.leader === skip?.leader) continue;
+    const l = (g.leaders?.leaders || []).find((x) => x.id === holder.leader);
+    take(l ? [l.title, l.name].filter(Boolean).join(' ') : holder.leader, 'leader', l?.effects);
+  }
+  return out;
+}
+
+/** The realm's government entry above a member, or null for anything else. */
+function realmAbove(w, polityId) {
+  const parent = w.table?.polityById?.get(polityId)?.parent;
+  return parent && parent !== polityId ? w.government?.byPolity?.get(parent) || null : null;
+}
+
+/**
+ * The laws a polity lives under: its own, over its realm's, over the defaults.
+ * A member passes the categories the Compromise left to it and takes the rest,
+ * conscription and the currency among them, from the realm.
+ */
+function lawsFor(w, polityId) {
+  const g = w.government;
+  return { ...(g?.defaults?.laws || {}), ...(realmAbove(w, polityId)?.laws || {}),
+    ...(g?.byPolity?.get(polityId)?.laws || {}) };
+}
+
+/** Every province the polity holds, itself and everything under it. */
+function provincesUnder(w, polityId) {
+  const under = (owner) => {
+    let at = owner;
+    for (let step = 0; step < 8 && at; step++) {
+      if (at === polityId) return true;
+      const parent = w.table?.polityById?.get(at)?.parent;
+      if (!parent || parent === at) return false;
+      at = parent;
+    }
+    return false;
+  };
+  return (w.table?.provinces || []).filter((q) => under(q.owner));
+}
+
+/**
+ * The condition of society, 0 to 100.
+ *
+ * `08 National information and development.md`: the average is 50, and laws,
+ * policies and events set it from there. It is then pulled toward happiness and
+ * ideological support at 1% of the gap a day, which is the running game's job;
+ * this is where it stands before a day has been played.
+ */
+function stabilityOf(w, polityId) {
+  const held = 50 + nationalModifier(w, polityId, 'stability')
+    - 50 * risenShare(w, polityId);
+
+  // Standing unrest costs a government its standing, but only down to 20.
+  // Stability under 20 adds to unrest everywhere, so an uncapped charge here
+  // would feed the thing that feeds it. Held at 20 the return path never opens
+  // and the two cannot chase each other; below it is reserved for a country's
+  // own laws, its spirits and ground it has actually lost.
+  const unrest = nationalUnrestOf(w, polityId);
+  const charge = 20 * Math.max(0, unrest - 30) / 70;
+  const after = Math.max(Math.min(held, 20), held - charge);
+  return Math.max(0, Math.min(100, after));
+}
+
+/** Unrest across the country, weighted by where the people are. */
+function nationalUnrestOf(w, polityId) {
+  let people = 0, weighted = 0;
+  for (const q of provincesUnder(w, polityId)) {
+    const n = w.stats?.[q.id]?.population || 0;
+    if (!n) continue;
+    people += n;
+    weighted += n * (w.stats?.[q.id]?.unrest || 0);
+  }
+  return people ? weighted / people : 0;
+}
+
+/**
+ * The share of a country's people in rebel hands.
+ *
+ * A rising is not something a country feels, it is ground it has lost, so it is
+ * charged against stability directly rather than left to the pull toward
+ * happiness. Standing and not accumulating: retake the ground and it is gone.
+ *
+ * Nothing raises rebels yet, so this is nought everywhere until uprisings are
+ * built. The counties carry the flag when they do.
+ */
+function risenShare(w, polityId) {
+  const held = provincesUnder(w, polityId);
+  if (!held.length) return 0;
+  const mine = new Set(held.map((q) => q.id));
+  let people = 0;
+  for (const q of held) people += w.stats?.[q.id]?.population || 0;
+  if (!people) return 0;
+
+  // Population is held at the province and a rising takes counties, so a county
+  // counts for its share of the province it sits in. Counted in one pass rather
+  // than looked up, there being no index from a province to its counties.
+  const counties = w.counties?.byId ? [...w.counties.byId.values()] : [];
+  const perProvince = new Map();
+  for (const c of counties) perProvince.set(c.province, (perProvince.get(c.province) || 0) + 1);
+  let risen = 0;
+  for (const c of counties) {
+    if (!c.rebels || !mine.has(c.province)) continue;
+    risen += (w.stats?.[c.province]?.population || 0) / (perProvince.get(c.province) || 1);
+  }
+  return Math.min(1, risen / people);
+}
+
+/**
+ * The manpower pool, in men.
+ *
+ * `pool = sum(controlledProvince.population) * conscriptionShare
+ *         * (1 + manpowerModifiers) - manpowerInUnits`
+ *
+ * The conscription law sets the share outright and everything else carrying
+ * `manpower` adds its fraction of what that gave, which is why the ideology and
+ * the spirits are a factor on the law and not a share of their own. Nothing is
+ * raised yet, so `manpowerInUnits` is nothing.
+ */
+function manpowerOf(w, polityId) {
+  const g = w.government;
+  // Conscription is the realm's to pass, so a member drafts under the realm's law.
+  const law = lawsFor(w, polityId).conscription || null;
+  const share = g?.laws?.categories?.conscription?.options
+    ?.find((o) => o.name === law)?.effects?.manpower;
+  if (!share) return { share: 0, pool: 0, people: 0 };
+
+  // The law's own figure is the share; the sum here is everything except it.
+  const others = nationalModifier(w, polityId, 'manpower') - share;
+  const people = provincesUnder(w, polityId)
+    .reduce((a, q) => a + (w.stats?.[q.id]?.population || 0), 0);
+  const rate = share * (1 + others);
+  return { share: rate, pool: Math.round(people * rate), people };
+}
+
+/** A count of men, short enough for a panel row. */
+const menText = (n) => (n >= 1e6 ? (n / 1e6).toFixed(2) + 'M'
+  : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n));
+
+/** Where a country's stability comes from, act by act. */
+function stabilityTip(w, polityId, value) {
+  // Signed and descending, the order partsMarkup puts a happiness breakdown
+  // in: what is helping most at the top, what is hurting most at the bottom.
+  const parts = nationalParts(w, polityId, 'stability').sort((x, y) => y[1] - x[1]);
+  // A spirit is set in italic: it is a condition the country is in rather than
+  // an act it has chosen, and the two want telling apart at a glance.
+  const line = (label, n, cls, kind) => '<div class="cm-line"><span>'
+    + (kind === 'spirit' ? '<i>' + label + '</i>' : label) + '</span><b'
+    + (cls ? ' class="' + cls + '"' : '') + '>' + (n > 0 ? '+' : '') + Math.round(n)
+    + '</b></div>';
+  return '<b>Stability</b>'
+    + '<div class="cm-line"><span>Base</span><b>50</b></div>'
+    + parts.map(([label, n, kind]) => line(label, n, n > 0 ? 'up' : 'down', kind)).join('')
+    + '<hr><div class="cm-line"><span>total</span><b>' + Math.round(value) + '</b></div>';
+}
+
+/** How the manpower pool is arrived at. */
+function manpowerTip(w, polityId, m) {
+  return '<b>Manpower</b>'
+    + '<div class="cm-line"><span>population</span><b>' + menText(m.people) + '</b></div>'
+    + '<div class="cm-line"><span>conscription</span><b>'
+    + Number((m.share * 100).toFixed(1)) + '%</b></div>'
+    + '<hr><div class="cm-line"><span>pool</span><b>' + menText(m.pool) + '</b></div>';
+}
+
+
+/** Where a national spirit's art lives, named by its own id in `image`. */
+const SPIRIT_ART = './data/img/national_spirits/';
+
+/** Where a law option's art lives, named in the option's own `image`. */
+const LAW_ART = './data/img/laws/';
+
+/** Fills the panel for one polity and slides it in. */
+function openDiplo(polityId) {
+  const w = state.world;
+  const polity = polityId && w?.table?.polities ? w.table.polities.find((x) => x.id === polityId) : null;
+  if (!polity) return closeDiplo();
+
+  // The ground panels answer a different question and share no space with this
+  // one, so opening it puts both away rather than arranging around them.
+  closeCard();
+  selectCounty(null);
+
+  state.diplo = polityId;
+  playSelect();
+
+  const gov = w.government?.byPolity?.get(polityId) || null;
+  const values = w.polityValues?.[polityId] || null;
+
+  els.diploName.textContent = polity.name || polityId;
+  paintDiploFlag(polity);
+  els.diploPolity.textContent = shortNameOf(polity) || polityId;
+  els.diploFaction.textContent = 'No faction';
+  paintDiploLeader(w, polityId);
+  // Both are worked out, not read: polities-starting-values.json holds the ten
+  // running values and every one of them starts at zero, so a panel reading it
+  // showed 0% for a country whose laws and spirits plainly say otherwise.
+  const stability = stabilityOf(w, polityId);
+  const manpower = manpowerOf(w, polityId);
+  els.diploStability.textContent = Math.round(stability) + '%';
+  els.diploManpower.textContent = menText(manpower.pool);
+  meterTip(els.diploStability, stabilityTip(w, polityId, stability));
+  meterTip(els.diploManpower, manpowerTip(w, polityId, manpower));
+
+  // The form decides whether a country votes at all, unless its own entry says
+  // otherwise: 09 Government.md keeps elections on the form and lets a polity
+  // override it.
+  const form = gov ? w.government?.ideologies?.forms?.find((f) => f.name === gov.form) : null;
+  const votes = gov?.elections ?? form?.elections ?? false;
+  let named = null;
+  try { named = gov ? governmentPosition(w, polityId).ideology : null; } catch { named = null; }
+  els.diploIdeology.textContent = named || '\u2014';
+  els.diploElection.textContent = votes ? 'Next Election TBD' : 'No Election';
+  els.diploFocus.textContent = 'No National Focus set';
+
+  // Built as elements rather than markup, so each tile can carry the same hover
+  // breakdown a law tile does.
+  const spirits = gov?.spirits || [];
+  els.diploSpirits.replaceChildren();
+  if (spirits.length) {
+    for (const sid of spirits) {
+      const tile = document.createElement('i');
+      tile.className = 'diplo-tile';
+      tile.dataset.spirit = sid;
+      // A spirit names its own art in `image`, the way a leader names a
+      // `portrait`. Most have none drawn yet and keep the placeholder the
+      // class carries, so the field is set only where the file exists.
+      const art = spiritById(w, sid)?.image;
+      if (art) tile.style.backgroundImage = `url("${SPIRIT_ART}${art}.png")`;
+      meterTip(tile, spiritTip(w, sid));
+      els.diploSpirits.append(tile);
+    }
+  } else {
+    const none = document.createElement('span');
+    none.className = 'none';
+    none.textContent = 'No national spirits';
+    els.diploSpirits.append(none);
+  }
+
+  paintDiploRelations(w, polityId);
+
+  paintDiploActions();
+
+  // Built from elements rather than from innerHTML, because every tile needs a
+  // tooltip hung on it and re-querying for them after the fact is both slower
+  // and untestable: the DOM shim returns nothing from querySelectorAll, so a
+  // handler attached that way is invisible to every test.
+  const laws = Object.entries(gov?.laws || {});
+  const box = els.diploLedgerLeft;
+  box.replaceChildren();
+
+  const heading = (title) => {
+    const h = document.createElement('h3');
+    h.textContent = title;
+    box.append(h);
+  };
+  const grid = () => {
+    const g = document.createElement('div');
+    g.className = 'diplo-grid';
+    box.append(g);
+    return g;
+  };
+
+  heading('Laws');
+  if (laws.length) {
+    const g = grid();
+    for (const [cat, opt] of laws) {
+      const tile = document.createElement('i');
+      tile.className = 'diplo-tile';
+      tile.dataset.law = cat;
+      tile.dataset.option = opt;
+      // An option names its own art in `image`, the way a spirit does. Where none
+      // is drawn yet the tile keeps the placeholder the class carries.
+      const art = w.government?.laws?.categories?.[cat]?.options?.find((o) => o.name === opt)?.image;
+      if (art) tile.style.backgroundImage = `url("${LAW_ART}${art}.png")`;
+      meterTip(tile, lawTip(w, cat, opt));
+      g.append(tile);
+    }
+  } else {
+    const d = document.createElement('div');
+    d.className = 'diplo-row none';
+    d.textContent = 'Unknown';
+    box.append(d);
+  }
+
+  // The four branches, in the order the file lists them. A country may hold
+  // fewer: a landlocked one carries no naval school, and the tile is left out
+  // rather than drawn empty, since there is no slot there to fill.
+  const doctrine = Object.entries(gov ? doctrineOf(w, polityId) : {}).filter(([, school]) => school);
+  if (doctrine.length) {
+    heading('Doctrine');
+    const g = grid();
+    for (const [branch, school] of doctrine) {
+      const tile = document.createElement('i');
+      tile.className = 'diplo-tile';
+      tile.dataset.doctrine = branch;
+      tile.dataset.school = school;
+      meterTip(tile, doctrineTip(w, branch, school));
+      g.append(tile);
+    }
+  } else if (!gov) {
+    heading('Doctrine');
+    const d = document.createElement('div');
+    d.className = 'diplo-row none';
+    d.textContent = 'Unknown';
+    box.append(d);
+  }
+
+  // Neither exists yet. The slots are drawn all the same, so the grid says how
+  // many there will be rather than the section reading as though it were done.
+  for (const title of ['Ministers', 'Commanders']) {
+    heading(title);
+    const g = grid();
+    for (let i = 0; i < 3; i++) {
+      const tile = document.createElement('i');
+      tile.className = 'diplo-tile empty';
+      g.append(tile);
+    }
+  }
+  const f = diploForces(w, polityId);
+  els.diploLedgerRight.innerHTML = '<h3>Forces</h3>'
+    + diploRow('Divisions', 0, 'div')
+    + diploRow('Air units', 0, 'air')
+    + diploRow('Ship units', 0, 'ship')
+    + diploRow('Forts', f.forts, 'fort')
+    + '<h3>Industry</h3>'
+    + diploRow('Military factories', f.mil, 'mil')
+    + diploRow('Civilian factories', f.civ, 'civ')
+    + diploRow('Dockyards', f.docks, 'dock');
+
+  showDiploTab('diplomacy');
+  els.diplo.classList.add('open');
+  els.diplo.setAttribute('aria-hidden', 'false');
+}
+
+/** Whether the diplomacy panel is on the screen. */
+const diploOpen = () => els.diplo.classList.contains('open');
+
+/**
+ * The leader in office, their portrait and the party behind them.
+ *
+ * Who holds office is `leader` on the polity's government entry, and the roster
+ * of everyone who could is polities-leaders.json. Not a date between them: a
+ * leader arrives through an event, a focus or a coup, any of which the player
+ * can bring on early, put off or stop altogether, so nothing here may assume a
+ * year. Changing who leads is changing that one field.
+ */
+function paintDiploLeader(w, polityId) {
+  const PLACEHOLDER = './data/img/portraits/placeholder.png';
+  const held = w.government?.byPolity?.get(polityId)?.leader;
+  const leader = held
+    ? (w.government?.leaders?.leaders || []).find((l) => l.id === held) : null;
+
+  // The name alone, except for a monarch, who is a Queen Adrianna and not an
+  // Adrianna. `house` is what says which: a crown has one and a prime minister
+  // does not.
+  els.diploLeader.textContent = leader
+    ? [leader.house ? leader.title : null, leader.name].filter(Boolean).join(' ')
+    : 'Placeholder';
+  // A leader who governs without a party is not a leader whose party we have
+  // failed to write down, so the box says which of the two it is.
+  els.diploParty.textContent = leader ? (leader.party || 'No party') : 'Placeholder';
+
+  const img = els.diploPortrait;
+  if (!img) return;
+  img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER; };
+  img.src = leader?.portrait
+    ? './data/img/portraits/' + leader.portrait + '.png' : PLACEHOLDER;
+
+  // The traits, on the portrait, the way a spirit's are on its tile. They apply
+  // only while this leader holds office, so they belong to the face and not to
+  // the country.
+  if (leader) meterTip(img, leaderTip(w, leader));
+  else { img.onmouseenter = null; img.onmousemove = null; img.onmouseleave = null; }
+}
+
+/** What a leader's portrait says when the pointer is on it. */
+function leaderTip(w, leader) {
+  const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const head = '<b>' + esc([leader.title, leader.name].filter(Boolean).join(' ')) + '</b>'
+    + '<div class="sub">' + esc(leader.party || leader.house || 'No party') + '</div>';
+  const body = Object.entries(leader.effects || {})
+    .map(([k, v]) => modifierLines(w, k, v, false, leader.target)).join('');
+  const why = leader.description
+    ? '<hr><div class="sub">' + esc(leader.description) + '</div>' : '';
+  return head + body + why;
+}
+
+/**
+ * The country's flag, or the placeholder while it has none drawn yet.
+ *
+ * Named from the short name rather than the id, since that is what the files
+ * are called: krenland.png, twadamia.png. Most of the map has no flag, so a
+ * miss is the normal case and not an error — onerror puts the placeholder up
+ * and clears itself, or a placeholder that failed would call it again forever.
+ */
+function paintDiploFlag(polity) {
+  const slug = shortNameOf(polity).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const img = els.diploFlag;
+  if (!img) return;
+  img.onerror = () => window.flagMiss(img, slug);
+  img.src = flagSrc(slug);
+  img.alt = '';
+}
+
+function closeDiplo() {
+  state.diplo = null;
+  els.diplo.classList.remove('open');
+  els.diplo.setAttribute('aria-hidden', 'true');
+}
+
+function showDiploTab(which) {
+  const on = which === 'diplomacy';
+  els.diploTabDiplomacy.classList.toggle('on', on);
+  els.diploTabLedger.classList.toggle('on', !on);
+  els.diploPaneDiplomacy.hidden = !on;
+  els.diploPaneLedger.hidden = on;
+}
 
 function closeCard() {
   els.card.classList.remove('open');
@@ -7099,7 +9195,7 @@ function updateCard() {
 
   els.cardName.textContent = p.name;
   els.cardPolity.textContent = polity.name;
-  els.cardFlag.style.background = `rgb(${polity.colour})`;
+  paintFlagBlock(els.cardFlag, polity);
 
   // Under occupation the card has to carry both facts. `polityOf` reports the
   // controller, since that is what the map is coloured by, so the de jure owner
@@ -7125,7 +9221,8 @@ function updateCard() {
 
   els.cardGrid.innerHTML = CARD_FIELDS
     .map(([key, label]) => {
-      const [built = 0, max = 0] = Array.isArray(stats[key]) ? stats[key] : [stats[key] ?? 0, 0];
+      const [built = 0, ground = 0] = Array.isArray(stats[key]) ? stats[key] : [stats[key] ?? 0, 0];
+      const max = usableCeiling(key, ground);
       // Greyed where the ground allows nothing at all, so 0/0 reads as a fact
       // about the province rather than as data nobody has filled in yet.
       const dead = max ? '' : ' none';
@@ -7172,7 +9269,7 @@ function updatePanel() {
   els.selName.textContent = p.name;
   els.selBody.innerHTML = `
     <div class="row"><span>ID</span><span>${p.id}</span></div>
-    <div class="row"><span>Owner</span><span>${swatch(polityOf(w, p).colour)}${polityOf(w, p).name}</span></div>
+    <div class="row"><span>Owner</span><span>${polSwatch(polityOf(w, p))}${polityOf(w, p).name}</span></div>
     <div class="row"><span>Terrain</span><span>${p.terrain.join(' + ') || '—'}</span></div>
     <div class="row"><span>Climate</span><span>${p.climate.join(' + ') || '—'}</span></div>
     <div class="row"><span>Coastal</span><span>${w.coastal.has(p.id) ? 'yes' : 'no'}</span></div>
@@ -7182,13 +9279,163 @@ function updatePanel() {
       + (w.bounds.get(p.id).maxY - w.bounds.get(p.id).minY + 1) + '</span></div>' : ''}
     <div class="row"><span>Pixels</span><span>${w.bounds.get(p.id)?.n ?? 0}</span></div>
     <div class="row"><span>Neighbours</span><span>${nb.length}</span></div>`;
-  els.neighbours.innerHTML = `<h1>Adjacent provinces</h1><ul>${nb.map((q) => `<li data-id="${q.id}">${swatch(polityOf(w, q).colour)}${q.name}</li>`).join('')
+  els.government.innerHTML = governmentPanel(w, p);
+  els.neighbours.innerHTML = `<h1>Adjacent provinces</h1><ul>${nb.map((q) => `<li data-id="${q.id}">${polSwatch(polityOf(w, q))}${q.name}</li>`).join('')
     }</ul>`;
+}
+
+// Every ideology's movement reads "the <demonym> movement", so the adjective comes
+// out of the field already there rather than out of 22 more that could drift from it.
+const bareDemonym = (movement) => movement.replace(/^the /, '').replace(/ movement$/, '');
+const demonymOf = (ideology) => bareDemonym(ideology.movement);
+
+// A decree or policy that takes a target names it inside its own name, so the entry
+// is { decree, target } rather than a bare string and the token is filled on the way
+// to the screen. 09 Government.md lists the four tokens and what each resolves to.
+function fillTokens(text, target, tables, polity, mark = false) {
+  // `mark` picks the country out of the sentence the way a tooltip picks out a
+  // province or a resource. Off by default: the panels that fill a decree's name
+  // into a list want the words and nothing else.
+  // Marked, the country gets its flag as well as the colour, and the article in
+  // front of it stays in the sentence: "relations with the [flag] Three Nations".
+  const gold = (s) => {
+    if (!mark) return s;
+    const cut = /^(the )(.*)$/i.exec(s || '');
+    return cut ? cut[1] + miniFlag(polity) + tipName(cut[2]) : miniFlag(polity) + tipName(s);
+  };
+  // Every token names one thing, so only a target that is a name can fill one. A
+  // target that is a record fills none: Lobby for a law points at {law, option}
+  // and its own name carries no token to fill.
+  const named = typeof target === 'string' ? target : null;
+  const movement = named === 'all'
+    ? tables.ideologies.allMovement
+    : tables.ideologies.ideologies.find((i) => i.name === named)?.movement;
+  return text
+    .replaceAll('IDEOLOGY_DEMONYM ', movement && named !== 'all'
+      ? bareDemonym(movement) + ' ' : '')
+    .replaceAll('MOVEMENT_NAME', movement ?? named ?? '')
+    .replaceAll('INDUSTRY_NAME', industryName(named))
+    .replaceAll('RESOURCE_NAME', mark && RESOURCE_NAME[named]
+      ? resourceIcon(named) + ' ' + tipName(RESOURCE_NAME[named].toLowerCase())
+      : (RESOURCE_NAME[named] ?? named ?? '').toLowerCase())
+    .replaceAll('POLITY_NAME', gold(shortNameOf(polity, true)));
+}
+
+// Fertile land and livestock are not industries, and reading as one would make a
+// mill of a field, so those two render bare.
+function industryName(kind) {
+  if (typeof kind !== 'string') return '';
+  if (kind === 'rail') return 'railways';
+  if (kind === 'manufacturing') return 'consumer goods industry';
+  const name = (RESOURCE_NAME[kind] ?? kind ?? '').toLowerCase();
+  return kind === 'fertileLand' || kind === 'livestock' ? name : name + ' industry';
+}
+
+/**
+ * Where a polity sits on the compass, which is not the same question for a realm.
+ * A realm legislates in common and owns no ground, so its point is half its own
+ * laws and half its members' weighted by population; a member reads its own laws
+ * with the realm's underneath. Only this function knows which is which.
+ */
+/**
+ * The doctrine a polity fights under, which for a realm member is two answers.
+ *
+ * The realm sets the school its armies share, and a member that trains its own
+ * force to something else overrides it branch by branch: the Athanasian National
+ * Guard answers to its Chief Governor and may hold its own land doctrine while
+ * the confederal navy and wizard corps stay the Three Nations'. A member that
+ * sets none takes the realm's whole, as Fellnor and Avanta do.
+ */
+function doctrineOf(w, id) {
+  const gov = w.government?.byPolity?.get(id);
+  if (!gov) return {};
+  const above = w.table?.polityById?.get(id)?.parent;
+  const realm = above ? w.government?.byPolity?.get(above) : null;
+  return { ...(realm?.doctrine || {}), ...(gov.doctrine || {}) };
+}
+
+function governmentPosition(w, id) {
+  const g = w.government;
+  const gov = g?.byPolity?.get(id);
+  if (!gov) return null;
+  const members = [...(w.table?.polityById?.values() || [])]
+    .filter((q) => q.parent === id && g.byPolity.has(q.id))
+    .map((q) => ({ gov: g.byPolity.get(q.id), population: populationOf(w, q.id) }));
+  if (members.length) return realmCompass(gov, members, g, gov.startingIdeology || null);
+  const above = w.table?.polityById?.get(id)?.parent;
+  return compass(gov, g, gov.startingIdeology || null, g.byPolity.get(above) || null,
+    industryShares(depositsOf(w, id), g), nationalShares(w, id));
+}
+
+function populationOf(w, id) {
+  let n = 0;
+  for (const q of w.table?.provinces || []) if (q.owner === id) n += w.stats?.[q.id]?.population || 0;
+  return n;
+}
+
+/**
+ * The owner's government, worked out from the compass rather than stored.
+ *
+ * Debug only, and deliberately so: the national information panel is its own
+ * screen and this is here to check the arithmetic against a map. A polity with
+ * no entry says so instead of drawing an empty table, since 98 of them are
+ * sovereign and only some are written.
+ */
+function governmentPanel(w, p) {
+  const w0 = w.government;
+  if (!w0) return '';
+  const owner = controllerOf(p);
+  const realm = realmOf(w.table, owner);
+  // The realm legislates in common and the member legislates at home, so a province
+  // inside one is governed by both and the card has to show both. 09 Government.md,
+  // Realms, has the division.
+  return governmentBlock(w, realm, 'Government')
+    + (realm === owner ? '' : governmentBlock(w, owner, 'Its government'));
+}
+
+function governmentBlock(w, held, title) {
+  const g = w.government;
+  const pol = w.table.polityById.get(held);
+  const gov = g.byPolity.get(held);
+  if (!gov) {
+    return `<h1>${title}</h1><div class="row"><span>${pol?.name ?? held}</span>`
+      + '<span class="hint">not authored yet</span></div>';
+  }
+
+  let c;
+  // Seeded from the polity's own starting ideology. Passing null names the country
+  // for the nearest point to its raw sum, which is a different country: Krenland on
+  // free trade reads Technocracy unanchored and Conservatism anchored on itself.
+  try { c = governmentPosition(w, held); } catch (e) { return `<h1>${title}</h1><div class="row"><span>error</span><span class="warn">${e.message}</span></div>`; }
+  const wt = costWeighting(c.position, g);
+  const row = (k, v) => `<div class="row"><span>${k}</span><span>${v}</span></div>`;
+  const list = (a) => (a && a.length
+    ? a.map((x) => fillTokens(nameOf(x), x?.target, g, pol)).join(', ') : '—');
+  // What the member legislates for itself. The realm's own laws are shown in its
+  // block above, and repeating them here would read as though it held them twice.
+  const laws = Object.entries(gov.laws || {})
+    .map(([k, v]) => `${v} <span class="hint">${k}</span>`).join('<br>');
+
+  return `<h1>${title}</h1>`
+    + row('Polity', `${polSwatch(pol)}${pol?.name ?? held}`)
+    + row('Form', gov.form)
+    + row('Ideology', c.ideology)
+    + row('Compass', `${c.position[0].toFixed(0)} economic, ${c.position[1].toFixed(0)} authority`)
+    + row('Policy slots', `${(gov.policies || []).length} of ${c.slots}`)
+    + row('Laws', laws || '—')
+    + row('Doctrine', Object.values(doctrineOf(w, held)).join(', ') || '—')
+    + row('Policies', list(gov.policies))
+    + row('Decrees', (gov.decrees || []).length
+      ? gov.decrees.map((x) => fillTokens(nameOf(x), x?.target, g, pol)
+        + (x?.expired ? ' <span class="hint">completed</span>' : '')).join(', ')
+      : '—')
+    + row('Spirits', list((gov.spirits || []).map((n) => spiritById(w, n)?.name || n)))
+    + row('Law cost', `conscription ×${wt.conscription.toFixed(2)}, tax ×${wt.tax.toFixed(2)}, economy ×${wt.economy.toFixed(2)}`);
 }
 
 // Bumped whenever this file is edited, and shown in the debug menu. If what is
 // on screen does not match what is in the file, this is how you find out.
-const BUILD = 'v0.8-indev';
+const BUILD = 'v0.8.a-indev';
 
 /** The size a ring was traced at, for the readout. */
 const ringShape = (holder) => (holder.silhouette
@@ -7368,6 +9615,17 @@ function showStats(w) {
 const mapIsShowing = () => document.getElementById('start')?.classList.contains('gone') === true;
 
 const pauseOpen = () => els.pause.classList.contains('open');
+
+const controlsOpen = () => !!document.getElementById('controls')?.classList.contains('open');
+
+/** The controls list, opened from the start menu and from the pause menu. */
+function setControls(open) {
+  const el = document.getElementById('controls');
+  if (!el) return;
+  el.classList.toggle('open', open);
+  el.setAttribute('aria-hidden', String(!open));
+  if (open) el.querySelector('.dialog-close')?.focus();
+}
 
 function setPause(open) {
   els.pause.classList.toggle('open', open);
@@ -7676,6 +9934,21 @@ function wireInput() {
     // Never travelled past the slop, so it was a click after all.
     if (dragging && !moved && ev.button === 0) {
       const id = provinceAtEvent(ev);
+      // CTRL asks about the COUNTRY rather than the ground. It opens the owner's
+      // diplomacy panel and selects nothing, because the panel is about a state
+      // and highlighting one of its provinces would say otherwise. On open water
+      // it closes, there being no country out there to ask about.
+      if (ev.ctrlKey || ev.metaKey) {
+        // Cleared BEFORE the panel is built, not after. Anything that threw in
+        // there left this true, and the map then followed the pointer with no
+        // button held down.
+        dragging = false;
+        const owner = id ? state.world?.table?.provinces?.find((q) => q.id === id)?.owner : null;
+        if (owner) openDiplo(realmOf(state.world.table, owner) || owner);
+        else closeDiplo();
+        return;
+      }
+      closeDiplo();
       select(id);
       // Only the Navy mode lets the water be picked. On every other mode a click
       // on the sea clears the selection and does nothing else, which is what it
@@ -7741,6 +10014,25 @@ function wireInput() {
 
   els.canvas.addEventListener('contextmenu', (ev) => {
     ev.preventDefault();
+
+    // CTRL and the right button asks about the MEMBER rather than the realm.
+    // The left button answers with whoever speaks for the ground abroad, which
+    // for a member of a realm is the realm; this is how the kingdom underneath
+    // it is reached. Fellnor and Avanta legislate separately inside one empire,
+    // so each has a government of its own to read.
+    if (ev.ctrlKey || ev.metaKey) {
+      const id = provinceAtEvent(ev);
+      const owner = id ? state.world?.table?.provinces?.find((q) => q.id === id)?.owner : null;
+      if (owner) openDiplo(owner);
+      else closeDiplo();
+      return;
+    }
+
+    // Picking ground puts the diplomacy panel away, the same as a left click
+    // does. The two answer different questions and share the left of the screen,
+    // so one gesture cannot leave both standing.
+    closeDiplo();
+
     const county = countyAtEvent(ev);
 
     // BOTH highlights. The province the county is in is lit in gold, exactly as
@@ -7808,6 +10100,7 @@ function wireInput() {
   });
 
   document.getElementById('pause-resume').addEventListener('click', () => setPause(false));
+  document.getElementById('pause-controls').addEventListener('click', () => setControls(true));
   document.getElementById('pause-quit').addEventListener('click', quitToStartMenu);
 
   els.clockPlay.addEventListener('click', () => setPaused(!clock.paused));
@@ -7829,6 +10122,12 @@ function wireInput() {
     // The pause menu owns the keyboard while it is up. Zooming the map or
     // sliding out the debug panel behind a menu that has stopped to ask a
     // question is not something to support, and Escape is what answers it.
+    if (ev.key === 'Escape' && controlsOpen()) {
+      ev.preventDefault();
+      setControls(false);
+      return;
+    }
+
     if (pauseOpen()) {
       if (ev.key !== 'Escape') return;
       ev.preventDefault();
@@ -7865,7 +10164,14 @@ function wireInput() {
       // The county goes first: it is the most recent thing to have been opened
       // and the smallest, so Escape peeling it off before the province selection
       // is what somebody who just right-clicked expects.
-      if (state.county) selectCounty(null);
+      //
+      // The diplomacy panel is asked whether it is OPEN rather than whether
+      // state.diplo is set. The two are meant to agree, and a press that is
+      // supposed to close what is on the screen has to read the screen: with
+      // the flag cleared under an open panel the press fell through the whole
+      // chain and opened the pause menu over it instead.
+      if (diploOpen()) closeDiplo();
+      else if (state.county) selectCounty(null);
       else if (state.selected) select(null);
       // Both levels of water at once. A click on the sea picks the region AND the
       // subregion inside it, so clearing only the region left the subregion lit
@@ -7884,6 +10190,10 @@ function wireInput() {
 
   // Closing the card leaves the province selected: the ring and the debug panel
   // are a separate question from whether you want its details in the way.
+  document.getElementById('diplo-close').addEventListener('click', closeDiplo);
+  els.diploTabDiplomacy.addEventListener('click', () => showDiploTab('diplomacy'));
+  els.diploTabLedger.addEventListener('click', () => showDiploTab('ledger'));
+
   document.getElementById('card-close').addEventListener('click', closeCard);
   document.getElementById('county-close').addEventListener('click', () => selectCounty(null));
 
@@ -8003,26 +10313,30 @@ async function init() {
   // for it after the others would add its whole download to the load time.
   const [raw, polityRaw, pngBytes, cacheBytes, satellite, rivers, night, cities, cityIcon, capitalIcon,
     eyrieIcon, dockyardIcon, syntheticOilIcon, syntheticRubberIcon, plantIcon,
-    resourceSheet, stats, startInfra, startAttitude, polityValues, resources, quotes,
-    seaRaw, seaPngBytes, countyRaw, countyPngBytes, subPngBytes] = await Promise.all([
-      loadJSON('./data/json/provinces.json'),
+    resourceSheet, stats, startInfra, startAttitude, startSupport, polityValues,
+    startGovernment, lawTable, policyTable, decreeTable, ideologyTable, spiritTable, modifierTable,
+    actionTable, relationTable, leaderTable,
+    startOccupation,
+    resources, quotes,
+    seaRaw, seaPngBytes, countyRaw, countyValues, countyPngBytes, subPngBytes] = await Promise.all([
+      loadJSON('./data/json/geography/provinces.json'),
       // The list of countries, kept apart from the province table because it is a
       // different kind of fact and changes for different reasons.
-      loadJSON('./data/json/polities.json'),
-      loadBytes('./data/img/provinces.png'),
+      loadJSON('./data/json/geography/polities.json'),
+      loadBytes('./data/img/bitmap/provinces.png'),
       loadBytes(`./data/${CACHE_FILE}`, true),
-      loadBitmap('./data/img/satellite.png'),
+      loadBitmap('./data/img/bitmap/satellite.png'),
       // The rivers, already lifted out of true_water_bodies_and_rivers.png and
       // coloured by the build step, so this is a mostly-transparent 179KB file
       // rather than a second full-size decode. Optional: without it the map
       // simply has no rivers drawn on it.
-      loadBitmap('./data/img/rivers.png'),
+      loadBitmap('./data/img/bitmap/rivers.png'),
       // City lights as they stood in the 1920s, aligned to provinces.png. Optional:
       // without it the night side is simply dark.
-      loadBitmap('./data/img/night_1920s.png'),
+      loadBitmap('./data/img/bitmap/night_1920s.png'),
       // Extracted from cities.png by the build step, so the page reads a few
       // kilobytes of JSON rather than decoding a second full-size bitmap.
-      loadJSON('./data/json/cities.json', true),
+      loadJSON('./data/json/geography/cities.json', true),
       loadBitmap('./data/icons/city.png'),
       loadBitmap('./data/icons/capital.png'),
       // Drawn on any province holding one. Optional: without it eyries are still
@@ -8041,37 +10355,74 @@ async function init() {
       loadBitmap('./data/icons/resources.png'),
       // What has been built on each province. Optional: without it the card shows
       // zeros rather than refusing to open.
-      // Three files, one shape. province-stats holds what the map and the
-      // authoring fix; the two starting-value files hold what a game begins with
-      // and what a save therefore has to carry.
-      loadJSON('./data/json/province-stats.json', true),
-      loadJSON('./data/json/provinces-starting-infrastructure.json', true),
-      loadJSON('./data/json/provinces-starting-attitude.json', true),
+      // Four files, one shape. province-stats holds what the map and the
+      // authoring fix; the three starting-value files hold what a game begins
+      // with and what a save therefore has to carry.
+      loadJSON('./data/json/province/province-stats.json', true),
+      loadJSON('./data/json/province/provinces-starting-infrastructure.json', true),
+      loadJSON('./data/json/province/provinces-starting-attitude.json', true),
+      loadJSON('./data/json/province/provinces-starting-support.json', true),
       // Ten national values per polity, who it is at war with, and its war
       // weariness. Optional: without it nobody is at war and nobody is weary.
-      loadJSON('./data/json/polities-starting-values.json', true),
+      loadJSON('./data/json/government/polities-starting-values.json', true),
+      // The compass and everything priced off it. Optional: without them the
+      // debug panel simply says nothing about a country's government.
+      loadJSON('./data/json/government/polities-starting-government.json', true),
+      loadJSON('./data/json/government/laws.json', true),
+      loadJSON('./data/json/government/policies.json', true),
+      loadJSON('./data/json/government/decrees.json', true),
+      loadJSON('./data/json/government/ideologies.json', true),
+      loadJSON('./data/json/government/national-spirits.json', true),
+      // The one place that says what every modifier key means and what unit it
+      // is in. The diplomacy panel reads the unit to print a law's effects as
+      // percentages, points or flags rather than as bare numbers.
+      loadJSON('./data/json/government/modifiers.json', true),
+      // What may be done to another country and what each act costs. Optional:
+      // without it the Actions box is empty and nothing else changes.
+      loadJSON('./data/json/government/diplomatic-actions.json', true),
+      // The standing relations between countries, and the bands the panel groups
+      // them by. Optional: without it the Relations box shows nothing.
+      loadJSON('./data/json/government/polities-relations-fixed.json', true),
+      // Who speaks for each country, and from when. Optional: without it every
+      // leader is a placeholder, which is what they all were before it existed.
+      loadJSON('./data/json/government/polities-leaders.json', true),
+      // The occupation laws in force on the start date, keyed occupier then the
+      // country whose ground is held. Optional: without it an occupier governs
+      // what it holds with nothing, which is what picking none does.
+      loadJSON('./data/json/government/polities-starting-occupation.json', true),
       // Every deposit on the map, for the resource layer. Optional: without it
       // the layer draws nothing and the rest of the map is unaffected.
-      loadJSON('./data/json/resources.json', true),
+      loadJSON('./data/json/province/resources.json', true),
       // Shown on the loading screen once the map is ready. Optional.
       loadJSON('./data/json/quotes.json', true),
       // The sea, as its own table and its own bitmap on the same grid as the
       // provinces. Both optional: without them the Navy mode is not offered and
       // the water is drawn flat, which is what it did before there were regions.
-      loadJSON('./data/json/sea.json', true),
-      loadBytes('./data/img/sea.png', true),
+      loadJSON('./data/json/geography/sea.json', true),
+      loadBytes('./data/img/bitmap/sea.png', true),
       // The counties, the level below provinces. Both optional: without them the
       // County mode is not offered and nothing else changes.
-      loadJSON('./data/json/counties.json', true),
-      loadBytes('./data/img/counties.png', true),
+      loadJSON('./data/json/geography/counties.json', true),
+      // What a county starts with built and fought over, kept out of the table
+      // above because counties.json is read back off the bitmap on every sync and
+      // nothing on any bitmap records a railway or a battle.
+      loadJSON('./data/json/province/counties-starting-values.json', true),
+      loadBytes('./data/img/bitmap/counties.png', true),
       // The sea subregions, the level a fleet is ordered to. Optional: without
       // the bitmap the Navy mode draws whole regions as it did before.
-      loadBytes('./data/img/sea_subregions.png', true),
+      loadBytes('./data/img/bitmap/sea_subregions.png', true),
     ]);
 
   // Put back on the table the rest of the file expects to find them on. Done
   // before the hash so the cache covers the same fields the build script hashes.
   raw.polities = polityRaw.polities;
+  if (countyRaw?.counties && countyValues?.counties) {
+    for (const c of countyRaw.counties) Object.assign(c, countyValues.counties[c.id] || {});
+  }
+  // Occupation is held by county. Each province's occupier and occupied share are
+  // derived from its counties here, before the hash, since the occupier is what
+  // the map is coloured by. See applyCountyOccupation.
+  applyCountyOccupation(raw, countyRaw, countyValues?.occupation);
 
   // Hashed before normaliseTable(), which rewrites the colours in place — the
   // build script hashes the same fields in the same form.
@@ -8168,6 +10519,10 @@ async function init() {
     el.hidden = !world.sea;
   }
   document.querySelector('button[data-mode="county"]').hidden = !world.counties;
+  // Offered only where there is something to draw. Support is authored country
+  // by country, so most of the map has none yet.
+  document.querySelector('button[data-mode="ideology"]').hidden =
+    !Object.keys(startSupport?.provinces || {}).length;
 
   world.satellite = satellite;
   world.rivers = rivers;
@@ -8180,8 +10535,56 @@ async function init() {
     eyrie: eyrieIcon, dockyard: dockyardIcon,
     syntheticOil: syntheticOilIcon, syntheticRubber: syntheticRubberIcon, plain: plantIcon,
   };
-  world.stats = stats ? mergeStats(stats, startInfra, startAttitude) : null;
+  world.stats = stats ? mergeStats(stats, startInfra, startAttitude, startSupport) : null;
+  // struck is stored per county. The province carries the mean, because a
+  // province of thirty counties and one of a single county should not answer the
+  // same way for the same number of battles.
+  if (world.stats && countyRaw?.counties?.length) {
+    const seen = new Map();
+    for (const c of countyRaw.counties) {
+      const t = seen.get(c.province) || [0, 0];
+      t[0] += c.struck || 0;
+      t[1] += 1;
+      seen.set(c.province, t);
+    }
+    for (const e of Object.values(world.stats)) e.struckAverage = 0;
+    for (const [id, [total, n]] of seen) if (world.stats[id]) world.stats[id].struckAverage = total / n;
+  }
   world.polityValues = polityValues?.polities ?? null;
+  // Keyed by polity id, so the panel can look a government up from a province.
+  world.government = startGovernment
+    ? { byPolity: new Map((startGovernment.polities || []).map((g) => [g.id, g])),
+        defaults: startGovernment.defaults || null,
+        laws: lawTable, policies: policyTable, decrees: decreeTable, modifiers: modifierTable,
+        actions: actionTable, relations: relationTable, leaders: leaderTable,
+        ideologies: ideologyTable, spirits: spiritTable,
+        occupation: startOccupation?.occupations || null }
+    : null;
+  // Ideology colours, keyed by name, with unaligned among them so the blend in
+  // supportColour needs no special case for it.
+  world.ideologyColour = new Map([
+    ...(ideologyTable?.ideologies || []).map((i) => [i.name, toRgb(i.colour)]),
+    ['unaligned', toRgb(ideologyTable?.unalignedColour || '#8A8A8A')],
+  ]);
+
+  // How urban each province is, which decides how fast a movement grows there.
+  // Read from the population, the factories and whether the province holds a
+  // town, so it moves when a province industrialises and at no other time.
+  if (world.stats) {
+    const towned = new Set((world.cities || []).map((c) => c.province));
+    for (const [id, e] of Object.entries(world.stats)) {
+      const p = world.byId.get(id);
+      e.urbanisation = p ? urbanisation({
+        population: e.population, area: p.area,
+        factories: (e.civilianFactories || 0) + (e.militaryFactories || 0),
+        hasCity: towned.has(id),
+      }) : 0;
+      // And what the province does for a living, from its deposits. null where
+      // it holds none, which leaves a movement judged on the towns alone.
+      e.mining = miningShare(resources?.provinces?.[id]);
+    }
+  }
+
   world.wearinessMeans = new Map();   // per polity, filled on first use
   world.resources = resources?.provinces ?? null;
   world.resourceKinds = resources?.kinds ?? [];
@@ -8569,7 +10972,7 @@ function openStartMenu() {
    * panel is a button and some markup and needs nothing here.
    */
   let openedBy = null;                    // the button to give the focus back to
-  const openDialog = () => menu.querySelector('.start-dialog.open');
+  const openDialog = () => document.querySelector('.start-dialog.open');
 
   const setDialog = (dialog, open) => {
     if (!dialog) return;
@@ -8588,7 +10991,7 @@ function openStartMenu() {
     });
   }
 
-  for (const dialog of menu.querySelectorAll('.start-dialog')) {
+  for (const dialog of document.querySelectorAll('.start-dialog')) {
     dialog.querySelector('.dialog-close')?.addEventListener('click', () => setDialog(dialog, false));
     // Anywhere off the panel. The panel stops the click reaching the scrim, so
     // a click inside it does nothing.
