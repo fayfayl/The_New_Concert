@@ -45,10 +45,11 @@ import { fileURLToPath } from 'url';
 import {
   normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry, MIN_BORDER_PX,
   normaliseSeaTable, buildSeaWorld, normaliseCountyTable, buildCountyWorld,
-  normaliseSubTable, buildSubWorld,
+  normaliseSubTable, buildSubWorld, UNOWNED,
 } from './src/mapdata.js';
 import { CACHE_FILE, hashInputs, applyCountyOccupation, buildCacheMeta, packCache, buildSubMeta } from './src/mapcache.js';
-import { mergeStats, splitStats } from './src/provincestats.js';
+import { mergeStats, splitStats, LEVELS } from './src/provincestats.js';
+import { LEVEL_TERRAIN_CEILING, LEVEL_CLIMATE_CEILING } from './src/ceilings.js';
 import { makeProjection, toDegrees, MAP_NORTH_ROW, MAP_GLOBE_HEIGHT, mapLatAt, mapLonAt } from './src/geo.js';
 import {
   depthByRegion, readDepth, subregionCount, cutStraight, mendPieces,
@@ -123,18 +124,12 @@ const RIVERS_PNG = path.join(REFERENCE, 'true_water_bodies_and_rivers.png');
 const RIVER_LAYER_PNG = path.join(IMG, 'rivers.png');
 const COUNTIES_PNG = path.join(IMG, 'counties.png');
 const COUNTIES_JSON = path.join(TABLES, 'geography/counties.json');
-// The buildings a county can hold, which this file must know about twice over:
-// once to carry them across a counties.png read-back and once to write them out
-// again. The writer builds each county from a named field list, so a building
-// missing from here is silently demolished by a --counties --write however
-// carefully the read preserved it. Kept in step with BUILDINGS in
-// src/provincestats.js, which this cannot import.
 // Polities live in their own file: they are a list of countries, not a fact about
 // any province, and keeping them here means a resync of the bitmap cannot touch them.
 const POLITIES_JSON = path.join(TABLES, 'geography/polities.json');
 const readPolities = () => (fs.existsSync(POLITIES_JSON)
   ? JSON.parse(fs.readFileSync(POLITIES_JSON, 'utf8')).polities
-  : [{ id: 'NONE', name: 'Unclaimed', colour: '#5a5a60' }]);
+  : [{ id: UNOWNED, name: 'Unclaimed', colour: '#5a5a60' }]);
 const CITIES_JSON = path.join(TABLES, 'geography/cities.json');
 const STATS_JSON = path.join(TABLES, 'province/province-stats.json');
 // What a game starts with, kept apart from what the map fixes. See src/provincestats.js.
@@ -661,7 +656,7 @@ const provinces = present.map((k) => {
     name,
     colour: hex(k),
     terrain: ['Plains'],
-    owner: 'NONE',
+    owner: UNOWNED,
   };
   added.push(p);
   return p;
@@ -966,7 +961,7 @@ if (stale.length) {
 // this province could ever hold. Both are needed and neither implies the other —
 // a province with no road may be one that has never had one built, or one that
 // can never have one. The card shows them as "0/0" for that reason.
-const PAIRED = ['road', 'airBase', 'supplyHub', 'fortification', 'electricity', 'antiAir', 'buildingSlots'];
+const PAIRED = [...LEVELS, 'buildingSlots'];
 
 
 // ------------------------------------------------- building slots
@@ -1011,7 +1006,7 @@ const HYDRO_DIVISOR = 250;
 function hydroPotential(counties) {
   const acc = new Map();
   for (const c of counties) {
-    const id = c.province || c.parent;
+    const id = c.province;
     const area = c.area || 0;
     if (id === undefined || !area || !c.riverShare) continue;
 
@@ -1075,7 +1070,7 @@ const capitalSlotsFor = (pop) => (CAPITAL_SLOTS.find(([at]) => pop >= at) || [0,
 function slotGround(counties) {
   const acc = new Map();
   for (const c of counties) {
-    const id = c.province || c.parent;
+    const id = c.province;
     const area = c.area || 0;
     if (id === undefined || !area) continue;
     let g = acc.get(id);
@@ -1115,46 +1110,20 @@ function unlockedSlots(maximum, road, electricity, railedShare) {
 //
 // Population is deliberately absent. A state can drive a road or a supply line
 // through empty country if it pays for it, and capping by population held
-// mountain passes to fortification 2 because nobody lived on them.
+// mountain passes to a ceiling of 2 because nobody lived on them.
 //
 // Read from the COUNTIES, not from the province tags. Those tags are the
 // "everything over 40%" reduction and on mixed ground they are wrong rather than
 // coarse: Gongyuk is tagged Mountains and Alpine and has no mountain county at
 // all, being Alpine 70%, Hills 23% and Plains 5%.
-const LEVEL_TYPES = ['road', 'electricity', 'fortification', 'supplyHub', 'antiAir', 'airBase'];
-
-const TERRAIN_CEILING = {
-  Plains:    [10, 10,  6, 10, 10, 10],
-  Hills:     [ 8,  8,  8,  8, 10,  6],
-  Mountains: [ 4,  6, 10,  4,  8,  2],
-  Alpine:    [ 2,  3,  8,  2,  6,  0],
-};
-
-// null is no cap from this climate, and the four temperate ones are absent for
-// the same reason. A climate value can only ever LOWER the terrain one, so a
-// number above the terrain ceiling would never bind.
-// Below this latitude, subarctic is altitude rather than latitude, and the
-// fortification cap that comes with it does not apply. A subarctic county at 40
-// degrees is a mountain; one at 65 is the far north. The map splits at almost
-// exactly this line: below 40 degrees, 85% of subarctic counties are mountain or
-// alpine, and above 60 only 1% are.
 //
-// It is lifted for FORTIFICATION alone. The other five caps are about weather,
-// which a mountain has just the same, but the fortification cap stands for
-// permafrost and a building season measured in weeks, and a temperate mountain
-// has neither. Rock is the best ground on the map to dig into.
-const SUBARCTIC_BY_ALTITUDE = 50;
-
-const CLIMATE_CEILING = {
-  Rainforest: [5, 6,    4, 5,  5, 4],
-  Monsoon:    [6, 7,    5, 6,  6, 5],
-  Savanna:    [8, 8, null, 8,  9, 8],
-  Desert:     [6, 8,    4, 6, 10, 9],
-  Steppe:     [8, 8, null, 8, 10, 10],
-  Subarctic:  [4, 6,    5, 5,  7, 6],
-  Tundra:     [2, 4,    4, 3,  6, 4],
-  'Ice cap':  [1, 2,    3, 2,  4, 2],
-};
+// The tables are in src/ceilings.js, keyed by type name. A level added to LEVELS
+// and not to the terrain table would average to NaN and write nonsense into every
+// province, so it stops here instead.
+for (const [terrain, row] of Object.entries(LEVEL_TERRAIN_CEILING)) {
+  const missing = LEVELS.filter((k) => typeof row[k] !== 'number');
+  if (missing.length) throw new Error(`src/ceilings.js: no ${terrain} ceiling for ${missing.join(', ')}`);
+}
 
 /**
  * Area-weighted ceilings per province, from counties.json.
@@ -1167,12 +1136,12 @@ function levelCeilings(counties, cityProvinces = new Set()) {
   const acc = new Map();
 
   for (const c of counties) {
-    const id = c.province || c.parent;
+    const id = c.province;
     const area = c.area || 0;
     if (id === undefined || !area) continue;
 
     let g = acc.get(id);
-    if (!g) acc.set(id, g = { area: 0, terrain: new Array(6).fill(0), climate: new Array(6).fill(0) });
+    if (!g) acc.set(id, g = { area: 0, terrain: LEVELS.map(() => 0), climate: LEVELS.map(() => 0) });
     g.area += area;
 
     // Urban takes the Plains row whatever it sits on, a city being where the
@@ -1180,26 +1149,23 @@ function levelCeilings(counties, cityProvinces = new Set()) {
     // in as a fifth one, because it is a marker over ground, not ground.
     const tags = (c.terrain || [])
       .map((t) => (t === 'Urban' ? 'Plains' : t))
-      .filter((t) => TERRAIN_CEILING[t]);
-    const rows = (tags.length ? tags : ['Plains']).map((t) => TERRAIN_CEILING[t]);
-    const cl = (Array.isArray(c.climate) ? c.climate : [c.climate]).filter((x) => CLIMATE_CEILING[x]);
-    const highGround = Math.abs(c.centre?.[0] ?? 90) < SUBARCTIC_BY_ALTITUDE;
-    const fort = LEVEL_TYPES.indexOf('fortification');
+      .filter((t) => LEVEL_TERRAIN_CEILING[t]);
+    const rows = (tags.length ? tags : ['Plains']).map((t) => LEVEL_TERRAIN_CEILING[t]);
+    const cl = (Array.isArray(c.climate) ? c.climate : [c.climate]).filter((x) => LEVEL_CLIMATE_CEILING[x]);
 
-    for (let i = 0; i < 6; i++) {
-      g.terrain[i] += area * (rows.reduce((a, r) => a + r[i], 0) / rows.length);
+    LEVELS.forEach((k, i) => {
+      g.terrain[i] += area * (rows.reduce((a, r) => a + r[k], 0) / rows.length);
       // An uncapped climate carries the top of the scale into the average, so
       // temperate ground neither raises nor lowers what the terrain said.
-      const here = (i === fort && highGround) ? cl.filter((x) => x !== 'Subarctic') : cl;
-      const caps = here.length ? here.map((x) => CLIMATE_CEILING[x][i] ?? 10) : [10];
+      const caps = cl.length ? cl.map((x) => LEVEL_CLIMATE_CEILING[x][k] ?? 10) : [10];
       g.climate[i] += area * (caps.reduce((a, v) => a + v, 0) / caps.length);
-    }
+    });
   }
 
-  const air = LEVEL_TYPES.indexOf('airBase');
+  const air = LEVELS.indexOf('airBase');
   const out = new Map();
   for (const [id, g] of acc) {
-    const m = LEVEL_TYPES.map((_, i) => Math.min(
+    const m = LEVELS.map((_, i) => Math.min(
       Math.floor(g.terrain[i] / g.area),
       Math.floor(g.climate[i] / g.area),
     ));
@@ -1215,37 +1181,10 @@ function levelCeilings(counties, cityProvinces = new Set()) {
 }
 
 
-// Rail is not here. It is built county by county and has no level, so it lives
-// with the counties rather than as a province pair.
-const BLANK_STATS = {
-  claims: [],            // polity ids with a claim on this province
-  population: 0,
-  road: [0, 0],
-  airBase: [0, 0],
-  supplyHub: [0, 0],
-  fortification: [0, 0],
-  electricity: [0, 0],
-  antiAir: [0, 0],
-  // Factories do NOT get a count each. In Hearts of Iron a state has a pool of
-  // building slots and civilian factories, military factories and dockyards all
-  // compete for it — what a province has is a number of sockets and a decision
-  // about what goes in each. So the SLOTS are the province's property, [unlocked,
-  // maximum], and the two figures below are how the unlocked ones are spent.
-  buildingSlots: [0, 0],
-  civilianFactories: 0,
-  militaryFactories: 0,
-  // Unrest is the one province value that cannot be derived. Happiness is a
-  // function of the fields above and is computed fresh every tick, but unrest
-  // is a recurrence — today's figure depends on every previous day's happiness,
-  // stability and garrison — and it is clamped to 0..100, which destroys the
-  // history a replay would need. So it is stored, and happiness is not.
-  unrest: 0,
-  // The event, not the decay. "Recently annexed" costs happiness on a curve
-  // that fades to nothing, and storing the curve means something has to tick it
-  // daily and it drifts if a tick is missed. A date needs no maintenance and
-  // lets the curve be changed without touching the data. null where it never was.
-  annexedOn: null,
-};
+// A province with nothing in any of the four files, in the shape mergeStats
+// gives every other one. Taken from mergeStats rather than written out here, so
+// a field added there is filled in here without anyone remembering to.
+const BLANK_STATS = mergeStats({ provinces: { blank: {} } }).blank;
 
 const oldStats = { provinces: mergeStats(readJSONIf(STATS_JSON), readJSONIf(START_INFRA_JSON),
   readJSONIf(START_ATTITUDE_JSON), readJSONIf(START_SUPPORT_JSON)) };
@@ -1287,7 +1226,7 @@ for (const p of provinces) {
 // map has ever had. One with figures in it is kept, on the same reasoning as a
 // stale province: somebody typed those, and a province painted over by accident
 // should not take them with it.
-const isEmpty = (v) => (Array.isArray(v) ? v.every(isEmpty) : !v);
+const isEmpty = (v) => (v && typeof v === 'object' ? Object.values(v).every(isEmpty) : !v);
 const inTable = new Set(provinces.map((p) => p.id));
 const statsDropped = [];
 const statsKept = [];
@@ -1334,30 +1273,31 @@ const ceilings = levelCeilings(ceilingSource, cityProvinces);
  * national grid for thirty-two thousand people who can walk across it.
  *
  * So: no land neighbour and under 5,000 km2 takes three off every ceiling that
- * is 6 or more. Fortification is exempt, a rock in the sea being exactly the
- * thing you fortify, and a ceiling already under 6 is left alone rather than
- * driven to nothing.
+ * is 6 or more, and a ceiling already under 6 is left alone rather than driven
+ * to nothing. Radar is exempt: a station's reach crosses sea as it crosses land,
+ * and a rock in the sea is exactly where a picket stands. Fortification is a
+ * county ceiling and never passes through here.
  */
 const SMALL_ISLE_KM2 = 5000;
 const SMALL_ISLE_CUT = 3;
-const SMALL_ISLE_EXEMPT = new Set(['fortification']);
+const SMALL_ISLE_EXEMPT = new Set(['radar']);
 
 const provinceById = new Map(provinces.map((p) => [p.id, p]));
 let ceilingsSet = 0, isleCut = 0;
+const ceilingsMoved = Object.fromEntries(LEVELS.map((k) => [k, 0]));
 for (const [id, entry] of Object.entries(statsById)) {
   const m = ceilings.get(id);
   if (!m) continue;
   const p = provinceById.get(id);
   const smallIsle = p && !neighboured.has(parseHex(p.colour)) && (p.area || 0) < SMALL_ISLE_KM2;
   if (smallIsle) isleCut++;
-  LEVEL_TYPES.forEach((key, i) => {
-    const built = Array.isArray(entry[key]) ? entry[key][0] : Number(entry[key]) || 0;
-    const cap = smallIsle && !SMALL_ISLE_EXEMPT.has(key) && m[i] >= 6
-      ? m[i] - SMALL_ISLE_CUT
-      : m[i];
+  LEVELS.forEach((key, i) => {
+    const [built = 0, was = 0] = Array.isArray(entry[key]) ? entry[key] : [Number(entry[key]) || 0];
+    const cap = smallIsle && !SMALL_ISLE_EXEMPT.has(key) && m[i] >= 6 ? m[i] - SMALL_ISLE_CUT : m[i];
     // A ceiling gates what can be added and never takes away what is there, so
     // a level already built survives a ceiling that has since been lowered.
     entry[key] = [built, Math.max(cap, built)];
+    if (entry[key][1] !== was) ceilingsMoved[key]++;
   });
   ceilingsSet++;
 }
@@ -1376,7 +1316,7 @@ const railedShare = new Map();
 {
   const seen = new Map();
   for (const c of ceilingSource) {
-    const id = c.province || c.parent;
+    const id = c.province;
     if (id === undefined) continue;
     const t = seen.get(id) || { n: 0, railed: 0 };
     t.n++;
@@ -1421,6 +1361,10 @@ console.log('  small islands cut ' + isleCut + ' provinces under ' + SMALL_ISLE_
 }
 console.log(`  ceilings written for ${ceilingsSet} provinces from ${ceilingSource.length.toLocaleString()} counties`
   + `${ceilingSource.length ? '' : ' — counties.json missing, none set'}`);
+{
+  const moved = Object.entries(ceilingsMoved).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`);
+  console.log(`  ceilings changed ${moved.length ? moved.join(', ') : 'none'}`);
+}
 
 if (WRITE) {
   writeJSON(JSON_PATH, table);

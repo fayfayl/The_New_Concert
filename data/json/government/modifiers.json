@@ -409,7 +409,7 @@
     "surplusOffered": {
       "unit": "absolute",
       "level": "law",
-      "means": "the share of a surplus put on the automatic market. A trade law sets it outright; every other source adds that fraction of what the law gives, so -0.1 on a spirit is a tenth less on the market and not a tenth of the surplus.",
+      "means": "the share of a surplus put on the automatic market. A trade law sets it outright; every other source adds that fraction of what the law gives, so -0.1 on a spirit is a tenth less on the market and not a tenth of the surplus. Anything but a law may instead give a map of resource name to the change, and a resource the map does not name keeps the figure it had",
       "shown": "PERCENTAGE exportable surplus"
     },
     "deficitFilled": {

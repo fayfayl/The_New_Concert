@@ -42,18 +42,11 @@ export function compass(gov, tables, holding = null, parent = null, shares = nul
   if (!form) throw new Error(`no form of government "${gov.form}"`);
   add([form.economic, form.authority]);
 
-  // The realm's laws sit under the member's own, so a member that legislates a
-  // category for itself overrides the realm and a member that does not takes it.
-  // What the realm owns is owned in the members' ground too: Trinational RailLink
-  // runs Athanasia's lines as much as Dimuro's, and actEffects already charges it
-  // there, so the compass reads it there as well. Once each, where both hold it.
-  gov = {
-    ...gov,
-    laws: { ...(parent?.laws || {}), ...(gov.laws || {}) },
-    policies: [...(parent?.policies || []), ...(gov.policies || [])],
-    decrees: [...(parent?.decrees || []), ...(gov.decrees || [])],
-    stateOwned: [...new Set([...(parent?.stateOwned || []), ...(gov.stateOwned || [])])],
-  };
+  // What the government holds with its realm and the file's defaults folded in,
+  // by the one rule heldActs() keeps for the compass, the effects and the panel.
+  const held = heldActs(gov, parent, tables.defaults);
+  gov = { ...gov, laws: held.laws, policies: held.policies, decrees: held.decrees,
+    stateOwned: held.stateOwned };
 
   for (const [cat, chosen] of Object.entries(gov.laws || {})) {
     const c = laws.categories[cat];
@@ -114,6 +107,14 @@ export function policySlots(authority, ideologies) {
 }
 
 /**
+ * The name for having no ideology: what the compass calls a government in the
+ * centre, and the share of a province that stands behind no movement. One name
+ * for both, here, so a support row and a government can be read against each
+ * other without either being spelt to match the other.
+ */
+export const UNALIGNED = 'Unaligned';
+
+/**
  * The nearest named point, with the margin that stops the name flickering.
  *
  * A country sitting on a boundary would otherwise be renamed every time a
@@ -140,7 +141,7 @@ export function policySlots(authority, ideologies) {
 export function nearest(position, ideologies, holding = null) {
   const held = ideologies.ideologies.find((i) => i.name === holding);
   const margin = held ? (held.escapeThreshold ?? ideologies.escapeThreshold) : 0;
-  if (Math.hypot(position[0], position[1]) < ideologies.unalignedRadius - margin) return 'unaligned';
+  if (Math.hypot(position[0], position[1]) < ideologies.unalignedRadius - margin) return UNALIGNED;
   const d = (i) => Math.hypot(position[0] - i.economic, position[1] - i.authority);
   const ranked = ideologies.ideologies.slice().sort((x, y) => d(x) - d(y));
   if (held) {
@@ -471,12 +472,14 @@ const ACT_CAP = 3;
  * How content a province is with the government it has. Not a rating of the creed:
  * the share of that province backing the ruling ideology, against the share a
  * government of the period could expect to have behind it. A province with nothing
- * authored reads 0 rather than reading as though nobody backs anyone.
+ * authored reads 0 rather than reading as though nobody backs anyone. The baseline
+ * and the rate are supportHappiness in ideologies.json; without them it reads 0 too.
  */
 export function supportHappiness(support, ideology, ideologies) {
   if (!support || !Object.keys(support).length) return 0;
-  const { baseline = 21, perPoint = 0.6 } = ideologies?.supportHappiness || {};
-  return ((support[ideology] || 0) - baseline) * perPoint;
+  const rule = ideologies?.supportHappiness;
+  if (!rule) return 0;
+  return ((support[ideology] || 0) - rule.baseline) * rule.perPoint;
 }
 
 /**
@@ -671,12 +674,6 @@ function ownedLabel(industry) {
 // aimed at the movement itself is already aimed at only that movement.
 const ABROAD = new Set(['relationsWithHolders', 'ideologySupportPerDay', 'driftMultiplierTowardTarget']);
 
-/** What a province card calls a law, by the category rather than by the option. */
-export const LAW_LABEL = {
-  conscription: 'conscription', economy: 'the war economy', personalTax: 'income tax',
-  corporateTax: 'company tax', colonialTax: 'colonial tax', monetary: 'the currency',
-  trade: 'trade',
-};
 
 /**
  * What a country's own acts do to one modifier, act by act. Laws, policies and
@@ -691,8 +688,36 @@ export const LAW_LABEL = {
  *
  * `label` is handed a name and a target so a caller can fill the tokens in it.
  */
-// A realm and a member both holding the same act have enacted it once, not twice.
-const byName = (list) => [...new Map(list.map((x) => [nameOf(x), x])).values()];
+/**
+ * What a government holds once its realm and the file's defaults are folded in,
+ * which is the one answer the compass, the effects and the panel all read.
+ *
+ * Laws: the defaults under the realm's under the country's own, so a category a
+ * country leaves blank falls to its realm, and one both leave blank to the file's
+ * default. `lawFrom` says which of the three a category came from.
+ *
+ * Acts: the realm's and the country's together, each act once. A realm and a
+ * member both holding the same act have enacted it once, not twice; but one act
+ * held against two targets is two acts, so the same name with a different
+ * target is kept. Pelerclore's two foreign investments are two investments.
+ *
+ * What the realm owns is owned in the members' ground too: Trinational RailLink
+ * runs Athanasia's lines as much as Dimuro's.
+ */
+export const actKey = (x) => nameOf(x) + '|' + (x?.target ?? '');
+const once = (list) => [...new Map(list.map((x) => [actKey(x), x])).values()];
+export function heldActs(gov, parent = null, defaults = null) {
+  const laws = { ...(defaults?.laws || {}), ...(parent?.laws || {}), ...(gov?.laws || {}) };
+  const lawFrom = (category) => (gov?.laws?.[category] !== undefined ? 'own'
+    : parent?.laws?.[category] !== undefined ? 'realm' : 'default');
+  const ownAct = (field, x) => (gov?.[field] || []).some((y) => actKey(y) === actKey(x));
+  return {
+    laws, lawFrom, ownAct,
+    policies: once([...(parent?.policies || []), ...(gov?.policies || [])]),
+    decrees: once([...(parent?.decrees || []), ...(gov?.decrees || [])]),
+    stateOwned: [...new Set([...(parent?.stateOwned || []), ...(gov?.stateOwned || [])])],
+  };
+}
 
 export function actEffects(gov, tables, key, opts = {}) {
   const { parent = null, scale = () => 1, label = (name) => name.toLowerCase(),
@@ -710,22 +735,23 @@ export function actEffects(gov, tables, key, opts = {}) {
     if (n) out.push({ label: act?.factor || label, figure: n, felt: feltFor(act, key), from, target });
   };
 
-  const chosen = { ...(parent?.laws || {}), ...(gov.laws || {}) };
-  for (const [category, option] of Object.entries(chosen))
-    take(LAW_LABEL[category] || category,
-      laws.categories?.[category]?.options?.find((o) => o.name === option),
-      (gov.laws || {})[category] === undefined ? 'realm' : 'own');
+  const held = heldActs(gov, parent, tables.defaults);
+  for (const [category, option] of Object.entries(held.laws))
+    // What a province card calls a law, by the category rather than by the option:
+    // the category's `phrase` in laws.json.
+    take(laws.categories?.[category]?.phrase || category,
+      laws.categories?.[category]?.options?.find((o) => o.name === option), held.lawFrom(category));
 
-  for (const x of byName([...(parent?.policies || []), ...(gov.policies || [])]))
+  for (const x of held.policies)
     take(label(nameOf(x), x?.target), policies.policies.find((o) => o.name === nameOf(x)),
-      (gov.policies || []).some((y) => nameOf(y) === nameOf(x)) ? 'own' : 'realm', x?.target ?? null);
+      held.ownAct('policies', x) ? 'own' : 'realm', x?.target ?? null);
 
-  for (const x of byName([...(parent?.decrees || []), ...(gov.decrees || [])])) {
+  for (const x of held.decrees) {
     const act = decrees.decrees.find((o) => o.name === nameOf(x));
     // A campaign that has run its course keeps only what it lists as permanent.
     if (x?.expired && !(act?.permanent || []).includes(key)) continue;
     take(label(nameOf(x), x?.target), act,
-      (gov.decrees || []).some((y) => nameOf(y) === nameOf(x)) ? 'own' : 'realm', x?.target ?? null);
+      held.ownAct('decrees', x) ? 'own' : 'realm', x?.target ?? null);
   }
 
   // Owning an industry is a standing state and not an act, so its figures come off

@@ -121,15 +121,17 @@ if (!found) {
   const nBands = relRows.length;
   console.log(`  actions    ${said.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}`);
   console.log(`  bands      ${nBands}`);
-  if (!said.includes('>WIP<') || (said.match(/diplo-row/g) || []).length !== 1) {
+  // It says so with a stamp rather than a row, so any row at all is an act
+  // being listed.
+  if (!said.includes('>WIP<') || /diplo-row/.test(said)) {
     problems.push(['diplomacy', new Error(`the actions box says "${said}"`)]);
   }
-  // A band with nothing in it for this country is not drawn, so a country in no
-  // relations shows the one row that says so. Krenland is one of those.
+  // A band with nothing in it for this country is not drawn, and a country in
+  // no relations at all draws no rows: the box is left empty under its heading.
   const fixed = JSON.parse(await readFile(path.join(root,
     'data/json/government/polities-relations-fixed.json'), 'utf8'));
-  if (nBands !== 1 || String(relRows[0]?.textContent) !== 'No de jure relations') {
-    problems.push(['diplomacy', new Error(`a country in no relations drew ${nBands} rows`)]);
+  if (relRows.some((k) => String(k.textContent).includes('No de jure'))) {
+    problems.push(['diplomacy', new Error('the relations box still says it has none')]);
   }
 
   // The panel reads that file straight, so a relation naming a band or a

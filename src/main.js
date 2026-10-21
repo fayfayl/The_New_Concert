@@ -41,7 +41,7 @@
 const VERSION = new URL(import.meta.url).search;
 
 const {
-  OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH, controllerOf, frontierKeyOf, realmOf,
+  OCEAN, LABEL_HIST_BUCKET, CHAMFER_ORTH, controllerOf, isOccupied, frontierKeyOf, realmOf, isUnder, membersOf,
   toRgb, normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry,
   indexProvinces, attachBlockMembers, addRealmBlocks,
   normaliseSeaTable, buildSeaWorld, indexSea,
@@ -50,14 +50,26 @@ const {
   setIslandBlocks, computeBlockGeometry,
 } = await import(`./mapdata.js${VERSION}`);
 const { CACHE_FILE, hashInputs, applyCountyOccupation, unpackCache, worldFromCache, seaFromCache, countiesFromCache, subsFromCache } = await import(`./mapcache.js${VERSION}`);
-const { mergeStats, BUILDINGS, BUILDING_AT } = await import(`./provincestats.js${VERSION}`);
+const { mergeStats, BUILDINGS, BUILDING_AT, LEVELS } = await import(`./provincestats.js${VERSION}`);
+const { countyFortCeiling } = await import(`./ceilings.js${VERSION}`);
 const { compass, costWeighting, urbanisation, miningShare, dugDeposits, supportRate, nationalSupport,
-  governingSupport, spreadOverProvinces, spreadByWeight, supportHappiness, actEffects, industryShares, feltFor, nameOf, realmCompass, LAW_LABEL } = await import(`./government.js${VERSION}`);
+  governingSupport, spreadOverProvinces, spreadByWeight, supportHappiness, actEffects, industryShares, feltFor, nameOf, realmCompass, heldActs, actKey, UNALIGNED } = await import(`./government.js${VERSION}`);
 const { setOwners } = await import(`./ownership.js${VERSION}`);
 const {
   mapLatAt, mapLonAt, mapRowAt, mapColAt,
   solarDeclination, subsolarLongitude, localHours, sinSolarElevation,
 } = await import(`./geo.js${VERSION}`);
+
+// A value from :root in style.css. The map shares a few colours and faces with
+// the chrome, and each is written once, in the stylesheet, and read from there.
+// The sheet is linked in the head ahead of the module that imports this file,
+// so it is applied by the time this runs.
+const rootStyle = getComputedStyle(document.documentElement);
+function cssToken(name) {
+  const v = rootStyle.getPropertyValue(name).trim();
+  if (!v) console.warn(`style.css defines no ${name} on :root`);
+  return v;
+}
 
 // ============================================================ 1. data loading
 
@@ -155,6 +167,48 @@ async function loadBitmap(url) {
 
 const UNKNOWN_POLITY = { id: '?', name: 'Unknown', colour: [90, 90, 96] };
 
+/* ------------------------------------------------------ one signal for change
+ *
+ * Everything the game works out from the government or the ground and keeps,
+ * so as not to work it out again every frame, registers here what to do when
+ * either changes: a cache says how to forget, with forgetOnChange, and a figure
+ * stored on the world says how to be worked out again, with deriveOnChange.
+ * Anything that changes the world then calls worldChanged() once, and every one
+ * of them is brought up to date.
+ *
+ * Two passes, forgetting first. A derived figure is built FROM the caches, and a
+ * yield worked out while the rail caches still held the old lines would be the
+ * old yield written down again. Every cache is empty before anything is rebuilt,
+ * so the order things are registered in, which is only the order they appear in
+ * this file, decides nothing.
+ *
+ * A cache added later registers itself beside its own definition and is kept
+ * honest by every change already written, so nothing has to be found and
+ * brought into line by hand: not the console commands, not a change of owner or
+ * a building, not the events and the AI when they come.
+ */
+const onWorldForget = [];
+const onWorldDerive = [];
+function forgetOnChange(forget) { onWorldForget.push(forget); }
+function deriveOnChange(derive) { onWorldDerive.push(derive); }
+
+function worldChanged() {
+  const w = state.world;
+  if (!w) return;
+  for (const forget of onWorldForget) forget(w);
+  for (const derive of onWorldDerive) derive(w);
+  // What is on the screen reads the same figures, so it is redrawn from them.
+  if (state.selected) updateCard();
+  updatePanel();
+  // The open file is redrawn in place. Quietly: it is the same file, not one
+  // being opened, and the selection sound would say otherwise.
+  if (state.diplo && diploOpen()) {
+    quietSelect = true;
+    try { openDiplo(state.diplo); } finally { quietSelect = false; }
+  }
+  invalidateView();
+}
+
 // The model itself is built in mapdata.js, which the build script shares.
 
 // ================================================================ 3. rendering
@@ -209,39 +263,45 @@ const IMPASSABLE = 'Impassable';
 const IMPASSABLE_COLOUR = toRgb('#23262c');
 const IMPASSABLE_MIX = 0.45;    // how far toward that near-black the water is pulled
 
-// Where each resource sits on data/icons/resources.png. The sheet is six cells
-// across and three down at 64px a cell, filled left to right and top to bottom,
-// so the number here is the cell and the row and column fall out of it.
-const RESOURCE_ICON = {
-  fertileLand: 0, coal: 1, timber: 2, iron: 3, fish: 4, textiles: 5,
-  oil: 6, baseMetals: 7, baul: 8, aluminium: 9, naturalGas: 10, rareMetals: 11,
-  rubber: 12, gold: 13, nitrates: 14, tungsten: 15, tazkuri: 16, goizederium: 17,
-  livestock: 18,
+// Each resource the map knows, in one row: its cell on data/icons/resources.png,
+// what it is called, and the short word the layer writes when there is no sheet
+// to draw from. The sheet is RESOURCE_SHEET_COLS cells across at
+// RESOURCE_SHEET_CELL px a cell, filled left to right and top to bottom, so the
+// cell number is all it takes and the row and column fall out of it. The name
+// is for the layer hover and the tooltips: the icon says which one it is at a
+// glance and this is for when a glance is not enough. The word is the fallback
+// because loadBitmap returns null on a miss and the rest of the map carries on.
+//
+// Which kinds a province can hold is resources.json's; a kind there with no row
+// here is warned about on load, since it would draw as its bare id.
+const RESOURCE_KINDS = {
+  fertileLand: { cell: 0, name: 'Fertile land', mark: 'Food' },
+  coal:        { cell: 1, name: 'Coal', mark: 'Coal' },
+  timber:      { cell: 2, name: 'Timber', mark: 'Wood' },
+  iron:        { cell: 3, name: 'Iron', mark: 'Iron' },
+  fish:        { cell: 4, name: 'Fish', mark: 'Fish' },
+  textiles:    { cell: 5, name: 'Textiles', mark: 'Cloth' },
+  oil:         { cell: 6, name: 'Oil', mark: 'Oil' },
+  baseMetals:  { cell: 7, name: 'Base metals', mark: 'Base' },
+  baul:        { cell: 8, name: 'Baul', mark: 'Baul' },
+  aluminium:   { cell: 9, name: 'Aluminium', mark: 'Alum' },
+  naturalGas:  { cell: 10, name: 'Natural gas', mark: 'Gas' },
+  rareMetals:  { cell: 11, name: 'Rare metals', mark: 'Rare' },
+  rubber:      { cell: 12, name: 'Rubber', mark: 'Rubber' },
+  gold:        { cell: 13, name: 'Gold', mark: 'Gold' },
+  nitrates:    { cell: 14, name: 'Nitrates', mark: 'Nitre' },
+  tungsten:    { cell: 15, name: 'Tungsten', mark: 'Tungsten' },
+  tazkuri:     { cell: 16, name: 'Tazkuri', mark: 'Tazkuri' },
+  goizederium: { cell: 17, name: 'Goizederium', mark: 'Goiz' },
+  livestock:   { cell: 18, name: 'Livestock', mark: 'Stock' },
 };
-
-// What a resource is called. Only the layer hover uses this; the icon says
-// which one it is at a glance and this is for when a glance is not enough.
-const RESOURCE_NAME = {
-  fertileLand: 'Fertile land', coal: 'Coal', timber: 'Timber', iron: 'Iron',
-  fish: 'Fish', textiles: 'Textiles', oil: 'Oil', baseMetals: 'Base metals',
-  baul: 'Baul', aluminium: 'Aluminium', naturalGas: 'Natural gas',
-  rareMetals: 'Rare metals', rubber: 'Rubber', gold: 'Gold', nitrates: 'Nitrates',
-  tungsten: 'Tungsten', tazkuri: 'Tazkuri', goizederium: 'Goizederium',
-  livestock: 'Livestock',
-};
+const resourceField = (field) => Object.fromEntries(Object.entries(RESOURCE_KINDS).map(([k, r]) => [k, r[field]]));
+const RESOURCE_ICON = resourceField('cell');
+const RESOURCE_NAME = resourceField('name');
+const RESOURCE_MARK = resourceField('mark');
 
 const RESOURCE_SHEET_COLS = 6;
 const RESOURCE_SHEET_CELL = 64;
-
-// What a row says when there is no sheet to draw from. loadBitmap returns null
-// on a miss and the rest of the map carries on, so this does too.
-const RESOURCE_MARK = {
-  fertileLand: 'Food', timber: 'Wood', fish: 'Fish', textiles: 'Cloth',
-  rubber: 'Rubber', coal: 'Coal', oil: 'Oil', naturalGas: 'Gas', iron: 'Iron',
-  baul: 'Baul', aluminium: 'Alum', baseMetals: 'Base', rareMetals: 'Rare',
-  tungsten: 'Tungsten', gold: 'Gold', nitrates: 'Nitre', goizederium: 'Goiz',
-  tazkuri: 'Tazkuri', livestock: 'Stock',
-};
 
 // A province has to be at least this many pixels across on screen before its
 // figures are drawn. Below it the writing is unreadable and there is a lot of
@@ -327,11 +387,17 @@ const MODES = {
  * read here is the writing over it, and the ground only has to say whose it is.
  * The figures are drawn in drawInfrastructure, a level above this.
  *
- * Registered in a loop rather than typed out seven times. A mode missing from
- * MODES takes the tooltip down with it, and seven near-identical entries are
- * seven chances to leave one out.
+ * Registered in a loop rather than typed out once each. A mode missing from
+ * MODES takes the tooltip down with it, and near-identical entries are chances
+ * to leave one out. The menu's buttons are built from the same list, and the
+ * card names the levels from it, so a layer is added here and nowhere else.
  */
-const INFRA_LAYERS = ['road', 'electricity', 'radar', 'fortNew', 'supplyHub', 'antiAir', 'airBase', 'factories', 'hydro', 'rail'];
+const INFRA_NAME = {
+  road: 'Road', electricity: 'Electricity', radar: 'Radar station', fortNew: 'Fort',
+  supplyHub: 'Supply hub', antiAir: 'Anti-air', airBase: 'Air base',
+  factories: 'Factories', hydro: 'Hydro', rail: 'Rail',
+};
+const INFRA_LAYERS = Object.keys(INFRA_NAME);
 for (const key of INFRA_LAYERS) MODES['infra:' + key] = (w, p) => polityOf(w, p).colour;
 
 // The county map.
@@ -395,7 +461,7 @@ function supportColour(w, p) {
   if (!s) return SUPPORT_BLANK;
   let lead = null;
   for (const [name, share] of Object.entries(s)) {
-    if (name === 'unaligned' || !(share > 0)) continue;
+    if (name === UNALIGNED || !(share > 0)) continue;
     if (!lead || share > lead[1]) lead = [name, share];
   }
   const c = lead && w.ideologyColour?.get(lead[0]);
@@ -468,7 +534,11 @@ const DESELECT_FADE_MS = 60;
 
 // The ring drawn around the selected province. Its width is in SCREEN pixels, so
 // The ring is a stroked path, so the zoom enters only as the line width.
-const OUTLINE_COLOUR = '#cea35eff';
+const OUTLINE_COLOUR = cssToken('--gold');
+
+// The deep steel the map is drawn onto, which is also the ground behind the
+// start screens' photograph.
+const MAP_GROUND = cssToken('--steel-deepest');
 
 // The county ring, cool against the province ring’s gold. The two mean
 // different things and are held at the same time, so they must not be told
@@ -1196,7 +1266,7 @@ function shadeTable(world, mode, selected, hovered) {
     // Occupied ground is striped with its owner's colour (see stripeWith). Only
     // the political map does this. The other two are answering different
     // questions and a stripe over them would be noise.
-    if (mode === 'political' && p.occupier && p.occupier !== p.owner) stripeWith(ix, p.owner, mix);
+    if (mode === 'political' && isOccupied(p)) stripeWith(ix, p.owner, mix);
   }
 
   // The counties of a split province, each in its own slot: the colour of whoever
@@ -1833,13 +1903,20 @@ const LABEL_ISLANDS_MAX_SPAN = 0.18;  // of the map width; past this the pieces 
  * The whole string is the key to the glyph atlas, not just the family — change
  * any part of it and every cached glyph is a miss until the atlas refills.
  */
-const LABEL_FACE = '"Segoe UI", sans-serif';
+const LABEL_FACE = cssToken('--ui-plain');
 
-// The resource layer only. Cabin is what style.css sets the interface in, as
-// --ui, and it ships in data/ui/fonts. LABEL_FACE above is --ui-plain and is
-// left alone: it carries the country, province and sea names.
-const RESOURCE_FACE = 'Cabin, "Segoe UI", sans-serif';
+// The resource layer only. Cabin ships in data/ui/fonts and is --ui in
+// style.css. LABEL_FACE above is --ui-plain and is left alone: it carries the
+// country, province and sea names.
+const RESOURCE_FACE = cssToken('--ui');
 const resourceFont = (px) => `500 ${px}px ${RESOURCE_FACE}`;
+
+// Asked for by name. A canvas never fetches a webfont itself: it draws with
+// whatever is already loaded and falls back without a word. The interface used
+// to be set in Cabin, which loaded it as a side effect; now that the chrome is
+// typed, nothing on the page would, and the resource names quietly came out in
+// Segoe UI. Requested at start-up, long before the resource layer is opened.
+document.fonts?.load?.(`500 12px ${RESOURCE_FACE}`)?.catch?.(() => {});
 const resourceIconPx = (px) => Math.round((px * RESOURCE_ICON_PX) / RESOURCE_MAX_LINE);
 const labelFont = (px) => `600 ${px}px ${LABEL_FACE}`;
 
@@ -3598,7 +3675,7 @@ function drawView() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   // The deep steel the map is drawn onto.
-  ctx.fillStyle = '#0c1015';      // matches --steel-deepest in index.html
+  ctx.fillStyle = MAP_GROUND;
   ctx.fillRect(0, 0, cssW, cssH);
 
   // Smooth only when shrinking the map. Zoomed in, nearest-neighbour keeps the
@@ -3713,16 +3790,12 @@ const CITY_NAME_AT = 2.25;
 const CAPITAL_NAME_AT = 1.30;
 const CITY_FADE_MS = 150;           // how long the transition takes, always
 
-const EYRIE_AT = 0.90;              // eyries arrive between capitals and cities
-const EYRIE_ICON_PX = 16;           // on-screen height of an eyrie mark
-const DOCKYARD_AT = 0.90;           // dockyards arrive with the eyries
-const DOCKYARD_ICON_PX = 16;        // and are drawn at the same size
-const DOCKYARD_OUTLINE_PX = 0.4;    // and take the same white edge
-const EYRIE_OUTLINE_PX = 0.4;       // white edge traced round it, on top of
+// Every building mark (MARKS below) arrives at one zoom and is drawn at one size
+// with one white edge, unless its own row says otherwise.
+const BUILDING_AT_ZOOM = 0.90;      // between capitals and cities
+const BUILDING_ICON_PX = 16;        // on-screen height of the mark
+const BUILDING_OUTLINE_PX = 0.4;    // white edge traced round it, on top of
 // the thin keyline the icon carries itself
-const SYNTHETIC_AT = 0.90;          // synthetic plants arrive with them too
-const SYNTHETIC_ICON_PX = 16;       // at the same size
-const SYNTHETIC_OUTLINE_PX = 0.4;   // and with the same white edge
 const CITY_ICON_PX = 9;            // on-screen height of an ordinary city
 const CAPITAL_ICON_PX = 14;         // and of a capital
 const CITY_NAME_PX = 12;            // name sizes, likewise fixed on screen
@@ -3864,12 +3937,10 @@ function linkInternationalCities(cities) {
   }
 }
 
-// Index into the four opacities below. Order: icons then names, ordinary then
-// capital, which is also the order they are drawn in.
-const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3, F_RIVER = 4, F_EYRIE = 5,
-  F_DOCKYARD = 6, F_SYNTHETIC = 7;
-const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT, RIVER_AT, EYRIE_AT,
-  DOCKYARD_AT, SYNTHETIC_AT];
+// Index into the opacities below. Order: icons then names, ordinary then
+// capital, which is also the order they are drawn in, then rivers and buildings.
+const F_CITY = 0, F_CAPITAL = 1, F_CITY_NAME = 2, F_CAPITAL_NAME = 3, F_RIVER = 4, F_BUILDING = 5;
+const CITY_THRESHOLDS = [CITY_AT, CAPITAL_AT, CITY_NAME_AT, CAPITAL_NAME_AT, RIVER_AT, BUILDING_AT_ZOOM];
 
 const cityAlpha = CITY_THRESHOLDS.map(() => 0);
 let cityClock = null;
@@ -4111,7 +4182,7 @@ function drawCities(ctx, cssW, cssH, dx, labelBoxes = null) {
  * The lines the resource layer writes, built once.
  *
  * The draw loop runs every frame over every province on screen, and building
- * a string there is the wrong place for it: eighteen kinds looked up, an array
+ * a string there is the wrong place for it: every kind looked up, an array
  * allocated and a template concatenated, per province, sixty times a second,
  * to produce the same characters every time. drawProvinceNames does none of
  * that because a name is already a string sitting on the province.
@@ -4142,6 +4213,11 @@ const PIT = new Set(['coal', 'naturalGas']);
 const yieldOf = (kind, amount, dev, devPit, connected = true) =>
 (ALWAYS_FULL.has(kind) ? (connected ? amount : 0)
   : Math.round(amount * Math.max(FLOOR[kind] ?? 0, PIT.has(kind) ? devPit : dev) * 10) / 10);
+
+// The yields written on the resource map follow development, which follows the
+// road, the electricity and the rail, so they are written again whenever the
+// ground changes rather than standing at what the map started with.
+deriveOnChange((w) => { w.resourceLines = buildResourceLines(w); });
 
 function buildResourceLines(world) {
   const out = new Map();
@@ -4541,6 +4617,7 @@ function drawProvinceNames(ctx, cssW, cssH, dx) {
  * when a line is finished, which is rare enough to rebuild it then.
  */
 let railNet = null, railNetWorld = null;
+forgetOnChange(() => { railNetWorld = null; });
 
 function railNetwork(w) {
   if (railNetWorld === w) return railNet;
@@ -5191,22 +5268,28 @@ function outlinedIcon(icon, h, outline) {
  * one has a site rule of its own or none: the dockyard wants a coast, which is
  * geometry and lives in markAnchor, and the eyrie wants nothing.
  *
+ * ICON is the file in data/icons. Optional: a missing file leaves the building
+ * in the data with the plain works drawn for it.
+ *
  * Adding a building is an entry here, a name in BUILDINGS, and an icon. Only a
  * site rule that cannot be written as NEEDS takes code as well.
  */
 const MARKS = {
-  eyrie: { label: 'Eyrie', fade: F_EYRIE, px: EYRIE_ICON_PX, outline: EYRIE_OUTLINE_PX },
-  dockyard: { label: 'Naval dockyard', fade: F_DOCKYARD, px: DOCKYARD_ICON_PX, outline: DOCKYARD_OUTLINE_PX },
-  syntheticOil: {
-    label: 'Synthetic oil plant', fade: F_SYNTHETIC,
-    px: SYNTHETIC_ICON_PX, outline: SYNTHETIC_OUTLINE_PX, needs: 'coal',
-  },
-  syntheticRubber: {
-    label: 'Synthetic rubber plant', fade: F_SYNTHETIC,
-    px: SYNTHETIC_ICON_PX, outline: SYNTHETIC_OUTLINE_PX, needs: 'oil',
-  },
+  eyrie: { label: 'Eyrie', icon: 'Eyrie.png' },
+  dockyard: { label: 'Naval dockyard', icon: 'Dockyard.png' },
+  syntheticOil: { label: 'Synthetic oil plant', icon: 'Synthetic-plant_oil.png', needs: 'coal' },
+  syntheticRubber: { label: 'Synthetic rubber plant', icon: 'Synthetic-plant_rubber.png', needs: 'oil' },
 };
+// What a row leaves out it takes from the shared figures above.
+for (const mark of Object.values(MARKS)) {
+  mark.fade ??= F_BUILDING;
+  mark.px ??= BUILDING_ICON_PX;
+  mark.outline ??= BUILDING_OUTLINE_PX;
+}
 const MARK_KINDS = Object.keys(MARKS);
+if (MARK_KINDS.join() !== BUILDINGS.join()) {
+  console.warn(`MARKS (${MARK_KINDS.join(', ')}) and BUILDINGS in provincestats.js (${BUILDINGS.join(', ')}) disagree`);
+}
 
 // One scratch list per kind per caller, so the labeller's walk and the drawer's
 // walk in the same frame cannot tread on one another. Built from the table, so a
@@ -5300,7 +5383,7 @@ function setBuilding(countyId, kind, on) {
   if (!on) {
     delete c[kind];
     delete c[key];
-    invalidateView();
+    worldChanged();
     return { county: countyId, province: c.province, kind, built: false, at: null };
   }
 
@@ -5319,8 +5402,255 @@ function setBuilding(countyId, kind, on) {
       : `"${countyId}" has no coast, so it cannot hold a dockyard`);
   }
 
-  invalidateView();
+  worldChanged();
   return { county: countyId, province: c.province, kind, built: true, at: [at.ax, at.ay] };
+}
+
+/* ------------------------------------------------ the console's other levers
+ *
+ * What game.setLaw() and the rest act on. They set things outright and charge
+ * nothing: no political power, no days to change, no availability rule. They are
+ * for trying a country out, not for playing it, and a tool that refused a law
+ * because the country could not yet afford it would be no use for that.
+ *
+ * What they do check is that the thing asked for exists, and that a level stays
+ * within what the ground allows, so a typo is an error and not a country quietly
+ * running a law the tables have never heard of.
+ */
+
+/** A polity's government entry, or an error naming what was asked for. */
+function consoleGov(tag) {
+  const g = state.world?.government?.byPolity?.get(tag);
+  if (!g) throw new Error(`no government for "${tag}"`);
+  return g;
+}
+
+/** A list of names as an error message reads it: "a", "b" or "c". */
+const consoleChoices = (names) => names.map((n) => `"${n}"`).join(', ');
+
+/**
+ * What a country runs, as the console reports it after every change: the entry
+ * itself, and the ideology the compass now names, since that is what moves.
+ */
+function consoleGovSummary(tag) {
+  const w = state.world, g = consoleGov(tag);
+  let ideology = null;
+  try { ideology = governmentPosition(w, tag)?.ideology ?? null; } catch { ideology = null; }
+  return {
+    polity: tag, form: g.form, ideology,
+    laws: { ...(g.laws || {}) }, doctrine: doctrineOf(w, tag),
+    policies: [...(g.policies || [])], decrees: [...(g.decrees || [])],
+    stateOwned: [...(g.stateOwned || [])], spirits: [...(g.spirits || [])],
+  };
+}
+
+/** After anything a government holds has changed: the one signal, then the report. */
+function governmentChanged(tag) {
+  worldChanged();
+  return consoleGovSummary(tag);
+}
+
+function setLawFromConsole(tag, category, option) {
+  const g = consoleGov(tag);
+  const cats = state.world.government.laws?.categories || {};
+  const c = cats[category];
+  if (!c) throw new Error(`no law category "${category}"; try ${consoleChoices(Object.keys(cats))}`);
+  if (!c.options.some((o) => o.name === option)) {
+    throw new Error(`no "${option}" in ${category}; try ${consoleChoices(c.options.map((o) => o.name))}`);
+  }
+  g.laws = { ...(g.laws || {}), [category]: option };
+  return governmentChanged(tag);
+}
+
+function setFormFromConsole(tag, form) {
+  const g = consoleGov(tag);
+  const forms = state.world.government.ideologies?.forms || [];
+  if (!forms.some((f) => f.name === form)) {
+    throw new Error(`no form "${form}"; try ${consoleChoices(forms.map((f) => f.name))}`);
+  }
+  g.form = form;
+  return governmentChanged(tag);
+}
+
+/** A school of null takes the branch away, which is how a landlocked country stands. */
+function setDoctrineFromConsole(tag, branch, school) {
+  const g = consoleGov(tag);
+  const branches = state.world.government.laws?.doctrine?.branches || {};
+  const list = branches[branch];
+  if (!list) throw new Error(`no doctrine branch "${branch}"; try ${consoleChoices(Object.keys(branches))}`);
+  const doctrine = { ...(g.doctrine || {}) };
+  if (school === null || school === undefined) delete doctrine[branch];
+  else if (!list.some((s) => s.name === school)) {
+    throw new Error(`no "${school}" in ${branch}; try ${consoleChoices(list.map((s) => s.name))}`);
+  } else doctrine[branch] = school;
+  g.doctrine = doctrine;
+  return governmentChanged(tag);
+}
+
+/**
+ * Adds or removes a policy or a decree. An act that takes a target is written
+ * the way the file writes it, { policy, target } or { decree, target }, and one
+ * that does not is the bare name. Removing takes off every entry of that name,
+ * or only the one with that target when a target is given, since a country can
+ * hold one act twice against two different targets.
+ */
+function setActFromConsole(tag, kind, name, target, on) {
+  const g = consoleGov(tag);
+  const table = kind === 'policy'
+    ? state.world.government.policies?.policies || []
+    : state.world.government.decrees?.decrees || [];
+  const field = kind === 'policy' ? 'policies' : 'decrees';
+  if (!table.some((a) => a.name === name)) {
+    throw new Error(`no ${kind} "${name}"; try ${consoleChoices(table.map((a) => a.name))}`);
+  }
+  const held = [...(g[field] || [])];
+  const same = (x) => nameOf(x) === name && (target === undefined || x?.target === target);
+  if (on) {
+    if (held.some(same)) throw new Error(`${tag} already holds ${kind} "${name}"`);
+    held.push(target === undefined ? name : { [kind]: name, target });
+  } else {
+    if (!held.some(same)) throw new Error(`${tag} holds no ${kind} "${name}"`);
+    for (let i = held.length - 1; i >= 0; i--) if (same(held[i])) held.splice(i, 1);
+  }
+  g[field] = held;
+  return governmentChanged(tag);
+}
+
+function setSpiritFromConsole(tag, id, on) {
+  const g = consoleGov(tag);
+  const spirits = state.world.government.spirits?.spirits || [];
+  if (!spirits.some((s) => s.id === id)) throw new Error(`no spirit "${id}"`);
+  const held = [...(g.spirits || [])];
+  if (on) {
+    if (held.includes(id)) throw new Error(`${tag} already holds "${id}"`);
+    held.push(id);
+  } else {
+    if (!held.includes(id)) throw new Error(`${tag} does not hold "${id}"`);
+    held.splice(held.indexOf(id), 1);
+  }
+  g.spirits = held;
+  return governmentChanged(tag);
+}
+
+/* --- the ground: levels, factories, forts and rail */
+
+/** A province's stats entry and the province itself, or an error. */
+function consoleProvince(id) {
+  const w = state.world;
+  const p = w?.byId?.get(id);
+  const s = w?.stats?.[id];
+  if (!p || !s) throw new Error(`no province "${id}"`);
+  return { w, p, s };
+}
+
+/** What a province has built, against what it may build. */
+function consoleInfrastructure(id) {
+  const { w, p, s } = consoleProvince(id);
+  const out = {};
+  for (const k of LEVEL_TYPES) {
+    const [built = 0, ground = 0] = Array.isArray(s[k]) ? s[k] : [s[k] || 0, 0];
+    out[k] = { built, max: usableCeiling(k, ground) };
+  }
+  const [, slotMax = 0] = Array.isArray(s.buildingSlots) ? s.buildingSlots : [0, 0];
+  out.slots = {
+    unlocked: unlockedSlots(slotMax, builtLevel(s, 'road'), builtLevel(s, 'electricity'), railShare(w, p)),
+    max: slotMax,
+  };
+  out.civilianFactories = s.civilianFactories || 0;
+  out.militaryFactories = s.militaryFactories || 0;
+  return out;
+}
+
+
+/**
+ * Sets one of the six levels outright. Capped by what the country may build
+ * there, which for radar is the ground less the four levels research has not
+ * reached yet.
+ */
+function setLevelFromConsole(id, kind, level) {
+  const { s } = consoleProvince(id);
+  if (!LEVEL_TYPES.includes(kind)) throw new Error(`no level "${kind}"; try ${consoleChoices(LEVEL_TYPES)}`);
+  const ground = Array.isArray(s[kind]) ? s[kind][1] : 0;
+  const max = usableCeiling(kind, ground);
+  if (!Number.isInteger(level) || level < 0 || level > max) {
+    throw new Error(`${kind} in "${id}" can be 0 to ${max}`);
+  }
+  s[kind] = [level, ground];
+  worldChanged();
+  return consoleInfrastructure(id);
+}
+
+/**
+ * Sets both factory counts. Together they may fill the slots the province has
+ * unlocked and no more: the two compete for the same sockets, which is why this
+ * takes both at once rather than one at a time.
+ */
+function setFactoriesFromConsole(id, civilian, military = 0) {
+  const { s } = consoleProvince(id);
+  for (const n of [civilian, military]) {
+    if (!Number.isInteger(n) || n < 0) throw new Error('factory counts are whole numbers from 0');
+  }
+  const { slots } = consoleInfrastructure(id);
+  if (civilian + military > slots.unlocked) {
+    throw new Error(`"${id}" has ${slots.unlocked} of ${slots.max} building slots unlocked`);
+  }
+  s.civilianFactories = civilian;
+  s.militaryFactories = military;
+  worldChanged();
+  return consoleInfrastructure(id);
+}
+
+/** A county's fortification, 0 to what its own terrain and climate allow. */
+function setFortFromConsole(countyId, level) {
+  const c = state.world?.counties?.byId?.get(countyId);
+  if (!c) throw new Error(`no county "${countyId}"`);
+  const max = countyFortCeiling(c);
+  if (!Number.isInteger(level) || level < 0 || level > max) {
+    throw new Error(`fortification in "${countyId}" can be 0 to ${max}`);
+  }
+  if (level) c.fortification = level;
+  else delete c.fortification;
+  worldChanged();
+  return { county: countyId, fortification: level, max };
+}
+
+/**
+ * Lays or lifts a railway between two neighbouring counties, on both ends, since
+ * a line runs both ways and each county lists where its own track goes.
+ *
+ * Given one county and no second, lifting takes up every line it has and the
+ * railway field with them, so the county is unrailed. Laying needs both: a
+ * county with a railway and nowhere for it to go is the island line, and is
+ * written as an empty list by laying to nothing, game.addRail(id).
+ */
+function setRailFromConsole(a, b, on) {
+  const w = state.world;
+  const cs = w?.counties;
+  const ca = cs?.byId?.get(a);
+  if (!ca) throw new Error(`no county "${a}"`);
+  const link = (x, y) => { x.rail = [...new Set([...(x.rail || []), y])]; };
+  const unlink = (x, y) => { if (Array.isArray(x.rail)) x.rail = x.rail.filter((z) => z !== y); };
+
+  if (b === undefined) {
+    if (on) ca.rail = ca.rail || [];
+    else {
+      for (const id of ca.rail || []) {
+        const other = cs.byId.get(id);
+        if (other) unlink(other, a);
+      }
+      delete ca.rail;
+    }
+  } else {
+    const cb = cs.byId.get(b);
+    if (!cb) throw new Error(`no county "${b}"`);
+    if (on && ![...(cs.adjacency?.get(a) || [])].includes(b)) {
+      throw new Error(`"${a}" and "${b}" do not border each other`);
+    }
+    if (on) { link(ca, b); link(cb, a); } else { unlink(ca, b); unlink(cb, a); }
+  }
+
+  worldChanged();
+  return { county: a, rail: ca.rail ?? null };
 }
 
 function drawBuildingMarks(ctx, cssW, cssH, dx) {
@@ -5761,6 +6091,7 @@ const els = {
   cardUnrestRow: document.getElementById('card-unrest-row'),
   cardUnrest: document.getElementById('card-unrest'),
   cardUnrestFill: document.getElementById('card-unrest-fill'),
+  cardUnrestBar: document.getElementById('card-unrest-bar'),
   cardUnrestNote: document.getElementById('card-unrest-note'),
 
   cardSlots: document.getElementById('card-slots'),
@@ -5777,6 +6108,24 @@ const els = {
   clockSlower: document.getElementById('clock-slower'),
   clockFaster: document.getElementById('clock-faster'),
 };
+
+// Unrest bites in steps, not on a slope. These are the only points where
+// anything changes, so the bar marks them, the tooltip names them and the fill
+// warms as it crosses them, all from this one list.
+const UNREST_STEPS = [
+  { at: 40, what: 'supply and construction -20%', colour: 'hsl(28 58% 47%)' },
+  { at: 70, what: 'no construction', colour: 'hsl(0 58% 48%)' },
+  { at: 100, what: 'uprising' },
+];
+const UNREST_CALM = 'hsl(48 40% 44%)';
+
+// A tick on the unrest bar at each step short of the end, which is the bar's edge.
+for (const { at } of UNREST_STEPS) {
+  if (at >= 100 || !els.cardUnrestBar) continue;
+  const tick = document.createElement('u');
+  tick.style.left = at + '%';
+  els.cardUnrestBar.appendChild(tick);
+}
 
 const state = {
   mode: 'political',      // which of MODES colours the map
@@ -5808,6 +6157,8 @@ const state = {
   showCoastal: false,
   showSeams: false,
 };
+
+
 
 // Redrawing is driven by flags rather than by redrawing on every event, so a
 // burst of mouse moves within one frame still costs a single repaint.
@@ -5897,6 +6248,11 @@ const DAY_MS = 86400000;
 // Real milliseconds per tick, slowest first. The ratio between them is about 3,
 // so each step is the same change however fast you were already going.
 const SPEEDS = [333, 100, 33];
+// The controls list names the number keys, which run as far as there are speeds.
+{
+  const keys = document.getElementById('speed-keys');
+  if (keys) keys.textContent = `1 to ${SPEEDS.length}`;
+}
 
 // A ceiling on how much simulated time one frame may deliver. Past it the clock
 // FALLS BEHIND rather than catching up: a tab left in the background gets no
@@ -6196,10 +6552,10 @@ function frameBody() {
  */
 function refreshTooltipTime() {
   if (!tipFor || els.tooltip.hidden || !state.world) return;
-  const time = localTimeAt(state.world, tipFor);
-  if (time === tipTime) return;
-  tipTime = time;
-  els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
+  const clock = tipClock ? tipClock() : null;
+  if (clockKey(clock) === tipTime) return;
+  tipTime = clockKey(clock);
+  els.tooltip.innerHTML = tipHead + timeMarkup(clock) + tipTail;
 }
 
 /**
@@ -6485,7 +6841,7 @@ function updateCountyCard(county) {
 
   // Only when the ground is held by somebody other than its owner, which is
   // the one case where "who owns this" has two answers.
-  const owner = province && province.occupier && province.occupier !== province.owner
+  const owner = isOccupied(province)
     ? w.table.polityById.get(province.owner) : null;
   els.countyOwner.hidden = !owner;
   els.countyOwner.textContent = owner ? `occupied — owned by ${owner.name}` : '';
@@ -6550,12 +6906,9 @@ function changeOwners(changes) {
 
   dirtyBoxes.push(...result.boxes);
 
-  // Both of these show the owner, so they are stale if what they are describing
-  // is one of the provinces that moved.
-  if (state.selected && result.changed.includes(state.selected)) {
-    updateCard();
-    updatePanel();
-  }
+  // Ground changing hands moves everything cached by owner, from a country's
+  // deposits to the spirits felt in it, and the card and panel with them.
+  worldChanged();
   return true;
 }
 
@@ -6587,7 +6940,7 @@ function paintFlagBlock(el, pol) {
   // cropped or squashed to a box, and the files are three different shapes.
   let img = el.firstElementChild;
   if (!img) { img = document.createElement('img'); img.alt = ''; el.append(img); }
-  const slug = shortNameOf(pol).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = flagSlug(pol);
   // A country with no flag drawn is the normal case, not an error: the image is
   // taken out of the flow and the block is its colour at its smallest width.
   //
@@ -6604,12 +6957,12 @@ function paintFlagBlock(el, pol) {
   img.hidden = false;
   img.onerror = () => { img.hidden = true; fits(false); };
   img.onload = () => { img.hidden = false; fits(true); };
-  if (slug) img.src = './data/img/flags/' + slug + '.png';
+  if (slug) img.src = flagSrc(slug);
   else { img.hidden = true; fits(false); }
 }
 
 const polSwatch = (pol) => {
-  const slug = shortNameOf(pol).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = flagSlug(pol);
   const under = `rgb(${pol?.colour ?? '128,128,128'})`;
   const blank = !slug || flagMissing.has(slug);
   // An image rather than a background-image, for the same reason the mini flag
@@ -6622,7 +6975,7 @@ const polSwatch = (pol) => {
   // the same square is used for a plain colour — a sea, a movement — which has
   // no flag to shade.
   return `<span class="swatch flag${blank ? ' blank' : ''}" style="--flag-colour: ${under}">`
-    + (blank ? '' : `<img class="swatch-flag" alt="" src="./data/img/flags/${slug}.png"`
+    + (blank ? '' : `<img class="swatch-flag" alt="" src="${flagFile(slug)}"`
       + ` onerror="window.flagMiss(this, '${slug}')">`)
     + '</span>';
 };
@@ -6636,7 +6989,7 @@ const polSwatch = (pol) => {
 function supportRows(w, p) {
   if (state.mode !== 'ideology') return '';
   const s = w.stats?.[p.id]?.support;
-  if (!s || !Object.keys(s).length) return '<div class="sub">nothing authored</div>';
+  if (!s || !Object.keys(s).length) return '<div class="sub">nothing yet</div>';
   return Object.entries(s).sort((a, b) => b[1] - a[1])
     .map(([k, v]) => `<div class="sub">${swatch(w.ideologyColour?.get(k) || [128, 128, 128])}<b>${v}%</b> ${k}</div>`)
     .join('');
@@ -6644,38 +6997,97 @@ function supportRows(w, p) {
 
 const TOOLTIP_OFFSET = 14;
 
-// Which province the open tooltip is describing, and the local time it is
-// showing for it. Both null while it is closed or naming a sea, which has no
-// time of its own. See refreshTooltipTime, which is what they are kept for.
+// Which province or sea region the open tooltip is describing, and the local
+// time it is showing for it. Both null while it is closed or showing something
+// that keeps no time, such as a resource. See refreshTooltipTime, which is what
+// they are kept for.
 let tipFor = null;
+// How to read the time of whatever tipFor names, so the clock ticking over can
+// ask again without knowing whether it is land, a sea or a subregion of one.
+let tipClock = null;
 let tipTime = null;
 let tipHead = '';
 let tipTail = '';
 
-/** The time as it appears in the tooltip, separator and all, or nothing. */
-const timeMarkup = (t) => (t ? ` &middot; ${t}` : '');
+// The sun, the sun on the horizon, and the moon, which the local time is shown
+// with. Drawn rather than taken from a font, for the reason the clock's marks
+// are: at this size they are shapes, and a font's are whatever it happens to
+// have.
+const SUN_MARK = '<svg viewBox="0 0 12 12" aria-label="day"><circle cx="6" cy="6" r="2.6"/>'
+  + '<path d="M6 0v2M6 10v2M0 6h2M10 6h2M1.8 1.8l1.4 1.4M8.8 8.8l1.4 1.4M1.8 10.2l1.4-1.4M8.8 3.2l1.4-1.4"'
+  + ' stroke="currentColor" stroke-width="1.2" fill="none"/></svg>';
+const TWILIGHT_MARK = '<svg viewBox="0 0 12 12" aria-label="twilight"><path d="M2.6 9A3.4 3.4 0 0 1 9.4 9z"/>'
+  + '<path d="M0 9h12M6 2v2M1.7 4.1l1.4 1.4M10.3 4.1l-1.4 1.4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>';
+const MOON_MARK = '<svg viewBox="0 0 12 12" aria-label="night"><path d="M8.5 1.2A5 5 0 1 0 10.8 9 4.2 4.2 0 0 1 8.5 1.2z"/></svg>';
+const SKY_MARK = { day: SUN_MARK, twilight: TWILIGHT_MARK, night: MOON_MARK };
 
 /**
- * Local time at a province, rounded to the nearest 20 minutes.
- *
- * 20 minutes because that is one tick, so the tooltip never claims a precision
- * the simulation cannot hold: nothing can happen between two readings of this.
- *
- * Taken at the province's centre of mass rather than under the cursor, so the
- * figure belongs to the province being named and does not change as the pointer
- * crosses it.
+ * The tooltip's local-time line, or nothing. The mark is the light the map
+ * itself is drawing there, so the tooltip and the shading under the pointer
+ * never disagree: the sun in daylight, half a sun across the twilight band,
+ * the moon in full night.
  */
-function localTimeAt(world, id) {
-  const bb = world.bounds.get(id);
-  if (!bb) return null;
+const timeMarkup = (c) => (c
+  ? `<div class="tip-time">Local time: ${SKY_MARK[c.sky]}<b>${c.time}</b></div>`
+  : '');
 
-  const lon = mapLonAt(bb.cx, world.width);
+/** What tells two readings of a clock apart, for refreshTooltipTime. */
+const clockKey = (c) => (c ? c.time + c.sky : null);
+
+/**
+ * The time and the light at a province, a sea region or a subregion.
+ *
+ * The time is rounded to the nearest 20 minutes, which is one tick, so the
+ * tooltip never claims a precision the simulation cannot hold: nothing can
+ * happen between two readings of this.
+ *
+ * Taken at the place's centre rather than under the cursor, so the figure
+ * belongs to the place being named and does not change as the pointer crosses
+ * it. A sea region can span a quarter of the world, so the water's is taken at
+ * its subregion's centre where there is one, whose position sea.json keeps in
+ * degrees while the map works in radians.
+ */
+function landClock(world, id) {
+  return boundsClock(world, world.bounds.get(id));
+}
+
+function seaClock(world, id) {
+  return boundsClock(world, world.sea?.bounds?.get(id));
+}
+
+function subClock(world, sub) {
+  const [lat, lon] = sub?.centre || [];
+  return Number.isFinite(lat) && Number.isFinite(lon)
+    ? clockAt(world, (lat * Math.PI) / 180, (lon * Math.PI) / 180) : null;
+}
+
+function boundsClock(world, bb) {
+  return bb ? clockAt(world, mapLatAt(bb.cy), mapLonAt(bb.cx, world.width)) : null;
+}
+
+function clockAt(world, lat, lon) {
+  return { time: timeAtLon(world, lon), sky: skyAt(world, lat, lon) };
+}
+
+/**
+ * Day, twilight or night at a place, cut where the map's own night shading
+ * cuts: full daylight above NIGHT_DAY_START, full night below NIGHT_FULL_DARK,
+ * and the band the shading fades across in between.
+ */
+function skyAt(world, lat, lon) {
+  const s = sinSolarElevation(lat, lon, solarDeclination(sunDayOfYear),
+    subsolarLongitude(sunUtcHour, world.width));
+  return s >= NIGHT_DAY_START ? 'day' : s <= NIGHT_FULL_DARK ? 'night' : 'twilight';
+}
+
+/** Local time at a longitude in radians, rounded to the tick. */
+function timeAtLon(world, lon) {
   const hours = localHours(lon, sunUtcHour, world.width);
 
   // Round to the tick, then carry the wrap: 23:56 rounds to 24:00, which is
   // 00:00 of the next day and not a time anybody writes down.
-  const ticks = Math.round((hours * 60) / 20) % 72;
-  const mins = ticks * 20;
+  const ticks = Math.round((hours * 60) / TICK_MINUTES) % TICKS_PER_DAY;
+  const mins = ticks * TICK_MINUTES;
   return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 }
 
@@ -6768,7 +7180,7 @@ function showTooltip(id, ev, seaId = null) {
   if (id) {
     const p = w.byId.get(id);
     const pol = polityOf(w, p);
-    const time = localTimeAt(w, id);
+    const clock = landClock(w, id);
     // The county under the cursor, where there is one. It is the level armies
     // move on, so it is worth naming even when the map is showing something else,
     // and its terrain is more use than the province's, being the ground itself
@@ -6778,43 +7190,53 @@ function showTooltip(id, ev, seaId = null) {
     // can rewrite it without any of this being worked out again. countyAtEvent
     // in particular needs a pointer event, and by then there is not one.
     tipFor = id;
-    tipTime = time;
+    tipClock = () => landClock(state.world, id);
+    tipTime = clockKey(clock);
+    // Read as sentences, the way Hearts of Iron IV writes its own: what the
+    // ground is and where, whose it is, its weather, its hour. The county is
+    // named by what it is rather than by its number, which says nothing to a
+    // player. The ideology map answers one question and the ground is not it,
+    // so there the province is named on its own and the movements follow.
+    const ground = state.mode === 'ideology' ? null : county;
     tipHead =
-      `<div>${p.name}</div>` +
-      `<div class="sub">${miniFlag(pol)}${tipName(pol.name)}`;
-    // The ideology map answers one question and the ground is not it. The county
-    // line is dropped there so the movements are the whole of what is read.
-    tipTail = '</div>' +
+      (ground
+        ? `<div class="plain">A <b>${ground.terrain[0]}</b> county in <b>${p.name}</b></div>`
+        : `<div>${p.name}</div>`) +
+      `<div class="sub">Owner: ${miniFlag(pol)}<b>${tipName(pol.name)}</b></div>` +
       (state.mode === 'ideology' ? ''
-        : county
-          ? `<div class="sub">${county.name} &middot; ${county.terrain.join(' + ')}`
-          + ` &middot; ${county.climate}</div>`
-          : `<div class="sub">${[...p.terrain, ...p.climate].join(' &middot; ')}</div>`)
-      + supportRows(w, p);
-    els.tooltip.innerHTML = tipHead + timeMarkup(time) + tipTail;
+        : `<div class="sub">Climate: <b>${ground ? ground.climate : p.climate.join(', ')}</b></div>`);
+    tipTail = supportRows(w, p);
+    els.tooltip.innerHTML = tipHead + timeMarkup(clock) + tipTail;
   } else {
     // Named in every mode, whether or not the water can be picked in this one.
     // Knowing which sea is under the cursor is wanted as often on the political
     // map as on the chart.
     const r = w.sea.byId.get(seaId);
-    tipFor = null;                 // a sea keeps no local time
-    tipTime = null;
-    // The subregion under the pointer as well, which is the level a fleet is
-    // ordered to. The region is what the sea is called; the subregion is the
-    // piece of it you would be moving into.
-    const sub = w.subs && state.mode === 'navy' ? w.subs.byId.get(subAtEvent(ev)) : null;
-
-    els.tooltip.innerHTML =
-      `<div>${r.name}</div>` +
-      `<div class="sub">${swatch(navyColour(r))}${[r.lake ? 'Lake' : 'Sea', ...r.tags].join(' &middot; ')}` +
-      `${r.area ? ` &middot; ${areaText(r)}` : ''}</div>` +
+    // Outside the Navy mode the water is only named and measured. In it, the
+    // subregion under the pointer is the level a fleet is ordered to, so it is
+    // named by its depth band and the water keeps a local time, taken at the
+    // subregion's centre, or the lake's where there is no subregion, and
+    // rewritten as the clock ticks over the way the land's is.
+    const navy = state.mode === 'navy';
+    const sub = navy && !r.lake && w.subs ? w.subs.byId.get(subAtEvent(ev)) : null;
+    tipFor = navy ? seaId : null;
+    tipClock = !navy ? null
+      : sub?.centre ? () => subClock(state.world, sub) : () => seaClock(state.world, seaId);
+    const clock = tipClock ? tipClock() : null;
+    tipTime = clockKey(clock);
+    // "An" before a vowel: an Abyssal subregion, a Hadal one.
+    const band = sub?.depth ? `<b>${sub.depth}</b> ` : '';
+    const article = /^[aeiou]/i.test(sub?.depth || 'subregion') ? 'An' : 'A';
+    tipHead =
       (sub
-        // The band, and nothing else about the depth. It says how deep the water
-        // is on its own; adding "deep" beside a band called Deep said it twice and
-        // said it badly.
-        ? `<div class="sub">${sub.name}${sub.depth ? ` &middot; ${sub.depth}` : ''}`
-        + ` &middot; ${Math.round(sub.area).toLocaleString()} km²</div>`
-        : '');
+        ? `<div class="plain">${article} ${band}subregion in the <b>${r.name}</b></div>`
+        : `<div>${r.name}</div>`) +
+      // The area of what the first line names: the subregion in the Navy mode,
+      // where that is the water being pointed at, and the whole region
+      // everywhere else. A lake has no subregion and gives its own.
+      (sub?.area || r.area ? `<div class="sub">Area: <b>${areaText(sub?.area ? sub : r)}</b></div>` : '');
+    tipTail = '';
+    els.tooltip.innerHTML = tipHead + timeMarkup(clock) + tipTail;
   }
   placeTooltip(ev);
 }
@@ -6851,9 +7273,11 @@ function showResourceTooltip(hit, ev) {
   tipTime = null;
 
   els.tooltip.innerHTML =
+    // In the map tooltip's sentences: what, how much and where, then what it
+    // gives.
     `<div>${RESOURCE_NAME[hit.kind] ?? hit.kind}</div>` +
-    `<div class="sub">deposit ${hit.amount} &middot; yield ${hit.yield ?? 0} a day</div>` +
-    `<div class="sub">${tipName(p ? p.name : '')}</div>`;
+    `<div class="sub">A deposit of <b>${hit.amount}</b>${p ? ` in <b>${tipName(p.name)}</b>` : ''}</div>` +
+    `<div class="sub">Yield: <b>${hit.yield ?? 0}/day</b></div>`;
   placeTooltip(ev);
 }
 
@@ -7000,6 +7424,7 @@ const UNREST_DECAY = 2;           // a day, wherever nothing is pressing
  * that rebuilding the map then is cheaper than counting on every card paint.
  */
 let railCache = null, railCacheWorld = null;
+forgetOnChange(() => { railCacheWorld = null; });
 
 /**
  * Whether a province is in the national economy at all.
@@ -7019,6 +7444,7 @@ let railCache = null, railCacheWorld = null;
  * rebuilding the set then is cheaper than walking the counties on every paint.
  */
 let railToCapital = null, railToCapitalWorld = null;
+forgetOnChange(() => { railToCapitalWorld = null; });
 
 /**
  * The provinces whose railways reach their own capital without leaving the
@@ -7039,7 +7465,7 @@ function railsReachingTheCapital(w) {
   if (railToCapitalWorld === w) return railToCapital;
   railToCapital = new Set();
   const counties = [...w.counties.byId.values()];
-  const provinceOf = new Map(counties.map((c) => [c.id, c.province ?? c.parent]));
+  const provinceOf = new Map(counties.map((c) => [c.id, c.province]));
   const ownerOf = (pid) => w.byId?.get(pid)?.owner;
 
   // the capital province of every polity that has one
@@ -7089,7 +7515,7 @@ function railShare(w, p) {
   if (railCacheWorld !== w) {
     railCache = new Map();
     for (const c of w.counties.byId.values()) {
-      const id = c.province || c.parent;
+      const id = c.province;
       if (id === undefined) continue;
       const t = railCache.get(id) || { n: 0, railed: 0 };
       t.n++;
@@ -7111,7 +7537,7 @@ function railShare(w, p) {
  * Fraction of the province in foreign hands: its counties held by anybody but
  * the owner over all its counties, derived at load by applyCountyOccupation.
  */
-function occupiedFraction(w, p) { return p.occupied ?? (p.occupier && p.occupier !== p.owner ? 1 : 0); }
+function occupiedFraction(w, p) { return p.occupied ?? (isOccupied(p) ? 1 : 0); }
 
 /**
  * True while the province's owner is at war, from polities-starting-values.json.
@@ -7169,10 +7595,36 @@ function struckOf(stats) {
 }
 
 /**
+ * What each province is like to live in, written onto its stats: how urban it
+ * is, which decides how fast a movement grows there, read from the population,
+ * the factories and whether it holds a town; and what it does for a living,
+ * from its deposits. null where it holds none, which leaves a movement judged
+ * on the towns alone.
+ *
+ * Worked out at load and again whenever the world changes, so it moves when a
+ * province industrialises and stays put otherwise.
+ */
+function provinceTraits(world) {
+  if (!world?.stats) return;
+  const towned = new Set((world.cities || []).map((c) => c.province));
+  for (const [id, e] of Object.entries(world.stats)) {
+    const p = world.byId.get(id);
+    e.urbanisation = p ? urbanisation({
+      population: e.population, area: p.area,
+      factories: (e.civilianFactories || 0) + (e.militaryFactories || 0),
+      hasCity: towned.has(id),
+    }) : 0;
+    e.mining = miningShare(world.resources?.[id]);
+  }
+}
+deriveOnChange((w) => provinceTraits(w));
+
+/**
  * The mean weight across everything a polity owns, cached per polity. Measured
  * against the mean rather than the total so that a large country is not made
  * nearly immune to weariness by having more ground to spread it over.
  */
+forgetOnChange((w) => w.wearinessMeans?.clear());
 function wearinessMean(w, owner) {
   if (!w?.wearinessMeans || !w.stats) return 0;
   if (w.wearinessMeans.has(owner)) return w.wearinessMeans.get(owner);
@@ -7327,6 +7779,7 @@ function namedDeposits(w, id, named) {
 }
 
 const spiritSpreadBy = new Map();
+forgetOnChange(() => spiritSpreadBy.clear());
 function spiritEffect(w, p, key) {
   const owner = polityOf(w, p)?.id;
   if (!owner || !w.government?.spirits?.spirits) return [];
@@ -7415,6 +7868,7 @@ const label = (s) => s.factor || s.name;
  */
 /** The ideology a province's owner holds, cached from the position it comes from. */
 const heldIdeologyBy = new Map();
+forgetOnChange(() => heldIdeologyBy.clear());
 function heldIdeology(w, id) {
   const table = w.government?.ideologies?.ideologies;
   if (!id || !table || !w.government?.byPolity?.has(id)) return null;
@@ -7465,6 +7919,7 @@ function taxMultiplier(w, p, happiness) {
  * how much of a sector a nationalisation actually took.
  */
 const depositsBy = new Map();
+forgetOnChange(() => depositsBy.clear());
 function depositsOf(w, id) {
   if (!depositsBy.has(id)) {
     const out = {};
@@ -7485,6 +7940,7 @@ function depositsOf(w, id) {
  * the country, so twenty-two separate acts come to what one act on them all does.
  */
 const nationalShareBy = new Map();
+forgetOnChange(() => nationalShareBy.clear());
 function nationalShares(w, id) {
   if (!nationalShareBy.has(id)) {
     const sum = {};
@@ -7497,9 +7953,9 @@ function nationalShares(w, id) {
       people += n;
       for (const [k, v] of Object.entries(st.support)) sum[k] = (sum[k] || 0) + v * n;
     }
-    const aligned = Object.entries(sum).reduce((a, [k, v]) => a + (k === 'unaligned' ? 0 : v), 0);
+    const aligned = Object.entries(sum).reduce((a, [k, v]) => a + (k === UNALIGNED ? 0 : v), 0);
     const out = {};
-    for (const [k, v] of Object.entries(sum)) if (k !== 'unaligned') out[k] = aligned ? v / aligned : 0;
+    for (const [k, v] of Object.entries(sum)) if (k !== UNALIGNED) out[k] = aligned ? v / aligned : 0;
     nationalShareBy.set(id, people ? out : null);
   }
   return nationalShareBy.get(id);
@@ -7557,7 +8013,7 @@ function governingLeads(w, p) {
   if (!held || !support) return true;
   let top = null, best = -1;
   for (const [k, v] of Object.entries(support)) {
-    if (k === 'unaligned') continue;
+    if (k === UNALIGNED) continue;
     if (v > best) { best = v; top = k; }
   }
   return top === null || top === held.name;
@@ -7619,12 +8075,13 @@ function occupationGovernment(w, occupier, subject) {
 }
 
 const actEffectBy = new Map();
+forgetOnChange(() => actEffectBy.clear());
 function actEffect(w, p, key) {
   // A province its owner does not hold is not governed by its owner, and it is not
   // governed by whoever took it either, except in whatever that country chose to
   // impose. So the two cases read different acts over different ground and share
   // everything after that.
-  const occupied = !!(p.occupier && p.occupier !== p.owner);
+  const occupied = isOccupied(p);
   const holder = polityOf(w, p)?.id;
   if (!holder) return [];
   const gov = occupied ? occupationGovernment(w, holder, p.owner)
@@ -7669,7 +8126,7 @@ function actEffect(w, p, key) {
     // the realm; one the member passed averages over the member. Ground its owner
     // has lost is out of the owner's reach entirely: a law reaches as far as the
     // army does.
-    const held = (q) => !(q.occupier && q.occupier !== q.owner);
+    const held = (q) => !isOccupied(q);
     const reach = (id) => (w.table?.provinces || [])
       .filter((q) => held(q) && (q.owner === id || realmOf(w.table, q.owner) === id))
       .map((q) => weighForSpread(w, q));
@@ -7787,9 +8244,9 @@ function moodColour(v) {
 
 /** Cool while unrest is harmless, warming as it crosses each step. */
 function unrestColour(v) {
-  if (v >= 70) return 'hsl(0 58% 48%)';
-  if (v >= 40) return 'hsl(28 58% 47%)';
-  return 'hsl(48 40% 44%)';
+  let colour = UNREST_CALM;
+  for (const s of UNREST_STEPS) if (v >= s.at && s.colour) colour = s.colour;
+  return colour;
 }
 
 /**
@@ -7869,58 +8326,34 @@ function paintMeters(w, p, stats) {
   }
   // The two ticks on the bar are the only points where anything changes, so
   // the tooltip names them. A mark you cannot read is worse than no mark.
-  const steps = [[40, 'supply and construction -20%'], [70, 'no construction at all'], [100, 'uprising']]
-    .map(([at, what]) => `<div class="cm-line ${unrest.value >= at ? 'down' : 'sub'}">`
+  const steps = UNREST_STEPS
+    .map(({ at, what }) => `<div class="cm-line ${unrest.value >= at ? 'down' : 'sub'}">`
       + `<span>${unrest.value >= at ? '&bull;' : '&#9702;'} ${at}</span><span>${what}</span></div>`)
     .join('');
   meterTip(els.cardUnrestRow,
     partsMarkup('Unrest per day', unrest.parts, 'business as usual', false) + '<hr>' + steps);
 }
 
-const CARD_FIELDS = [
-  ['road', 'Road'],
-  ['airBase', 'Air base'],
-  ['supplyHub', 'Supply hub'],
-  ['radar', 'Radar station'],
-  ['electricity', 'Electricity'],
-  ['antiAir', 'Anti-air'],
-];
+// The card's order for the levels, which is a layout choice. A level in LEVELS
+// that is not placed here goes on the end rather than going missing.
+const CARD_ORDER = ['road', 'airBase', 'supplyHub', 'radar', 'electricity', 'antiAir'];
+const CARD_FIELDS = [...CARD_ORDER, ...LEVELS.filter((k) => !CARD_ORDER.includes(k))]
+  .filter((k) => LEVELS.includes(k))
+  .map((k) => [k, INFRA_NAME[k] ?? k]);
 
 // Maximum levels are DERIVED but not computed here. The ceiling is a property
 // of the ground, the ground does not move, so sync-provinces.js settles it once
 // from counties.json and writes it into province-stats.json as a ceiling. Reading it back is
 // the whole of the game's involvement.
-const LEVEL_TYPES = ['road', 'electricity', 'radar', 'supplyHub', 'antiAir', 'airBase'];
+// The six levelled types, as provincestats.js defines them for the data files.
+const LEVEL_TYPES = LEVELS;
 
 // The county fortification ceiling, under Counties, Fortification in the plans.
-// Worked out here rather than stored. counties-starting-values.json is the county
+// Worked out rather than stored. counties-starting-values.json is the county
 // answer to provinces-starting-infrastructure.json and holds what a county starts
 // with BUILT; a ceiling is a property of the ground and belongs with the ground,
-// which for provinces is province-stats.json. Until sync-provinces settles this
-// one the same way, deriving it from terrain and climate keeps it honest, since
-// a stored figure would go stale the moment counties.png is read back.
-const FORT_TERRAIN_CEILING = { Plains: 6, Hills: 8, Mountains: 10, Alpine: 8, Urban: 8 };
-const FORT_CLIMATE_CEILING = { Rainforest: 4, Monsoon: 5, Desert: 4, Subarctic: 5, Tundra: 4, 'Ice cap': 3 };
-
-/**
- * What a county's own ground allows, 0 to 10.
- *
- * The HIGHEST of its landforms, not the lowest and not a mean: a county holding
- * mountains holds the ground works are dug into whatever else is in it, and an
- * Urban county keeps 8 rather than dropping to the Plains row, because a city is
- * harder to take than the field outside it. Climate then lowers it and never
- * raises it, except that subarctic below 50 degrees is altitude and not
- * permafrost and is left uncapped, which is the exception the province ceilings
- * already make.
- */
-function countyFortCeiling(c) {
-  let ceil = 0;
-  for (const t of [].concat(c.terrain || [])) ceil = Math.max(ceil, FORT_TERRAIN_CEILING[t] || 0);
-  if (!ceil) return 0;
-  const cap = FORT_CLIMATE_CEILING[c.climate];
-  const polar = c.climate === 'Subarctic' && Math.abs(c.centre?.[0] ?? 90) < 50;
-  return cap !== undefined && !polar ? Math.min(ceil, cap) : ceil;
-}
+// and a stored figure would go stale the moment counties.png is read back. The
+// tables and countyFortCeiling() are in src/ceilings.js, shared with the sync.
 // Four of a radar station's levels sit behind research. `maxRadar` in
 // province-stats.json is what the GROUND allows and never changes; what a
 // country may actually build is that less the locked four, and they come back
@@ -7986,7 +8419,7 @@ const cardOpen = () => els.card.classList.contains('open');
  * are diplomatic-actions.json and are waiting on the code, not on the panel.
  */
 function paintDiploActions() {
-  els.diploActions.innerHTML = '<h3>Actions</h3><div class="diplo-row none">WIP</div>';
+  els.diploActions.innerHTML = '<h3>Actions</h3><div class="diplo-stamp"><span>WIP</span></div>';
 }
 
 /**
@@ -8045,6 +8478,25 @@ function spiritGuarantees(w, polityId) {
   return out;
 }
 
+/**
+ * The band a dependency and its suzerain share. Not in the relations table,
+ * because it is not a thing two countries signed: it is the `suzerain` a
+ * polity carries in polities.json, and it is read from there so the two can
+ * never disagree. Puppet on the suzerain's panel, Suzerain on the puppet's.
+ * First of the bands, since for a dependency it is the relation that decides
+ * the rest.
+ */
+const PUPPET_BAND = { id: 'puppet', name: 'Puppet', of: 'first', mirror: 'Suzerain' };
+
+/** The suzerain relations that touch a polity, as relation records, by puppet name. */
+function puppetRelations(w, polityId) {
+  const name = (p) => shortNameOf(p) || p.id;
+  return (w.table?.polities || [])
+    .filter((p) => p.suzerain && (p.suzerain === polityId || p.id === polityId))
+    .sort((a, b) => name(a).localeCompare(name(b)))
+    .map((p) => ({ band: 'puppet', first: p.suzerain, second: p.id }));
+}
+
 function paintDiploRelations(w, polityId) {
   const box = els.diploRelations;
   box.replaceChildren();
@@ -8053,7 +8505,7 @@ function paintDiploRelations(w, polityId) {
   box.append(h);
 
   const table = w.government?.relations;
-  const carried = spiritGuarantees(w, polityId);
+  const carried = spiritGuarantees(w, polityId).concat(puppetRelations(w, polityId));
   const pol = (id) => w.table?.polityById?.get(id);
   // The short name, because the row is a list and the formal name is not one:
   // "Le Omarbati Republic" says the same thing as "Omarbat" in three times the
@@ -8061,24 +8513,38 @@ function paintDiploRelations(w, polityId) {
   const shortName = (id) => shortNameOf(pol(id)) || id;
 
   let n = 0;
-  for (const band of table?.bands || []) {
-    const rows = (table.relations || []).filter((x) => x.band === band.id)
+  for (const band of [PUPPET_BAND, ...(table?.bands || [])]) {
+    const rows = (table?.relations || []).filter((x) => x.band === band.id)
       .concat(carried.filter((x) => x.band === band.id));
+    // One row per kind, not per relation: the label once, and every country
+    // it holds with as a fan of flags beside it, like a hand of cards. Read
+    // from the panel's side, so Leased out and Leased from are two rows.
+    const decks = new Map();
     for (const r of rows) {
       const mine = r.first === polityId;
       if (!mine && r.second !== polityId) continue;
-      const row = document.createElement('div');
-      row.className = 'diplo-row';
-      row.dataset.band = band.id;
-      const lab = document.createElement('span');
-      lab.className = 'lab';
-      lab.textContent = mine ? band.name : (band.mirror || band.name);
-      const val = document.createElement('span');
-      val.className = 'val';
+      const label = mine ? band.name : (band.mirror || band.name);
+      let deck = decks.get(label);
+      if (!deck) {
+        const row = document.createElement('div');
+        row.className = 'diplo-row deck-row';
+        row.dataset.band = band.id;
+        // The kind as a mark, which names itself when the pointer is on it,
+        // so the row is one line however long its hand of flags.
+        const kind = document.createElement('i');
+        kind.className = 'kind';
+        kind.setAttribute?.('aria-label', label);
+        meterTip(kind, '<b>' + label + '</b>');
+        deck = document.createElement('span');
+        deck.className = 'val deck';
+        row.append(kind, deck);
+        box.append(row);
+        decks.set(label, deck);
+        n++;
+      }
       // The flag rather than the name: a list of relations is read down the
       // left for the kind and across for who, and a flag is found faster than a
-      // word. The name is not lost — it heads the tooltip and sits on the image
-      // for a pointer that rests on it.
+      // word. The name is not lost — it heads the flag's own tooltip.
       const other = mine ? r.second : r.first;
       const flag = document.createElement('img');
       // No `title`: the browser's own tooltip would sit on top of the panel's,
@@ -8086,33 +8552,30 @@ function paintDiploRelations(w, polityId) {
       flag.alt = shortName(other);
       // A relation may name a polity the table has never heard of, and a missing
       // name is the ordinary case rather than an error: the placeholder covers it.
-      const slug = String(shortNameOf(pol(other)) || other).toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = flagSlug(pol(other), other);
       flag.onerror = () => window.flagMiss(flag, slug);
+      maskFlagShading(flag);
       flag.src = flagSrc(slug);
       // The same box the panel's own flag sits in, so it wears the same shading
       // and the same edge; `small` is the only thing a row changes about it.
       const flagBox = document.createElement('span');
       flagBox.className = 'diplo-flag small';
       flagBox.append(flag);
-      val.append(flagBox);
-      row.append(lab, val);
-      // The terms are the tooltip. The row says who and what kind, which is
-      // what a list is for; the deposit, the province and the term are what you
-      // hover to find out.
-      meterTip(row, relationTip(w, band, r, other));
-      box.append(row);
-      n++;
+      // The card: a slot in the fan that gives up its width as the fan fills,
+      // while the flag in it keeps its own and lies over the next one.
+      const card = document.createElement('span');
+      card.className = 'card';
+      card.append(flagBox);
+      // The terms are the tooltip, on each card, since each is its own
+      // relation: the deposit, the province and the term are what you hover to
+      // find out.
+      meterTip(card, relationTip(w, band, r, other));
+      deck.append(card);
     }
   }
 
-  // Nothing at all, which most countries are on the start date.
-  if (!n) {
-    const none = document.createElement('div');
-    none.className = 'diplo-row none';
-    none.textContent = 'No de jure relations';
-    box.append(none);
-  }
+  // Nothing at all, which most countries are on the start date, leaves the box
+  // empty under its heading: an empty list says it plainly enough.
 }
 
 /**
@@ -8122,8 +8585,28 @@ function paintDiploRelations(w, polityId) {
  */
 const tipName = (s) => (s || s === 0 ? '<span class="named">' + s + '</span>' : '');
 
+/**
+ * Cuts the shading a flag box lays over its flag to the flag's own outline.
+ *
+ * The shading is one image stretched over the whole box, and a flag that is not
+ * a full rectangle — a pennant, a swallowtail — left it lying over empty paper.
+ * Masked by the flag image itself, it falls only where there is cloth. Set on
+ * load, so the placeholder a missing flag falls back to is masked by its own
+ * shape too, and from the resolved src, so no relative path is left for the
+ * stylesheet to resolve against itself.
+ */
+function maskFlagShading(img) {
+  img.onload = () => {
+    const box = img.parentElement;
+    if (typeof box?.style?.setProperty === 'function') box.style.setProperty('--flag-mask', `url("${img.src}")`);
+  };
+}
+
 /** What a flag falls back to while the country has none drawn yet. */
-const FLAG_PLACEHOLDER = './data/img/flags/placeholder.png';
+/** Where a flag file lives, and the one a country with no flag drawn shows. */
+const FLAG_DIR = './data/img/flags/';
+const flagFile = (slug) => FLAG_DIR + slug + '.png';
+const FLAG_PLACEHOLDER = flagFile('placeholder');
 
 /**
  * Countries already asked for and found to have no flag file.
@@ -8182,9 +8665,21 @@ const capitaliseArticle = (html) => String(html).replace(
   /(^|[.!?]\s*|<div[^>]*>|<br\s*\/?>|<hr\s*\/?>|<\/div>\s*)((?:\s*<[^>]+>)*\s*)the\b/g,
   (_, before, tags) => before + tags + 'The');
 
+/**
+ * The name a country's flag file goes by: its short name, lower case, with every
+ * run of anything but letters and digits made one hyphen. One function, so
+ * every flag in the game asks for the same file and a rename touches one line.
+ * `fallback` is for a relation naming a polity the table has never heard of.
+ */
+function flagSlug(polity, fallback = '') {
+  return String(shortNameOf(polity) || fallback || '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+
 /** The file a country's flag is drawn in, or the placeholder if it has none. */
 function flagSrc(slug) {
-  return slug && !flagMissing.has(slug) ? './data/img/flags/' + slug + '.png' : FLAG_PLACEHOLDER;
+  return slug && !flagMissing.has(slug) ? flagFile(slug) : FLAG_PLACEHOLDER;
 }
 
 /**
@@ -8197,8 +8692,7 @@ function flagSrc(slug) {
  * a blank stood in for every one of them.
  */
 function miniFlag(polity) {
-  const slug = String(shortNameOf(polity) || '').toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = flagSlug(polity);
   if (!slug) return '';
   // Wrapped, because the shading every flag in the game wears is drawn by the
   // box rather than by the image, and an image has nothing to draw it on. The
@@ -8212,17 +8706,20 @@ function miniFlag(polity) {
   const box = '<span class="mini-flag-box' + (blank ? ' blank' : '') + '"'
     + ' style="--flag-colour: rgb(' + (polity?.colour ?? '128,128,128') + ')">';
   return box + (blank ? '' : '<img class="mini-flag" alt=""'
-    + ' src="./data/img/flags/' + slug + '.png"'
+    + ' src="' + flagFile(slug) + '"'
     + ' onerror="window.flagMiss(this, \'' + slug + '\')">') + '</span>';
 }
 
-/** A resource's icon off the sheet, at the size the tooltip reads at. */
+/**
+ * A resource's icon off the sheet, at the size the tooltip reads at. The size
+ * is style.css's; the sheet's layout is this file's, so the cell is passed as
+ * a column and row and the stylesheet does the arithmetic.
+ */
 function resourceIcon(kind) {
   const cell = RESOURCE_ICON[kind];
   if (cell === undefined) return '';
-  const px = 14;
-  return '<i class="res" style="background-position:' + (-(cell % 6) * px) + 'px '
-    + (-Math.floor(cell / 6) * px) + 'px"></i>';
+  return '<i class="res" style="--cols:' + RESOURCE_SHEET_COLS + ';--col:' + (cell % RESOURCE_SHEET_COLS)
+    + ';--row:' + Math.floor(cell / RESOURCE_SHEET_COLS) + '"></i>';
 }
 
 /** The terms of one standing relation. `other` is the country at the far end. */
@@ -8234,6 +8731,12 @@ function relationTip(w, band, r, other = null) {
   // Guaranteeing are how the row is labelled from one side, and the tooltip is
   // about the relation itself, which is a lease and a guarantee.
   const head = '<b>' + band.name.replace(/d (out|from)$/, '').replace(/ing$/, '') + '</b>';
+
+  // A puppet says both ends, so it reads the same from either panel.
+  if (r.band === 'puppet') {
+    return capitaliseArticle(head + '<div>' + flaggedName(pol(r.second), shortName(r.second))
+      + ' is a puppet of ' + flaggedName(pol(r.first), shortName(r.first)) + '.</div>');
+  }
 
   // A guarantee carried by a spirit says both ends the way a lease does. The
   // spirit that carries it is not named: the country's own tile says that, and
@@ -8275,16 +8778,8 @@ function relationTip(w, band, r, other = null) {
     + (rent ? '<div class="sub">' + rent + '</div>' : '');
 }
 
-/** What the panel calls each law, which is the category and nothing else. */
-const DIPLO_LAW_LABEL = {
-  conscription: 'Conscription',
-  economy: 'Economy',
-  personalTax: 'Personal tax',
-  corporateTax: 'Corporate tax',
-  colonialTax: 'Colonial tax',
-  monetary: 'Monetary law',
-  trade: 'Trade',
-};
+/** What the panel calls a law, which is the category and nothing else: its `label` in laws.json. */
+const lawLabel = (w, category) => w?.government?.laws?.categories?.[category]?.label;
 
 /**
  * The modifiers a country wants LESS of.
@@ -8430,7 +8925,8 @@ function modifierLines(w, key, v, stated = false, target = null, keepZero = fals
       // draws, so it reads with its own icon and in the colour every other
       // named thing takes.
       if (RESOURCE_NAME[s]) return resourceIcon(s) + ' ' + tipName(RESOURCE_NAME[s].toLowerCase());
-      return DIPLO_LAW_LABEL[s] ? DIPLO_LAW_LABEL[s].toLowerCase()
+      const law = lawLabel(w, s);
+      return law ? law.toLowerCase()
         : String(s).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
     };
     return Object.entries(v).filter(([, n]) => !dead(n))
@@ -8554,7 +9050,7 @@ function doctrineTip(w, branch, school) {
 function lawTip(w, category, option) {
   const opt = w.government?.laws?.categories?.[category]?.options?.find((o) => o.name === option);
   const head = '<b>' + option + '</b><div class="sub">'
-    + (DIPLO_LAW_LABEL[category] || category) + '</div>';
+    + (lawLabel(w, category) || category) + '</div>';
 
   // A null figure is a thing the option does not touch, and a false flag is
   // one it turns off rather than one it carries. Civilian economy takes no
@@ -8577,22 +9073,7 @@ const diploRow = (label, value, icon) =>
 function diploForces(w, id) {
   // A realm owns no ground of its own; its members hold all of it. Counting
   // only what is owned outright gave every empire an empire's worth of nothing.
-  //
-  // The chain is walked rather than realmOf() taken, because realmOf answers
-  // with the top of it. Fellnor's own colonies sit under Fellnor and under the
-  // empire above it, and asking about Fellnor has to reach them: realmOf would
-  // answer Fellnor-Avanta for every one and match none of them to Fellnor.
-  const under = (owner) => {
-    let at = owner;
-    for (let step = 0; step < 8 && at; step++) {
-      if (at === id) return true;
-      const parent = w.table?.polityById?.get(at)?.parent;
-      if (!parent || parent === at) return false;
-      at = parent;
-    }
-    return false;
-  };
-  const held = (w.table?.provinces || []).filter((q) => under(q.owner));
+  const held = provincesUnder(w, id);
   const mine = new Set(held.map((q) => q.id));
   let civ = 0, mil = 0, forts = 0, docks = 0;
   for (const q of held) {
@@ -8652,8 +9133,8 @@ function nationalParts(w, polityId, key) {
   const g = w.government;
   if (!g) return [];
   const gov = g.byPolity?.get(polityId) || {};
-  const members = [...(w.table?.polityById?.values() || [])]
-    .filter((q) => q.parent === polityId && q.id !== polityId && g.byPolity.has(q.id))
+  const members = membersOf(w.table, polityId)
+    .filter((q) => g.byPolity.has(q.id))
     .map((q) => ({ id: q.id, population: populationOf(w, q.id) }));
   const people = members.reduce((a, m) => a + m.population, 0);
   if (!people) return partsUnder(w, gov, realmAbove(w, polityId), lawsFor(w, polityId), key);
@@ -8683,11 +9164,12 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
     const v = effects?.[key];
     if (typeof v === 'number' && v !== 0) out.push([label, v, kind]);
   };
-  const heldBy = (list, x) => (list || []).some((y) => nameOf(y) === nameOf(x));
-  // The realm's acts first, then the member's, each act once under its own holder.
+  const heldBy = (list, x) => (list || []).some((y) => actKey(y) === actKey(x));
+  // The realm's acts first, then the member's, each act once under its own holder,
+  // by the same rule heldActs() keeps: one name against two targets is two acts.
   const acts = (field) => [above, gov].flatMap((holder) => (holder?.[field] || [])
     .map((x) => [holder, x]))
-    .filter(([, x], i, all) => all.findIndex(([, y]) => nameOf(y) === nameOf(x)) === i
+    .filter(([, x], i, all) => all.findIndex(([, y]) => actKey(y) === actKey(x)) === i
       && !heldBy(skip?.[field], x));
 
   take(gov.startingIdeology, 'ideology', g.ideologies?.ideologies
@@ -8695,7 +9177,7 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
   // Named for the option, not the category: "High" is an option in three of
   // them, so the category is what says which High this is.
   for (const [cat, chosen] of Object.entries(laws)) {
-    take(chosen + ' ' + (DIPLO_LAW_LABEL[cat] || cat).toLowerCase(), 'law',
+    take(chosen + ' ' + (lawLabel(w, cat) || cat).toLowerCase(), 'law',
       g.laws?.categories?.[cat]?.options?.find((o) => o.name === chosen)?.effects);
   }
   for (const [, p] of acts('policies')) {
@@ -8744,23 +9226,13 @@ function realmAbove(w, polityId) {
  */
 function lawsFor(w, polityId) {
   const g = w.government;
-  return { ...(g?.defaults?.laws || {}), ...(realmAbove(w, polityId)?.laws || {}),
-    ...(g?.byPolity?.get(polityId)?.laws || {}) };
+  return heldActs(g?.byPolity?.get(polityId), realmAbove(w, polityId), g?.defaults).laws;
 }
 
 /** Every province the polity holds, itself and everything under it. */
 function provincesUnder(w, polityId) {
-  const under = (owner) => {
-    let at = owner;
-    for (let step = 0; step < 8 && at; step++) {
-      if (at === polityId) return true;
-      const parent = w.table?.polityById?.get(at)?.parent;
-      if (!parent || parent === at) return false;
-      at = parent;
-    }
-    return false;
-  };
-  return (w.table?.provinces || []).filter((q) => under(q.owner));
+  if (!w.table?.polityById) return [];
+  return w.table.provinces.filter((q) => isUnder(w.table, q.owner, polityId));
 }
 
 /**
@@ -8934,6 +9406,8 @@ function openDiplo(polityId) {
   let named = null;
   try { named = gov ? governmentPosition(w, polityId).ideology : null; } catch { named = null; }
   els.diploIdeology.textContent = named || '\u2014';
+  // A dash is the game saying it does not know, so it is drawn as a blank.
+  els.diploIdeology.classList.toggle('blank', !named);
   els.diploElection.textContent = votes ? 'Next Election TBD' : 'No Election';
   els.diploFocus.textContent = 'No National Focus set';
 
@@ -9119,10 +9593,11 @@ function leaderTip(w, leader) {
  * and clears itself, or a placeholder that failed would call it again forever.
  */
 function paintDiploFlag(polity) {
-  const slug = shortNameOf(polity).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = flagSlug(polity);
   const img = els.diploFlag;
   if (!img) return;
   img.onerror = () => window.flagMiss(img, slug);
+  maskFlagShading(img);
   img.src = flagSrc(slug);
   img.alt = '';
 }
@@ -9200,7 +9675,7 @@ function updateCard() {
   // Under occupation the card has to carry both facts. `polityOf` reports the
   // controller, since that is what the map is coloured by, so the de jure owner
   // is named underneath and the label above it changes to say which is which.
-  const occupied = p.occupier && p.occupier !== p.owner;
+  const occupied = isOccupied(p);
   const owner = occupied ? w.table.polityById.get(p.owner) : null;
   els.cardRole.textContent = occupied ? 'Occupying power' : 'Province owner';
   els.cardOwner.hidden = !occupied;
@@ -9298,11 +9773,7 @@ function fillTokens(text, target, tables, polity, mark = false) {
   // into a list want the words and nothing else.
   // Marked, the country gets its flag as well as the colour, and the article in
   // front of it stays in the sentence: "relations with the [flag] Three Nations".
-  const gold = (s) => {
-    if (!mark) return s;
-    const cut = /^(the )(.*)$/i.exec(s || '');
-    return cut ? cut[1] + miniFlag(polity) + tipName(cut[2]) : miniFlag(polity) + tipName(s);
-  };
+  const gold = (s) => (mark ? flaggedName(polity, s) : s);
   // Every token names one thing, so only a target that is a name can fill one. A
   // target that is a record fills none: Lobby for a law points at {law, option}
   // and its own name carries no token to fill.
@@ -9349,21 +9820,18 @@ function industryName(kind) {
 function doctrineOf(w, id) {
   const gov = w.government?.byPolity?.get(id);
   if (!gov) return {};
-  const above = w.table?.polityById?.get(id)?.parent;
-  const realm = above ? w.government?.byPolity?.get(above) : null;
-  return { ...(realm?.doctrine || {}), ...(gov.doctrine || {}) };
+  return { ...(realmAbove(w, id)?.doctrine || {}), ...(gov.doctrine || {}) };
 }
 
 function governmentPosition(w, id) {
   const g = w.government;
   const gov = g?.byPolity?.get(id);
   if (!gov) return null;
-  const members = [...(w.table?.polityById?.values() || [])]
-    .filter((q) => q.parent === id && g.byPolity.has(q.id))
+  const members = membersOf(w.table, id)
+    .filter((q) => g.byPolity.has(q.id))
     .map((q) => ({ gov: g.byPolity.get(q.id), population: populationOf(w, q.id) }));
   if (members.length) return realmCompass(gov, members, g, gov.startingIdeology || null);
-  const above = w.table?.polityById?.get(id)?.parent;
-  return compass(gov, g, gov.startingIdeology || null, g.byPolity.get(above) || null,
+  return compass(gov, g, gov.startingIdeology || null, realmAbove(w, id),
     industryShares(depositsOf(w, id), g), nationalShares(w, id));
 }
 
@@ -9435,7 +9903,7 @@ function governmentBlock(w, held, title) {
 
 // Bumped whenever this file is edited, and shown in the debug menu. If what is
 // on screen does not match what is in the file, this is how you find out.
-const BUILD = 'v0.8.a-indev';
+const BUILD = 'v0.8.b-indev';
 
 /** The size a ring was traced at, for the readout. */
 const ringShape = (holder) => (holder.silhouette
@@ -9830,6 +10298,15 @@ function playClick(ev) {
 let quietSelect = false;
 let quietWater = false;
 
+/**
+ * The selection sound on a press: paper, for a control that turns a page rather
+ * than striking a key. Not held back by quietSelect, which belongs to the map's
+ * own double selections and has nothing to say about a tab.
+ */
+function playPaper(ev) {
+  playSound(sfx.select, sfx.selectOffset, ev);
+}
+
 /** Plays the ground selection sound. Called from select() and selectCounty(). */
 function playSelect() {
   if (quietSelect) return;
@@ -9879,9 +10356,15 @@ function wireInput() {
   // arrived whenever you let go. That is most of the delay this used to have,
   // and no amount of audio work would have found it, because the audio was
   // always prompt about answering the wrong event.
+  //
+  // A button marked data-sfx="paper" is a page being turned rather than a key
+  // being struck, and gets the rustle the map's own selections make instead.
+  // The country file's two tabs are the ones so far.
   const pressed = (ev) => {
     const b = ev.target && ev.target.closest && ev.target.closest('button');
-    if (b && !b.disabled) playClick(ev);
+    if (!b || b.disabled) return;
+    if (b.dataset && b.dataset.sfx === 'paper') playPaper(ev);
+    else playClick(ev);
   };
   document.addEventListener('pointerdown', pressed, true);
 
@@ -10207,6 +10690,12 @@ function wireInput() {
   const infraButton = document.getElementById('infra-button');
   const infraList = document.getElementById('infra-list');
   const infraLabel = document.getElementById('infra-label');
+  for (const key of INFRA_LAYERS) {
+    const b = document.createElement('button');
+    b.dataset.layer = 'infra:' + key;
+    b.textContent = INFRA_NAME[key];
+    infraList.appendChild(b);
+  }
   const openInfra = (open) => {
     infraList.hidden = !open;
     infraButton.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -10309,16 +10798,16 @@ async function init() {
   const t0 = performance.now();
   setLoadingNote('Loading data…');
 
-  // All four fetched together. The imagery is by far the largest, and waiting
+  // All fetched together. The imagery is by far the largest, and waiting
   // for it after the others would add its whole download to the load time.
   const [raw, polityRaw, pngBytes, cacheBytes, satellite, rivers, night, cities, cityIcon, capitalIcon,
-    eyrieIcon, dockyardIcon, syntheticOilIcon, syntheticRubberIcon, plantIcon,
+    markIcons, plantIcon,
     resourceSheet, stats, startInfra, startAttitude, startSupport, polityValues,
     startGovernment, lawTable, policyTable, decreeTable, ideologyTable, spiritTable, modifierTable,
     actionTable, relationTable, leaderTable,
     startOccupation,
     resources, quotes,
-    seaRaw, seaPngBytes, countyRaw, countyValues, countyPngBytes, subPngBytes] = await Promise.all([
+    seaRaw, seaPngBytes, countyRaw, countyValues, countyPngBytes, subPngBytes] = await Promise.all(countedLoad(0, 70, [
       loadJSON('./data/json/geography/provinces.json'),
       // The list of countries, kept apart from the province table because it is a
       // different kind of fact and changes for different reasons.
@@ -10339,18 +10828,12 @@ async function init() {
       loadJSON('./data/json/geography/cities.json', true),
       loadBitmap('./data/icons/city.png'),
       loadBitmap('./data/icons/capital.png'),
-      // Drawn on any province holding one. Optional: without it eyries are still
-      // in the data and simply have no mark.
-      loadBitmap('./data/icons/Eyrie.png'),
-      // Likewise on any province holding a naval dockyard.
-      loadBitmap('./data/icons/Dockyard.png'),
-      // The two synthetic plants, and the plain works that stands in for any
-      // building with no art of its own.
-      loadBitmap('./data/icons/Synthetic-plant_oil.png'),
-      loadBitmap('./data/icons/Synthetic-plant_rubber.png'),
+      // Each building's mark, in MARKS order, and the plain works that stands in
+      // for any building with no art of its own.
+      Promise.all(MARK_KINDS.map((k) => loadBitmap('./data/icons/' + MARKS[k].icon))),
       loadBitmap('./data/icons/Synthetic-plant.png'),
-      // The eighteen resource icons on one sheet, six across and three down at
-      // 64px a cell. Optional: without it the layer falls back to the short
+      // The resource icons on one sheet, laid out as RESOURCE_ICON says.
+      // Optional: without it the layer falls back to the short
       // words it used before there was any art.
       loadBitmap('./data/icons/resources.png'),
       // What has been built on each province. Optional: without it the card shows
@@ -10411,7 +10894,7 @@ async function init() {
       // The sea subregions, the level a fleet is ordered to. Optional: without
       // the bitmap the Navy mode draws whole regions as it did before.
       loadBytes('./data/img/bitmap/sea_subregions.png', true),
-    ]);
+    ]));
 
   // Put back on the table the rest of the file expects to find them on. Done
   // before the hash so the cache covers the same fields the build script hashes.
@@ -10433,6 +10916,7 @@ async function init() {
   let world, geometry;
   const restored = cache && worldFromCache(table, cache, indexProvinces);
   setLoadingNote(restored ? 'Restoring the map…' : 'Building the map…');
+  setLoadingProgress(70);
   if (restored) {
     ({ world, geometry } = restored);
   } else {
@@ -10532,8 +11016,7 @@ async function init() {
   linkInternationalCities(world.cities);
   world.cityIcons = { city: cityIcon, capital: capitalIcon };
   world.buildingIcons = {
-    eyrie: eyrieIcon, dockyard: dockyardIcon,
-    syntheticOil: syntheticOilIcon, syntheticRubber: syntheticRubberIcon, plain: plantIcon,
+    ...Object.fromEntries(MARK_KINDS.map((k, i) => [k, markIcons[i]])), plain: plantIcon,
   };
   world.stats = stats ? mergeStats(stats, startInfra, startAttitude, startSupport) : null;
   // struck is stored per county. The province carries the mean, because a
@@ -10560,34 +11043,20 @@ async function init() {
         ideologies: ideologyTable, spirits: spiritTable,
         occupation: startOccupation?.occupations || null }
     : null;
-  // Ideology colours, keyed by name, with unaligned among them so the blend in
-  // supportColour needs no special case for it.
+  // Ideology colours, keyed by name, with Unaligned among them so a swatch
+  // needs no special case for it. Both come from ideologies.json; without the
+  // file there is nothing to colour and the swatches fall back to grey.
   world.ideologyColour = new Map([
     ...(ideologyTable?.ideologies || []).map((i) => [i.name, toRgb(i.colour)]),
-    ['unaligned', toRgb(ideologyTable?.unalignedColour || '#8A8A8A')],
+    ...(ideologyTable?.unalignedColour ? [[UNALIGNED, toRgb(ideologyTable.unalignedColour)]] : []),
   ]);
-
-  // How urban each province is, which decides how fast a movement grows there.
-  // Read from the population, the factories and whether the province holds a
-  // town, so it moves when a province industrialises and at no other time.
-  if (world.stats) {
-    const towned = new Set((world.cities || []).map((c) => c.province));
-    for (const [id, e] of Object.entries(world.stats)) {
-      const p = world.byId.get(id);
-      e.urbanisation = p ? urbanisation({
-        population: e.population, area: p.area,
-        factories: (e.civilianFactories || 0) + (e.militaryFactories || 0),
-        hasCity: towned.has(id),
-      }) : 0;
-      // And what the province does for a living, from its deposits. null where
-      // it holds none, which leaves a movement judged on the towns alone.
-      e.mining = miningShare(resources?.provinces?.[id]);
-    }
-  }
 
   world.wearinessMeans = new Map();   // per polity, filled on first use
   world.resources = resources?.provinces ?? null;
+  provinceTraits(world);
   world.resourceKinds = resources?.kinds ?? [];
+  const unnamed = world.resourceKinds.filter((k) => !RESOURCE_KINDS[k]);
+  if (unnamed.length) console.warn(`resources.json has kinds main.js has no row for: ${unnamed.join(', ')}`);
   world.resourceSheet = resourceSheet;
   world.resourceLines = buildResourceLines(world);
   world.quotes = quotes?.quotes ?? [];
@@ -10632,7 +11101,9 @@ async function init() {
   // under the loading screen, where a wait is what is being claimed.
   // frame() re-arms itself on the way out, so this starts the loop too.
   setLoadingNote('Drawing the map…');
+  setLoadingProgress(92);
   frame();
+  setLoadingProgress(100);
   markMapReady();
 
   // The only way to move a province at the moment. Events and the AI will call
@@ -10740,6 +11211,48 @@ async function init() {
       invalidateView();
       return { ...view };
     },
+
+    // A country's government, set outright and free of every cost and rule. Each
+    // returns the government as it now stands, with the ideology the compass
+    // names for it, so the effect of a change is read off the reply:
+    //   game.government('KRN')
+    //   game.setLaw('KRN', 'trade', 'Export focus')
+    //   game.setForm('KRN', 'Absolute monarchy')
+    //   game.setDoctrine('KRN', 'naval', 'Convoy interdiction')   null drops the branch
+    //   game.addPolicy('KRN', 'Secret police')
+    //   game.addPolicy('PEL', 'Foreign investment', 'SRS')         one that takes a target
+    //   game.removePolicy('KRN', 'Secret police')
+    //   game.addDecree('KRN', 'Bust the unions')
+    //   game.removeDecree('KRN', 'State religion')
+    //   game.addSpirit('KRN', 'tambasco_doctrine')
+    //   game.removeSpirit('KRN', 'street_violence')
+    government: (tag) => consoleGovSummary(tag),
+    setLaw: setLawFromConsole,
+    setForm: setFormFromConsole,
+    setDoctrine: setDoctrineFromConsole,
+    addPolicy: (tag, name, target) => setActFromConsole(tag, 'policy', name, target, true),
+    removePolicy: (tag, name, target) => setActFromConsole(tag, 'policy', name, target, false),
+    addDecree: (tag, name, target) => setActFromConsole(tag, 'decree', name, target, true),
+    removeDecree: (tag, name, target) => setActFromConsole(tag, 'decree', name, target, false),
+    addSpirit: (tag, id) => setSpiritFromConsole(tag, id, true),
+    removeSpirit: (tag, id) => setSpiritFromConsole(tag, id, false),
+
+    // The ground. Levels and factories take a PROVINCE, forts and rail a COUNTY,
+    // as the game keeps them; each is held within what the ground allows:
+    //   game.infrastructure('cederholm')              what is built against what may be
+    //   game.setLevel('cederholm', 'road', 5)         road, electricity, radar,
+    //                                                  supplyHub, antiAir or airBase
+    //   game.setFactories('cederholm', 6, 2)          civilian, then military
+    //   game.setFort('kigoti_4', 3)
+    //   game.addRail('kigoti_4', 'kigoti_1')          the two must border
+    //   game.removeRail('kigoti_4', 'kigoti_1')
+    //   game.removeRail('kigoti_4')                   every line out of it
+    infrastructure: consoleInfrastructure,
+    setLevel: setLevelFromConsole,
+    setFactories: setFactoriesFromConsole,
+    setFort: setFortFromConsole,
+    addRail: (a, b) => setRailFromConsole(a, b, true),
+    removeRail: (a, b) => setRailFromConsole(a, b, false),
   };
 
   window.game = game;
@@ -10810,6 +11323,49 @@ function setLoadingNote(text) {
   if (note) note.textContent = text;
 }
 
+// Cells in the loading gauge, counted off the empty gauge index.html draws
+// before this file has loaded, so the markup is the one place the width is set.
+// Fixed from then on, so the line is the same width at 0% as at 100% and the
+// centred gauge never shifts as it fills.
+let gaugeCells = 0;
+
+/**
+ * Writes the loading gauge: so many = struck of gaugeCells, and the figure.
+ * Only ever moves forward, so a late report from an earlier stage cannot pull
+ * it back. Harmless before the element exists or after it is gone.
+ */
+let loadingShown = 0;
+function setLoadingProgress(pct) {
+  pct = Math.max(loadingShown, Math.min(100, Math.round(pct)));
+  loadingShown = pct;
+  const bar = document.getElementById('loading')?.querySelector?.('.loading-bar');
+  const done = bar?.querySelector?.('.done');
+  const todo = bar?.querySelector?.('.todo');
+  const figure = bar?.querySelector?.('.pct');
+  if (!done || !todo || !figure) return;
+  gaugeCells ||= done.textContent.length + todo.textContent.length;
+  const n = Math.round((gaugeCells * pct) / 100);
+  done.textContent = '='.repeat(n);
+  todo.textContent = '.'.repeat(gaugeCells - n);
+  figure.textContent = String(pct).padStart(3) + '%';
+}
+
+/**
+ * The start-up fetches, each reporting to the gauge as it lands, so the figure
+ * is the share of files actually here rather than a guess at time. They carry
+ * the gauge from `from` to `to`; building and drawing the map take the rest.
+ * Only a fetch that succeeds counts, and the array is handed back in its own
+ * order, so Promise.all reads it exactly as it did before.
+ */
+function countedLoad(from, to, promises) {
+  let landed = 0;
+  return promises.map((p) => Promise.resolve(p).then((value) => {
+    landed++;
+    setLoadingProgress(from + ((to - from) * landed) / promises.length);
+    return value;
+  }));
+}
+
 /**
  * Writes one of `data/json/quotes.json` into the loading screen, chosen at random.
  *
@@ -10825,8 +11381,55 @@ function fillLoadingQuote(list) {
   const q = list[Math.floor(Math.random() * list.length)];
   const text = document.getElementById('loading-quote-text');
   const by = document.getElementById('loading-quote-by');
-  if (text) text.textContent = q.text;
+  if (text) text.replaceChildren(...typedRun(String(q.text ?? '')));
   if (by) by.textContent = q.by ?? '';
+  const card = document.getElementById('loading-quote');
+  if (typeof card?.style?.setProperty === 'function') card.style.setProperty('--deckle', deckleEdge());
+}
+
+/**
+ * A line of text as a typewriter leaves it: every character struck on its own,
+ * a few of them a pixel high or low, each at its own density of ink.
+ *
+ * Whole pixels only. A character placed at a fraction of one is drawn blurred,
+ * and a quote of blurred letters reads as a bad screen rather than a typed card.
+ * Each word is held together in a span that does not break, so the line still
+ * wraps between words and never inside one.
+ */
+function typedRun(text) {
+  const out = [];
+  for (const word of text.split(/( )/)) {
+    // A plain string between the words: replaceChildren takes one as text.
+    if (word === ' ') { out.push(' '); continue; }
+    if (!word) continue;
+    const hold = document.createElement('span');
+    hold.style.whiteSpace = 'nowrap';
+    for (const c of word) {
+      const ch = document.createElement('span');
+      ch.className = 'ch';
+      ch.textContent = c;
+      if (Math.random() < 0.16) ch.style.top = (Math.random() < 0.5 ? -1 : 1) + 'px';
+      ch.style.opacity = (0.8 + Math.random() * 0.2).toFixed(2);
+      hold.append(ch);
+    }
+    out.push(hold);
+  }
+  return out;
+}
+
+/**
+ * A torn edge for the quote card, as a polygon for clip-path: every side
+ * walked in short steps, each point pushed a few whole pixels in from the
+ * straight edge. Cut fresh for each quote, so no two cards tear alike.
+ */
+function deckleEdge() {
+  const r = (n) => Math.round(Math.random() * n);
+  const pts = [];
+  for (let x = 0; x <= 100; x += 2.5) pts.push(`${x}% ${r(3)}px`);
+  for (let y = 4; y <= 96; y += 6) pts.push(`calc(100% - ${r(3)}px) ${y}%`);
+  for (let x = 100; x >= 0; x -= 2.5) pts.push(`${x}% calc(100% - ${r(3)}px)`);
+  for (let y = 96; y >= 4; y -= 6) pts.push(`${r(3)}px ${y}%`);
+  return `polygon(${pts.join(', ')})`;
 }
 
 /* ------------------------------------------------------ the drifting backdrop
@@ -10843,9 +11446,12 @@ function fillLoadingQuote(list) {
  */
 
 // Furthest the artwork travels from centre, in CSS pixels. The layer is inset
-// by 40px on every side in style.css, and this has to stay under that figure
-// or the edge of the photograph comes into view at the extremes.
+// by --parallax-slack on every side in style.css, and this has to stay under
+// that figure or the edge of the photograph comes into view at the extremes.
 const PARALLAX_PX = 26;
+if (!(PARALLAX_PX < parseFloat(cssToken('--parallax-slack')))) {
+  console.warn("PARALLAX_PX reaches past --parallax-slack; the photograph's edge will show");
+}
 
 // How long the drift takes to close most of the distance to the pointer. It
 // trails rather than tracking, and the lag is the whole effect: a layer that
@@ -11070,7 +11676,7 @@ startParallax();
 
 init().catch((err) => {
   document.body.innerHTML =
-    `<div style="padding:24px;font:14px 'Segoe UI', sans-serif;color:#d8dce4">
+    `<div style="padding:24px;font:14px var(--ui-plain);color:#d8dce4">
        <strong>Failed to start.</strong><br><br>${err.message}<br><br>
        <span style="color:#8a91a0">If this says the file could not be loaded, you are probably
        opening index.html directly. Browsers block local file reads. Serve the folder over

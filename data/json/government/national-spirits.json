@@ -1680,7 +1680,7 @@
     {
       "id": "voseni_mandate",
       "name": "Voseni Mandate",
-      "description": "Ilitaria came under the Association of Nations following the 1907 revolt and it remains under a provisional government to this day.",
+      "description": "Ilitaria came under the Association of Nations following the 1920 revolt and it remains under a provisional government to this day.",
       "polity": [
         "ILT"
       ],
@@ -2704,7 +2704,9 @@
         "GAN",
         "MWU",
         "MNJ",
-        "LPC"
+        "LPC",
+        "BLA",
+        "LEO"
       ],
       "effects": {
         "taxRevenue": -0.1,
@@ -3425,7 +3427,8 @@
       "description": "These islands have been the mid-way stop between Therundia and the New World for generations, and they continue to live off these routes.",
       "polity": [
         "VUG",
-        "GDV"
+        "GDV",
+        "TMI"
       ],
       "effects": {
         "tradeIncome": 0.2,
@@ -4454,6 +4457,279 @@
         "populationGrowth": -0.08,
         "stability": -5,
         "happiness": -7
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "the_great_slump_pan",
+      "name": "The Great Slump",
+      "description": "The economic crisis at the end of the Great War had reached us by the early years of the decade. Though we are slowly recovering, there is still a long road ahead.",
+      "factor": "economic turmoil",
+      "polity": [
+        "CAC",
+        "NDN",
+        "LVS",
+        "TJV"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "tradeIncome": -0.18,
+        "taxRevenue": -0.1,
+        "factoryOutput": -0.08,
+        "happiness": -8,
+        "stability": -3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "hexarchical_government",
+      "name": "Hexarchical Government",
+      "description": "For nearly half a millennium, governing our nation has been a careful balancing act atop a tall tower. Now turmoil to our north is shaking the tower's foundations, and we must keep our footing through these uncertain times lest we slip and fall to our doom.",
+      "polity": [
+        "SIS"
+      ],
+      "effects": {
+        "stability": 6,
+        "politicalPower": -0.1,
+        "lawAdoptionCost": 0.2,
+        "taxRevenue": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "free_trade_ports",
+      "name": "Free Trade Ports",
+      "description": "Our six cities are the anchors of the Kian Sea. Every ship that crosses it must sooner or later call at one of our ports, either to reach the markets of the mainland through us or to take on supplies and rest its crew.",
+      "polity": [
+        "SIS"
+      ],
+      "effects": {
+        "tradeIncome": 0.15,
+        "deficitFilled": 0.15,
+        "tariffCeiling": {
+          "resources": 0,
+          "consumerGoods": 0
+        },
+        "lawCeiling": {
+          "trade": "Free trade"
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "economic_downturn_sis",
+      "name": "Economic Downturn",
+      "description": "The great slump has been hard on our realms, but we have weathered harsher storms.",
+      "factor": "economic turmoil",
+      "polity": [
+        "SIS"
+      ],
+      "felt": {
+        "happiness": "urbanisation"
+      },
+      "effects": {
+        "tradeIncome": -0.15,
+        "factoryOutput": -0.08,
+        "happiness": -5,
+        "stability": -4
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "highland_avisians",
+      "name": "Highland Avisians",
+      "description": "We have ruled these mountains for centuries, for no pass is too high for a people born with wings, nor any winter too harsh for those raised above the clouds.",
+      "polity": [
+        "AKN"
+      ],
+      "effects": {
+        "movement": 0.15,
+        "movementInTerrain": {
+          "mountains": 0.7,
+          "alpine": 1.3
+        },
+        "organisation": 0.1
+      },
+      "permanent": true,
+      "tags": []
+    },
+    {
+      "id": "hermit_kingdom",
+      "name": "Hermit Kingdom",
+      "description": "Isolated by the Urati and Comonait Mountains, we have little need to interact with the outside world, and with the collapse of Greater Mubbanga, that need has lessened further.",
+      "polity": [
+        "AKN"
+      ],
+      "effects": {
+        "stability": 5,
+        "research": -0.15,
+        "tradeIncome": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "subsistence_farming",
+      "name": "Subsistence Farming",
+      "description": "Akhan's economy revolves almost entirely around the farms of the highland valleys, whose harvests go wholly to feeding its people.",
+      "polity": [
+        "AKN"
+      ],
+      "effects": {
+        "construction": -0.15,
+        "factoryOutput": -0.1,
+        "resourceYield": {
+          "fertileLand": 0.1,
+          "livestock": 0.1
+        },
+        "surplusOffered": {
+          "fertileLand": -0.5,
+          "livestock": -0.5
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "no_civil_service",
+      "name": "No Civil Service",
+      "description": "Though our constitution was agreed at the beginning of 1926, no formal confederal government exists yet, and governing is still the responsibility of the revolutionary commander-in-chief.",
+      "polity": [
+        "CNC"
+      ],
+      "effects": {
+        "taxRevenue": -0.25,
+        "politicalPower": -0.15,
+        "construction": -0.1
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "continental_army",
+      "name": "Continental Army",
+      "description": "Our brave boys in green are the hope of our homeland. May they bring victory to the Confederation and secure our freedom from the Sanatese.",
+      "polity": [
+        "CNC"
+      ],
+      "effects": {
+        "commandPowerIncome": 0.25,
+        "stability": 4,
+        "lawAdoptionCost": -0.15
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "sanatese_peso",
+      "name": "Sanatese Peso",
+      "description": "The Continental Peso exists only on paper. Until it is printed, we have to make do with the currency of the very country we are fighting.",
+      "polity": [
+        "CNC"
+      ],
+      "target": "SAN",
+      "effects": {
+        "tradeIncomeWithTarget": 0.2,
+        "lawAdoptionCost": {
+          "monetary": 1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "tribal_kingdoms",
+      "name": "Tribal Kingdoms",
+      "description": "We rely on the goodwill of our member tribes for our continued strength. Every king who has joined the confederation has done so of his own free will, and together we are bringing peace and unity to the AmaOkuomu.",
+      "polity": [
+        "IOK"
+      ],
+      "effects": {
+        "taxRevenue": -0.15,
+        "politicalPower": -0.1,
+        "conscriptionRaiseCost": 0.3,
+        "stability": 3
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "pastoral_economy_iok",
+      "name": "Pastoral Economy",
+      "description": "We have lived on the grazing lands of our herds for hundreds of generations, but we must strive to change this if we are to ever thrive in the 20th century.",
+      "polity": [
+        "IOK"
+      ],
+      "effects": {
+        "construction": -0.2,
+        "factoryOutput": -0.1,
+        "research": -0.1,
+        "resourceYield": {
+          "livestock": 0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "no_central_authority",
+      "name": "No Central Authority",
+      "description": "The tribes have no overarching government that coordinates their resources.",
+      "polity": [
+        "OKU"
+      ],
+      "effects": {
+        "taxRevenue": -0.4,
+        "politicalPower": -0.3,
+        "lawCeiling": {
+          "conscription": "Volunteer only",
+          "economy": "Civilian economy",
+          "personalTax": "Minimal taxation",
+          "corporateTax": "Moderate taxation",
+          "monetary": "Gold standard",
+          "trade": "Closed economy"
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "pastoral_economy_oku",
+      "name": "Pastoral Economy",
+      "description": "We have lived on the grazing lands of our herds for hundreds of generations. We have little interest in changing our way of life.",
+      "polity": [
+        "OKU"
+      ],
+      "effects": {
+        "construction": -0.2,
+        "factoryOutput": -0.1,
+        "research": -0.1,
+        "resourceYield": {
+          "livestock": 0.1
+        }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "royalist_government_in_exile",
+      "name": "Royalist Government-in-Exile",
+      "description": "With the Caitponte Revolution in Cunaria overthrowing the hereditary elite, the bulk of the nobility fled to Casalina in its aftermath and continues to enjoy control over the people of the former colony.",
+      "polity": [
+        "CSL"
+      ],
+      "effects": {
+        "stability": 3,
+        "ideologySupportPerDay": {
+          "Reactionism": 0.005
+        }
       },
       "permanent": false,
       "tags": []

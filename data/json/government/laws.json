@@ -1,6 +1,8 @@
 {
   "categories": {
     "conscription": {
+      "label": "Conscription",
+      "phrase": "conscription",
       "changeDays": 30,
       "wartimeDiscount": true,
       "note": "Manpower is the share of the population of controlled provinces that can be called up. The peace multiplier prices raising the law while not at war. Happiness is the peacetime figure, halved at war and falling to nothing as the country is occupied.",
@@ -121,6 +123,8 @@
       "costWeightedBy": "authority"
     },
     "economy": {
+      "label": "Economy",
+      "phrase": "the war economy",
       "changeDays": 30,
       "wartimeDiscount": true,
       "note": "Consumer share is the share of civilian factories making goods for the population and taking no state orders. It is multiplied by the holding ideology's modifier. Conversion is days per factory changed between civilian and military. The peace multiplier prices raising the law while not at war.",
@@ -209,6 +213,8 @@
       "costWeightedBy": "ideologyTable"
     },
     "personalTax": {
+      "label": "Personal tax",
+      "phrase": "income tax",
       "changeDays": 30,
       "wartimeDiscount": true,
       "note": "Revenue is the multiplier on the population term of provincial tax.",
@@ -297,6 +303,8 @@
       "costWeightedBy": "economic"
     },
     "corporateTax": {
+      "label": "Corporate tax",
+      "phrase": "company tax",
       "changeDays": 30,
       "wartimeDiscount": true,
       "note": "Revenue is the multiplier on the factory term of provincial tax.",
@@ -376,6 +384,8 @@
       "costWeightedBy": "economic"
     },
     "colonialTax": {
+      "label": "Colonial tax",
+      "phrase": "colonial tax",
       "changeDays": 30,
       "wartimeDiscount": true,
       "note": "Applies to provinces of colonies. A polity holding none omits the law entirely. Colonial unrest is a figure a day added in every colonial province.",
@@ -456,6 +466,8 @@
       "costWeightedBy": "economic"
     },
     "monetary": {
+      "label": "Monetary law",
+      "phrase": "the currency",
       "changeDays": 30,
       "tightenDays": 180,
       "wartimeDiscount": true,
@@ -518,6 +530,8 @@
       "costWeightedBy": null
     },
     "trade": {
+      "label": "Trade",
+      "phrase": "trade",
       "changeDays": 30,
       "wartimeDiscount": false,
       "note": "Surplus offered is the share of a surplus put on the automatic market and deficit filled the share of a deficit the market may fill. Tariff ceiling is the highest rate the country may charge a foreign flag.",
@@ -717,7 +731,7 @@
           "effects": {
             "againstFortification": -0.3
           },
-          "special": "Drawn from souls and not from crystal, so it consumes no tazkuri. What limits it is how few wizards are born."
+          "special": "Does not consume tazkuri."
         },
         {
           "name": "Gem ordnance",
@@ -725,7 +739,7 @@
           "effects": {
             "attack": 0.15
           },
-          "special": "Burns 0.5 tazkuri a day for every division in combat, on top of any enchantment. A country that runs dry loses the figure until it is in supply again."
+          "special": "Consumes 0.5 tazkuri per day for every division in combat, on top of any enchantment."
         }
       ]
     },

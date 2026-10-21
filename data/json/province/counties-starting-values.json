@@ -11375,6 +11375,11 @@
       "rail": [
         "upper_grey_ramenka_basin_5",
         "kigoti_1"
+      ],
+      "eyrie": true,
+      "eyrieAt": [
+        2788,
+        1473
       ]
     },
     "kigoti_6": {
@@ -24170,6 +24175,13 @@
     },
     "south_soboland_2": {
       "fortification": 1
+    },
+    "south_sorovera_9": {
+      "eyrie": true,
+      "eyrieAt": [
+        2717,
+        1622
+      ]
     },
     "south_subeny_1": {
       "rail": [

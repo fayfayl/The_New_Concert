@@ -805,6 +805,9 @@ export const UNOWNED = 'NONE';
  */
 export const controllerOf = (p) => p.occupier || p.owner;
 
+/** Whether somebody other than its owner holds the province. */
+export const isOccupied = (p) => !!(p?.occupier && p.occupier !== p.owner);
+
 /**
  * What decides whether two touching provinces are separated by a frontier.
  *
@@ -817,7 +820,7 @@ export const controllerOf = (p) => p.occupier || p.owner;
  * So occupied ground keys on the pair, occupier and owner both. Two occupations
  * by the same power over different countries separate for the same reason.
  */
-export const frontierKeyOf = (p) => (p.occupier && p.occupier !== p.owner
+export const frontierKeyOf = (p) => (isOccupied(p)
   ? `${p.occupier}>${p.owner}`
   : controllerOf(p));
 
@@ -843,12 +846,36 @@ export const isLabelled = (world, p) => {
 export function realmOf(table, id) {
   let at = id;
   for (let step = 0; step < 8; step++) {
-    const parent = table.polityById.get(at)?.parent;
+    const parent = table?.polityById?.get(at)?.parent;
     if (!parent || parent === at || !table.polityById.has(parent)) return at;
     at = parent;
   }
   console.warn(`polity "${id}" sits in a parent loop; treating "${at}" as its realm`);
   return at;
+}
+
+/**
+ * Whether `owner` is `id` or sits anywhere below it on the parent chain.
+ *
+ * Walked rather than answered with realmOf(), because realmOf answers with the
+ * top of the chain. Fellnor's own colonies sit under Fellnor and under the
+ * empire above it, and asking about Fellnor has to reach them: realmOf would
+ * answer Fellnor-Avanta for every one and match none of them to Fellnor.
+ */
+export function isUnder(table, owner, id) {
+  let at = owner;
+  for (let step = 0; step < 8 && at; step++) {
+    if (at === id) return true;
+    const parent = table?.polityById?.get(at)?.parent;
+    if (!parent || parent === at) return false;
+    at = parent;
+  }
+  return false;
+}
+
+/** The polities whose parent is `id`, not counting itself. */
+export function membersOf(table, id) {
+  return [...(table?.polityById?.values() || [])].filter((q) => q.parent === id && q.id !== id);
 }
 
 /**

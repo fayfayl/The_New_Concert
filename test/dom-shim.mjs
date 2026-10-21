@@ -358,6 +358,11 @@ export function fire(el, type, event = {}) {
 // ------------------------------------------------------------------ install
 
 export function install(root) {
+  const sheet = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rootTokens = new Map();
+  for (const block of sheet.matchAll(/(?:^|\})\s*:root\s*\{([^}]*)\}/g)) {
+    for (const m of block[1].matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) rootTokens.set(m[1], m[2].trim());
+  }
   const byId = new Map();
   const el = (id) => {
     if (!byId.has(id)) {
@@ -423,7 +428,10 @@ export function install(root) {
     requestAnimationFrame: (fn) => { frameQueue.push(fn); return frameQueue.length; },
     cancelAnimationFrame() {},
     location: { search: '', href: 'http://localhost/' },
-    getComputedStyle: () => new Proxy({}, { get: () => '' }),
+    // Custom properties come from :root in style.css, which main.js reads its
+    // shared colours and faces from. Anything else reads as empty.
+    getComputedStyle: () => new Proxy({ getPropertyValue: (name) => rootTokens.get(name) || '' },
+      { get: (t, k) => (k in t ? t[k] : '') }),
   };
 
   const frameQueue = [];

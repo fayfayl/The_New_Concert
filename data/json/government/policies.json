@@ -330,7 +330,7 @@
       "note": "The counterpart of Improve worker conditions, for the pits. Felt by what a province digs rather than by its factories, since the men a mine act reaches are not on a factory floor. The yield is named resource by resource because resourceYield is a map and there is no key for every dug kind at once."
     },
     {
-      "name": "State of Alert",
+      "name": "State of alert",
       "description": "We will keep our garrisons manned and our reserves at readiness the year round.",
       "target": null,
       "start": 40,

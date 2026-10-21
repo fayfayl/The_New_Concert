@@ -3731,7 +3731,7 @@
       },
       "policies": [
         "Propaganda",
-        "State of Alert"
+        "State of alert"
       ],
       "decrees": [
         "Censor the press"
@@ -3744,6 +3744,1982 @@
         "tattered_military",
         "aftermath_of_the_cordial_war"
       ]
+    },
+    {
+      "id": "CAC",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mobile warfare",
+        "air": "Air superiority",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Literacy campaign"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_great_slump_pan"
+      ]
+    },
+    {
+      "id": "NDN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Advanced legilimency"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "the_great_slump_pan"
+      ]
+    },
+    {
+      "id": "LVS",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        {
+          "decree": "Prospect for resources",
+          "target": "aluminium"
+        }
+      ],
+      "stateOwned": [
+        "rail",
+        "rubber"
+      ],
+      "spirits": [
+        "the_great_slump_pan"
+      ]
+    },
+    {
+      "id": "TMI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "anatanic_station"
+      ]
+    },
+    {
+      "id": "TJV",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve mining conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "the_great_slump_pan"
+      ]
+    },
+    {
+      "id": "SIS",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "State of alert"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "hexarchical_government",
+        "free_trade_ports",
+        "economic_downturn_sis"
+      ]
+    },
+    {
+      "id": "AKN",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "State of alert",
+        "Extend direct rule"
+      ],
+      "decrees": [
+        "State religion"
+      ],
+      "stateOwned": [],
+      "spirits": [
+        "highland_avisians",
+        "hermit_kingdom",
+        "subsistence_farming"
+      ]
+    },
+    {
+      "id": "CNC",
+      "form": "Provisional government",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Early mobilisation",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Convoy interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "War bonds"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "no_civil_service",
+        "continental_army",
+        "sanatese_peso"
+      ]
+    },
+    {
+      "id": "SVP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "NCM",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "SMG",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "SMN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "RDZ",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "MBR",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "PLT",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "SCB",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "ABH",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "BKA",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "ALG",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "TDC",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "FSP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "EMB",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "MBY",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "ANY",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KTR",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "HLT",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "FNY",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "MLR",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KWZ",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "BND",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "BWN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "HML",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "HTH",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "NNF",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "STN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "TPW",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "ADH",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "KVP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "LCL",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "LLT",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KNY",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "NAS",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KNT",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "WRL",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "ADK",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "CKP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "TRW",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "LND",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "GCB",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "VSW",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "KYI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "VSP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "NLV",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "SKI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Export focus"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "DOB",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "JMN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "JMB",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "JSP",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "High taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [
+        "Improve worker conditions"
+      ],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "BLA",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "government_corruption"
+      ]
+    },
+    {
+      "id": "LEO",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "government_corruption"
+      ]
+    },
+    {
+      "id": "HMA",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "SNG",
+      "form": "Colony",
+      "startingIdeology": "Corporatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "NLN",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "ATT",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Low taxation",
+        "monetary": "Managed currency",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "BDI",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Minimal taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Trade interdiction",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "IOK",
+      "form": "Parliamentary republic",
+      "elections": false,
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Limited conscription",
+        "economy": "Civilian economy",
+        "personalTax": "Low taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "tribal_kingdoms",
+        "pastoral_economy_iok"
+      ]
+    },
+    {
+      "id": "OKU",
+      "form": "Provisional government",
+      "startingIdeology": "Unaligned",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Minimal taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Closed economy"
+      },
+      "doctrine": {
+        "land": "Mass assault",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": [
+        "no_central_authority",
+        "pastoral_economy_oku"
+      ]
+    },
+    {
+      "id": "CSL",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Reactionism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "High taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Devalued parity",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [
+        "Censor the press"
+      ],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": [
+        "royalist_government_in_exile"
+      ]
+    },
+    {
+      "id": "ENY",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "CIG",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "SRV",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "XND",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "KPY",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "SGA",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "NHB",
+      "form": "Absolute monarchy",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "OWC",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [],
+      "spirits": []
+    },
+    {
+      "id": "MWK",
+      "form": "Constitutional monarchy",
+      "startingIdeology": "Technocracy",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade",
+        "colonialTax": "Moderate taxation"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "GOI",
+      "form": "Presidential republic",
+      "startingIdeology": "Liberalism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
+    },
+    {
+      "id": "OKH",
+      "form": "Colony",
+      "startingIdeology": "Conservatism",
+      "laws": {
+        "conscription": "Volunteer only",
+        "economy": "Civilian economy",
+        "personalTax": "Moderate taxation",
+        "corporateTax": "Moderate taxation",
+        "monetary": "Gold standard",
+        "trade": "Free trade"
+      },
+      "doctrine": {
+        "land": "Defensive",
+        "air": "Battlefield support",
+        "naval": "Fleet in being",
+        "magical": "Warded lines"
+      },
+      "policies": [],
+      "decrees": [],
+      "stateOwned": [
+        "rail"
+      ],
+      "spirits": []
     }
   ]
 }

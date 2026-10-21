@@ -32,7 +32,7 @@
  * the reasoning behind every constant.
  */
 
-import { OCEAN, MIN_BORDER_PX } from './mapdata.js';
+import { OCEAN, MIN_BORDER_PX, CHAMFER_ORTH, CHAMFER_DIAG, BORDER_DIST_MAX } from './mapdata.js';
 import { makeProjection, distanceKm, toDegrees } from './geo.js';
 
 /** Array.push(...other) throws past about a hundred thousand arguments. */
@@ -303,11 +303,10 @@ const SEED_BIAS = 0.45;
 export const RIVER_MARGIN = 3;      // map pixels. A river closer than this to the
 // province edge is ignored, or a county boundary lands on it and strands a ribbon
 
-// The chamfer weights mapdata.js uses, so RIVER_MARGIN means the same thing in
-// both distance fields.
-const CHAMFER_ORTH = 3;
-const CHAMFER_DIAG = 4;
-const DIST_MAX = 255;
+// The chamfer weights and the saturation point are mapdata.js's own, imported
+// rather than copied, so RIVER_MARGIN means the same thing in both distance
+// fields and cannot drift from it.
+const DIST_MAX = BORDER_DIST_MAX;
 
 /** A stable value in 0..1 from a pair of lattice coordinates. */
 function hash2(x, y) {

@@ -165,25 +165,25 @@ ok(justOver > 100, `0.9 is over it and writes in earnest (${justOver})`);
 const tight = cost(10);
 ok(tight < near, `zoomed right in there is almost nothing on screen (${tight})`);
 // ------------------------------------------------------------------ the sheet
-// data/icons/resources.png is one sheet, six cells across and three down at 64px
-// a cell, filled left to right and top to bottom. If it fails to load the layer
+// data/icons/resources.png is one sheet, six cells across at 64px a cell, filled
+// left to right and top to bottom, with as many rows as the kinds need. If it fails to load the layer
 // falls back to short words and everything else in this file still passes, so
 // the sheet has to be checked on its own.
 const sheet = w.resourceSheet;
 ok(Boolean(sheet), 'the icon sheet loaded');
-ok(sheet?.width === 384 && sheet?.height === 192,
-  `and it is 6 by 3 cells of 64px: ${sheet?.width}x${sheet?.height}`);
+ok(sheet?.width === 6 * 64 && sheet?.height % 64 === 0 && (sheet.height / 64) * 6 >= doc.kinds.length,
+  `and it is 6 cells of 64px across, with room for every kind: ${sheet?.width}x${sheet?.height}`);
 
 const src = fs.readFileSync(path.join(root, 'src/main.js'), 'utf8');
-const tableSrc = /const RESOURCE_ICON = \{([\s\S]*?)\};/.exec(src)?.[1] ?? '';
+const tableSrc = /const RESOURCE_KINDS = \{([\s\S]*?)\n\};/.exec(src)?.[1] ?? '';
 const cells = new Map();
-for (const m of tableSrc.matchAll(/(\w+):\s*(\d+)/g)) cells.set(m[1], Number(m[2]));
-ok(cells.size === 18, `every resource has a cell (${cells.size})`);
+for (const m of tableSrc.matchAll(/(\w+):\s*\{\s*cell:\s*(\d+)/g)) cells.set(m[1], Number(m[2]));
+ok(cells.size === doc.kinds.length, `every resource has a cell (${cells.size} of ${doc.kinds.length})`);
 const missing = doc.kinds.filter((k) => !cells.has(k));
 ok(missing.length === 0, `and every kind in the file is one of them (${missing.join(", ") || "none missing"})`);
 const taken = [...cells.values()].sort((a, b) => a - b);
 ok(taken.every((v, i) => v === i),
-  `the eighteen cells are 0 to 17 with none repeated: ${taken.join(",")}`);
+  `the cells run from 0 with none repeated: ${taken.join(",")}`);
 
 // -------------------------------------------------------- where it is written
 // A stack is written at the province, and a centroid is not always the

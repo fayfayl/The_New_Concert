@@ -35,6 +35,13 @@ export const EARTH_RADIUS_KM = Math.sqrt(EARTH_SURFACE_KM2 / (4 * Math.PI));
 
 const TAU = Math.PI * 2;
 
+// The two linear axes of the projection, written once. A row of the globe,
+// counted from the north pole, is a latitude; a column, counted from the left
+// edge, is a longitude. Fractional, so a caller asks for a pixel's edge or its
+// centre by passing y or y + 0.5.
+const globeLat = (row, globeHeight) => Math.PI / 2 - Math.PI * (row / globeHeight);
+const globeLon = (col, width) => TAU * (col / width) - Math.PI;
+
 /**
  * Fixes a bitmap to the globe.
  *
@@ -53,7 +60,7 @@ export function makeProjection({ width, height, globeHeight, northRow = 0 }) {
   // Latitude of the boundary ABOVE drawn row y, as a fraction of the way from
   // the north pole to the south. Boundaries rather than centres, because area
   // needs the band a row covers and not the line through its middle.
-  const edgeLat = (y) => Math.PI / 2 - Math.PI * ((y + northRow) / globeHeight);
+  const edgeLat = (y) => globeLat(y + northRow, globeHeight);
 
   // Area of one pixel in each row, precomputed: it depends only on y, and the
   // caller is about to ask for it fifteen million times.
@@ -70,8 +77,8 @@ export function makeProjection({ width, height, globeHeight, northRow = 0 }) {
     rowArea[y] = perPixel * (Math.sin(edgeLat(y)) - Math.sin(edgeLat(y + 1)));
   }
 
-  const lonAt = (x) => TAU * ((x + 0.5) / width) - Math.PI;
-  const latAt = (y) => Math.PI / 2 - Math.PI * ((y + northRow + 0.5) / globeHeight);
+  const lonAt = (x) => globeLon(x + 0.5, width);
+  const latAt = (y) => globeLat(y + northRow + 0.5, globeHeight);
 
   // The whole sphere, summed row by row exactly as a province is, over every row
   // of the globe rather than only the drawn ones. If the row areas are right
@@ -79,8 +86,8 @@ export function makeProjection({ width, height, globeHeight, northRow = 0 }) {
   // known, instead of hiding inside a province nobody can check.
   let surfaceKm2 = 0;
   for (let g = 0; g < globeHeight; g++) {
-    const top = Math.PI / 2 - Math.PI * (g / globeHeight);
-    const bot = Math.PI / 2 - Math.PI * ((g + 1) / globeHeight);
+    const top = globeLat(g, globeHeight);
+    const bot = globeLat(g + 1, globeHeight);
     surfaceKm2 += perPixel * (Math.sin(top) - Math.sin(bot)) * width;
   }
 
@@ -171,11 +178,10 @@ export const MAP_NORTH_ROW = 100;
 export const MAP_GLOBE_HEIGHT = 3000;
 
 /** Latitude of a drawn row of `provinces.png`, in radians. */
-export const mapLatAt = (y) =>
-  Math.PI / 2 - Math.PI * ((y + MAP_NORTH_ROW) / MAP_GLOBE_HEIGHT);
+export const mapLatAt = (y) => globeLat(y + MAP_NORTH_ROW, MAP_GLOBE_HEIGHT);
 
 /** Longitude of a drawn column, in radians, -π at the left edge. */
-export const mapLonAt = (x, width) => -Math.PI + TAU * (x / width);
+export const mapLonAt = (x, width) => globeLon(x, width);
 
 // Back from a place to the pixel it was measured at. A position written into
 // the tables — a county's centre, say — comes from makeProjection, which reads

@@ -30,7 +30,11 @@
  * edited, not about how it is used.
  */
 
-/** The six levelled types, stored as [built, ceiling] once merged. */
+/**
+ * The six levelled types, stored as [built, ceiling] once merged. Rail is not
+ * here: it is built county by county and has no level, so it lives with the
+ * counties rather than as a province pair.
+ */
 export const LEVELS = ['road', 'electricity', 'radar', 'supplyHub', 'antiAir', 'airBase'];
 
 /** Ceiling field names in province-stats.json, matching the glossary's maxRoad. */
@@ -38,6 +42,11 @@ export const CEILING_OF = Object.fromEntries(
   LEVELS.map((k) => [k, 'max' + k[0].toUpperCase() + k.slice(1)])
 );
 
+// Factories do NOT get a ceiling each. In Hearts of Iron a state has a pool of
+// building slots and civilian factories, military factories and dockyards all
+// compete for it: what a province has is a number of sockets and a decision
+// about what goes in each. So the SLOTS are the province's property, [unlocked,
+// maximum], and these two figures are how the unlocked ones are spent.
 export const FACTORIES = ['civilianFactories', 'militaryFactories'];
 
 // Buildings live on COUNTIES, in counties-starting-values.json beside the
@@ -69,17 +78,28 @@ export const BUILDING_AT = {
 // railway, because a province of thirty counties and a province of one should
 // not answer the same way for the same number of battles. The province reads the
 // mean of its counties as `struckAverage`, filled on load.
+//
+// Unrest is stored because it cannot be derived. Happiness is a function of the
+// other fields and is computed fresh every tick, but unrest is a recurrence:
+// today's figure depends on every previous day's happiness, stability and
+// garrison, and it is clamped to 0..100, which destroys the history a replay
+// would need.
+//
+// annexedOn is the event, not the decay. "Recently annexed" costs happiness on a
+// curve that fades to nothing, and storing the curve means something has to tick
+// it daily and it drifts if a tick is missed. A date needs no maintenance and
+// lets the curve be changed without touching the data. null where it never was.
 export const ATTITUDE = ['unrest', 'resistance', 'compliance', 'annexedOn'];
 
 const ATTITUDE_BLANK = { unrest: 0, resistance: 0, compliance: 0, annexedOn: null };
 
-// What a province wants, as points across the 22 named ideologies and 'unaligned',
+// What a province wants, as points across the 22 named ideologies and 'Unaligned',
 // summing to 100. Held per province because support is not uniform across a
 // country. A province with no entry wants nothing anybody has named.
 export const SUPPORT = 'support';
 
 /**
- * Puts the three files back into the one shape the rest of the code reads.
+ * Puts the four files back into the one shape the rest of the code reads.
  * Every argument is optional: a missing file leaves its fields at their blanks,
  * so the map still draws with nothing but province-stats.json present.
  */

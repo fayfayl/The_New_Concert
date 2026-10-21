@@ -34,10 +34,11 @@
       <!-- data-dialog names the panel a button opens, so a new one is a button
            and a panel with no wiring of its own. -->
       <div class="start-buttons">
-        <button id="start-enter">Enter</button>
-        <button class="start-secondary" data-dialog="controls">Controls</button>
-        <button class="start-secondary" data-dialog="changelog">Changelog</button>
-        <button class="start-secondary" data-dialog="about">About</button>
+        <!-- data-sfx: a label and slips of paper, so they sound like paper. -->
+        <button id="start-enter" data-sfx="paper">Enter</button>
+        <button class="start-secondary" data-dialog="controls" data-sfx="paper">Controls</button>
+        <button class="start-secondary" data-dialog="changelog" data-sfx="paper">Changelog</button>
+        <button class="start-secondary" data-dialog="about" data-sfx="paper">About</button>
       </div>
 
       <p>
@@ -61,6 +62,21 @@
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.8.b <span>21 Oct 2026</span></h3>
+            <ul>
+              <li>All polities now have a government, with laws, national spirits, etc.</li>
+              <li>All populated provinces now have ideological support.</li>
+              <li>More flags added, though some still use the placeholder flag.</li>
+              <li>Overhauled the UI to look like paper, with some radio buttons I guess.</li>
+              <li>Puppets now appear in the diplomacy panel's relations.</li>
+              <li>Tooltip local time now shows whether it is day, twilight or night.</li>
+              <li>Added console commands for changing laws, government forms, doctrines, policies,
+                decrees and national spirits, and for setting infrastructure levels, factories,
+                forts and rail.</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.8.a <span>30 Sep 2026</span></h3>
             <ul>
@@ -207,33 +223,31 @@
   <div id="loading">
     <div class="loading-panel">
       <!--
-        The gauge and the quote share this box and cross-fade in it. The quote is
-        written in as soon as data/json/quotes.json is read, while still transparent,
-        so it is holding its own height before it is visible and nothing on the
-        screen moves when the two swap over. The gauge sits centred on top of it.
+        The quote card. Written in as soon as data/json/quotes.json is read, while
+        still transparent, so it is holding its own height before it is visible and
+        nothing on the screen moves when it arrives. The two shadow layers sit
+        behind the paper rather than being a filter on it; see style.css.
       -->
-      <div class="loading-stage">
-        <figure id="loading-quote">
+      <figure id="loading-quote">
+        <div class="quote-shadow soft"></div>
+        <div class="quote-shadow edge"></div>
+        <div class="quote-paper">
           <blockquote id="loading-quote-text"></blockquote>
           <figcaption id="loading-quote-by"></figcaption>
-        </figure>
-
-        <div class="loading-bar"><i></i></div>
-
-        <!-- Inside the stage and hung off its centre line, which is where the
-             gauge is. Placed after the stage it would sit below the whole box,
-             and the box is as tall as the quote it is holding room for, which
-             pushed this well clear of the gauge it belongs to. -->
-        <p id="loading-note">Loading&hellip;</p>
-      </div>
+        </div>
+      </figure>
     </div>
 
     <!--
-      Separate from the note above, and not in the panel's flow. The note reports
-      the stage of the load and belongs under the gauge; this asks for a keypress
-      and belongs at the foot of the window. One element doing both put the
-      loading text at the bottom of the screen.
+      At the foot of the window, where the prompt below takes over from it once
+      the map is built. The note reports the stage of the load and belongs under
+      the gauge.
     -->
+    <div class="loading-gauge">
+      <div class="loading-bar" aria-hidden="true">Loading  [<span class="done"></span><span class="todo">................................</span>]  <span class="pct">  0%</span></div>
+      <p id="loading-note">Loading&hellip;</p>
+    </div>
+
     <p id="loading-prompt">Press any key to continue</p>
   </div>
 
@@ -243,6 +257,12 @@
 
       <span class="sep"></span>
 
+      <!--
+        The map modes share one tray, since they are one choice among
+        themselves. The layer menu is in it too: picking a layer is picking what
+        the map shows, the same choice.
+      -->
+      <span id="modes">
       <button data-mode="political" class="active">Political</button>
       <button data-mode="province">Provinces</button>
       <button data-mode="terrain">Terrain</button>
@@ -252,26 +272,17 @@
       <button data-mode="ideology" hidden>Ideology</button>
 
       <!--
-        The infrastructure layers. A native select rather than seven more
-        buttons: the toolbar is already at its width, and these are one
-        choice among themselves rather than seven separate ones.
+        The infrastructure layers. A menu rather than more buttons: the
+        toolbar is already at its width, and these are one choice among
+        themselves rather than separate ones. main.js fills the list from
+        INFRA_NAME.
       -->
       <span id="infra-menu">
         <button id="infra-button" aria-haspopup="true" aria-expanded="false">
           <span id="infra-label">Infrastructure</span><i>&#9662;</i>
         </button>
-        <div id="infra-list" hidden>
-          <button data-layer="infra:road">Road</button>
-          <button data-layer="infra:electricity">Electricity</button>
-          <button data-layer="infra:radar">Radar station</button>
-          <button data-layer="infra:fortNew">Fort</button>
-          <button data-layer="infra:supplyHub">Supply hub</button>
-          <button data-layer="infra:antiAir">Anti-air</button>
-          <button data-layer="infra:airBase">Air base</button>
-          <button data-layer="infra:factories">Factories</button>
-          <button data-layer="infra:hydro">Hydro</button>
-          <button data-layer="infra:rail">Rail</button>
-        </div>
+        <div id="infra-list" hidden></div>
+      </span>
       </span>
 
       <span class="sep"></span>
@@ -385,7 +396,7 @@
           <div class="card-meter" id="card-unrest-row">
             <span class="cm-label">Unrest</span>
             <span class="cm-value" id="card-unrest">0</span>
-            <span class="cm-bar unrest"><i id="card-unrest-fill"></i><u class="t40"></u><u class="t70"></u></span>
+            <span class="cm-bar unrest" id="card-unrest-bar"><i id="card-unrest-fill"></i></span>
             <span class="cm-note" id="card-unrest-note">&mdash;</span>
           </div>
         </div>
@@ -425,6 +436,8 @@
         office would keep.
       -->
       <aside id="diplo" class="milled" aria-hidden="true">
+        <!-- The folder is #diplo itself; this is the typed sheet inside it. -->
+        <div class="diplo-sheet">
         <div class="card-head">
           <h2 id="diplo-name">&mdash;</h2>
           <button id="diplo-close" title="Close (Esc)" aria-label="Close">&times;</button>
@@ -433,6 +446,14 @@
         <div class="diplo-ident">
           <span class="diplo-flag">
             <img id="diplo-flag" alt="" src="./data/img/flags/placeholder.png">
+            <!-- A clip slid over the flag's top edge. One wire: the bend joining
+                 its two layers stands above the edge; the inner tongue runs down
+                 the face of the flag, round its small bend and back up to its
+                 free end; the long outer loop drops behind the flag at the edge.
+                 The flag's top edge is at y=8. -->
+            <svg class="paperclip" viewBox="0 0 13 34" aria-hidden="true">
+              <path d="M2.5 8 V4.5 A3 3 0 0 1 8.5 4.5 V22 A2 2 0 0 1 4.5 22 V12"/>
+            </svg>
           </span>
           <div class="diplo-titles">
             <b id="diplo-polity">&mdash;</b>
@@ -446,13 +467,18 @@
         </div>
 
         <div class="diplo-portrait-row">
-          <img id="diplo-portrait" class="diplo-portrait" alt=""
-               src="./data/img/portraits/placeholder.png">
+          <!-- The frame carries the photo corners, round the leader's portrait
+               or the placeholder photograph alike. -->
+          <span class="diplo-photo" id="diplo-photo">
+            <img id="diplo-portrait" class="diplo-portrait" alt=""
+                 src="./data/img/portraits/placeholder.png">
+          </span>
           <div class="diplo-stack">
             <div class="diplo-party">
               <b id="diplo-party">Placeholder</b>
               <i id="diplo-ideology">&mdash;</i>
-              <i id="diplo-election">No Election</i>
+              <!-- Elections are not simulated yet, so either answer is a blank. -->
+              <i id="diplo-election" class="blank">No Election</i>
             </div>
             <div class="diplo-focus" id="diplo-focus">No National Focus set</div>
           </div>
@@ -461,8 +487,9 @@
         <div class="diplo-spirits" id="diplo-spirits"></div>
 
         <div class="diplo-tabs" id="diplo-tabs">
-          <button type="button" id="diplo-tab-diplomacy" class="on">Diplomacy</button>
-          <button type="button" id="diplo-tab-ledger">Intel Ledger</button>
+          <!-- data-sfx: a tab is a page turned, so it sounds like paper, not a key. -->
+          <button type="button" id="diplo-tab-diplomacy" class="on" data-sfx="paper">Diplomacy</button>
+          <button type="button" id="diplo-tab-ledger" data-sfx="paper">Intel Ledger</button>
         </div>
 
         <div class="diplo-body">
@@ -475,7 +502,10 @@
             <div class="diplo-box" id="diplo-ledger-right"></div>
           </div>
         </div>
+        </div>
       </aside>
+      <!-- The folder's tab. After #diplo, not inside it: see .diplo-folder-tab. -->
+      <span class="folder-tab diplo-folder-tab" aria-hidden="true">Dossier</span>
     </div>
   </div>
 
@@ -508,7 +538,7 @@
           <dt>Scroll, + and &minus;</dt><dd>Zoom</dd>
           <dt>0</dt><dd>Fit the map</dd>
           <dt>Space</dt><dd>Pause</dd>
-          <dt>1 to 3</dt><dd>Speed</dd>
+          <dt id="speed-keys">1 to 3</dt><dd>Speed</dd>
           <dt>`</dt><dd>Development inspector</dd>
           <dt>Esc</dt><dd>Dismiss, pause menu</dd>
         </dl>
@@ -517,15 +547,17 @@
   </div>
 
   <div id="pause" aria-hidden="true">
-    <div class="dialog-panel" role="dialog" aria-modal="true" aria-label="Paused">
-      <div class="dialog-head">
-        <h2>Paused</h2>
-      </div>
-
-      <div class="dialog-body pause-body">
-        <button id="pause-resume">Resume game</button>
-        <button id="pause-controls" class="start-secondary">Controls</button>
-        <button id="pause-quit" class="start-secondary">Quit to start menu</button>
+    <!-- A folder: the tab carries the heading, outside the board so the
+         board's clipped texture cannot cut it off. -->
+    <div class="pause-folder">
+      <span class="folder-tab" aria-hidden="true">Paused</span>
+      <div class="dialog-panel pause-board" role="dialog" aria-modal="true" aria-label="Paused">
+        <div class="pause-body">
+          <!-- data-sfx: the same label and slips as the start menu, so the same paper sound. -->
+          <button id="pause-resume" data-sfx="paper">Resume game<span class="key-hint" aria-hidden="true">Esc</span></button>
+          <button id="pause-controls" class="start-secondary" data-sfx="paper">Controls</button>
+          <button id="pause-quit" class="start-secondary" data-sfx="paper">Quit to start menu</button>
+        </div>
       </div>
     </div>
   </div>
