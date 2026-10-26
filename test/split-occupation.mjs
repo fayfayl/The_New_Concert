@@ -30,7 +30,7 @@ const here = fileURLToPath(import.meta.url);
 const root = path.join(path.dirname(here), '..');
 const role = process.argv.find((a) => a.startsWith('--child='))?.slice('--child='.length);
 const read = (f) => JSON.parse(fs.readFileSync(path.join(root, f), 'utf8'));
-const TILE = Number(/const TILE = (\d+)/.exec(fs.readFileSync(path.join(root, 'src/main.js'), 'utf8'))[1]);
+const TILE = Number(/const TILE = (\d+)/.exec(fs.readFileSync(path.join(root, 'src/render/tiles.js'), 'utf8'))[1]);
 
 // ------------------------------------------------------------- which ground
 // The wholly occupied province with the most counties. A third of them are

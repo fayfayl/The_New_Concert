@@ -19,9 +19,10 @@
       "ramp": 7,
       "fade": 7,
       "effects": {
+        "wearinessModifier": 0.2,
         "consumerSharePoints": -5
       },
-      "note": "The consumer share it takes is what the population feels, through the consumer goods shortage curve under Resources. A flat happiness figure on top would charge the same goods twice."
+      "note": "consumerSharePoints is felt only through the consumer goods shortage curve."
     },
     {
       "name": "Lobby for a law",
@@ -40,7 +41,7 @@
       "available": {
         "elections": true
       },
-      "note": "Lobbying persuades people who can be voted out, so it needs a government that can be. Elections are read from the form of government, or from the polity's own entry where it departs from the form. The target is a law as {law, option}, both named because an option name alone is ambiguous, or a decree as {decree}. Only decrees marked lobbyable may be named: property, land, the church and labour law are what a chamber fights over, and martial law is a thing a government does. The target decides which of the two costs is charged. Where the decree names a target of its own the discount covers it whichever one is chosen, since what is being lobbied for is nationalisation and not one particular pit."
+      "note": "Target: a law as {law, option} or a lobbyable decree as {decree}; it sets which discount applies, and a decree's own target is covered whatever it is. Elections come from the form, or from the polity's entry where it overrides the form."
     },
     {
       "name": "War bonds",
@@ -57,6 +58,7 @@
       },
       "felt": "urbanisation",
       "effects": {
+        "wearinessModifier": -0.15,
         "taxRevenue": 0.15,
         "happiness": -2
       }
@@ -124,7 +126,8 @@
       ],
       "effects": {
         "tradeIncomeWithTarget": 0.15,
-        "relationsWithTarget": "better",
+        "relationsWithTargetPerDay": 0.1,
+        "relationsWithTargetCeiling": 15,
         "construction": -0.05
       },
       "available": {
@@ -150,8 +153,7 @@
       },
       "available": {
         "colonies": true
-      },
-      "note": "The answer to an empire slipping away, and it is paid for out of the empire. A country stops taking three tenths of what its colonies remit, on top of the upkeep, so holding them by administration costs about what holding them by extraction earned. A country with no colonies cannot start it."
+      }
     },
     {
       "name": "Public works",
@@ -182,6 +184,7 @@
       "ramp": 30,
       "fade": 90,
       "effects": {
+        "wearinessModifier": -0.25,
         "stability": 10,
         "ideologySupportPerDay": {
           "governing": 0.02
@@ -220,7 +223,7 @@
       },
       "available": {
         "unless": {
-          "spiritTag": "disarmed"
+          "treatyTerm": "disarmed"
         }
       }
     },
@@ -239,6 +242,7 @@
       "ramp": 30,
       "fade": 90,
       "effects": {
+        "wearinessModifier": -0.2,
         "unrestAccumulates": false,
         "happiness": -5
       }
@@ -291,8 +295,7 @@
         "conscriptionRaiseCost": -0.1,
         "happiness": -4,
         "unrestPerDay": 0.01
-      },
-      "note": "The counterpart of Consolidate the colonies, for ground a country holds in its own name but does not administer. Only a government that answers to nobody can post its own men over a district's own authority."
+      }
     },
     {
       "name": "Improve mining conditions",
@@ -326,8 +329,7 @@
           "tungsten": -0.05,
           "baseMetals": -0.05
         }
-      },
-      "note": "The counterpart of Improve worker conditions, for the pits. Felt by what a province digs rather than by its factories, since the men a mine act reaches are not on a factory floor. The yield is named resource by resource because resourceYield is a map and there is no key for every dug kind at once."
+      }
     },
     {
       "name": "State of alert",

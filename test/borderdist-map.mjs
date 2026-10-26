@@ -16,8 +16,8 @@
 
 import fs from 'node:fs';
 import zlib from 'node:zlib';
-import { refreshBorderDistance, CHAMFER_ORTH, BORDER_DIST_MAX, OCEAN } from '../src/mapdata.js';
-import { applyCountyOccupation } from '../src/mapcache.js';
+import { refreshBorderDistance, CHAMFER_ORTH, BORDER_DIST_MAX, OCEAN } from '../src/world/mapdata.js';
+import { applyCountyOccupation } from '../src/world/mapcache.js';
 
 // The decoder the sync script uses, lifted rather than duplicated.
 const src = fs.readFileSync('sync-provinces.js', 'utf8');

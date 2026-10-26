@@ -10,15 +10,20 @@
       "means": "the population term of provincial tax",
       "shown": "PERCENTAGE personal tax"
     },
-    "revenueFromFactories": {
+    "revenueFromCivilianFactories": {
       "unit": "fraction",
-      "means": "the factory term of provincial tax",
+      "means": "the civilian factory term of provincial tax",
       "shown": "PERCENTAGE corporate tax"
     },
     "revenueFromColonies": {
       "unit": "fraction",
       "means": "tax taken from provinces of colonies",
       "shown": "PERCENTAGE colonial tax"
+    },
+    "revenueFromMembers": {
+      "unit": "fraction",
+      "means": "tax a realm takes from the provinces of its members",
+      "shown": "PERCENTAGE national tax"
     },
     "tradeIncomeWithTarget": {
       "unit": "fraction",
@@ -85,7 +90,7 @@
     },
     "consumerSharePoints": {
       "unit": "points",
-      "means": "percentage points taken off the consumer share",
+      "means": "percentage points added to the consumer share",
       "shown": "POINTS consumer share"
     },
     "conversionDays": {
@@ -139,10 +144,15 @@
       "means": "unrest added daily in every colonial province",
       "shown": "PERDAY colonial unrest per day"
     },
+    "memberUnrestPerDay": {
+      "unit": "perDay",
+      "means": "unrest added daily in every province of a realm's members",
+      "shown": "PERDAY member unrest per day"
+    },
     "colonialStability": {
       "unit": "points",
       "means": "stability in every colony",
-      "shown": "PERCENT colonial stability"
+      "shown": "POINTS colonial stability"
     },
     "unrestPerDay": {
       "unit": "perDay",
@@ -253,7 +263,7 @@
     },
     "policyUpkeep": {
       "unit": "fraction",
-      "means": "the political power a policy costs every day it runs",
+      "means": "the share of income a policy costs every day it runs",
       "shown": "PERCENTAGE policy upkeep"
     },
     "commanderCost": {
@@ -429,10 +439,30 @@
       "means": "relations with the country named",
       "shown": "POINTS relations with POLITY_NAME"
     },
+    "relationsWithTargetPerDay": {
+      "unit": "perDay",
+      "means": "relations with the country named, added each day while it holds, up to relationsWithTargetCeiling",
+      "shown": "PERDAY relations a day with POLITY_NAME"
+    },
+    "relationsWithTargetCeiling": {
+      "unit": "points",
+      "means": "the most relationsWithTargetPerDay builds with the country named",
+      "shown": "up to POINTS relations with POLITY_NAME"
+    },
     "relationsWithHolders": {
       "unit": "points",
       "means": "relations with every country holding the ideology named",
       "shown": "POINTS relations with IDEOLOGY_DEMONYM countries"
+    },
+    "repudiates": {
+      "unit": "flag",
+      "means": "stops paying the reparations of every treaty imposed on the polity",
+      "shown": "Repudiates the treaties imposed on it"
+    },
+    "relationsWithImposers": {
+      "unit": "points",
+      "means": "relations with every country that imposed a treaty on the polity, under by in polities-treaties.json",
+      "shown": "POINTS relations with the treaty's imposers"
     },
     "relationsWithColonies": {
       "unit": "points",

@@ -21,7 +21,6 @@
           "Martial law"
         ]
       },
-      "note": "The mirror of Ban parties. There is nobody to release until somebody has been locked up.",
       "felt": "support",
       "compassAll": [
         0,
@@ -82,7 +81,7 @@
           ]
         }
       },
-      "note": "Completes rather than holds. It reveals a random share of the unprospected deposits of the resource named and is then done. Later surveys of the same resource use the higher band, so a country that keeps looking finds everything in the end."
+      "note": "One-off: reveals a random share of the resource's unprospected deposits, the first survey from first and later ones from again."
     },
     {
       "name": "Censor the press",
@@ -99,6 +98,7 @@
       "felt": "urbanisation",
       "factor": "press censorship",
       "effects": {
+        "wearinessModifier": -0.25,
         "stability": 8,
         "happiness": -6,
         "againstEnemyOperations": 0.25
@@ -142,7 +142,7 @@
           "economicBelow": -50
         }
       },
-      "note": "A state that has abolished religion cannot establish one. That is a one-party state on the far left, so both have to be true to bar it. A fascist one-party state establishes one and so does a socialist republic.",
+      "note": "Barred only when both unless conditions hold.",
       "felt": "rural",
       "effects": {
         "stability": 5,
@@ -228,7 +228,6 @@
         25
       ],
       "available": "any",
-      "note": "Secret police stops unrest accumulating because informers prevent it. Martial law removes unrest already there because troops are in the street. Neither replaces the other. The cost and the happiness scale with what the country faces. The unrest and stability figures do not.",
       "scaling": {
         "cost": {
           "atWar": -0.3,
@@ -280,11 +279,10 @@
       "available": {
         "spiritTag": "noGeneralStaff",
         "unless": {
-          "spiritTag": "disarmed"
+          "treatyTerm": "disarmed"
         }
       },
       "effects": {},
-      "note": "A country is assumed to keep a general staff unless it carries No General Staff, which a treaty that dissolves an army leaves behind and a newly formed state begins with. The penalty is on that spirit, so enacting this puts the country level with the rest and no higher and it carries nothing of its own. Command power is bought with Officer training.",
       "endsSpiritTag": "noGeneralStaff"
     },
     {
@@ -299,7 +297,7 @@
         18
       ],
       "available": "any",
-      "note": "Acts on the drift multiplier, because a country’s ideology is derived from what it does. Banning communist parties does not stop a country adopting communist laws; it doubles what those laws cost.",
+      "note": "driftMultiplierTowardTarget multiplies what laws toward the target ideology cost; it does not bar them.",
       "felt": "support",
       "compassAll": [
         0,
@@ -347,7 +345,6 @@
       "available": {
         "spiritTag": "paramilitaries"
       },
-      "note": "The only standing counter to a spirit that feeds an ideology daily. A country with no paramilitaries has nothing to dissolve.",
       "felt": "support",
       "compassAll": [
         0,
@@ -381,7 +378,6 @@
           ]
         }
       },
-      "note": "The other thing a state can do about an armed league it cannot beat. Dissolving one costs 100 and a state that could enforce it would not need it; this costs 80 and buys the men instead, at the price of their politics. Taken narrowly it arms one party, which is picking a side and reads authoritarian. Taken against all of them it is the state conceding that it shares the monopoly on force, which is why compassAll is negative rather than nothing.",
       "felt": "support",
       "compassAll": [
         0,
@@ -434,7 +430,6 @@
           ]
         }
       },
-      "note": "A crown resting on the landed interest does not expropriate it.",
       "felt": "rural",
       "effects": {
         "happiness": 5,
@@ -462,7 +457,7 @@
           }
         ]
       },
-      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "note": "Moves the industry on or off stateOwned; what follows comes from stateOwnership in this file.",
       "costWeightedBy": "economic",
       "felt": "target",
       "effects": {},
@@ -482,7 +477,7 @@
           "targetIndustry": "farmed"
         }
       },
-      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "note": "Moves the industry on or off stateOwned; what follows comes from stateOwnership in this file.",
       "costWeightedBy": "economicInverse",
       "felt": "target",
       "effects": {},
@@ -503,7 +498,7 @@
           "targetStateOwned": true
         }
       },
-      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "note": "Moves the industry on or off stateOwned; what follows comes from stateOwnership in this file.",
       "costWeightedBy": "economic",
       "felt": "target",
       "effects": {},
@@ -521,7 +516,7 @@
         "targetIndustry": "farmed",
         "targetStateOwned": true
       },
-      "note": "An act, not a state. It moves the industry on or off `stateOwned`, and what the country then feels comes from `stateOwnership` in this file, so an industry the state has held since 1870 counts exactly as one it took this morning.",
+      "note": "Moves the industry on or off stateOwned; what follows comes from stateOwnership in this file.",
       "costWeightedBy": "economicInverse",
       "felt": "target",
       "effects": {},
@@ -543,14 +538,14 @@
         "polity": [
           "TWD"
         ],
-        "spiritTag": "reparations"
+        "treatyTerm": "reparations"
       },
       "effects": {
+        "repudiates": true,
         "taxRevenue": 0.08,
-        "relationsWithHolders": -40,
+        "relationsWithImposers": -40,
         "stability": 5
-      },
-      "note": "Turns \"no intention of paying indefinitely\" into an act. It cancels the reparations The Terms of Larajevo charges and makes an enemy of every signatory. Germany defaulting in 1923 brought French troops into the Ruhr, so the relations figure is a threat and not a number."
+      }
     },
     {
       "name": "Ponogoran language rights",
@@ -574,8 +569,7 @@
         "ideologySupportPerDay": {
           "Fascism": -0.01
         }
-      },
-      "note": "Twadamia is two nations under one crown, 59.6% Twadamian to 31.3% Ponogoran by the figures its successor still reports. Recognising the second buys quiet in the east and offends the first, and it takes the wind out of the Narodists in particular."
+      }
     },
     {
       "name": "Moderate reforms",
@@ -601,8 +595,7 @@
           "governing": -0.015
         }
       },
-      "factor": "social reforms",
-      "note": "Newill's package of 1922. The daily loss of governing support is why the Socialists lose to the New Fatherland Party in 1927."
+      "factor": "social reforms"
     },
     {
       "name": "Arm the communities",
@@ -624,8 +617,7 @@
         "manpower": 0.15,
         "defence": 0.1,
         "conscriptionRaiseCost": -0.3
-      },
-      "note": "Ajaxgul has held armed neutrality since the Peace of Kostrava in 1557 and holds it with a militia. The six Communities are its administrative divisions and each raises its own."
+      }
     },
     {
       "name": "Right of asylum",
@@ -647,8 +639,7 @@
         "populationGrowth": 0.2,
         "research": 0.08,
         "stability": -4
-      },
-      "note": "Kanland begins systematic anti-non-andran oppression in 1927 and borders Ajaxgul to the east. Ajaxgul is an Avisian state."
+      }
     },
     {
       "name": "Secular schools",
@@ -669,8 +660,7 @@
       "effects": {
         "research": 0.08,
         "stability": -3
-      },
-      "note": "The mirror of State religion, which Omarbat cannot secularise because it never established one. Neo-Idimism holds 71% of the country by 2001 against 27% who profess nothing."
+      }
     },
     {
       "name": "Bank secrecy",
@@ -691,8 +681,7 @@
       "effects": {
         "taxRevenue": 0.2,
         "tradeIncome": 0.15
-      },
-      "note": "Liechtenstein's company law of 1926 is what made it a haven, and Monaco has charged no income tax since 1869. What it costs is what other governments think of it, which needs the relations system."
+      }
     },
     {
       "name": "Repeal the language rights",
@@ -734,7 +723,7 @@
         "compliance": -0.15,
         "unrestPerDay": 0.05
       },
-      "note": "An occupation law. It applies in occupied provinces and nowhere else, and carries no compass, since what a country does to a conquered population says nothing about how it governs its own."
+      "note": "Applies in occupied provinces only."
     },
     {
       "name": "Military governor",
@@ -752,7 +741,7 @@
         "occupationEfficiency": 0.1,
         "commandPowerIncome": -0.25
       },
-      "note": "An occupation law. The command power is the general it ties up governing instead of fighting."
+      "note": "Applies in occupied provinces only."
     },
     {
       "name": "Hand over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
@@ -769,7 +758,7 @@
         "targetInfrastructure": true
       },
       "effects": {},
-      "note": "An act, not a state. Under Developing another country's ground in 16 Relations between polities. The target is {infrastructure, province}, both named, because a builder may hand over its roads in a province and go on maintaining its railway there. `targetInfrastructure` reads both: it is true only where the country holds levels of that kind in that province and still maintains them. A level built abroad is the host's property from the day it stands and the builder's charge until this is enacted. The host does not consent to it, so a host with a foreign power carrying the bill for its roads has no say in how long that lasts."
+      "note": "Target is {infrastructure, province}. targetInfrastructure: the country maintains levels of that kind in that province. Moves the upkeep of levels it built there to the host."
     },
     {
       "name": "Take over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
@@ -788,7 +777,7 @@
       "effects": {
         "relationsWithTarget": -15
       },
-      "note": "An act, not a state. The host end of Hand over. The builder is not asked, which is what the relations cost is for, and the country named by relationsWithTarget is the builder of the infrastructure and not a polity given in the target. A host does this to get a foreign power off its ground, and pays for the privilege in upkeep it was not carrying before."
+      "note": "relationsWithTarget falls on the builder of the infrastructure."
     },
     {
       "name": "Request hand over of INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
@@ -805,7 +794,7 @@
         "targetForeignInfrastructure": true
       },
       "effects": {},
-      "note": "An act, not a state. The polite form of Take over: the builder decides, and on acceptance the upkeep moves exactly as Hand over moves it. A refusal costs nothing and the infrastructure stays where it is."
+      "note": "The builder accepts or refuses; on acceptance upkeep moves as under Hand over."
     }
   ],
   "stateOwnership": {
@@ -818,7 +807,6 @@
     ],
     "byTarget": {
       "rail": {
-        "maintenance": 0.1,
         "construction": 0.05,
         "taxRevenue": 0.03,
         "happiness": 1
@@ -840,6 +828,11 @@
         "happiness": -9,
         "unrestPerDay": 0.02
       }
+    },
+    "runningCost": {
+      "manufacturing": 70,
+      "resource": 90,
+      "farmed": 60
     },
     "compass": {
       "rail": [

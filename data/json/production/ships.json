@@ -1,0 +1,17 @@
+{
+  "notes": [
+    "Generation I figures; later generations cost ceil(base * 1.5 ^ (generation - 1)) on points and money.",
+    "crew: manpower taken on commissioning. upkeep: $ a day, crew included. fuel: fuel a day."
+  ],
+  "costPerGeneration": 1.5,
+  "generationYears": [1930, 1936, 1941],
+  "hulls": [
+    { "id": "convoy", "name": "Convoy", "points": 100, "money": 7000, "crew": 40, "upkeep": 4, "fuel": 0, "generations": 1 },
+    { "id": "submarine", "name": "Submarine", "points": 60, "money": 14000, "crew": 40, "upkeep": 10, "fuel": 0.1 },
+    { "id": "destroyer", "name": "Destroyer", "points": 90, "money": 17000, "crew": 120, "upkeep": 20, "fuel": 0.1 },
+    { "id": "lightCruiser", "name": "Light cruiser", "points": 250, "money": 77000, "crew": 450, "upkeep": 50, "fuel": 0.1 },
+    { "id": "heavyCruiser", "name": "Heavy cruiser", "points": 500, "money": 106000, "crew": 700, "upkeep": 80, "fuel": 0.5 },
+    { "id": "battleship", "name": "Battleship", "points": 1200, "money": 260000, "crew": 1200, "upkeep": 130, "fuel": 0.5 },
+    { "id": "carrier", "name": "Carrier", "points": 900, "money": 433000, "crew": 2000, "upkeep": 210, "fuel": 0.5 }
+  ]
+}

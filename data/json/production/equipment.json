@@ -1,0 +1,101 @@
+{
+  "notes": [
+    "Generation I figures; later generations cost ceil(points * 1.5 ^ (generation - 1)), money and materials rising with them.",
+    "upkeep: $ a day each in service, null when in the men. storage: $ a day per point in the stockpile."
+  ],
+  "costPerGeneration": 1.5,
+  "storage": 0.02,
+  "generationYears": {
+    "aircraft": [1932, 1936, 1940],
+    "armour": [1932, 1937, 1941],
+    "antiTank": [1932, 1938, 1942],
+    "artillery": [1933, 1939, 1943],
+    "harness": [1933, 1939, 1943],
+    "infantry": [1934, 1940, 1944]
+  },
+  "items": [
+    {
+      "id": "infantryEquipment",
+      "name": "Infantry equipment",
+      "unit": "1000 men",
+      "class": "infantry",
+      "points": 1,
+      "money": 400,
+      "materials": { "iron": 0.1, "textiles": 0.1, "baseMetals": 0.05, "nitrates": 0.05 },
+      "upkeep": null
+    },
+    {
+      "id": "artillery",
+      "name": "Artillery piece",
+      "class": "artillery",
+      "points": 5,
+      "money": 50,
+      "materials": { "iron": 0.75, "baul": 0.25, "nitrates": 0.25, "tungsten": 0.1 },
+      "upkeep": 1
+    },
+    {
+      "id": "dragonHarness",
+      "name": "Dragon harness",
+      "unit": "one dragon",
+      "class": "harness",
+      "points": 6,
+      "money": 5,
+      "materials": { "textiles": 0.6, "baseMetals": 0.24, "timber": 0.12 },
+      "upkeep": 1
+    },
+    {
+      "id": "armouredCar",
+      "name": "Armoured car",
+      "class": "armour",
+      "points": 8,
+      "money": 115,
+      "materials": { "iron": 0.96, "rubber": 0.48, "baseMetals": 0.32, "baul": 0.24 },
+      "upkeep": 1
+    },
+    {
+      "id": "fighter",
+      "name": "Fighter",
+      "class": "aircraft",
+      "points": 8,
+      "money": 145,
+      "materials": { "aluminium": 0.8, "timber": 0.48, "rubber": 0.24, "baul": 0.24 },
+      "upkeep": 0.5
+    },
+    {
+      "id": "lightTank",
+      "name": "Light tank",
+      "class": "armour",
+      "points": 15,
+      "money": 240,
+      "materials": { "iron": 2.25, "rareMetals": 0.75, "rubber": 0.6, "baul": 0.45, "tungsten": 0.3 },
+      "upkeep": 2
+    },
+    {
+      "id": "tacticalBomber",
+      "name": "Tactical bomber",
+      "class": "aircraft",
+      "points": 20,
+      "money": 290,
+      "materials": { "aluminium": 2.4, "timber": 1, "rubber": 0.6, "baul": 0.6 },
+      "upkeep": 1
+    },
+    {
+      "id": "mediumTank",
+      "name": "Medium tank",
+      "class": "armour",
+      "points": 25,
+      "money": 385,
+      "materials": { "iron": 3.75, "rareMetals": 1.5, "rubber": 1, "baul": 0.75, "tungsten": 0.75 },
+      "upkeep": 3
+    },
+    {
+      "id": "strategicBomber",
+      "name": "Strategic bomber",
+      "class": "aircraft",
+      "points": 40,
+      "money": 770,
+      "materials": { "aluminium": 5.6, "timber": 1.6, "rubber": 1.2, "baul": 1.6 },
+      "upkeep": 2
+    }
+  ]
+}

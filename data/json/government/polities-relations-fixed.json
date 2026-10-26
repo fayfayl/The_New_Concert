@@ -1,5 +1,5 @@
 {
-  "note": "The standing relations between polities on the start date. A relation is a thing two countries are in together, so it is recorded once here rather than twice in either country's government entry. Every kind the diplomacy panel groups by is listed under bands, and a band with nothing in it for a country is not shown for that country. Alliances, guarantees, access, sanctions and wars are all empty on the start date and are listed so the shape is there to fill; leases are not, and are the table under Relations in plans 16.",
+  "note": "Each relation is recorded once, between first and second. bands: the kinds the diplomacy panel groups by; an empty band is not shown for a country.",
   "bands": [
     {
       "id": "allies",
@@ -13,6 +13,11 @@
       "mirror": "Guaranteed by"
     },
     {
+      "id": "nonAggression",
+      "name": "Non-aggression pact",
+      "of": "both"
+    },
+    {
       "id": "access",
       "name": "Military access",
       "of": "both"
@@ -20,7 +25,8 @@
     {
       "id": "sanctions",
       "name": "Sanctioned",
-      "of": "second"
+      "of": "second",
+      "mirror": "Sanctioning"
     },
     {
       "id": "war",
@@ -32,6 +38,29 @@
       "name": "Leased out",
       "of": "first",
       "mirror": "Leased from"
+    },
+    {
+      "id": "improving",
+      "name": "Improving relations",
+      "of": "both"
+    },
+    {
+      "id": "denounced",
+      "name": "Denounced",
+      "of": "first",
+      "mirror": "Denounced by"
+    },
+    {
+      "id": "stateAgreement",
+      "name": "Supplying",
+      "of": "first",
+      "mirror": "Supplied by"
+    },
+    {
+      "id": "volunteers",
+      "name": "Volunteers sent to",
+      "of": "first",
+      "mirror": "Volunteers from"
     }
   ],
   "relations": [
@@ -106,6 +135,176 @@
       "rent": {
         "money": 130
       }
+    },
+    {
+      "band": "improving",
+      "first": "KRN",
+      "second": "FNA",
+      "progress": 8
+    },
+    {
+      "band": "improving",
+      "first": "JEN",
+      "second": "FNA",
+      "progress": 10
+    },
+    {
+      "band": "improving",
+      "first": "JEN",
+      "second": "MRI",
+      "progress": 10
+    },
+    {
+      "band": "guarantee",
+      "first": "FNA",
+      "second": "KGN"
+    },
+    {
+      "band": "improving",
+      "first": "FNA",
+      "second": "KGN",
+      "progress": 15
+    },
+    {
+      "band": "denounced",
+      "first": "TWD",
+      "second": "SBY",
+      "on": "1923-01-15"
+    },
+    {
+      "band": "improving",
+      "first": "AMY",
+      "second": "TWD",
+      "progress": 5
+    },
+    {
+      "band": "improving",
+      "first": "KGN",
+      "second": "SWD",
+      "progress": 5
+    },
+    {
+      "band": "sanctions",
+      "first": "KAN",
+      "second": "SNE"
+    },
+    {
+      "band": "sanctions",
+      "first": "KAN",
+      "second": "ROS"
+    },
+    {
+      "band": "sanctions",
+      "first": "KAN",
+      "second": "VAK"
+    },
+    {
+      "band": "denounced",
+      "first": "MRI",
+      "second": "VOS",
+      "on": "1924-10-01"
+    },
+    {
+      "band": "denounced",
+      "first": "SAN",
+      "second": "VOS",
+      "on": "1924-12-01"
+    },
+    {
+      "band": "denounced",
+      "first": "TWD",
+      "second": "SBY",
+      "on": "1923-09-01"
+    },
+    {
+      "band": "improving",
+      "first": "CSL",
+      "second": "NCN",
+      "progress": 10
+    },
+    {
+      "band": "improving",
+      "first": "BUM",
+      "second": "NCN",
+      "progress": 10
+    },
+    {
+      "band": "improving",
+      "first": "EMS",
+      "second": "NCN",
+      "progress": 10
+    },
+    {
+      "band": "improving",
+      "first": "QRG",
+      "second": "SCN",
+      "progress": 10
+    },
+    {
+      "band": "stateAgreement",
+      "first": "CSL",
+      "second": "NCN",
+      "good": "iron",
+      "amount": 1,
+      "price": 0,
+      "progress": 20
+    },
+    {
+      "band": "stateAgreement",
+      "first": "BUM",
+      "second": "NCN",
+      "good": "oil",
+      "amount": 1,
+      "price": 0,
+      "progress": 15
+    },
+    {
+      "band": "stateAgreement",
+      "first": "EMS",
+      "second": "NCN",
+      "good": "infantryEquipment",
+      "amount": 1,
+      "price": 0,
+      "progress": 15
+    },
+    {
+      "band": "stateAgreement",
+      "first": "QRG",
+      "second": "SCN",
+      "good": "iron",
+      "amount": 2,
+      "price": 0,
+      "progress": 20
+    },
+    {
+      "band": "volunteers",
+      "first": "QRG",
+      "second": "SCN",
+      "divisions": 2
+    },
+    {
+      "band": "stateAgreement",
+      "first": "BUM",
+      "second": "NCN",
+      "good": "infantryEquipment",
+      "amount": 2,
+      "price": 0
+    },
+    {
+      "band": "stateAgreement",
+      "first": "CSL",
+      "second": "NCN",
+      "good": "infantryEquipment",
+      "amount": 1,
+      "price": 0
+    },
+    {
+      "band": "stateAgreement",
+      "first": "QRG",
+      "second": "SCN",
+      "good": "infantryEquipment",
+      "amount": 1,
+      "price": 0
     }
   ]
 }

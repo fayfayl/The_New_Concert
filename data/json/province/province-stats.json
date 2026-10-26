@@ -2017,7 +2017,7 @@
       "hydroPotential": 0
     },
     "campania_superior": {
-      "claims": ["CFR", "NCN", "SCN"],
+      "claims": ["NCN", "SCN"],
       "population": 999000,
       "maxRoad": 9,
       "maxElectricity": 9,
@@ -2041,7 +2041,7 @@
       "hydroPotential": 0
     },
     "vallmiria": {
-      "claims": ["CFR", "NCN", "SCN"],
+      "claims": ["NCN", "SCN"],
       "population": 585000,
       "maxRoad": 10,
       "maxElectricity": 10,
@@ -2053,7 +2053,7 @@
       "hydroPotential": 0
     },
     "luminara": {
-      "claims": ["CFR", "NCN", "SCN"],
+      "claims": ["NCN", "SCN"],
       "population": 914000,
       "maxRoad": 10,
       "maxElectricity": 10,
@@ -2077,7 +2077,7 @@
       "hydroPotential": 0
     },
     "fatiras": {
-      "claims": ["CFR", "NCN", "SCN"],
+      "claims": ["NCN", "SCN"],
       "population": 441000,
       "maxRoad": 8,
       "maxElectricity": 8,
@@ -4694,7 +4694,7 @@
     },
     "inner_costa_auro": {
       "claims": [],
-      "population": 59000,
+      "population": 114000,
       "maxRoad": 2,
       "maxElectricity": 4,
       "maxRadar": 5,
@@ -4706,7 +4706,7 @@
     },
     "costa_auro": {
       "claims": [],
-      "population": 231000,
+      "population": 447000,
       "maxRoad": 6,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4718,7 +4718,7 @@
     },
     "ettore_da_gadine": {
       "claims": [],
-      "population": 9000,
+      "population": 17000,
       "maxRoad": 2,
       "maxElectricity": 4,
       "maxRadar": 5,
@@ -4730,7 +4730,7 @@
     },
     "east_citta_nel_nulla": {
       "claims": [],
-      "population": 12000,
+      "population": 23000,
       "maxRoad": 4,
       "maxElectricity": 6,
       "maxRadar": 8,
@@ -4742,7 +4742,7 @@
     },
     "rasello_islands": {
       "claims": [],
-      "population": 2000,
+      "population": 4000,
       "maxRoad": 3,
       "maxElectricity": 5,
       "maxRadar": 9,
@@ -4754,7 +4754,7 @@
     },
     "intiraymi": {
       "claims": [],
-      "population": 45000,
+      "population": 87000,
       "maxRoad": 5,
       "maxElectricity": 7,
       "maxRadar": 8,
@@ -4766,7 +4766,7 @@
     },
     "west_nuova_frontiera": {
       "claims": [],
-      "population": 15000,
+      "population": 29000,
       "maxRoad": 4,
       "maxElectricity": 6,
       "maxRadar": 8,
@@ -4778,7 +4778,7 @@
     },
     "chakapuyu": {
       "claims": [],
-      "population": 35000,
+      "population": 68000,
       "maxRoad": 6,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4790,7 +4790,7 @@
     },
     "east_gelsominia": {
       "claims": [],
-      "population": 5000,
+      "population": 10000,
       "maxRoad": 8,
       "maxElectricity": 8,
       "maxRadar": 10,
@@ -4802,7 +4802,7 @@
     },
     "gelsominia": {
       "claims": [],
-      "population": 353000,
+      "population": 683000,
       "maxRoad": 7,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4814,7 +4814,7 @@
     },
     "west_alta_novacasa": {
       "claims": [],
-      "population": 33000,
+      "population": 64000,
       "maxRoad": 6,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4826,7 +4826,7 @@
     },
     "east_alta_novacasa": {
       "claims": [],
-      "population": 228000,
+      "population": 441000,
       "maxRoad": 8,
       "maxElectricity": 8,
       "maxRadar": 10,
@@ -4838,7 +4838,7 @@
     },
     "east_lenzia": {
       "claims": [],
-      "population": 529000,
+      "population": 1023000,
       "maxRoad": 8,
       "maxElectricity": 8,
       "maxRadar": 10,
@@ -4850,7 +4850,7 @@
     },
     "west_lenzia": {
       "claims": [],
-      "population": 132000,
+      "population": 255000,
       "maxRoad": 7,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4862,7 +4862,7 @@
     },
     "liberatore_c_l_molenaar": {
       "claims": [],
-      "population": 443000,
+      "population": 857000,
       "maxRoad": 6,
       "maxElectricity": 7,
       "maxRadar": 8,
@@ -4874,7 +4874,7 @@
     },
     "popolo": {
       "claims": [],
-      "population": 221000,
+      "population": 427000,
       "maxRoad": 7,
       "maxElectricity": 8,
       "maxRadar": 9,
@@ -4898,7 +4898,7 @@
     },
     "santa_alberta": {
       "claims": [],
-      "population": 292000,
+      "population": 565000,
       "maxRoad": 8,
       "maxElectricity": 8,
       "maxRadar": 10,
@@ -4910,7 +4910,7 @@
     },
     "costa_ricca": {
       "claims": [],
-      "population": 473000,
+      "population": 915000,
       "maxRoad": 8,
       "maxElectricity": 8,
       "maxRadar": 10,
@@ -4922,7 +4922,7 @@
     },
     "bassa_novacasa": {
       "claims": [],
-      "population": 606000,
+      "population": 1171000,
       "maxRoad": 10,
       "maxElectricity": 10,
       "maxRadar": 10,

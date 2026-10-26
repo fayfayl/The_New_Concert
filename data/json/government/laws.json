@@ -5,7 +5,7 @@
       "phrase": "conscription",
       "changeDays": 30,
       "wartimeDiscount": true,
-      "note": "Manpower is the share of the population of controlled provinces that can be called up. The peace multiplier prices raising the law while not at war. Happiness is the peacetime figure, halved at war and falling to nothing as the country is occupied.",
+      "note": "manpower: share of the population of controlled provinces that can be called up. peaceMultiplier: cost multiplier for raising the law at peace. happiness: the peacetime figure, halved at war and falling to 0 as the country is occupied.",
       "options": [
         {
           "name": "Volunteer only",
@@ -127,7 +127,7 @@
       "phrase": "the war economy",
       "changeDays": 30,
       "wartimeDiscount": true,
-      "note": "Consumer share is the share of civilian factories making goods for the population and taking no state orders. It is multiplied by the holding ideology's modifier. Conversion is days per factory changed between civilian and military. The peace multiplier prices raising the law while not at war.",
+      "note": "consumerShare: share of civilian factories making consumer goods, times the holding ideology's modifier. conversionDays: days per factory changed between civilian and military. peaceMultiplier: cost multiplier for raising the law at peace.",
       "options": [
         {
           "name": "Civilian economy",
@@ -217,7 +217,7 @@
       "phrase": "income tax",
       "changeDays": 30,
       "wartimeDiscount": true,
-      "note": "Revenue is the multiplier on the population term of provincial tax.",
+      "note": "revenueFromPeople: multiplier on the population term of provincial tax.",
       "options": [
         {
           "name": "Minimal taxation",
@@ -231,9 +231,9 @@
           "felt": "urbanisation",
           "factor": "minimal income tax",
           "effects": {
-            "revenueFromPeople": -0.4,
-            "happiness": 10,
-            "stability": 5
+            "revenueFromPeople": -0.7,
+            "happiness": 15,
+            "stability": 8
           }
         },
         {
@@ -248,8 +248,9 @@
           "felt": "urbanisation",
           "factor": "low income tax",
           "effects": {
-            "revenueFromPeople": -0.2,
-            "happiness": 5
+            "revenueFromPeople": -0.4,
+            "happiness": 8,
+            "stability": 3
           }
         },
         {
@@ -277,9 +278,9 @@
           "felt": "urbanisation",
           "factor": "high income tax",
           "effects": {
-            "revenueFromPeople": 0.25,
-            "happiness": -8,
-            "stability": -5
+            "revenueFromPeople": 0.5,
+            "happiness": -12,
+            "stability": -8
           }
         },
         {
@@ -294,9 +295,9 @@
           "felt": "urbanisation",
           "factor": "punitive income tax",
           "effects": {
-            "revenueFromPeople": 0.5,
-            "happiness": -15,
-            "stability": -15
+            "revenueFromPeople": 1,
+            "happiness": -25,
+            "stability": -20
           }
         }
       ],
@@ -307,7 +308,7 @@
       "phrase": "company tax",
       "changeDays": 30,
       "wartimeDiscount": true,
-      "note": "Revenue is the multiplier on the factory term of provincial tax.",
+      "note": "revenueFromCivilianFactories: multiplier on the factory term of provincial tax.",
       "options": [
         {
           "name": "Minimal taxation",
@@ -319,8 +320,8 @@
             0
           ],
           "effects": {
-            "revenueFromFactories": -0.4,
-            "factoryOutput": 0.1
+            "revenueFromCivilianFactories": -0.7,
+            "civilianFactoryOutput": 0.15
           }
         },
         {
@@ -333,8 +334,8 @@
             0
           ],
           "effects": {
-            "revenueFromFactories": -0.2,
-            "factoryOutput": 0.05
+            "revenueFromCivilianFactories": -0.4,
+            "civilianFactoryOutput": 0.1
           }
         },
         {
@@ -347,7 +348,7 @@
             0
           ],
           "effects": {
-            "revenueFromFactories": 0
+            "revenueFromCivilianFactories": 0
           }
         },
         {
@@ -360,9 +361,8 @@
             0
           ],
           "effects": {
-            "revenueFromFactories": 0.25,
-            "factoryOutput": -0.08,
-            "stability": -3
+            "revenueFromCivilianFactories": 0.5,
+            "civilianFactoryOutput": -0.15
           }
         },
         {
@@ -375,9 +375,9 @@
             1
           ],
           "effects": {
-            "revenueFromFactories": 0.5,
-            "factoryOutput": -0.2,
-            "stability": -8
+            "revenueFromCivilianFactories": 1,
+            "civilianFactoryOutput": -0.35,
+            "stability": -6
           }
         }
       ],
@@ -388,7 +388,7 @@
       "phrase": "colonial tax",
       "changeDays": 30,
       "wartimeDiscount": true,
-      "note": "Applies to provinces of colonies. A polity holding none omits the law entirely. Colonial unrest is a figure a day added in every colonial province.",
+      "note": "Omitted by a polity with no colonies. revenueFromColonies: multiplier on the holder's share of colony tax (a fifth at Moderate). colonialUnrestPerDay: added a day in every colonial province.",
       "options": [
         {
           "name": "Minimal taxation",
@@ -442,9 +442,9 @@
             2
           ],
           "effects": {
-            "revenueFromColonies": 0.25,
-            "colonialUnrestPerDay": 0.2,
-            "stability": -3
+            "revenueFromColonies": 2,
+            "colonialUnrestPerDay": 0.6,
+            "stability": -5
           }
         },
         {
@@ -457,9 +457,91 @@
             4
           ],
           "effects": {
-            "revenueFromColonies": 0.5,
-            "colonialUnrestPerDay": 0.5,
-            "stability": -8
+            "revenueFromColonies": 3,
+            "colonialUnrestPerDay": 1.2,
+            "stability": -12
+          }
+        }
+      ],
+      "costWeightedBy": "economic"
+    },
+    "nationalTax": {
+      "label": "National tax",
+      "phrase": "national tax",
+      "changeDays": 30,
+      "wartimeDiscount": true,
+      "note": "Omitted by a polity that is not a realm. revenueFromMembers: multiplier on the realm's share of member tax (a quarter at Moderate). memberUnrestPerDay: added a day in every province of every member.",
+      "options": [
+        {
+          "name": "Minimal taxation",
+          "description": "The members retain most of their revenue.",
+          "image": "minimal_taxation_personal",
+          "cost": 50,
+          "compass": [
+            5,
+            -1
+          ],
+          "effects": {
+            "revenueFromMembers": -0.4,
+            "memberUnrestPerDay": -0.5
+          }
+        },
+        {
+          "name": "Low taxation",
+          "description": "The members remit a small portion of their revenue.",
+          "image": "low_taxation_personal",
+          "cost": 50,
+          "compass": [
+            2,
+            0
+          ],
+          "effects": {
+            "revenueFromMembers": -0.2,
+            "memberUnrestPerDay": -0.2
+          }
+        },
+        {
+          "name": "Moderate taxation",
+          "description": "The members remit the customary portion of their revenue.",
+          "image": "moderate_taxation_personal",
+          "cost": 50,
+          "compass": [
+            0,
+            0
+          ],
+          "effects": {
+            "revenueFromMembers": 0,
+            "memberUnrestPerDay": 0
+          }
+        },
+        {
+          "name": "High taxation",
+          "description": "The members remit most of their revenue.",
+          "image": "high_taxation_personal",
+          "cost": 75,
+          "compass": [
+            -3,
+            2
+          ],
+          "effects": {
+            "revenueFromMembers": 1.4,
+            "memberUnrestPerDay": 0.6,
+            "stability": -5
+          }
+        },
+        {
+          "name": "Punitive taxation",
+          "description": "The members remit all revenue above their administrative costs.",
+          "image": "punitive_taxation_personal",
+          "cost": 100,
+          "compass": [
+            -5,
+            4
+          ],
+          "effects": {
+            "revenueFromMembers": 2.2,
+            "memberUnrestPerDay": 1.2,
+            "stability": -12
           }
         }
       ],
@@ -472,7 +554,7 @@
       "tightenDays": 180,
       "wartimeDiscount": true,
       "compassCarried": false,
-      "note": "Loosening the anchor takes changeDays and tightening it takes tightenDays. Interest multiplies the debt * 0.0002 charged under Treasury. Debt thresholds multiplies where the four ratio penalties fall, so ×0.5 brings them at half the debt. Anything else carrying either multiplies the law figure rather than replacing it. The ladder runs tightest to loosest in the order below.",
+      "note": "Loosening takes changeDays, tightening tightenDays. interest: multiplier on the debt * 0.0002 Treasury charge. debtThresholds: multiplier on where the four debt-ratio penalties fall. Other sources of either multiply the law figure. Options run tightest to loosest.",
       "options": [
         {
           "name": "Gold standard",
@@ -534,7 +616,7 @@
       "phrase": "trade",
       "changeDays": 30,
       "wartimeDiscount": false,
-      "note": "Surplus offered is the share of a surplus put on the automatic market and deficit filled the share of a deficit the market may fill. Tariff ceiling is the highest rate the country may charge a foreign flag.",
+      "note": "surplusOffered: share of a surplus put on the automatic market. deficitFilled: share of a deficit the market may fill. tariffCeiling: highest rate charged on a foreign flag.",
       "options": [
         {
           "name": "Free trade",
@@ -609,7 +691,7 @@
     "cost": 150,
     "wartimeDiscount": false,
     "compassCarried": false,
-    "note": "One school per branch, held separately, in four branches: land, air, naval and magical. A country begins with the doctrine its history gives it and most never change. Land dragons take the land schools inside their divisions and a dragon squadron takes the air schools, with strategic bombing at half effect and double anti-air fire.",
+    "note": "One school per branch: land, air, naval, magical. Land dragons take the land schools; dragon squadrons take the air schools, with strategic bombing at half effect and double anti-air fire.",
     "branches": {
       "land": [
         {

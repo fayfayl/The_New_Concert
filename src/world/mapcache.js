@@ -1,59 +1,6 @@
-/*
- * mapcache.js — the precomputed map, on disk.
- *
- * Deriving the world from the bitmap costs the better part of a second: a
- * colour lookup per pixel, an adjacency scan, a distance transform, and two
- * more full-map passes for the labels. None of it depends on anything that
- * happens at runtime, so sync-provinces.js does it once and writes the answers
- * to data/map-cache.bin. The page then loads that instead.
- *
- * The cache is an OPTIMISATION, never a source of truth. It carries a hash of
- * the two files it was built from, and the reader throws it away and computes
- * from scratch if either has moved on. A stale cache showing yesterday's
- * borders would be a genuinely horrible bug, so it is made impossible rather
- * than merely unlikely.
- *
- * Layout, before compression:
- *
- *   "CHM1"                4 bytes
- *   metaLength            uint32, little endian
- *   meta                  metaLength bytes of UTF-8 JSON
- *   provinceAt            width * height uint16
- *   borderDist            width * height uint8
- *
- * The small structures — bounds, adjacency, coastline, label geometry — live in
- * the JSON, where they cost a few tens of KB and stay readable. The two per-
- * pixel arrays are raw. Compression is the caller's business: Node deflates,
- * the browser inflates, and neither belongs in here.
- */
+// Reads and writes the precomputed map cache.
 
-// Bump whenever the meaning of what is stored changes — a new field, or a
-// change to how any of it is derived. The hash catches changed INPUTS; this
-// catches changed CODE, which the hash cannot see.
-//
-// 2: label blocks join provinces that come within NEAR_GAP pixels of each other.
-// 3: adjacency and the border distance field wrap east-west, so provinces
-//    meeting at the map's seam are neighbours and the seam is no longer treated
-//    as a frontier.
-// 4: a contact shorter than MIN_BORDER_PX no longer makes two provinces
-//    neighbours, so the adjacency graph is smaller than it was.
-// 5: the label geometry carries the near-links as well. Provinces changing
-//    hands re-block themselves against that graph, and deriving it again at
-//    runtime would mean a pass over every coastal pixel on the map.
-// 6: provinces can carry an occupier, and everything drawn reads that in place
-//    of the owner, so the label blocks and the distance field are built from a
-//    different partition than before.
-// 7: the distance field separates occupied ground from the occupier's own, so
-//    the front between them is a frontier. See frontierKeyOf in mapdata.js.
-// 8: province boxes are resolved against the map wrapping, so a province holding
-//    ground either side of the seam has a box describing where it is instead of
-//    one spanning the whole map. maxX may be at or past width. See resolveWrap.
-// 9: carries seaAt as well, the per-pixel sea region index built from sea.png.
-//    Optional: meta.sea is null when there is no sea.png to read, and the
-//    payload is then the two arrays it always was.
-// 10: countyAt too, the per-pixel county index built from counties.png. Like
-//     the sea it is optional: meta.counties is null when there is nothing to
-//     read, and the payload is then two bytes a pixel shorter.
+// Cache format version; bumped when stored data or its derivation changes.
 export const CACHE_VERSION = 12;
 export const CACHE_FILE = 'map-cache.bin';
 
@@ -71,43 +18,22 @@ export function hashBytes(bytes, seed = 0x811c9dc5) {
   return h >>> 0;
 }
 
-/**
- * Identifies the inputs a cache was built from: the bitmap's bytes, and the
- * fields of the JSON the derived data actually depends on.
- *
- * Names and terrain are deliberately excluded — renaming a province changes
- * nothing about adjacency, borders or geometry, and invalidating a 15-million
- * pixel cache over a typo would be miserable. Owners ARE included, because both
- * the distance field and the label blocks are built from them.
- *
- * `raw` must be the JSON as parsed, before normaliseTable() rewrites colours.
- */
+// Hash of the bitmaps and JSON fields the cached data is derived from.
 export function hashInputs(pngBytes, raw, seaPngBytes = null, seaRaw = null,
   countyPngBytes = null, countyRaw = null, subPngBytes = null) {
   const parts = [String(raw.oceanColour)];
-  // Occupier is in here because it decides what the map is coloured, so a change
-  // to it has to invalidate a cache built before it.
   for (const p of raw.provinces || []) parts.push(`${p.id}|${p.colour}|${p.owner}|${p.occupier ?? ''}`);
 
-  // The sea is carried in the same file and so has to invalidate it on the same
-  // terms: a redrawn sea.png, a renamed region, a recoloured one. Left out, the
-  // digest is byte for byte the one a cache without a sea has always had.
   if (seaRaw) {
     parts.push(`sea|${seaRaw.landColour}`);
     for (const r of seaRaw.regions || []) parts.push(`${r.id}|${r.colour}`);
   }
 
-  // And the counties, on the same terms. A hand edit to counties.png has to
-  // invalidate the cache, or the page would draw the county map it built last
-  // week over the provinces of today.
   if (countyRaw) {
     parts.push(`counties|${countyRaw.oceanColour}`);
     for (const c of countyRaw.counties || []) parts.push(`${c.id}|${c.colour}|${c.province}`);
   }
 
-  // And the sea subregions. They live in sea.json beside the regions, so the
-  // list above already moves when one is renamed or recoloured — but the BITMAP
-  // is its own file and a hand edit to it has to invalidate the cache too.
   if (seaRaw && seaRaw.subregions) {
     for (const s of seaRaw.subregions) parts.push(`${s.id}|${s.colour}|${s.region}`);
   }
@@ -120,21 +46,7 @@ export function hashInputs(pngBytes, raw, seaPngBytes = null, seaRaw = null,
   return hashBytes(text, h);
 }
 
-/**
- * Occupation is held by county, and a province's occupier is derived from them.
- *
- * `occupation` is keyed occupier, then the owner whose ground is held, then the
- * county ids held, as it stands in counties-starting-values.json. Each county
- * named takes that occupier. A province's `occupier` is then whoever holds the
- * most of its counties, the owner winning a tie, and `occupied` is the share of
- * its counties held by anybody but the owner, which is what 04 Ownership change
- * scales tax, output and resources by.
- *
- * Runs before hashInputs, in the page and in sync-provinces.js alike, because the
- * derived occupier is what the map is coloured by and what the hash reads.
- * Without counties there is nothing to derive from, and the provinces are left
- * as they came.
- */
+// Derives each province's occupier from county occupation.
 export function applyCountyOccupation(raw, countyRaw, occupation) {
   const counties = countyRaw?.counties;
   if (!counties?.length) return;
@@ -167,18 +79,13 @@ export function applyCountyOccupation(raw, countyRaw, occupation) {
     }
     if (!taken) continue;
     p.occupied = taken / t.total;
-    // The owner keeps whatever nobody else holds, and a tie goes to the owner.
     if (most > t.total - taken) p.occupier = top;
   }
 }
 
 // ------------------------------------------------------------------ writing
 
-/**
- * The sea half of the meta: one entry per region, in index order, holding the
- * same box and neighbour list a province gets. Null when there is no sea world,
- * which is what tells unpackCache the payload has no seaAt on the end.
- */
+// Sea half of the cache meta: box and neighbours per region, or null.
 export function buildSeaMeta(sea) {
   if (!sea) return null;
   const n = sea.atIndex.length - 1;
@@ -213,13 +120,7 @@ export function seaFromCache(table, meta, seaAt, indexSea, width, height) {
   return { width, height, seaAt, atIndex, byId, adjacency, bounds, table };
 }
 
-/**
- * Flattens the derived world into the plain structures the cache stores.
- *
- * Everything is keyed by province INDEX rather than id, because indices are
- * small integers that pack tightly and the reader rebuilds the id mapping from
- * provinces.json anyway.
- */
+// Flattens the derived world into index-keyed structures for the cache.
 /** The county half of the meta, the same shape as buildSeaMeta. */
 /** The sea subregion half of the meta, the same shape as buildCountyMeta. */
 export function buildSubMeta(subs) {
@@ -272,15 +173,6 @@ export function buildCountyMeta(counties) {
 }
 
 /** Rebuilds the county world from the cache, as seaFromCache does for the sea. */
-/*
- * WIDTH AND HEIGHT ARE PART OF THE ANSWER, not decoration. A world built by
- * buildCountyWorld carries them and one restored from the cache used not to,
- * so anything indexing by `world.width` came out with NaN offsets and read
- * nothing at all — silently, since NaN is a perfectly good array index that
- * simply never matches. That is what left the county highlight invisible: the
- * silhouette traced a shape of no pixels and the ring drawn round it was empty.
- * A world is a world however it was made.
- */
 export function countiesFromCache(table, meta, countyAt, indexCounties, width, height) {
   if (!meta || !countyAt) return null;
   const { byId, atIndex } = indexCounties(table);
@@ -321,7 +213,6 @@ export function buildCacheMeta(world, geometry, hash, sea = null, counties = nul
   for (let ix = 1; ix <= n; ix++) {
     const p = atIndex[ix];
     const bb = bounds.get(p.id);
-    // A province with no pixels in the bitmap has no box at all.
     meta.bounds.push(bb ? [bb.minX, bb.minY, bb.maxX, bb.maxY, bb.n, bb.cx, bb.cy] : null);
     meta.adjacency.push([...(adjacency.get(p.id) || [])].map((id) => indexOf.get(id)));
     if (coastal.has(p.id)) meta.coastal.push(ix);
@@ -332,10 +223,7 @@ export function buildCacheMeta(world, geometry, hash, sea = null, counties = nul
       blocks: geometry.blocks.map((b) => b.owner),
       blockAt: Array.from(geometry.blockAt),
       geo: geometry.geo,
-      // A Map does not survive JSON, so the histograms go as entry pairs.
       fit: geometry.fit.map((f) => f && { ...f, hist: [...f.hist] }),
-      // Likewise the near-links, which are a Map of Sets. Province indices, so
-      // they cost a couple of numbers per island rather than a string each.
       near: [...(geometry.near || [])].map(([ix, set]) => [ix, [...set]]),
     };
   }
@@ -385,13 +273,9 @@ export function unpackCache(bytes) {
 
   const pixels = meta.width * meta.height;
   const at = 8 + jsonLength;
-  // 2 bytes for the province index, 1 for the border distance, and 2 more each
-  // for the sea region and the county where the file carries them.
   const want = at + pixels * (3 + (meta.sea ? 2 : 0) + (meta.counties ? 2 : 0) + (meta.subs ? 2 : 0));
   if (bytes.length !== want) return null;
 
-  // Copied rather than viewed: a typed array over a subarray inherits the whole
-  // buffer, which would pin the compressed bytes in memory for the session.
   const provinceAt = new Uint16Array(pixels);
   new Uint8Array(provinceAt.buffer).set(bytes.subarray(at, at + pixels * 2));
   const borderDist = bytes.slice(at + pixels * 2, at + pixels * 3);
@@ -416,12 +300,7 @@ export function unpackCache(bytes) {
   return { meta, provinceAt, borderDist, seaAt, countyAt, subAt };
 }
 
-/**
- * Rebuilds what buildWorld() would have produced, without touching a pixel.
- *
- * `indexProvinces` is passed in rather than imported so this module stays
- * free of any dependency on the scanning code it exists to skip.
- */
+// Rebuilds the buildWorld() result from the cache without a pixel scan.
 export function worldFromCache(table, cache, indexProvinces) {
   const { meta, provinceAt, borderDist } = cache;
   const { byId, atIndex } = indexProvinces(table);
@@ -438,13 +317,9 @@ export function worldFromCache(table, cache, indexProvinces) {
     const b = meta.bounds[ix - 1];
     if (!b) continue;
     const [minX, minY, maxX, maxY, n, cx, cy] = b;
-    // sx and sy are only the running sums the scan used to reach cx and cy;
-    // they are restored so a cached bounds object is indistinguishable.
     bounds.set(id, { minX, minY, maxX, maxY, n, sx: cx * n, sy: cy * n, cx, cy });
   }
 
-  // Members are left empty here and filled by attachBlockMembers(), so the
-  // restored geometry matches what buildBlocks() would have produced.
   const geometry = meta.labels && {
     blocks: meta.labels.blocks.map((owner) => ({ owner, members: [] })),
     blockAt: Int32Array.from(meta.labels.blockAt),

@@ -16,7 +16,7 @@
 
 import {
   refreshBorderDistance, CHAMFER_ORTH, BORDER_DIST_MAX,
-} from '../src/mapdata.js';
+} from '../src/world/mapdata.js';
 
 // Tall, because the top and bottom rows are seeds in their own right — a pole
 // really is the end of the map, unlike the seam. A short world is nothing but

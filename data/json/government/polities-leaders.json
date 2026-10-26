@@ -1,5 +1,5 @@
 {
-  "note": "Everyone who can lead a country, whether they hold office or not. Who holds it is `leader` in a polity's entry in polities-starting-government.json, the way `spirits` and `decrees` are, and an event, a focus or a coup changes it. `effects` are the leader's own traits and apply only while they hold office. `portrait` names a file in data/img/portraits without the extension. `party` is null for a leader who governs without one.",
+  "note": "Everyone who can lead a country, in office or not. The office holder is leader in the polity's entry in polities-starting-government.json. effects apply only while in office. portrait: file in data/img/portraits, no extension. party: null for a leader with none.",
   "leaders": [
     {
       "id": "adrianna",

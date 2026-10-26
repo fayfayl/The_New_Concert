@@ -1,0 +1,111 @@
+{
+  "notes": [
+    "Wars ended before the start. Every pair across two sides starts with -60 + 3 a year since `ended` in its history, or `grudge` where given, and fades 3 a year from there.",
+    "Where a pair fought in more than one, the worse counts.",
+    "war: the war a part belongs to, where its losers made peace apart. A side is the same side in every part, and allies across two parts were allies until the first of them made peace.",
+    "Colonies fight on their suzerain's side, where they existed at the time."
+  ],
+  "wars": [
+    {
+      "name": "Second Sapient War",
+      "war": "Second Sapient War",
+      "ended": "1919-10-26",
+      "sides": [
+        ["TWD"],
+        ["FNA", "FLN", "AVN", "KAN", "GWR", "VOS", "AKA", "MRI", "ZAN", "VRP", "JEN", "TRN", "ATH", "NCO", "DIM", "SAN", "SWD", "RGC", "STN", "FAC", "KTR", "RGA", "HLT", "SKG", "NNF", "MLR", "HML", "TPW", "BND", "FSP", "ADH", "MBY", "EMB", "GDV", "FNY", "ANY", "HTL", "HTH", "AGN", "BWN", "KWZ", "HEL", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "SPK", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "JMB", "KRT", "DOB", "JSP", "JMN", "TJV", "CAC", "SVP", "TDC", "PLT", "SCB", "ALG", "SMN", "RDZ", "SMG", "MBR", "BKA", "ABH", "LVS", "DAG", "WEI", "NNT", "SPD", "ATN", "HMA", "AKD", "SNG"]
+      ]
+    },
+    {
+      "name": "Second Sapient War, Aroyan",
+      "war": "Second Sapient War",
+      "ended": "1919-06-12",
+      "sides": [
+        ["ARY"],
+        ["FNA", "FLN", "AVN", "KAN", "GWR", "VOS", "AKA", "MRI", "ZAN", "VRP", "JEN", "TRN", "ATH", "NCO", "DIM", "SAN", "SWD", "RGC", "STN", "FAC", "KTR", "RGA", "HLT", "SKG", "NNF", "MLR", "HML", "TPW", "BND", "FSP", "ADH", "MBY", "EMB", "GDV", "FNY", "ANY", "HTL", "HTH", "AGN", "BWN", "KWZ", "HEL", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "SPK", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "JMB", "KRT", "DOB", "JSP", "JMN", "TJV", "CAC", "SVP", "TDC", "PLT", "SCB", "ALG", "SMN", "RDZ", "SMG", "MBR", "BKA", "ABH", "LVS", "DAG", "WEI", "NNT", "SPD", "ATN", "HMA", "AKD", "SNG"]
+      ]
+    },
+    {
+      "name": "Second Sapient War, Meridon",
+      "war": "Second Sapient War",
+      "ended": "1919-06-02",
+      "sides": [
+        ["TVC", "ONW"],
+        ["FNA", "FLN", "AVN", "KAN", "GWR", "VOS", "AKA", "MRI", "ZAN", "VRP", "JEN", "TRN", "ATH", "NCO", "DIM", "SAN", "SWD", "RGC", "STN", "FAC", "KTR", "RGA", "HLT", "SKG", "NNF", "MLR", "HML", "TPW", "BND", "FSP", "ADH", "MBY", "EMB", "GDV", "FNY", "ANY", "HTL", "HTH", "AGN", "BWN", "KWZ", "HEL", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "SPK", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "JMB", "KRT", "DOB", "JSP", "JMN", "TJV", "CAC", "SVP", "TDC", "PLT", "SCB", "ALG", "SMN", "RDZ", "SMG", "MBR", "BKA", "ABH", "LVS", "DAG", "WEI", "NNT", "SPD", "ATN", "HMA", "AKD", "SNG"]
+      ]
+    },
+    {
+      "name": "Second Sapient War, Cunaria",
+      "war": "Second Sapient War",
+      "ended": "1918-04-15",
+      "grudge": -10.4,
+      "sides": [
+        ["SCN", "NCN", "CFR", "CSL", "NLN", "ATT"],
+        ["FNA", "FLN", "AVN", "KAN", "GWR", "VOS", "AKA", "MRI", "ZAN", "VRP", "JEN", "TRN", "ATH", "NCO", "DIM", "SAN", "SWD", "RGC", "STN", "FAC", "KTR", "RGA", "HLT", "SKG", "NNF", "MLR", "HML", "TPW", "BND", "FSP", "ADH", "MBY", "EMB", "GDV", "FNY", "ANY", "HTL", "HTH", "AGN", "BWN", "KWZ", "HEL", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "SPK", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "JMB", "KRT", "DOB", "JSP", "JMN", "TJV", "CAC", "SVP", "TDC", "PLT", "SCB", "ALG", "SMN", "RDZ", "SMG", "MBR", "BKA", "ABH", "LVS", "DAG", "WEI", "NNT", "SPD", "ATN", "HMA", "AKD", "SNG"]
+      ]
+    },
+    {
+      "name": "Breakup of Aroyan",
+      "ended": "1922-05-14",
+      "sides": [
+        ["ARY"],
+        ["VKD", "NKO", "QRG", "EMS", "AUS"]
+      ]
+    },
+    {
+      "name": "First Sapient War",
+      "ended": "1907-06-15",
+      "sides": [
+        ["KAN", "GWR", "SCN", "NCN", "CFR", "CSL", "VOS", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "NLN", "ATT"],
+        ["TWD", "AGR", "OMB"]
+      ]
+    },
+    {
+      "name": "First Sapient War, Mubbanga",
+      "ended": "1907-03-04",
+      "sides": [
+        ["KAN", "GWR", "SCN", "NCN", "CFR", "CSL", "VOS", "NDN", "TRW", "PWL", "LND", "KYI", "CKP", "GCB", "VSW", "TMI", "VUG", "KVP", "NDV", "KNT", "ADK", "NAS", "WRL", "LCL", "LLT", "KNY", "NPW", "MZI", "TBI", "SKI", "NLV", "VSP", "SVA", "NLN", "ATT"],
+        ["MBG"]
+      ]
+    },
+    {
+      "name": "Jashah Revolution",
+      "ended": "1907-02-28",
+      "sides": [
+        ["JSH"],
+        ["BUM"]
+      ]
+    },
+    {
+      "name": "Kewish Revolution",
+      "ended": "1908-07-02",
+      "sides": [
+        ["KWE"],
+        ["BUM"]
+      ]
+    },
+    {
+      "name": "Kewo-Jashah War",
+      "ended": "1908-12-05",
+      "sides": [
+        ["KWE"],
+        ["JSH"]
+      ]
+    },
+    {
+      "name": "Cidiam War of Independence",
+      "ended": "1909-09-21",
+      "sides": [
+        ["CDM"],
+        ["MBG"]
+      ]
+    },
+    {
+      "name": "Agala Revolution",
+      "ended": "1908-08-31",
+      "sides": [
+        ["AGL"],
+        ["MBG"]
+      ]
+    }
+  ]
+}

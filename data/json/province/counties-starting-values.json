@@ -13978,16 +13978,18 @@
     "molbu_1": {
       "rail": [
         "molbu_3"
-      ],
-      "dockyard": true,
-      "dockyardAt": [
-        4804,
-        1397
       ]
     },
     "molbu_3": {
       "rail": [
         "molbu_1"
+      ]
+    },
+    "molbu_7": {
+      "dockyard": true,
+      "dockyardAt": [
+        4817,
+        1403
       ]
     },
     "mollergard_1": {

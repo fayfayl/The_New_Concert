@@ -172,6 +172,7 @@
       "laws": {
         "conscription": "Limited conscription",
         "colonialTax": "Moderate taxation",
+        "nationalTax": "Moderate taxation",
         "monetary": "Devalued parity",
         "trade": "Free trade"
       },
@@ -2955,6 +2956,7 @@
       "startingIdeology": "Liberalism",
       "laws": {
         "conscription": "Volunteer only",
+        "nationalTax": "Moderate taxation",
         "monetary": "Gold standard",
         "trade": "Free trade"
       },
@@ -3013,7 +3015,7 @@
       "laws": {
         "economy": "Civilian economy",
         "personalTax": "High taxation",
-        "corporateTax": "Punitive taxation"
+        "corporateTax": "High taxation"
       },
       "doctrine": {
         "land": "Defensive",
@@ -3798,7 +3800,8 @@
         "rail"
       ],
       "spirits": [
-        "the_great_slump_pan"
+        "the_great_slump_pan",
+        "uneasy_autonomy"
       ]
     },
     {
@@ -4906,7 +4909,9 @@
       "stateOwned": [
         "rail"
       ],
-      "spirits": []
+      "spirits": [
+        "uneasy_autonomy"
+      ]
     },
     {
       "id": "TRW",
@@ -4931,7 +4936,9 @@
       "stateOwned": [
         "rail"
       ],
-      "spirits": []
+      "spirits": [
+        "vortopagan_nationalism"
+      ]
     },
     {
       "id": "LND",
@@ -4956,7 +4963,9 @@
       "stateOwned": [
         "rail"
       ],
-      "spirits": []
+      "spirits": [
+        "vortopagan_nationalism"
+      ]
     },
     {
       "id": "GCB",
@@ -4981,7 +4990,9 @@
       "stateOwned": [
         "rail"
       ],
-      "spirits": []
+      "spirits": [
+        "uneasy_autonomy"
+      ]
     },
     {
       "id": "VSW",

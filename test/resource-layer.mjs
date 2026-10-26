@@ -48,7 +48,7 @@ const ok = (c, m) => { console.log(`  ${c ? 'ok  ' : 'FAIL'}  ${m}`); if (!c) pr
 // A stack row: the yield over the deposit. The mark in front of it is an icon
 // blitted from the sheet, so nothing of it reaches fillText. The optional word
 // is the fallback the layer uses when the sheet fails to load.
-const LINE = /^(?:\S+\s)?\(\d+\/\d+\)$/u;
+const LINE = /^(?:\S+\s)?\(\d+(?:\.\d+)?\/\d+\)$/u;
 const game = globalThis.window.game;
 ok(Boolean(game), 'the app booted');
 
@@ -78,9 +78,9 @@ ok(rows.length > 0, `the layer writes figures when chosen (${rows.length} lines)
 // ------------------------------------------------------------- the format
 const sample = rows[0]?.t ?? '';
 ok(LINE.test(sample), `the shape is yield over deposit: ${JSON.stringify(sample)}`);
-const yields = rows.map((r) => Number(r.t.match(/\((\d+)\//)[1]));
-ok(yields.every((y) => y === 0), 'every yield is 0, since development has no levels yet');
+const yields = rows.map((r) => Number(r.t.match(/\(([\d.]+)\//)[1]));
 const deposits = rows.map((r) => Number(r.t.match(/\/(\d+)\)/)[1]));
+ok(yields.every((y, i) => y >= 0 && y <= deposits[i]), 'every yield is between 0 and its deposit');
 ok(deposits.every((d) => d > 0), 'every deposit is above 0');
 
 // --------------------------------------------------- the figures are real
@@ -174,7 +174,7 @@ ok(Boolean(sheet), 'the icon sheet loaded');
 ok(sheet?.width === 6 * 64 && sheet?.height % 64 === 0 && (sheet.height / 64) * 6 >= doc.kinds.length,
   `and it is 6 cells of 64px across, with room for every kind: ${sheet?.width}x${sheet?.height}`);
 
-const src = fs.readFileSync(path.join(root, 'src/main.js'), 'utf8');
+const src = fs.readdirSync(path.join(root, 'src'), { recursive: true }).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(root, 'src', f), 'utf8')).join('\n');
 const tableSrc = /const RESOURCE_KINDS = \{([\s\S]*?)\n\};/.exec(src)?.[1] ?? '';
 const cells = new Map();
 for (const m of tableSrc.matchAll(/(\w+):\s*\{\s*cell:\s*(\d+)/g)) cells.set(m[1], Number(m[2]));
@@ -262,9 +262,10 @@ const drawAt = (mx, my, z) => {
 const tooltip = dom.el('tooltip');
 pick('resources');
 
+// A stack with an odd number of rows has its middle row on the anchor.
 let single = null;
 for (const [id, stack] of lines) {
-  if (stack.length !== 1) continue;
+  if (stack.length % 2 !== 1) continue;
   const bb = w.bounds.get(id);
   // Big enough that it is drawn at a comfortable zoom, and away from the seam.
   if (!bb || bb.maxX - bb.minX < 200 || bb.maxY - bb.minY < 200) continue;
@@ -272,27 +273,26 @@ for (const [id, stack] of lines) {
   single = { id, stack };
   break;
 }
-ok(Boolean(single), `found a one-row province to aim at (${single?.id})`);
+ok(Boolean(single), `found an odd-row province to aim at (${single?.id})`);
 
 game.lookAt(single.stack.ax, single.stack.ay, 6);
 run(10);
 fire(canvas, 'mousemove', { clientX: cx, clientY: cy });
 
 const shown = tooltip.innerHTML || '';
-const kind = single.stack[0].kind;
-const srcNames = /const RESOURCE_NAME = \{([\s\S]*?)\};/.exec(src)?.[1] ?? '';
-const proper = new RegExp(`${kind}:\\s*\x27([^\x27]+)\x27`).exec(srcNames)?.[1];
+const kind = single.stack[(single.stack.length - 1) / 2].kind;
+const proper = new RegExp(`${kind}:\\s*\\{[^}]*name:\\s*\x27([^\x27]+)\x27`).exec(src)?.[1];
 ok(Boolean(proper), `${kind} has a proper name in the source (${proper})`);
 ok(!tooltip.hidden, 'pointing at a row opens the tooltip');
 ok(shown.includes(proper), `and it names the resource: ${JSON.stringify(shown.slice(0, 90))}`);
-ok(shown.includes(`deposit ${w.resources[single.id][kind]}`),
+ok(shown.includes(`A deposit of <b>${w.resources[single.id][kind]}</b>`),
   `and gives the deposit (${w.resources[single.id][kind]})`);
 ok(shown.includes(w.byId.get(single.id).name), 'and says which province it is in');
 
 // Off the stack, the province underneath answers instead.
 fire(canvas, 'mousemove', { clientX: 40, clientY: canvas.height - 40 });
 const away = tooltip.innerHTML || '';
-ok(!away.includes(`deposit ${w.resources[single.id][kind]}`)
+ok(!away.includes(`A deposit of <b>${w.resources[single.id][kind]}</b>`)
   || away.includes('&middot;'),
   'moving off the stack stops describing that deposit');
 
@@ -300,7 +300,7 @@ ok(!away.includes(`deposit ${w.resources[single.id][kind]}`)
 pick('political');
 run(4);
 fire(canvas, 'mousemove', { clientX: cx, clientY: cy });
-ok(!(tooltip.innerHTML || '').includes('yield 0 a day'),
+ok(!(tooltip.innerHTML || '').includes('A deposit of'),
   'no deposit tooltip when the layer is off');
 pick('resources');
 
@@ -351,9 +351,9 @@ clearPick();
 // LABEL_FACE carries the country, province and sea names and is left as it was.
 const css = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8');
 ok(/--ui:\s*Cabin/.test(css), 'style.css sets the interface in Cabin');
-const js = fs.readFileSync(path.join(root, 'src/main.js'), 'utf8');
-ok(/const RESOURCE_FACE = .Cabin,/.test(js), 'and the resource layer draws in Cabin');
-ok(/const LABEL_FACE = ..Segoe UI/.test(js),
+const js = fs.readdirSync(path.join(root, 'src'), { recursive: true }).filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(path.join(root, 'src', f), 'utf8')).join('\n');
+ok(/const RESOURCE_FACE = cssToken\(.--ui.\)/.test(js), 'and the resource layer draws in it');
+ok(/const LABEL_FACE = cssToken\(.--ui-plain.\)/.test(js),
   'while LABEL_FACE stays the plain face, since the country and province names are not this layer');
 // --------------------------------------------------------------- a sweep
 for (const s of [0.25, 0.4, 0.7, 0.72, 1, 2.5, 6, 12, 16]) { game.lookAt(3000, 1300, s); run(6); }

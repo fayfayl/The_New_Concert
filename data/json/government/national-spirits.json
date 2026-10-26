@@ -19,10 +19,7 @@
         }
       },
       "permanent": false,
-      "tags": [
-        "disarmed",
-        "reparations"
-      ],
+      "tags": [],
       "factor": "economic turmoil",
       "image": "the_terms_of_larajevo"
     },
@@ -261,7 +258,9 @@
       "polity": [
         "SBY"
       ],
+      "target": "FNA",
       "effects": {
+        "relationsWithTarget": -5,
         "stability": 6,
         "tradeIncome": 0.1,
         "cannotMilitaryAlly": true
@@ -431,7 +430,7 @@
       ],
       "effects": {
         "factoryOutput": -0.2,
-        "revenueFromFactories": -0.1,
+        "revenueFromCivilianFactories": -0.1,
         "happiness": -15
       },
       "permanent": false,
@@ -791,9 +790,7 @@
         "happiness": -5
       },
       "permanent": false,
-      "tags": [
-        "reparations"
-      ]
+      "tags": []
     },
     {
       "id": "big_tent_right",
@@ -1666,7 +1663,7 @@
         "ARY"
       ],
       "effects": {
-        "commandPowerIncome": 0.2,
+        "commandPowerIncome": -0.2,
         "stability": -6,
         "politicalPower": -0.1,
         "ideologySupportPerDay": {
@@ -2256,7 +2253,7 @@
         "KRF"
       ],
       "effects": {
-        "revenueFromFactories": -0.25,
+        "revenueFromCivilianFactories": -0.25,
         "construction": -0.1,
         "resourceYield": {
           "iron": 0.15
@@ -2601,7 +2598,7 @@
       ],
       "effects": {
         "factoryOutput": -0.1,
-        "revenueFromFactories": -0.1,
+        "revenueFromCivilianFactories": -0.1,
         "happiness": -8
       },
       "permanent": false,
@@ -3813,10 +3810,7 @@
         "taxRevenue": -0.1
       },
       "permanent": false,
-      "tags": [
-        "disarmed",
-        "reparations"
-      ]
+      "tags": []
     },
     {
       "id": "economic_downturn_tvc",
@@ -4730,6 +4724,37 @@
         "ideologySupportPerDay": {
           "Reactionism": 0.005
         }
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "vortopagan_nationalism",
+      "name": "Vortopagan Nationalism",
+      "description": "For all the autonomy Gwerinlur has allowed us, our people no longer see themselves as Gwerinish subjects, but as free Vortopagans. With the Confederation taking shape beyond our borders, more of us ask why we should stay bound to a foreign crown.",
+      "polity": [
+        "LND",
+        "TRW"
+      ],
+      "effects": {
+        "happiness": -8,
+        "unrestPerDay": 0.03
+      },
+      "permanent": false,
+      "tags": []
+    },
+    {
+      "id": "uneasy_autonomy",
+      "name": "Uneasy Autonomy",
+      "description": "The unrest of recent years has won us concessions from our rulers. Yet there are those who feel that what Gwerinlur has granted us can just as easily be forcefully taken.",
+      "polity": [
+        "CKP",
+        "NDN",
+        "GCB"
+      ],
+      "effects": {
+        "happiness": -4,
+        "unrestPerDay": 0.01
       },
       "permanent": false,
       "tags": []

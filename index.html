@@ -4,37 +4,19 @@
 <head>
   <meta charset="utf-8">
   <title>The New Concert</title>
-  <!--
-    Named explicitly because a browser asks for /favicon.ico on every page load
-    whether or not one is declared. Left undeclared it guesses that path, finds
-    nothing, and puts a 404 in the server log on every reload.
-  -->
   <link rel="icon" href="./data/icons/capital.png">
-  <!--
-    Preloaded because it is a CSS background, and a background is not fetched
-    until the stylesheet has been parsed and the element styled. The loading
-    screen is the first thing drawn and this is what it is drawn on, so the fetch
-    has to start while the HTML is still being read.
-  -->
   <link rel="preload" as="image" href="./data/img/ui/start_menu_bg.jpg">
   <link rel="stylesheet" href="./src/style.css">
 </head>
 
 <body>
 
-  <!--
-    The menu waits behind the loading screen and carries `pending` until the map
-    is built, at which point main.js takes the class off and this fades in. So
-    Enter is never offered before it leads anywhere.
-  -->
+  <!-- Start menu, shown once the map is built. -->
   <div id="start" class="pending" aria-hidden="true">
     <div class="start-panel">
       <h1>The New Concert</h1>
 
-      <!-- data-dialog names the panel a button opens, so a new one is a button
-           and a panel with no wiring of its own. -->
       <div class="start-buttons">
-        <!-- data-sfx: a label and slips of paper, so they sound like paper. -->
         <button id="start-enter" data-sfx="paper">Enter</button>
         <button class="start-secondary" data-dialog="controls" data-sfx="paper">Controls</button>
         <button class="start-secondary" data-dialog="changelog" data-sfx="paper">Changelog</button>
@@ -48,12 +30,7 @@
       </p>
     </div>
 
-    <!--
-      Inside the start screen rather than beside it, so these are carried away by
-      the same fade when the menu is dismissed and cannot be left hanging over
-      the map. Closed until a button opens one; Esc closes it, and while one is
-      open Esc and Enter no longer dismiss the menu behind it.
-    -->
+    <!-- Start dialogs: changelog and about box. -->
     <div id="changelog" class="start-dialog" aria-hidden="true">
       <div class="dialog-panel milled" role="dialog" aria-label="Changelog">
         <div class="dialog-head">
@@ -214,20 +191,10 @@
     </div>
   </div>
 
-  <!--
-    The first thing on screen, before the menu. It holds the window while the map
-    is read and drawn, and hands over to the start menu when that is finished, so
-    the only wait in the whole sequence happens here and Enter always lands on a
-    map that already exists.
-  -->
+  <!-- Loading screen. -->
   <div id="loading">
     <div class="loading-panel">
-      <!--
-        The quote card. Written in as soon as data/json/quotes.json is read, while
-        still transparent, so it is holding its own height before it is visible and
-        nothing on the screen moves when it arrives. The two shadow layers sit
-        behind the paper rather than being a filter on it; see style.css.
-      -->
+      <!-- Loading quote card. -->
       <figure id="loading-quote">
         <div class="quote-shadow soft"></div>
         <div class="quote-shadow edge"></div>
@@ -238,11 +205,7 @@
       </figure>
     </div>
 
-    <!--
-      At the foot of the window, where the prompt below takes over from it once
-      the map is built. The note reports the stage of the load and belongs under
-      the gauge.
-    -->
+    <!-- Load gauge and stage note. -->
     <div class="loading-gauge">
       <div class="loading-bar" aria-hidden="true">Loading  [<span class="done"></span><span class="todo">................................</span>]  <span class="pct">  0%</span></div>
       <p id="loading-note">Loading&hellip;</p>
@@ -257,11 +220,7 @@
 
       <span class="sep"></span>
 
-      <!--
-        The map modes share one tray, since they are one choice among
-        themselves. The layer menu is in it too: picking a layer is picking what
-        the map shows, the same choice.
-      -->
+      <!-- Map mode tray, with the layer menu. -->
       <span id="modes">
       <button data-mode="political" class="active">Political</button>
       <button data-mode="province">Provinces</button>
@@ -271,12 +230,7 @@
       <button data-mode="resources">Resources</button>
       <button data-mode="ideology" hidden>Ideology</button>
 
-      <!--
-        The infrastructure layers. A menu rather than more buttons: the
-        toolbar is already at its width, and these are one choice among
-        themselves rather than separate ones. main.js fills the list from
-        INFRA_NAME.
-      -->
+      <!-- Infrastructure layer menu. -->
       <span id="infra-menu">
         <button id="infra-button" aria-haspopup="true" aria-expanded="false">
           <span id="infra-label">Infrastructure</span><i>&#9662;</i>
@@ -298,15 +252,7 @@
 
       <button id="toggle-panel" title="Debug menu (`)">Debug</button>
 
-      <!--
-        The clock. Pushed to the right-hand end of the toolbar by a margin
-        rather than by a spacer element, so there is nothing here that exists
-        only to take up room.
-
-        Four parts, in the order they are read: slower, the run state, the
-        date, faster. The play control carries both marks and shows whichever
-        the state calls for, so the button never changes size as it switches.
-      -->
+      <!-- Clock: slower, run state, date, faster. -->
       <div id="clock">
         <button id="clock-slower" title="Slower" aria-label="Slower">&minus;</button>
 
@@ -325,17 +271,8 @@
       <canvas id="map"></canvas>
       <div id="tooltip" hidden></div>
 
-      <!--
-        What a province HAS, as opposed to what it is. Slides up from the bottom
-        left on selection; the debug menu slides in from the right, so the two
-        can be open together without meeting. Rows are filled by updateCard().
-      -->
-      <!--
-        The county under the RIGHT button. Its own panel rather than a section of
-        the province card, because the two answer different questions and are
-        opened by different buttons: a province is what you own, a county is the
-        ground itself. Only ever one of the two is up, and they share a corner.
-      -->
+      <!-- Province card. -->
+      <!-- County card, opened with the right button. -->
       <aside id="county-card" class="milled" aria-hidden="true">
         <div class="card-head">
           <h2 id="county-name">&mdash;</h2>
@@ -347,7 +284,6 @@
           <span>
             <b id="county-polity">&mdash;</b>
             <i id="county-province">in a province</i>
-            <!-- Only shown when the owner and the occupier differ. -->
             <i id="county-owner" hidden></i>
           </span>
         </div>
@@ -370,7 +306,6 @@
           <span>
             <b id="card-polity">&mdash;</b>
             <i id="card-role">Province owner</i>
-            <!-- Only shown when the two differ, which is to say under occupation. -->
             <i id="card-owner" hidden></i>
           </span>
         </div>
@@ -379,13 +314,7 @@
         <div class="card-row"><span>Population</span><span id="card-pop">0</span></div>
         <div class="card-row"><span>Area</span><span id="card-area">&mdash;</span></div>
 
-        <!--
-          Happiness and unrest are not built things and do not belong in the
-          grid below, which is levels the player sets. These are read, not set:
-          happiness is how a province feels and unrest is how long it has felt
-          that way. Each row opens its own breakdown on click, because the only
-          actionable question about either is what is moving it.
-        -->
+        <!-- Happiness and unrest meters. -->
         <div class="card-meters">
           <div class="card-meter" id="card-happy-row">
             <span class="cm-label">Happiness</span>
@@ -403,12 +332,7 @@
 
         <div class="card-grid" id="card-grid"></div>
 
-        <!--
-          One strip, not two. Civilian and military factories compete for the
-          same building slots, so what a province has is a number of sockets and
-          a choice about what goes in each — which only reads correctly if they
-          are drawn sharing a row.
-        -->
+        <!-- Building slots shared by both factory types. -->
         <div class="card-slots">
           <div class="card-slot-head">
             <span id="card-slots-n">0/0</span> building slots
@@ -421,22 +345,8 @@
         </div>
       </aside>
 
-      <!--
-        The country under CTRL + a left click. It answers a different question
-        from the other two panels: not what a piece of ground holds, but what a
-        state is and what may be done to it. It takes the left edge whole rather
-        than the bottom corner, and it is mutually exclusive with both of the
-        others because a diplomatic view of a country is not a look at one of
-        its provinces.
-
-        Two tabs. Diplomacy is the relations a country has and the actions
-        available against it, both under Relations between polities. The Intel
-        Ledger is what is known of its government and its forces, which is why
-        it is a ledger rather than a report: the figures are the ones a foreign
-        office would keep.
-      -->
+      <!-- Diplomacy panel, opened with CTRL + left click. -->
       <aside id="diplo" class="milled" aria-hidden="true">
-        <!-- The folder is #diplo itself; this is the typed sheet inside it. -->
         <div class="diplo-sheet">
         <div class="card-head">
           <h2 id="diplo-name">&mdash;</h2>
@@ -446,11 +356,6 @@
         <div class="diplo-ident">
           <span class="diplo-flag">
             <img id="diplo-flag" alt="" src="./data/img/flags/placeholder.png">
-            <!-- A clip slid over the flag's top edge. One wire: the bend joining
-                 its two layers stands above the edge; the inner tongue runs down
-                 the face of the flag, round its small bend and back up to its
-                 free end; the long outer loop drops behind the flag at the edge.
-                 The flag's top edge is at y=8. -->
             <svg class="paperclip" viewBox="0 0 13 34" aria-hidden="true">
               <path d="M2.5 8 V4.5 A3 3 0 0 1 8.5 4.5 V22 A2 2 0 0 1 4.5 22 V12"/>
             </svg>
@@ -467,8 +372,6 @@
         </div>
 
         <div class="diplo-portrait-row">
-          <!-- The frame carries the photo corners, round the leader's portrait
-               or the placeholder photograph alike. -->
           <span class="diplo-photo" id="diplo-photo">
             <img id="diplo-portrait" class="diplo-portrait" alt=""
                  src="./data/img/portraits/placeholder.png">
@@ -477,7 +380,6 @@
             <div class="diplo-party">
               <b id="diplo-party">Placeholder</b>
               <i id="diplo-ideology">&mdash;</i>
-              <!-- Elections are not simulated yet, so either answer is a blank. -->
               <i id="diplo-election" class="blank">No Election</i>
             </div>
             <div class="diplo-focus" id="diplo-focus">No National Focus set</div>
@@ -487,7 +389,6 @@
         <div class="diplo-spirits" id="diplo-spirits"></div>
 
         <div class="diplo-tabs" id="diplo-tabs">
-          <!-- data-sfx: a tab is a page turned, so it sounds like paper, not a key. -->
           <button type="button" id="diplo-tab-diplomacy" class="on" data-sfx="paper">Diplomacy</button>
           <button type="button" id="diplo-tab-ledger" data-sfx="paper">Intel Ledger</button>
         </div>
@@ -504,23 +405,11 @@
         </div>
         </div>
       </aside>
-      <!-- The folder's tab. After #diplo, not inside it: see .diplo-folder-tab. -->
       <span class="folder-tab diplo-folder-tab" aria-hidden="true">Dossier</span>
     </div>
   </div>
 
-  <!--
-    The pause menu, opened with Esc from the map once nothing is selected.
-
-    Outside #start rather than inside it, unlike the changelog and the about
-    box. Those are panels belonging to the start screen and are carried off by
-    the same fade when it is dismissed, which is what they want. This one has
-    to work after that fade has happened, so it is a sibling of the map and
-    sits below #start's z-index — quitting reveals the start screen over it.
-
-    No close button in the head: Resume is the close, and two ways to do the
-    same thing on a menu of two buttons is one too many.
-  -->
+  <!-- Controls dialog and pause menu, outside the start screen. -->
   <div id="controls" class="start-dialog" aria-hidden="true">
     <div class="dialog-panel milled" role="dialog" aria-label="Controls">
       <div class="dialog-head">
@@ -547,13 +436,10 @@
   </div>
 
   <div id="pause" aria-hidden="true">
-    <!-- A folder: the tab carries the heading, outside the board so the
-         board's clipped texture cannot cut it off. -->
     <div class="pause-folder">
       <span class="folder-tab" aria-hidden="true">Paused</span>
       <div class="dialog-panel pause-board" role="dialog" aria-modal="true" aria-label="Paused">
         <div class="pause-body">
-          <!-- data-sfx: the same label and slips as the start menu, so the same paper sound. -->
           <button id="pause-resume" data-sfx="paper">Resume game<span class="key-hint" aria-hidden="true">Esc</span></button>
           <button id="pause-controls" class="start-secondary" data-sfx="paper">Controls</button>
           <button id="pause-quit" class="start-secondary" data-sfx="paper">Quit to start menu</button>
@@ -562,20 +448,13 @@
     </div>
   </div>
 
-  <!-- Development inspector. Closed until the backtick key adds .open; see §7 of main.js.
-       The inner div is what scrolls. The panel itself must stay still, because it
-       holds the texture overlay and a texture that slid with the content would
-       expose bare surface at the end of a scroll. -->
+  <!-- Development inspector. -->
   <div id="panel" class="milled">
     <div id="panel-scroll">
       <h1>Overlays</h1>
       <div id="toggles" class="toggles">
-        <!-- data-repaint marks a toggle that changes the painted map rather than
-             just what is drawn over it, so it needs the buffer rebuilt. -->
+        <!-- data-repaint marks toggles that rebuild the painted map. -->
         <button id="toggle-satellite" data-toggle="satellite" data-repaint>Satellite</button>
-        <!-- No data-repaint any more. The terminator moves with the clock, so
-             it is drawn over the finished map every frame rather than baked
-             into the tiles, and switching it off is now only another blit. -->
         <button data-toggle="showNight" class="active">Day and night</button>
         <button data-toggle="showRivers" class="active">Rivers</button>
         <button data-toggle="showCities" class="active">Cities</button>
@@ -586,9 +465,6 @@
         <button data-toggle="showAdjacency">Adjacency links</button>
         <button data-toggle="showBounds">Selection bounds</button>
         <button data-toggle="showCoastal">Coastal flags</button>
-        <!-- Marks where each drawn copy of the map begins and where the tile
-             columns fall, so a vertical artefact can be attributed to one or
-             the other instead of guessed at. -->
         <button data-toggle="showSeams">Seams</button>
       </div>
 
@@ -606,12 +482,7 @@
     </div>
   </div>
 
-  <!--
-    Loaded through a dynamic import carrying a timestamp, so the browser can
-    never serve a stale copy. A plain src= has no version on it, and a cached
-    module looks exactly like a change that silently did not work. main.js
-    passes the same token on to its own imports.
-  -->
+  <!-- Loads the main module with a cache-busting timestamp. -->
   <script type="module">
     import(`./src/main.js?v=${Date.now()}`);
   </script>

@@ -1,50 +1,15 @@
-/* ============================================================== webfont
-   Cabin, by Pablo Impallari — a humanist sans drawn in the Gill Sans
-   tradition, which is why it stands in for it here.
-
-   Gill Sans MT itself cannot ship with this. It arrives with Microsoft
-   Office rather than with Windows, so it is absent on Linux, Android, iOS
-   and any machine without Office — and it is Monotype's, so putting the
-   file in a public repository is not licensed. A local font stack is fine
-   for something you only run yourself and wrong for something you
-   publish: it renders on whichever machine happens to have the font and
-   quietly falls back everywhere else.
-
-   Cabin is under the SIL Open Font License 1.1, so it can travel with the
-   code. OFL.txt sits beside it because the licence requires the font to be
-   distributed with its licence, not because a spare copy is tidy.
-
-   One file, not four. This is a VARIABLE font carrying two axes — weight
-   400 to 700, width 75 to 100 — so the running text, the semibold labels
-   and the condensed headings all come out of the same 67KB instead of
-   wanting a file each. font-stretch drives the width axis and font-weight
-   the weight one, both as ordinary CSS with no bespoke syntax. */
+/* ===== webfont: Cabin, a variable sans (weight 400-700, width 75-100) */
 @font-face {
   font-family: "Cabin";
-  /* The variations format first, for browsers that will animate the axes;
-     the plain one after, as the fallback that still gets the glyphs. */
   src: url("../data/ui/fonts/cabin.woff2") format("woff2-variations"),
     url("../data/ui/fonts/cabin.woff2") format("woff2");
   font-weight: 400 700;
   font-stretch: 75% 100%;
   font-style: normal;
-  /* Draw immediately in the fallback and swap when the file lands, rather
-     than holding the interface blank while 67KB is fetched. */
   font-display: swap;
 }
 
-/* ======================================================= typewriter faces
-   Two typewriters, both licensed to travel with the code like Cabin above.
-   Courier Prime (SIL OFL 1.1, OFL-CourierPrime.txt) sets every control and
-   figure: it was drawn for the screen, has a true bold, stays clean at 11 to 13
-   pixels, and its fixed width lines a column of numbers up without asking for
-   tabular figures. Special Elite (Apache 2.0, LICENSE-SpecialElite.txt) is an
-   inked, worn machine, kept to names and stamps because below about 15 pixels
-   its wear turns to noise.
-
-   Each in two files, Latin and Latin Extended, cut by unicode-range so the
-   second is fetched only when a name needs it. The quotes alone want ł, ś and
-   ń, which the Latin file does not carry. */
+/* ===== typewriter faces: Courier Prime for text, Special Elite for names */
 @font-face {
   font-family: "Courier Prime";
   src: url("../data/ui/fonts/courierprime-400i-latin-ext.woff2") format("woff2");
@@ -117,15 +82,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* ============================================================ palette
-   A ministry dossier. Manila boards, sheets of aged paper typed on, and ink in
-   the two colours a typewriter ribbon carries: black for what is, red for what
-   is lost, refused or stamped. Red is never used for decoration, so wherever it
-   appears it is saying that. One more ink, green, marks a bonus in a tooltip
-   or a breakdown, so good and bad are told apart before the figure is read.
-
-   The paper is deliberately not white. A bright sheet over a dark map reads as
-   a hole in the screen; this one sits at the value of the manila beside it. */
+/* ===== palette: manila, paper, and black, red and green inks */
 :root {
   --manila: #c7aa6c;
   --manila-lo: #b4975b;
@@ -135,25 +92,19 @@
 
   --ink: #221e18;
   --ink-2: #4d4538;
-  /* labels, and every blank the game has not filled in yet */
+  /* Ink for labels and unfilled blanks. */
   --ink-3: #7d725f;
   --ruled: #a48f66;
   --ribbon: #9b2a1f;
-  /* The green of a bonus, the one meaning red does not cover. Deep enough to
-     read on the sheet as ink and not as a highlight. */
+  /* Ink for bonuses. */
   --good: #2f6b2f;
   --text-dim: var(--ink-3);
 
-  /* The keys: a black cap in a nickel rim, the parts of a typewriter a finger
-     actually touches. */
+  /* Typewriter key rim and cap. */
   --key-rim: #9a927f;
   --key-cap: radial-gradient(circle at 50% 32%, #4a4237, #17130f 68%);
 
-  /* Every key stands on a 3px edge, the side of it showing under the cap. A
-     press moves the cap down by exactly the edge it loses, so the base stays
-     where it is: 2px under the pointer, the full 3px when pressed or held open,
-     where the cap also darkens into its own shadow. One set of figures for
-     every key on the screen, so no two press differently. */
+  /* Key edge shadows at rest, hovered and pressed. */
   --key-edge: 0 0 0 1px #2f2a22, 0 3px 0 #2f2a22, inset 0 1px 0 rgba(255, 255, 255, .18);
   --key-edge-hover: 0 0 0 1px #2f2a22, 0 1px 0 #2f2a22, inset 0 1px 0 rgba(255, 255, 255, .18);
   --key-edge-down: 0 0 0 1px #2f2a22, inset 0 2px 4px rgba(0, 0, 0, .75);
@@ -163,46 +114,30 @@
   --key-rim-down: #7d7667;
   --key-legend-down: #ab9f80;
 
-  /* The ring drawn round a selected province on the map, which keeps its gold:
-     it is drawn on the map and not on paper. */
+  /* Ring round the selected province on the map. */
   --gold: #cea35e;
 
-  /* The ground behind the map and behind the start screens' photograph, seen
-     only at their edges. main.js clears the map canvas to the same colour. */
+  /* Ground behind the map and the start-screen photograph. */
   --steel-deepest: #0c1015;
 
-  /* How far the start screens' photograph overhangs the window on every side,
-     which is the room the parallax drift has to move in. */
+  /* Overhang of the start-screen photograph for parallax drift. */
   --parallax-slack: 40px;
 
-  /* The instant the loading screen's handover lands on, measured from the
-     moment `ready` is set. The quote finishes arriving here, the prompt
-     finishes arriving here, and the prompt's blink starts here — three
-     timings that have to be the same number, so they are one number. The
-     gauge and its note are on their way out before it and are written
-     plainly, since they only have to be gone by the time this arrives. */
+  /* Time the loading-screen quote and prompt finish arriving. */
   --loading-settle: 1.45s;
 
   --shadow: 0 2px 10px rgba(0, 0, 0, .55);
   --bevel: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 -1px 0 rgba(0, 0, 0, .35);
 
-  /* ---------------------------------------------------------- typeface
-     The chrome is typed. Courier Prime for anything read, Special Elite for
-     the few names set large enough to carry its wear. */
+  /* ----- typeface: Courier Prime for text, Special Elite for large names */
   --type: "Courier Prime", "Courier New", monospace;
   --stamp: "Special Elite", "Courier Prime", "Courier New", monospace;
 
-  /* Cabin, the humanist sans this game was set in before, and still the face
-     of the resource layer's lettering (RESOURCE_FACE in main.js). */
+  /* Cabin, used for the resource layer's lettering. */
   --ui: Cabin, "Segoe UI", sans-serif;
   --ui-narrow: var(--ui);
 
-  /* The plain interface sans, kept for the two places atmosphere is not the
-     point: the map's own lettering, and the debug menu. A tool for reading
-     numbers off should be as neutral and as legible as the machine can make
-     it, and should not be dressed to look like part of the game — it is not.
-     Matches the string src/main.js sets on the canvas, so the map and the
-     inspector that describes it are set in one face. */
+  /* Plain sans for map lettering and the debug menu. */
   --ui-plain: "Segoe UI", sans-serif;
 }
 
@@ -210,71 +145,17 @@
   box-sizing: border-box;
 }
 
-/* ============================================================== texture
-   A photographed surface, laid over every piece of chrome.
-
-   Three things have to hold at once, and they pull against each other:
-
-     - every box owns its texture. Not a shared sheet seen through holes.
-     - the grain is the same size on all of them. So the image is sized in
-       PIXELS, never with `cover`, which would scale it to fit each box and make
-       a small button show a zoomed crop of what the panel shows whole.
-     - no two boxes show the same thing. Each takes its own rotation and its own
-       offset into the sheet.
-
-   Sizing in pixels means tiling, and tiling means the image must be seamless —
-   texture.png is not, its opposite edges differing by around 90 levels. So
-   texture-tile.png is that file mirrored into a 2x2 block: a mirrored edge
-   matches its opposite exactly, so it repeats with no seam whatever the original
-   did. Greyscale 8-bit, the texture having no colour worth keeping.
-   Rebuild it with scratchpad/maketile.cjs if the source changes.
-
-   Being seamless is also what makes rotation safe. The overlay is far larger
-   than the box and centred on it, so any angle still covers the corners, and the
-   tiling means the extra area costs nothing to fill. */
+/* ===== texture: per-box photographed grain overlay, sized in pixels */
 :root {
   --texture-img: url('../data/ui/texture-tile.png');
 
-  /* Width the sheet is drawn at, and the one number that sets grain size
-     everywhere. The tile is 1480px across and holds the source twice over, so
-     940px here puts the source at 470 of its native 740 — coarse enough that a
-     26px-tall button still shows structure rather than a flat wash, fine enough
-     that the panel does not read as one large stain. Raise it for a coarser
-     surface, lower it for a finer one; everything moves together. */
+  /* Drawn width of the texture tile; sets grain size. */
   --texture-size: 940px;
-  /* How hard the sheet is blended in. .17 suited dark steel; on paper and board
-     the same soft-light blend needs about three times that before it reads as
-     fibre and handling rather than as a faint stain. */
+  /* Blend strength of the texture overlay. */
   --texture-strength: .5;
 }
 
-/* The overlay sits above the box's own background and BELOW its text, which is
-   what z-index -1 inside an isolated stacking context buys.
-
-   It is pinned to the box's TOP-LEFT CORNER, not to its centre. A centred
-   overlay would re-centre whenever the box changed size, and the grain would
-   visibly slide — which is what the toolbar did every time the debug panel took
-   320px off its right edge. A corner is a fixed point under that kind of
-   resize, so the texture stays where it is and only the box's edge moves.
-
-   Square, centred on that corner, and large enough that the inscribed circle
-   still reaches the box's far corner at any angle. Rotating about the centre of
-   a circle that already covers the box cannot uncover anything.
-
-   Which makes --tex-span twice the box's DIAGONAL, and no more. It is set per
-   element for that reason: one shared figure has to satisfy the widest box there
-   is, and a span sized for a full-width toolbar puts an 8000px blended layer
-   behind a 26px button. Each of these is a composited layer carrying a blend
-   mode over whatever sits beneath it, so its area is not free however little of
-   it ends up visible. Per box, the nineteen of them come to 24 million pixels
-   between them instead of 1.2 billion.
-
-   The spans stay in PIXELS, never vw or vh. The overlay is centred on the box's
-   corner, so its own top-left — which is where the background is measured from —
-   sits at minus half the span. Tie that to the viewport and every window resize
-   moves it, and the grain slides across the chrome as the window is dragged.
-   Fixed, they are simply big enough for a display larger than any this will run
-   on, and nothing moves. */
+/* Texture overlay behind content, pinned to the host's top-left corner. */
 #toolbar::before,
 #tooltip::after,
 #card::after,
@@ -306,8 +187,7 @@
   z-index: -1;
 }
 
-/* Hosts clip their own overlay, and isolate so its negative z-index cannot fall
-   behind the host itself and vanish. */
+/* Hosts clip and isolate their overlay. */
 #toolbar,
 #tooltip,
 #card,
@@ -329,9 +209,7 @@
   overflow: hidden;
 }
 
-/* A host must also be the overlay's containing block. The tooltip is left out
-   because it is positioned already — it is placed at the cursor, and making it
-   relative would drop it back to wherever it sits in the flow. */
+/* Overlay hosts positioned as its containing block. */
 #toolbar,
 #toolbar button,
 .dialog-panel,
@@ -342,21 +220,12 @@
   position: relative;
 }
 
-/* Keys carry no grain: a lacquered cap is not paper or board. Every button on
-   the toolbar is a key. */
+/* Toolbar keys carry no grain. */
 #toolbar button::after {
   opacity: 0;
 }
 
-/* --- a different piece of the sheet for each box.
-   Two knobs per box: which way the grain runs, and where in the sheet the crop
-   is taken from. Rotation alone would not be enough, since a rotated tiling of
-   the same image still shows the same features in the same places.
-
-   The angles avoid multiples of 90 on purpose. texture-tile.png is a mirrored
-   block, so its two axes of symmetry lie square to the image; turning the grain
-   off-square puts them at an angle to the box and keeps them from reading as
-   symmetry. */
+/* --- per-box texture rotation and crop offset */
 #toolbar {
   --tex-span: 8000px;
   --tex-turn: 7deg;
@@ -375,16 +244,13 @@
   --tex-at: -420px -180px;
 }
 
-/* The tooltip is redrawn at the cursor on every move, so its texture travels
-   with it — the same as the panel's does while the panel slides. */
 #tooltip {
   --tex-span: 760px;
   --tex-turn: 271deg;
   --tex-at: -320px -145px;
 }
 
-/* The map modes. Keys carry no grain, so these settings are idle; they are kept
-   so that a mode drawn as paper again picks up a crop of its own. */
+/* Texture crops for the map mode keys. */
 #modes>button:nth-of-type(1) {
   --tex-span: 380px;
   --tex-turn: 27deg;
@@ -439,7 +305,7 @@
   --tex-at: -60px -300px;
 }
 
-/* The slips on the start screen, the note under them and the quote card. */
+/* Texture crops for the start-screen slips, note and quote card. */
 .start-secondary {
   --tex-span: 520px;
 }
@@ -471,7 +337,7 @@
   --tex-at: -310px -210px;
 }
 
-/* The pause folder: its tab, its board, its sheet and the label on it. */
+/* Texture crops for the pause folder parts. */
 .folder-tab {
   --tex-span: 400px;
   --tex-turn: 236deg;
@@ -506,9 +372,7 @@
   --tex-at: -340px -20px;
 }
 
-/* The layer menu, on the same terms. Seven rows sharing one offset showed the
-   identical patch of grain seven times over, which reads as a printed pattern
-   rather than as seven pieces of metal. */
+/* Texture crops for the layer menu rows. */
 #infra-list button:nth-child(1) {
   --tex-span: 380px;
   --tex-turn: 12deg;
@@ -583,39 +447,7 @@ body {
   overflow: hidden;
 }
 
-/* ============================================== the drifting backdrop
-   The artwork behind the loading screen and the start menu, as a layer of its
-   own rather than a background on those screens, so that it can be moved
-   without moving anything written over it. startParallax() in main.js is what
-   writes the two variables; everything about where the layer sits is here.
-
-   Both screens read the same variables, so they drift together and the
-   handover between them still does not change the picture underneath.
-
-   THREE LAYERS, arranged by the painting order and nothing else. A z-index of
-   -1 puts a pseudo-element above its host's own background and below the
-   host's content, so the ground colour, the photograph, the scrim and finally
-   the panel stack in that order with no z-index on the panel at all. Between
-   the two pseudo-elements it is tree order that decides, which is why the
-   photograph is ::before and the scrim is ::after. Neither can escape its
-   screen: both screens are positioned and carry a z-index, so each is already
-   a stacking context of its own and there is nothing for -1 to fall behind.
-
-   Absolutely positioned, which also takes them out of the flex flow. Both
-   screens are flex containers, and a pseudo-element left in the flow would be
-   laid out as a child beside the panel rather than as a layer behind it.
-
-   TRANSFORMED, not repositioned. Moving a background-position repaints a
-   screen-sized image on every frame of the drift; a transform is handed to the
-   compositor and costs nothing per frame. translate3d rather than translate,
-   so the layer is promoted whether or not the browser judges it worth
-   promoting on its own.
-
-   --parallax-slack is what the movement runs into. PARALLAX_PX in main.js is
-   the furthest the layer ever travels and has to stay under this figure, or
-   the edge of the photograph comes into view at the extremes. Fixed pixels
-   rather than a percentage or a scale, so the slack is the same on a small
-   window as on a large one and that one comparison holds everywhere. */
+/* ===== drifting backdrop: artwork behind the loading and start screens */
 #loading::before,
 #start::before {
   content: "";
@@ -623,17 +455,11 @@ body {
   inset: calc(-1 * var(--parallax-slack));
   z-index: -1;
   pointer-events: none;
-  /* Relative to THIS FILE, not to index.html — a stylesheet resolves its own
-     URLs, so moving the CSS into src/ moved the meaning of every path in it. */
   background: url('../data/img/ui/start_menu_bg.jpg') center / cover no-repeat;
   transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0);
 }
 
-/* The scrim, which is what keeps the text readable whatever the picture is
-   doing underneath. It does NOT drift. It is doing a job for the words in
-   front of it rather than for the image behind it, and a scrim that slid off
-   its own text would stop doing that job exactly at the edges, which is where
-   the drift takes it. */
+/* Fixed scrim over the backdrop art. */
 #loading::after,
 #start::after {
   content: "";
@@ -647,15 +473,12 @@ body {
   background: linear-gradient(rgba(14, 10, 7, .62), rgba(14, 10, 7, .82));
 }
 
-/* Darker than the menu's, because a quote has to be read on this one. */
+/* Loading screen's darker scrim. */
 #loading::after {
   background: linear-gradient(rgba(14, 10, 7, .76), rgba(14, 10, 7, .9));
 }
 
-/* startParallax() refuses to run under this preference and never attaches its
-   listener, so this is not what normally stops the drift. It is here for the
-   case that check cannot cover: the preference being turned on part way
-   through a session, after the listener is already attached. */
+/* Stops the backdrop drift under reduced motion. */
 @media (prefers-reduced-motion: reduce) {
 
   #loading::before,
@@ -672,23 +495,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Only the ground colour. The cover art and the scrim over it are two layers
-     of their own, further down, because the art moves with the pointer and
-     nothing written over it may move with it. */
   background: var(--steel-deepest);
   transition: opacity .45s ease;
 }
 
-/* Two ways of being out of the way, and they are not the same. `gone` is after,
-   and it fades, because a fade is what dismissing the menu should look like.
-
-   `pending` is before, and it must NOT fade. Two screens fading in opposite
-   directions at once are both semi-transparent in the middle of it, and the map
-   behind shows through for a frame or two — which is exactly what it did.
-
-   So `pending` uses display, which cannot be transitioned. The menu appears at
-   full strength underneath the instant the class comes off, and the loading
-   screen over it dissolves into a finished menu rather than into the map. */
+/* Start menu states: pending hides at once, gone fades out. */
 #start.pending {
   display: none;
 }
@@ -700,17 +511,14 @@ body {
   transition: opacity .45s ease, visibility 0s .45s;
 }
 
-/* Wide enough that the title holds one line at its full size. The paragraph
-   below is kept to a readable measure of its own rather than filling this. */
+/* Start menu panel. */
 .start-panel {
   max-width: 720px;
   padding: 0 32px;
   text-align: center;
 }
 
-/* The game's name, typed rather than set. At this size Special Elite's uneven
-   ink is the whole effect, so it is left in mixed case and barely tracked: a
-   name typed on a file is written the way it is said. */
+/* Game title in Special Elite. */
 .start-panel h1 {
   margin: 0 0 34px;
   font: 400 60px/1.05 var(--stamp);
@@ -719,8 +527,7 @@ body {
   text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 4px 22px rgba(0, 0, 0, .8);
 }
 
-/* Stacked, Enter first. The label is the wider of the two kinds of button,
-   which is what says which one the screen is asking for. */
+/* Stacked start menu buttons. */
 .start-buttons {
   display: flex;
   flex-direction: column;
@@ -728,14 +535,7 @@ body {
   gap: 12px;
 }
 
-/* The primary action on a screen that has stopped to ask something, wherever
-   that screen is. Enter on the start menu and Resume on the pause menu are the
-   same button doing the same job, so they are one rule rather than two that
-   have to be kept in step.
-
-   A filed label: manila, with a ruled double border in ribbon red. The border
-   is four inset shadows rather than borders and an outline, so it follows the
-   box exactly at any size and costs no layout. */
+/* Primary button for Enter and Resume. */
 #start-enter,
 #pause-resume {
   position: relative;
@@ -747,8 +547,6 @@ body {
   border-radius: 0;
   font: 400 24px/1 var(--stamp);
   letter-spacing: .12em;
-  /* Letter-spacing adds its space after the LAST letter as well, which drags a
-     centred line visibly left. Indenting by the same amount puts it back. */
   text-indent: .12em;
   text-transform: uppercase;
   cursor: pointer;
@@ -769,19 +567,13 @@ body {
   cursor: default;
 }
 
-/* No focus ring. The game puts the focus here itself as each screen opens, so
-   a ring would stand round the label nearly all the time, framing what its two
-   red rules already frame. It is the button Enter and Esc answer to anyway. */
+/* No focus ring on the primary button. */
 #start-enter:focus-visible,
 #pause-resume:focus-visible {
   outline: none;
 }
 
-/* The buttons that are not Enter: typed slips laid on the desk. Held to a
-   shared width so the stack has one edge rather than a ragged one, and each
-   turned a fraction off square, since nothing put down by hand lands straight.
-   `rotate` rather than `transform`, so the lift on hover adds to the turn
-   instead of replacing it. */
+/* Secondary buttons as typed slips, slightly rotated. */
 .start-secondary {
   position: relative;
   min-width: 210px;
@@ -813,11 +605,7 @@ body {
   outline-offset: 3px;
 }
 
-/* The note under the menu, typed on a card of its own and put down a little
-   crooked. Held to its own measure rather than the panel's, which is as wide
-   as the title needs. `auto` on both sides in the SAME rule that sets the
-   margin: written as two rules, whichever came last won the shorthand and
-   quietly zeroed the centring. */
+/* Note card under the start menu. */
 .start-panel p {
   position: relative;
   max-width: 470px;
@@ -831,12 +619,7 @@ body {
   box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
 }
 
-/* ==================================================== loading screen
-   The first thing on screen. It holds the window while the map is read and drawn
-   and then hands over to the start menu, so it is visible by default and the
-   only state it needs is the one that takes it away.
-
-   Above the menu rather than below it, since the menu is what it uncovers. */
+/* ===== loading screen: holds the window until the map is built */
 #loading {
   position: fixed;
   inset: 0;
@@ -844,15 +627,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Ground colour only, as on the menu. The art itself is the shared layer
-     above, which is what keeps the handover between the two screens from
-     changing the picture underneath — including how far it has drifted. */
   background: var(--steel-deepest);
   transition: opacity .45s ease;
 }
 
-/* Over the same .45s the menu uses, so one screen replacing another always
-   takes the same time however you arrived at it. */
+/* Fades out the loading screen. */
 #loading.gone {
   opacity: 0;
   visibility: hidden;
@@ -860,24 +639,14 @@ body {
   transition: opacity .45s ease, visibility 0s .45s;
 }
 
-/* Holds the quote card in the middle of the window. The gauge is not in here:
-   it lives at the foot of the screen, where the prompt takes over from it. */
+/* Centres the quote card. */
 .loading-panel {
   width: 100%;
   max-width: 780px;
   padding: 0 32px;
 }
 
-/* --- the gauge.
-   A typed line at the foot of the window, in the place the prompt will take
-   once the map is built, so the bottom of the screen is where you look for
-   what the screen is doing: "Loading [=====......] 40%", struck as the load
-   goes. setLoadingProgress() in main.js writes it.
-
-   The figure is a real one. Most of the wait is some forty files arriving
-   together, and each one landing moves the line; building the map and drawing
-   it are the last two steps. The field is set in a typewriter face, so every
-   = and . is one character cell and the line never changes width. */
+/* --- gauge: typed progress line at the foot of the window */
 .loading-gauge {
   position: absolute;
   left: 0;
@@ -900,15 +669,13 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
 }
 
-/* What is still to come, in fainter, lighter strokes than what is done. */
+/* Unfilled part of the gauge, fainter. */
 .loading-bar .todo {
   font-weight: 400;
   opacity: .5;
 }
 
-/* Set by main.js as init() moves through its stages, so whatever it says when
-   the screen appears is where the load actually is. Under the gauge it
-   belongs to, and out with it. */
+/* Load stage note under the gauge. */
 #loading-note {
   margin: 10px 0 0;
   font: 400 12.5px/1 var(--type);
@@ -918,26 +685,12 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
 }
 
-/* --- the quote card.
-   A scrap of typed paper put down on the desk. Written in as soon as
-   data/json/quotes.json is read, while still transparent, so it is holding its
-   own place before it is seen and nothing on the screen moves when it arrives.
-
-   The torn edge is a polygon main.js cuts fresh for each quote and hands over as
-   --deckle. The card casts no filter of its own: a drop-shadow on it makes the
-   browser draw the whole card, text and all, to a bitmap and then place that,
-   which softens the type. The shadow is two layers BEHIND the paper instead, a
-   hard one-pixel edge cut to the same tear and a blurred spread under it, and
-   only the spread is blurred. */
+/* --- quote card: a torn scrap of typed paper */
 #loading-quote {
   position: relative;
   max-width: 700px;
   margin: 0 auto;
   opacity: 0;
-  /* Starts a little after the gauge begins to go, so the two are not both at
-     half strength at the same moment, and finishes on the settle instant. The
-     duration is the remainder of that figure rather than a number of its own,
-     so the delay can be adjusted without the arrival moving with it. */
   transition: opacity calc(var(--loading-settle) - .35s) ease .35s;
 }
 
@@ -963,10 +716,7 @@ body {
   filter: blur(12px);
 }
 
-/* Aged rather than clean: edges darkened inward and three spots of foxing,
-   all as gradients so there is no image to ship for any of it.
-   The ageing stops short of the cut, or the torn edge smudges into its own
-   shadow. */
+/* Aged paper: darkened edges and foxing as gradients. */
 .quote-paper {
   position: relative;
   rotate: -1.4deg;
@@ -987,10 +737,7 @@ body {
   color: var(--ink);
 }
 
-/* One span per character, each struck a little differently by fillLoadingQuote():
-   a whole pixel off the line now and then, and its own density of ink. Whole
-   pixels only, and `top` rather than a transform, because a glyph placed at a
-   fraction of a pixel is a blurred glyph. */
+/* Per-character quote spans offset by whole pixels. */
 #loading-quote blockquote .ch {
   position: relative;
 }
@@ -1002,8 +749,7 @@ body {
   color: var(--ink-2);
 }
 
-/* Anchored to the foot of the window, in the gauge's place, and out of the flow
-   in both states so that appearing does not move anything above it. */
+/* Prompt anchored at the foot of the window. */
 #loading-prompt {
   position: absolute;
   left: 0;
@@ -1019,15 +765,10 @@ body {
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
   opacity: 0;
   pointer-events: none;
-  /* Later off the mark than the quote and arriving with it, so the screen
-     settles as one moment rather than in two instalments. Same arithmetic as
-     the quote: the remainder of the settle figure after its own delay. */
   transition: opacity calc(var(--loading-settle) - .5s) ease .5s;
 }
 
-/* Fades in first, then the blink takes over. The delay is what keeps the two
-   from fighting over the same property, so it is the moment the fade lands
-   and not a figure of its own. */
+/* Prompt fades in, then blinks. */
 #loading.ready #loading-prompt {
   opacity: 1;
   animation: loading-prompt 1.7s ease-in-out var(--loading-settle) infinite;
@@ -1052,11 +793,7 @@ body {
   }
 }
 
-/* =================================================== start dialogs
-   The changelog and the about box. Both are children of the start screen, so
-   both inherit its fade on the way out and neither can be left hanging over the
-   map. The scrim is its own element rather than a shadow on the panel, so a
-   click anywhere off the panel can close it. */
+/* ===== start dialogs: changelog and about box */
 .start-dialog {
   position: absolute;
   inset: 0;
@@ -1077,19 +814,11 @@ body {
   transition: opacity .16s ease;
 }
 
-/* A typed sheet. A column, so the head stays put and the body is what scrolls.
-   The height cap is on the PANEL rather than on the body: the body then has a
-   height to be short of, so the about box is as tall as its own paragraph
-   rather than a tall sheet with a gap under it. */
+/* Dialog sheet: fixed head, scrolling body. */
 .dialog-panel {
   display: flex;
   flex-direction: column;
   width: min(580px, 100%);
-  /* A ceiling in pixels rather than a share of the window: the changelog only
-     gets longer as versions are added, and left to fill the screen it would end
-     up a column of text from top to bottom. At this height it stays a sheet that
-     scrolls, and every release after this one costs nothing. The 100% is still
-     there for a window too short to hold even that. */
   max-height: min(100%, 460px);
   text-align: left;
   background: var(--sheet);
@@ -1097,9 +826,7 @@ body {
   box-shadow: 0 18px 50px rgba(0, 0, 0, .6);
 }
 
-/* The head is ruled off from the body with a double line in ribbon red, the
-   way a typed form marks where its heading ends. Every sheet and card in the
-   game opens the same way. */
+/* Dialog head ruled off with a red double line. */
 .dialog-head {
   flex: none;
   display: flex;
@@ -1116,9 +843,7 @@ body {
   color: var(--ink);
 }
 
-/* Every close control in the game is a key. A small square one: the round
-   keys belong to the toolbar's zoom and clock, which are pressed often, and
-   this is pressed once. */
+/* Close keys, small and square. */
 .dialog-close,
 #card-close,
 #county-close,
@@ -1173,8 +898,7 @@ body {
   scrollbar-color: var(--ruled) transparent;
 }
 
-/* Rules between releases rather than around each one: the list is read top to
-   bottom and the line is only there to say where one version ends. */
+/* Rules between changelog releases. */
 .changelog-body section+section {
   margin-top: 16px;
   padding-top: 16px;
@@ -1193,8 +917,7 @@ body {
   color: var(--ink);
 }
 
-/* The date carries no emphasis of its own. It is there to be found when looked
-   for, which is what the faded ink and the lighter weight are doing. */
+/* Release date in faded ink. */
 .changelog-body h3 span {
   flex: none;
   font-size: 12px;
@@ -1225,17 +948,12 @@ body {
   color: var(--ink-3);
 }
 
-/* --- about
-   A paragraph rather than a list, and narrower for it: a single measure of
-   running text set to the changelog's width would be a long line to read. */
+/* --- about: narrower panel */
 #about .dialog-panel {
   width: min(430px, 100%);
 }
 
-/* The seal is the subject and the sentence is its caption, so the block is
-   centred on it. Sized in CSS rather than by the attributes on the tag: those
-   are the file's own 2300 square, kept there so the space is reserved before it
-   loads and nothing shifts when it arrives. */
+/* About seal, centred above its caption. */
 .about-seal {
   display: block;
   width: 104px;
@@ -1255,9 +973,7 @@ body {
   color: var(--ink-2);
 }
 
-/* Underlined from the start rather than on hover. These are the only links in
-   the interface, and a link that announces itself only when the cursor is
-   already on it is one nobody knows to look for. */
+/* Links, always underlined. */
 .about-body a {
   color: var(--ink);
   font-weight: 700;
@@ -1275,17 +991,7 @@ body {
   outline-offset: 2px;
 }
 
-/* ====================================================== pause menu
-   Esc from the map, once there is nothing left to deselect.
-
-   Fixed rather than absolute, and a sibling of the map rather than a child of
-   the start screen. The start dialogs above can be absolute because #start is
-   itself fixed and they only ever exist inside it; this one outlives that
-   screen, so it positions itself against the viewport directly.
-
-   Below #start's z-index of 100 and above every piece of map chrome, so it
-   covers the toolbar, the card and the debug panel while it is up, and the
-   start screen covers IT the moment quitting brings that screen back. */
+/* ===== pause menu: opened with Esc from the map */
 #pause {
   position: fixed;
   inset: 0;
@@ -1306,10 +1012,7 @@ body {
   transition: opacity .16s ease;
 }
 
-/* A folder: a tab with the word on it, the manila board, and the typed sheet
-   inside holding the buttons. The tab sits outside the board rather than in it,
-   because the board clips its own overflow to hold its texture and a tab hung
-   off its edge would be cut away. Centred as a whole, tab and all, by #pause. */
+/* Pause folder: tab, board and sheet. */
 .pause-folder {
   width: min(440px, 100%);
 }
@@ -1337,9 +1040,7 @@ body {
   box-shadow: 0 18px 50px rgba(0, 0, 0, .7);
 }
 
-/* Stretched rather than centred, so the buttons share one edge and read as
-   alternatives. Sized to the sheet, which is what makes the width Enter carries
-   for a button standing on its own irrelevant here. */
+/* Pause buttons stretched to the sheet width. */
 .pause-body {
   display: flex;
   flex-direction: column;
@@ -1353,8 +1054,7 @@ body {
   min-width: 0;
 }
 
-/* The key that does the same thing, on the button. Esc closes the menu as
-   Resume does, and a label that names its key teaches it. */
+/* Esc key hint on Resume. */
 #pause-resume .key-hint {
   position: absolute;
   right: 18px;
@@ -1374,8 +1074,7 @@ body {
   text-indent: 0;
 }
 
-/* Inside a sheet the slips lie square and sit flat on it: a ruled edge and a
-   shallow shadow, not the desk shadow they cast on the start screen. */
+/* Slips inside the pause sheet lie square and flat. */
 .pause-body .start-secondary {
   min-width: 0;
   rotate: 0deg;
@@ -1390,9 +1089,7 @@ body {
   min-width: 0;
 }
 
-/* A manila strip across the top of the window, the spine of the file. Its
-   bottom edge is the board's own darker edge rather than a hairline, so it
-   reads as the edge of a thing rather than a line drawn under one. */
+/* Manila toolbar strip across the top. */
 #toolbar {
   display: flex;
   gap: 12px;
@@ -1431,15 +1128,7 @@ body {
   flex: none;
 }
 
-/* --------------------------------------------------------- map modes
-   A row of radio keys, the long kind Fit is: a black cap in a nickel rim with
-   the mode typed on it. One is down at a time, and the open one is held down
-   the way any key is while pressed; the depth and the press are the shared
-   --key-* figures every key on the screen uses.
-
-   Bold on the open mode, which this file used to forbid because bolding a
-   proportional label widens it and shunts every key after it along. Courier
-   Prime's bold keeps the regular's widths, so here it costs nothing. */
+/* --- map modes: a row of radio keys */
 #modes {
   display: flex;
   align-items: center;
@@ -1481,14 +1170,13 @@ body {
   outline-offset: 2px;
 }
 
-/* Shown when the optional data behind a button is missing, e.g. no imagery. */
+/* Disabled mode buttons when their data is missing. */
 #modes button:disabled {
   opacity: .38;
   cursor: not-allowed;
 }
 
-/* The layer menu. The closed control is a mode like any other and takes that
-   styling from the tray; only the caret and the list below are its own. */
+/* Layer menu: caret and dropdown list. */
 #infra-menu {
   display: inline-flex;
 }
@@ -1502,11 +1190,6 @@ body {
 }
 
 #infra-list {
-  /* Against the VIEWPORT, not under the button. #toolbar hides its overflow,
-     so a list laid out inside it is clipped away to nothing however far down
-     it is placed. A fixed box escapes that, since its containing block is the
-     viewport and no ancestor here carries a transform to capture it. Its
-     coordinates are set from the button rect each time it opens. */
   position: fixed;
   display: flex;
   flex-direction: column;
@@ -1518,16 +1201,12 @@ body {
   z-index: 40;
 }
 
-/* display:flex above would otherwise beat the hidden attribute. */
 #infra-list[hidden] {
   display: none;
 }
 
-/* A row in a list, not a control of its own: no edge, and the text left where
-   a list is read from. The chosen layer is marked the way the open mode is. */
+/* Layer list rows: borderless, left-aligned. */
 #infra-list button {
-  /* The list sits inside #modes in the markup, so the keys' rule reaches these
-     rows too; what a row is not, it says so here. */
   height: auto;
   border: 0;
   border-radius: 0;
@@ -1566,10 +1245,7 @@ body {
   text-underline-offset: 4px;
 }
 
-/* --------------------------------------------------------------- keys
-   Zoom and the clock are worked often and by feel, so they are keys: a black
-   cap in a nickel rim, pressed down a pixel under the finger. Their legends are
-   the plain characters the key does. */
+/* --- keys: zoom and clock buttons as typewriter keys */
 #zoom-group button,
 #clock button {
   display: inline-grid;
@@ -1615,7 +1291,7 @@ body {
   align-items: center;
 }
 
-/* Fit is a word, so it is the long key, the shape of a shift or a space bar. */
+/* Fit as a long key. */
 #zoom-group #zoom-fit {
   width: auto;
   border-radius: 13px;
@@ -1632,8 +1308,7 @@ body {
   color: var(--ink);
 }
 
-/* The inspector's switch is for whoever is building the game, so it is set as
-   a quiet typed word rather than as a control the player is meant to find. */
+/* Inspector toggle as a quiet typed word. */
 #toggle-panel {
   font: 400 12px/1 var(--type);
   color: var(--ink-3);
@@ -1655,18 +1330,7 @@ body {
   outline-offset: 2px;
 }
 
-/* ------------------------------------------------------------- clock
-   At the right-hand end of the toolbar: slower, run state, date, faster.
-   `margin-left: auto` is what puts it there, so the toolbar needs no spacer
-   element standing in the markup purely to take up room.
-
-   The date is a slip of paper between the keys, one line long, so the strip
-   stays as short as it can for the controls that will join it.
-
-   ONE COLOUR the dossier does not otherwise use: the green of the run mark.
-   It is the one control that says whether the world is moving, and it has to
-   be readable from the far side of the screen without being looked for.
-   Nothing else may use the green. */
+/* --- clock: slower, run state, date, faster, at the toolbar's right */
 #clock {
   --go: #6fbf73;
 
@@ -1676,10 +1340,7 @@ body {
   gap: 9px;
 }
 
-/* Reserved to the longest date it can produce. The face is a typewriter, so
-   every character is one `ch`, and "00:00, 30 Mithalbruni 1926" is 26 of them.
-   Without the reserve the slip would change width with the month and walk the
-   keys beside it along. */
+/* Date face reserved to the longest date, 26 characters. */
 #clock-face {
   min-width: calc(26ch + 24px);
   padding: 6px 12px 5px;
@@ -1693,15 +1354,13 @@ body {
   white-space: nowrap;
 }
 
-/* At the ends of the speed range. Dimmed rather than hidden, so the control
-   keeps its shape and it is plain that there is nothing further that way. */
+/* Speed keys dimmed at the ends of the range. */
 #clock button:disabled {
   opacity: .3;
   cursor: default;
 }
 
-/* Both marks are in the button and one of them is shown, so pressing it cannot
-   change the button's width and shunt the date along by a pixel. */
+/* Play and halt marks both present; one shown. */
 #clock-play .play,
 #clock-play .halt {
   display: block;
@@ -1712,17 +1371,14 @@ body {
   display: none;
 }
 
-/* Drawn from borders rather than set as glyphs. A triangle and two bars at
-   this size are shapes, not letters, and asking a font for them means taking
-   whatever that font has and hoping it is centred. */
+/* Play triangle and halt bars drawn from borders. */
 #clock-play .play {
   width: 0;
   height: 0;
   border-left: 8px solid var(--go);
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  /* The optical centre of a triangle is behind its own point, so a triangle
-     centred by its bounding box looks pushed to the right. */
+  /* Optical centring of the triangle. */
   margin-left: 2px;
 }
 
@@ -1733,8 +1389,7 @@ body {
   border-right: 3px solid var(--go);
 }
 
-/* Running is the state worth seeing at a glance, so the key's rim carries it
-   as well as the mark on the cap. */
+/* Running clock shown on the play key's rim. */
 #clock.running #clock-play {
   border-color: var(--go);
 }
@@ -1747,7 +1402,7 @@ body {
   background: var(--steel-deepest);
 }
 
-/* Vignette, so the map reads as lit from the centre. Must not eat clicks. */
+/* Vignette over the map, ignoring clicks. */
 #canvas-wrap::after {
   content: "";
   position: absolute;
@@ -1772,39 +1427,22 @@ canvas.panning {
   cursor: grabbing;
 }
 
-/* A slip of typed paper beside the pointer. Every tooltip in the game is this
-   one element, so this is the whole of how they look. */
+/* Tooltip: typed paper slip beside the pointer. */
 #tooltip {
   position: absolute;
-  /* Above #card and #county-card at 20. The tooltip is raised by hovering the
-     card itself, so anything lower is drawn behind the thing that summoned it.
-     Safe to lift: pointer-events are off, so it intercepts nothing. */
   z-index: 30;
   pointer-events: none;
-  /* never let the tooltip sit under the cursor and eat the next event */
   background: var(--sheet);
   border: 1px solid var(--ruled);
-  /* Everything inside the box is set in em against this one size, so the gap
-     round the text stays the same gap whatever the type is set at, and every
-     tooltip in the game wears the same one. */
   font: 400 12.5px/1.4 var(--type);
   padding: 0.5em 0.8em 0.55em;
-  /* Prose wraps, which is what most of a tooltip is: a spirit's description, a
-     relation's terms, a sentence naming two countries. The cap is what gives
-     the wrapping something to wrap against. The breakdown rows opt back out
-     below — a label and its figure are one line. A typewriter's letters are
-     wider than a sans's, so the cap is a little wider than it was. */
   white-space: normal;
   max-width: 30em;
   color: var(--ink-2);
   box-shadow: 0 3px 10px rgba(0, 0, 0, .5);
 }
 
-/* Whatever a tooltip opens with is the thing it is about, typed in black and
-   struck harder. Some tooltips head themselves with a bold line and some with a
-   plain one, so this matches the first child rather than a tag. A first line
-   that is a sentence rather than a name — the map's "A Plains county in …" —
-   says so with .plain and bolds only the words it names. */
+/* Tooltip's first line in bold black. */
 #tooltip>:first-child {
   color: var(--ink);
   font-weight: 700;
@@ -1823,7 +1461,7 @@ canvas.panning {
   color: var(--ink-2);
 }
 
-/* The map tooltip's local time, with the sun or the moon in front of it. */
+/* Map tooltip's local time with sun or moon icon. */
 #tooltip .tip-time svg {
   width: .9em;
   height: .9em;
@@ -1832,13 +1470,10 @@ canvas.panning {
   fill: var(--ink-2);
 }
 
-/* A country named inside a sentence carries its flag, at the height of the
-   letters beside it so the line keeps its rhythm. */
+/* Inline flag beside a country name. */
 #tooltip .mini-flag-box {
   position: relative;
   display: inline-block;
-  /* Tighter to its own name than the word space in front of it — a space is
-     about .25em — so the flag reads as part of the name, not as a word. */
   margin-right: .3em;
   vertical-align: -.05em;
   border: 1px solid var(--ink-2);
@@ -1846,29 +1481,20 @@ canvas.panning {
 }
 
 #tooltip .mini-flag {
-  /* Sized in em, so the flag tracks whatever the line's type size is rather
-     than staying put when the text around it changes. */
   display: block;
   height: .8em;
   width: auto;
   max-width: 1.8em;
 }
 
-/* A country with no flag drawn yet: its colour, at the shape a flag would have
-   taken. The province card does the same, and 1.5:1 is the shape of the block
-   there. The image is hidden rather than removed, so the box states its own
-   size instead of collapsing to nothing. */
+/* Blank flag: country colour at flag shape. */
 #tooltip .mini-flag-box.blank {
   width: 1.2em;
   height: .8em;
-  /* The colour only ever stands in for a flag that is not there. It is not
-     painted under one that is, because most of the flags carry an alpha
-     channel and it would show through them. */
   background-color: var(--flag-colour, rgb(128, 128, 128));
 }
 
-/* The same shading the panel's own flag wears, drawn over this one too — over
-   the colour as well, so a country with no flag looks like the others. */
+/* Flag shading over the mini flag. */
 #tooltip .mini-flag-box::after {
   content: "";
   position: absolute;
@@ -1877,26 +1503,13 @@ canvas.panning {
   pointer-events: none;
 }
 
-/* The figure a row is about, read before the name it belongs to. Only the
-   ideology rows use it: the number is what is being compared down the list and
-   the name is the label on it, so the number takes the black and the name
-   keeps the lighter ink the rest of the line has. */
+/* Leading figure in ideology rows. */
 #tooltip .sub>b {
   color: var(--ink);
   font-weight: 700;
 }
 
-/* ============================================== the debug screen (dev only)
-   Text over the map and nothing else, the way a game's debug screen is: lines
-   of plain white type with a hard shadow, each on its own strip of translucent
-   dark so it reads over any colour of map. No panel, no frame, no texture and
-   no slide; it is there while the backtick key has it open and gone when not.
-   A tool for reading numbers off is not dressed as part of the game.
-
-   Fixed over the map's right-hand side below the toolbar, so it takes nothing
-   from the map's width, and only as wide as its longest line and as tall as
-   its lines. The column catches the pointer so it can scroll and its switches
-   can be clicked; the map beside and below it does not lose a pixel. */
+/* ===== debug screen (dev only): plain text lines over the map */
 #panel {
   position: fixed;
   top: 60px;
@@ -1928,7 +1541,7 @@ canvas.panning {
   display: none;
 }
 
-/* Every line: a strip of dark under its own words, and nothing wider. */
+/* Each debug line on its own dark strip. */
 #panel h1,
 #panel h2,
 #panel .row,
@@ -1945,7 +1558,7 @@ canvas.panning {
   text-align: right;
 }
 
-/* A section starts with its name, a line like the others with a gap above. */
+/* Debug section heading. */
 #panel h1 {
   margin-top: 10px;
   color: #ffff55;
@@ -1969,7 +1582,7 @@ canvas.panning {
   align-items: flex-end;
 }
 
-/* "Label: value", written as a sentence rather than set as two columns. */
+/* Writes rows as "Label: value". */
 #panel .row > span:first-child::after {
   content: ": ";
 }
@@ -1982,7 +1595,7 @@ canvas.panning {
   color: #ff5555;
 }
 
-/* The overlay switches, as lines that say their state. */
+/* Overlay switches. */
 .toggles {
   display: flex;
   flex-direction: column;
@@ -2026,12 +1639,7 @@ canvas.panning {
   cursor: pointer;
 }
 
-/* An author rule beats the browser's own [hidden] whatever their specificity,
-   so anything given a display of its own goes on showing after hidden is set.
-   This was found twice: a toggle with nothing to show stayed on the grid, and
-   the card said a province was occupied because .card-owner i sets display and
-   the line from the LAST province was never taken down. One rule for both, and
-   for the next one. */
+/* Hidden attribute always wins over author display rules. */
 [hidden] {
   display: none !important;
 }
@@ -2051,10 +1659,7 @@ canvas.panning {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .07);
 }
 
-/* The same shading, at the size of a full stop. It is faint at 9px and that is
-   the point: the square reads as the same object as the flag on the card. Only
-   on the squares that ARE a flag — the same element draws a sea's colour and a
-   movement's, and neither is a flag to be shaded. */
+/* Flag shading on flag swatches. */
 .swatch.flag::after {
   content: "";
   position: absolute;
@@ -2064,9 +1669,7 @@ canvas.panning {
   pointer-events: none;
 }
 
-/* The flag fills the square, cropped from its middle the way a background at
-   `cover` did. An image rather than a background so that a flag with
-   transparency in it shows the panel behind and not the map colour. */
+/* Flag image filling the swatch, centre-cropped. */
 .swatch.flag>img {
   display: block;
   width: 100%;
@@ -2075,22 +1678,18 @@ canvas.panning {
   border-radius: inherit;
 }
 
-/* Only a country with no flag drawn shows its colour, the same rule the
-   tooltip's mini flag follows. */
+/* Country colour on blank flag swatches. */
 .swatch.flag.blank {
   background-color: var(--flag-colour, rgb(128, 128, 128));
 }
 
-/* Narrow windows. */
+/* Narrow-window layout. */
 @media (max-width: 900px) {
 
   .wordmark b {
     display: none;
   }
 
-  /* The month names are written out in full and are the longest thing in the
-     toolbar, so the face gives up its reserve width first. It still holds the
-     longest date it can produce; what goes is the room kept for it. */
   #clock-face {
     min-width: 0;
     padding: 3px 6px;
@@ -2098,15 +1697,7 @@ canvas.panning {
   }
 }
 
-/* ==================================================== province card
-   What a province HAS, typed on an index card. Slides up from the bottom-left
-   corner while the debug menu slides in from the right, so both can stand open
-   without overlapping.
-
-   Parked with transform rather than by moving `bottom`: a transform is composited
-   and does not ask the page to lay out again on every frame of the slide, which
-   matters here because the map is redrawing underneath at the same time. The
-   easing and duration are the debug menu's, so the two read as one mechanism. */
+/* ===== province card: index card sliding up from the bottom left */
 #card {
   --tex-span: 900px;
   --tex-turn: 149deg;
@@ -2129,9 +1720,7 @@ canvas.panning {
   transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s .3s;
 }
 
-/* The same card as #card, in the same corner. The two never show at once — a
-   left click puts the county away and a right click puts the province away — so
-   they can share the spot rather than each needing one of their own. */
+/* County card, sharing the province card's corner. */
 #county-card {
   --tex-span: 900px;
   --tex-turn: 149deg;
@@ -2175,24 +1764,16 @@ canvas.panning {
   }
 }
 
-/* --- the heading.
-   The name typed large, ruled off from the card below it with the double red
-   line every sheet in the game opens with. */
+/* --- heading: name ruled off with a red double line */
 .card-head {
   display: flex;
-  /* The key stays with the first line rather than centring against a title
-     that may be two lines tall. */
   align-items: flex-start;
   gap: 8px;
   padding: 10px 10px 8px 13px;
   border-bottom: 3px double var(--ribbon);
 }
 
-/* Mixed case, since a name on a card is read rather than scanned. A long name
-   wraps rather than being cut. Truncating a province name hides the one piece
-   of text on the card that identifies what you are looking at, and "Northeast
-   Ropagungwan Highla..." names nothing. The card growing a line is the cheaper
-   cost. */
+/* Province name, mixed case, wrapping. */
 .card-head h2 {
   margin: 0;
   flex: 1;
@@ -2203,7 +1784,7 @@ canvas.panning {
   overflow-wrap: anywhere;
 }
 
-/* --- owner, with the polity's own colour standing in for a flag */
+/* --- owner, with the polity's colour standing in for a flag */
 .card-owner {
   display: flex;
   align-items: center;
@@ -2228,9 +1809,7 @@ canvas.panning {
   width: auto;
 }
 
-/* The shading every flag in the game wears, on the province card and the county
-   card alike — both use this block. It is drawn over the colour as well as over
-   a flag, so a country with none drawn still looks like the others. */
+/* Flag shading shared by the province and county cards. */
 .card-flag::after {
   content: "";
   position: absolute;
@@ -2255,11 +1834,7 @@ canvas.panning {
   color: var(--ink-3);
 }
 
-/* --- one-line facts.
-   The label, a dotted leader, the figure: the way a typed form carries the eye
-   across from a word to its number. The leader is the row's own ::after, put
-   between the two spans with `order`, so the markup holds nothing that exists
-   only to be dotted. */
+/* --- one-line facts: label, dotted leader, figure */
 .card-row {
   display: flex;
   align-items: baseline;
@@ -2287,18 +1862,7 @@ canvas.panning {
   text-align: right;
 }
 
-/* --- happiness and unrest.
-
-   Read, not set, so they sit above the built things rather than among them:
-   everything in the grid below is a level the player raises, and these two are
-   consequences of those levels.
-
-   No hover highlight, and no help cursor. The card is a readout and nothing
-   else in it answers the pointer, so lighting two rows out of nine would read
-   as a fault rather than as an affordance. The breakdown appearing is its own
-   feedback, and it rides the shared #tooltip rather than opening in place,
-   since a panel that changes height while being read drags every row under it
-   out from beneath the cursor. */
+/* --- happiness and unrest meters, without hover feedback */
 .card-meters {
   padding: 2px 0 4px;
 }
@@ -2315,9 +1879,7 @@ canvas.panning {
 .cm-value { color: var(--ink); font-weight: 700; text-align: right; }
 .cm-note  { color: var(--ink-3); font-size: 11px; }
 
-/* The bar is the reason these are not ordinary rows. A figure between 0 and 100
-   means nothing on its own; where it sits on the scale is the whole message.
-   Ruled in ink and filled by hatching, as a bar is drawn on paper. */
+/* Meter bar: ink rule with hatched fill. */
 .cm-bar {
   position: relative;
   height: 9px;
@@ -2334,10 +1896,7 @@ canvas.panning {
   transition: width .18s ease, background-color .18s ease;
 }
 
-/* main.js colours the fill by how good or bad the figure is, through its
-   `background`, so the hatching cannot be the fill's own background and is laid
-   over it instead: diagonal strokes of paper, leaving the colour as the lines
-   between them. */
+/* Hatching laid over the coloured fill. */
 .cm-bar i::after {
   content: "";
   position: absolute;
@@ -2345,9 +1904,7 @@ canvas.panning {
   background: repeating-linear-gradient(45deg, transparent 0 1.5px, var(--sheet) 1.5px 3.5px);
 }
 
-/* Unrest bites in steps, not on a slope, and each step is a tick, in red; a
-   gradient would hide exactly the boundaries that matter. main.js places them
-   from UNREST_STEPS. */
+/* Red unrest step ticks. */
 .cm-bar.unrest u {
   position: absolute;
   top: 0;
@@ -2356,37 +1913,21 @@ canvas.panning {
   background: var(--ribbon);
 }
 
-/* The breakdown rides the shared #tooltip rather than opening in place. A card
-   that changes height as you read it moves everything under the pointer. */
-/* The one thing in a tooltip that does not wrap: what a modifier touches on the
-   left and its figure on the right are one line, and a label that turned would
-   leave its figure stranded on the row below. */
+/* Breakdown line: modifier label and figure on one line. */
 #tooltip .cm-line { display: flex; justify-content: space-between; gap: 1.1em; white-space: nowrap; }
 #tooltip .cm-line b { font-weight: 700; }
-/* A national spirit in a breakdown: a condition the country is in rather than
-   an act it chose, so it is set apart from the laws and policies beside it. */
+/* Italic national spirits in breakdowns. */
 #tooltip .cm-line i { font-style: italic; }
 
-/* Green for what helps and red for what harms, read before the figure is.
-   Both are deep inks rather than the bright green and red the old dark panels
-   carried, which on paper washed out. */
+/* Green for helps, red for harms. */
 #tooltip .up, .cm-note .up   { color: var(--good); }
 #tooltip .down, .cm-note .down { color: var(--ribbon); }
 #tooltip .none { color: var(--ink-3); font-style: italic; }
 
-/* The things a line names rather than describes: the provinces a spirit is felt
-   in, the forms a condition stands under, the ground and the holder of a lease.
-   The sentence around them is the rule; a reader wants to find their own
-   province in a list of fifteen at a glance, so the names are struck black. */
+/* Bold names in tooltip lines. */
 #tooltip .named, .cm-note .named { color: var(--ink); font-weight: 700; }
 
-/* A rule typed with the hyphen key rather than drawn: a line of hyphens cut off
-   at the slip's edge. It is a pseudo-element on the <hr> every tooltip already
-   writes, so none of their markup changes.
-
-   width 0 with a min-width of the full line is what keeps the run of hyphens out
-   of the box's own width. Left to size itself, the tooltip measured the whole
-   run and stretched to its widest to hold it. */
+/* Tooltip rule drawn as typed hyphens. */
 #tooltip hr {
   width: 0;
   min-width: 100%;
@@ -2406,7 +1947,7 @@ canvas.panning {
 
 #tooltip .cm-line.sub b, #tooltip .cm-line.sub span { color: var(--ink-3); }
 
-/* --- the built things, two to a row, each with its own leader */
+/* --- built things, two to a row, each with a leader */
 .card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2432,16 +1973,14 @@ canvas.panning {
   transform: translateY(-3px);
 }
 
-/* A label never breaks. "Radar station" is the longest, and two lines of it
-   left its figure hanging off the second. */
+/* Grid labels never break. */
 .card-cell span {
   color: var(--ink-2);
   font-size: 12px;
   white-space: nowrap;
 }
 
-/* Ground that allows nothing of a type at all. Faded rather than hidden, so
-   the grid keeps its shape and 0/0 reads as a fact about the province. */
+/* Faded cells for types the ground forbids. */
 .card-cell.none span,
 .card-cell.none b { opacity: .45; }
 
@@ -2451,16 +1990,12 @@ canvas.panning {
   color: var(--ink);
 }
 
-/* --- building slots.
-   One strip shared by both factory types, because that is the mechanic: a
-   province has so many sockets and you choose what to put in each. Drawing a
-   separate row per type would say the opposite. */
+/* --- building slots: one strip shared by both factory types */
 .card-slots {
   padding: 9px 13px 12px;
 }
 
-/* Sized like the row labels above it rather than as fine print. It names the
-   strip underneath, so it has the same job they do. */
+/* Slot strip heading. */
 .card-slot-head {
   margin-bottom: 7px;
   color: var(--ink-2);
@@ -2477,18 +2012,14 @@ canvas.panning {
   gap: 5px;
 }
 
-/* Past ten sockets the strip stops being a strip. A row of eighteen squeezes
-   each one below the width of its own art, so the long ones go to a grid of ten
-   columns and wrap. The columns are fixed, so the sockets on the second row are
-   the same size as those on the first rather than stretching to fill it. */
+/* Over ten sockets: a wrapping ten-column grid. */
 .card-slot-boxes.wrapped {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   row-gap: 5px;
 }
 
-/* An open socket: a box ruled in dashes, waiting to be filled. Filled ones are
-   ruled solid. */
+/* Open socket ruled in dashes. */
 .card-slot {
   flex: 1;
   height: 24px;
@@ -2500,18 +2031,14 @@ canvas.panning {
   overflow: hidden;
 }
 
-/* The tile the art rides on. Fixed width, so one cell of a two-cell sprite can
-   be cut exactly whatever the socket is doing. */
+/* Fixed-width tile for the socket art. */
 .card-slot i {
   width: 18px;
   height: 18px;
   background-repeat: no-repeat;
 }
 
-/* A socket the province does not have yet. Kept on screen rather than hidden so
-   the card does not change height as provinces are filled in, but plainly
-   emptier than an unlocked one. An open socket with nothing in it stays bare:
-   the padlock is the thing being said, and an icon for "empty" would be one. */
+/* Locked socket, faded. */
 .card-slot.locked {
   border-color: var(--ruled);
   opacity: .55;
@@ -2523,13 +2050,7 @@ canvas.panning {
   background-position: center;
 }
 
-/* The sprite is already coloured to the two types, so the socket keeps the
-   paper under it and its solid edge carries the type at a glance.
-
-   One sprite, 128x64, two 64px cells. Drawn 18px to a cell on an 18px tile, so
-   the pair is 36px and the offset is a flat -18px for the right-hand one. No
-   percentages: a background-position percentage resolves against (box - image),
-   so on a flexible socket narrower than the sprite it showed both factories. */
+/* Factory sprite on civilian and military sockets. */
 .card-slot.civ i,
 .card-slot.mil i {
   background-image: url("../data/icons/factories.png");
@@ -2572,8 +2093,7 @@ canvas.panning {
   color: var(--ink);
 }
 
-/* The key is the factory itself, off the same sheet the sockets use, rather
-   than a swatch standing in for it. */
+/* Legend key showing the factory sprite. */
 .card-legend .key {
   display: inline-block;
   width: 16px;
@@ -2586,20 +2106,8 @@ canvas.panning {
   background-position: -16px 0;
 }
 
-/* ----------------------------------------------------------- diplomacy panel
- *
- * The country under CTRL + a left click: a file on a state, so it is drawn as
- * one, a manila folder with a typed sheet inside. It takes the whole left edge,
- * where the other two panels take the bottom corner, because it is a page about
- * a state rather than a card about a piece of ground. All three are mutually
- * exclusive, so nothing ever has to be arranged around anything else.
- *
- * Same slide as the cards, but from the side rather than from below.
- */
+/* --- diplomacy panel: a folder along the left edge */
 #diplo {
-  /* Twice the diagonal, as the note at the head of the file requires. This is
-     a full-height panel and not a card: 480 wide by the viewport less 46, so
-     the figure is #panel's and not #card's. */
   --tex-span: 4400px;
   --tex-turn: 21deg;
   --tex-at: -330px -140px;
@@ -2609,9 +2117,6 @@ canvas.panning {
   top: 34px;
   bottom: 12px;
   z-index: 21;
-  /* Wide enough that both halves of the ledger hold their longest line whole:
-     "Civilian factories" with its icon, a leader and a two-digit figure, in a
-     typewriter face. At 460 a country with 45 of them wrapped the label. */
   width: 480px;
   display: flex;
   flex-direction: column;
@@ -2640,10 +2145,7 @@ canvas.panning {
   .diplo-folder-tab { transition: none; }
 }
 
-/* The folder's tab. A sibling after #diplo rather than inside it, because the
-   folder clips its own overflow to hold its texture and a tab standing above
-   its edge would be cut away. It rides the same slide, read off the folder's
-   own .open with the + combinator, so the two go in and out as one piece. */
+/* Diplomacy folder tab, sliding with the folder. */
 .diplo-folder-tab {
   --tex-span: 400px;
   --tex-turn: 311deg;
@@ -2664,8 +2166,7 @@ canvas.panning {
   transition: transform .3s cubic-bezier(.22, .61, .36, 1), visibility 0s 0s;
 }
 
-/* The sheet in the folder, holding everything. A column, so the two panes at
-   the foot can take whatever height is left and scroll on their own. */
+/* Typed sheet in the folder, laid out as a column. */
 .diplo-sheet {
   --tex-span: 4000px;
   --tex-turn: 76deg;
@@ -2679,11 +2180,7 @@ canvas.panning {
   box-shadow: 0 1px 3px rgba(60, 44, 18, .45);
 }
 
-/* --- blanks.
-   Most of what the file asks for is not written yet: no faction, no focus, no
-   election, often no leader. Each says so where the answer will go, typed in
-   faded ink in the middle of a dashed blank the size of the field, so the sheet
-   shows what it will hold rather than reading as a page of loose remarks. */
+/* --- blanks: unfilled fields typed faint in a dashed box */
 .diplo-sheet .blank,
 .diplo-focus,
 .diplo-spirits .none,
@@ -2697,28 +2194,16 @@ canvas.panning {
   font-style: italic;
 }
 
-/* Flag, titles and the two figures, in one band across the top. */
+/* Identity band: flag, titles, two figures. */
 .diplo-ident {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 13px 13px 10px;
-  /* Held at what a full-height flag gave it, so a short one does not pull the
-     band up and leave the panel a different height for one country. */
   min-height: 48px;
 }
 
-/* The flag, clipped to the sheet and put on a little crooked. The overlay is
-   one image drawn over every flag, stretched to the box rather than fitted to
-   its own shape: the flags are not one ratio, and a shadow that kept its own
-   would sit off the edge of a wide one and short of a narrow one.
-
-   48px high is what every flag wants to be, and the width follows from its own
-   shape — until the shape is long enough to crowd the titles beside it. So the
-   flag gives up height instead: the box caps the width, the image is sized by
-   its own two maxima, and it scales down whole rather than squashing.
-   Jenisia's pennant is 5:1 and reads 160 by 32; the next widest flag on the
-   board is 2.25:1 at 108, so nothing else is touched. */
+/* Panel flag, slightly rotated, with a shading overlay. */
 .diplo-flag {
   position: relative;
   display: inline-block;
@@ -2737,9 +2222,6 @@ canvas.panning {
   height: auto;
   max-width: 100%;
   max-height: 48px;
-  /* The edge and the shadow follow the flag's own outline rather than a box
-     round it, so a pennant's empty corner is just paper: a hairline of ink at
-     the cloth's edge, and the shadow of the cloth on the sheet. */
   filter: drop-shadow(0 0 .6px rgba(34, 30, 24, .9));
 }
 
@@ -2747,10 +2229,7 @@ canvas.panning {
   filter: drop-shadow(0 0 .6px rgba(34, 30, 24, .9)) drop-shadow(0 2px 2px rgba(60, 44, 18, .35));
 }
 
-/* The shading, cut to the flag's outline by the flag image itself, which
-   maskFlagShading() in main.js hands over as --flag-mask once it has loaded.
-   Until then the mask is fully transparent, so a pennant never shows the
-   shading over its empty corner for even a frame. */
+/* Flag shading masked to the flag's outline. */
 .diplo-flag::after {
   content: "";
   position: absolute;
@@ -2761,13 +2240,7 @@ canvas.panning {
   pointer-events: none;
 }
 
-/* A paper clip slid over the flag's top edge, drawn as the one bent wire it is.
-   The flag sits between the clip's two layers, so the only part standing above
-   the edge is the bend that joins them. From there the inner tongue runs down
-   the face of the flag, turns at its small bend and comes back up to its free
-   end, and the other leg drops behind the flag at the edge, taking the long
-   outer loop with it out of sight. Only the face side is drawn, ending exactly
-   at the edge; the SVG's y=8 is placed on the flag's top edge. */
+/* Paper clip over the flag's top edge. */
 .paperclip {
   position: absolute;
   z-index: 2;
@@ -2807,7 +2280,7 @@ canvas.panning {
   color: var(--ink-2);
 }
 
-/* A blank inside a line of titles is a chip the width of its words. */
+/* Blank chip inside the titles line. */
 .diplo-titles .blank {
   display: inline-block;
   padding: 0 7px;
@@ -2841,7 +2314,7 @@ canvas.panning {
   color: var(--ink);
 }
 
-/* The leader, and the party and the focus beside them. */
+/* Leader row with party and focus. */
 .diplo-portrait-row {
   display: flex;
   gap: 12px;
@@ -2849,9 +2322,7 @@ canvas.panning {
   border-bottom: 1px solid var(--ruled);
 }
 
-/* The photograph, held in four black photo corners and toned toward the paper
-   it is mounted on. A leader with no portrait yet shows the placeholder
-   photograph in the same corners, since it is a photograph like any other. */
+/* Leader photo in photo corners. */
 .diplo-photo {
   position: relative;
   flex: none;
@@ -2882,9 +2353,7 @@ canvas.panning {
     linear-gradient(315deg, var(--ink) 0 8px, transparent 8px) bottom right / 16px 16px no-repeat;
 }
 
-/* The party lines and the focus, stacked beside the portrait and filling its
-   height between them: what the government IS above, what it is working toward
-   below. */
+/* Party lines above, focus below, beside the portrait. */
 .diplo-stack {
   flex: 1 1 auto;
   min-width: 0;
@@ -2927,9 +2396,7 @@ canvas.panning {
   font-size: 13px;
 }
 
-/* One cell per spirit held, wrapping, and drawn bare: the art is its own
-   shape. The placeholder below is the fallback: a spirit that names its own art
-   in `image` overrides it inline. */
+/* Spirit cells, wrapping, with placeholder art. */
 .diplo-spirits {
   display: flex;
   flex-wrap: wrap;
@@ -2952,8 +2419,7 @@ canvas.panning {
   font-size: 13px;
 }
 
-/* Folder tabs on the sheet: the open one is the sheet itself, joined to what
-   is under it, and the other is a shade of manila standing behind. */
+/* Folder tabs on the sheet. */
 .diplo-tabs {
   display: flex;
   gap: 4px;
@@ -2988,8 +2454,7 @@ canvas.panning {
   outline-offset: 2px;
 }
 
-/* The two boxes fill whatever is left of the panel and scroll on their own, so
-   a long action list never pushes the country's name off the top. */
+/* Panes that fill the rest of the panel and scroll. */
 .diplo-body { flex: 1 1 auto; min-height: 0; }
 
 .diplo-pane {
@@ -3028,8 +2493,7 @@ canvas.panning {
 
 .diplo-box h3:first-child { margin-top: 0; }
 
-/* A row reads like the card's: label, dotted leader, figure. The leader is the
-   row's own ::after, put between the label and the figure with `order`. */
+/* Diplomacy row: label, dotted leader, figure. */
 .diplo-row {
   display: flex;
   align-items: center;
@@ -3048,31 +2512,19 @@ canvas.panning {
   transform: translateY(-3px);
 }
 
-/* Never cut short. The panel is wide enough for the longest label it holds,
-   "Civilian factories", and a longer one wraps rather than losing its end. */
+/* Labels wrap instead of truncating. */
 .diplo-row .lab { flex: 0 1 auto; min-width: 0; }
 
-/* A relation has no figure to carry the eye across to, only the other
-   countries' flags, so it takes no leader. */
+/* No leader on relation rows. */
 #diplo-relations .diplo-row::after { display: none; }
 
-/* --- a kind of relation and its fan of flags.
-   One row per kind, its countries' flags fanned out beside the label like a
-   hand of cards. The fan fits itself to the room it has: each card is a slot
-   that gives up its width down to a sliver, while the flag in it keeps its own
-   size and lies over the next. A few flags sit side by side; thirty overlap
-   until they fit. The last card is never squeezed, so the top of the hand
-   shows whole.
-
-   One line, always: the kind's mark on the left and the hand filling the rest,
-   however many cards it has to squeeze into it. */
+/* --- relation rows: flags fanned like a hand of cards */
 #diplo-relations .deck-row {
   flex-wrap: nowrap;
   align-items: center;
 }
 
-/* The kind, as a mark rather than a word, which says itself in its tooltip.
-   The placeholder until each kind has art of its own. */
+/* Relation kind icon. */
 #diplo-relations .deck-row .kind {
   flex: none;
   width: 16px;
@@ -3099,9 +2551,7 @@ canvas.panning {
   transition: transform .1s;
 }
 
-/* The flag keeps its own size whatever its slot is doing: a fixed height and
-   no width cap, so a squeezed slot leaves it lying over the next card instead
-   of shrinking it. */
+/* Flags keep their size in squeezed slots. */
 #diplo-relations .card .diplo-flag {
   max-width: none;
   vertical-align: middle;
@@ -3119,29 +2569,23 @@ canvas.panning {
   margin-right: 0;
 }
 
-/* Each card casts a little shadow to its left, onto the card it covers, so the
-   edges in the fan read as cards stacked rather than as one striped strip. */
+/* Card shadow to the left in the fan. */
 #diplo-relations .card .diplo-flag img {
   filter: drop-shadow(0 0 .6px rgba(34, 30, 24, .9)) drop-shadow(-1.5px 0 1.5px rgba(60, 44, 18, .45));
 }
 
-/* A card under the pointer is drawn out of the hand: lifted, and on top of
-   the ones that covered it, so the whole flag shows while its tooltip does. */
+/* Hovered card lifts to the top. */
 #diplo-relations .card:hover {
   z-index: 1;
   transform: translateY(-4px);
 }
 .diplo-row .val { order: 2; flex: none; color: var(--ink); font-weight: 700; }
 
-/* A relation names the other country with its flag rather than its name: the
-   list is read down the left for the kind, and a flag is found faster across.
-   It wears the panel flag's own box, shading and edge; only the size differs,
-   and the cap is on the width so a long pennant loses height as it does above. */
+/* Small flags in relation rows. */
 .diplo-flag.small { max-width: 46px; }
 .diplo-flag.small img { max-height: 18px; }
 
-/* Where a box has nothing to list, the blank fills it. A blank among other
-   sections — the ledger's Unknown — keeps to the height of a line. */
+/* Blank row filling an empty box. */
 .diplo-box > .diplo-row.none {
   flex: none;
   min-height: 30px;
@@ -3158,7 +2602,7 @@ canvas.panning {
   background-image: url("../data/icons/placeholder.png");
 }
 
-/* factories.png is a two-cell sheet at 128x64: civilian first, military second. */
+/* Factory icons: civilian cell, then military. */
 .diplo-row i.ico.civ {
   background-image: url("../data/icons/factories.png");
   background-size: 200% 100%;
@@ -3173,11 +2617,7 @@ canvas.panning {
 
 .diplo-row i.ico.dock { background-image: url("../data/icons/Dockyard.png"); }
 
-/* The laws are a grid of icons rather than a list of rows. A law is a thing a
-   government IS, and a wall of them reads at a glance the way seven lines of
-   category-and-option does not. What each one is comes from the tooltip, which
-   is where its effects are too — those are the reason to hover in the first
-   place. */
+/* Laws as a grid of icons. */
 .diplo-grid {
   display: flex;
   flex-wrap: wrap;
@@ -3186,10 +2626,7 @@ canvas.panning {
   padding: 2px 0 4px;
 }
 
-/* No hover highlight and no help cursor, on the rule the card already states:
-   the panel is a readout, the tooltip appearing is its own feedback, and
-   lighting the tiles that answer the pointer would read as a fault. Bare art,
-   with no ring drawn round it. */
+/* Law tiles: bare art, no hover feedback. */
 .diplo-tile {
   flex: 0 0 auto;
   width: 34px;
@@ -3197,10 +2634,7 @@ canvas.panning {
   background: url("../data/img/national_spirits/placeholder.png") no-repeat center / contain;
 }
 
-/* A minister or commander not appointed yet: the placeholder photograph the
-   leader portrait uses, at the portrait's own proportions and in the same
-   black photo corners. Drawn rather than left out, so the grid says how many
-   there will be. */
+/* Empty minister slot with placeholder photo. */
 .diplo-tile.empty {
   position: relative;
   width: 34px;
@@ -3223,13 +2657,10 @@ canvas.panning {
 
 .diplo-row i.ico.law { background-image: url("../data/img/national_spirits/placeholder.png"); }
 
-/* An action nothing can be done with yet is still listed, so the panel says
-   what the game will let you do rather than only what it lets you do today. */
+/* Listed actions not yet available. */
 .diplo-row.action { cursor: default; }
 
-/* Nothing in the Actions box can be done yet, and the box says so with a
-   stamp across it. The stamp's ink is broken up by the texture sheet used as a
-   mask, so it lands patchy the way a rubber stamp does. */
+/* Stamp across the Actions box, masked by the texture. */
 .diplo-stamp {
   flex: 1 1 auto;
   display: grid;
@@ -3250,10 +2681,7 @@ canvas.panning {
   mask: url("../data/ui/texture-tile.png") 0 0 / 520px auto luminance;
 }
 
-/* One cell of data/icons/resources.png, drawn at the size a tooltip line reads
-   at. resourceIcon() in main.js passes the sheet's width in cells and which
-   cell this is as --cols, --col and --row, since the layout of the sheet is
-   data and not style. The height scales with the width. */
+/* One cell of the resource icon sheet, placed by --col and --row. */
 .res {
   --res-px: 14px;
   display: inline-block;
@@ -3265,8 +2693,7 @@ canvas.panning {
   background-position: calc(var(--col) * var(--res-px) * -1) calc(var(--row) * var(--res-px) * -1);
 }
 
-/* The controls list: the key on the left, what it does on the right. A grid
-   rather than a table, so the two columns line up without any markup for it. */
+/* Controls list: key and action in two columns. */
 .controls-body dl {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -3291,9 +2718,7 @@ canvas.panning {
   color: var(--ink-2);
 }
 
-/* It sits outside the start menu, so it cannot be positioned against it: fixed
-   to the viewport, and above the pause menu at 90, since it is opened from
-   there and has to cover it. */
+/* Controls dialog, fixed above the pause menu. */
 #controls {
   position: fixed;
   z-index: 110;

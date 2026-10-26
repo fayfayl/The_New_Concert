@@ -1,0 +1,82 @@
+{
+  "notes": [
+    "Treaties in force at the start. Each party is one loser: on, who the terms are imposed on; by, who imposed them; terms, what stands. disarmed: barred from rearming.",
+    "reparations: a total owed in money and in resources, paid in daily instalments until outstanding reaches 0. to: each victor's share. What is not paid is owed as arrears; a suspended party pays nothing and its instalments go to arrears."
+  ],
+  "treaties": [
+    {
+      "name": "Treaty of Larajevo",
+      "signed": "1920-01-03",
+      "parties": [
+        {
+          "on": ["TWD"],
+          "by": ["FNA", "KAN", "VOS", "SWD"],
+          "terms": {
+            "disarmed": true,
+            "reparations": {
+              "to": { "FNA": 0.36, "KAN": 0.27, "VOS": 0.27, "SWD": 0.1 },
+              "money": { "total": 500000000, "outstanding": 445000000, "instalment": 25000 },
+              "resources": {
+                "coal": { "total": 30000, "outstanding": 13000, "instalment": 10 },
+                "baseMetals": { "total": 12000, "outstanding": 5200, "instalment": 4 }
+              }
+            }
+          }
+        },
+        {
+          "on": ["CFR"],
+          "by": ["VOS", "SAN", "KAN"],
+          "terms": {
+            "reparations": {
+              "to": { "VOS": 0.5, "SAN": 0.25, "KAN": 0.25 },
+              "suspended": true,
+              "money": { "total": 125000000, "outstanding": 121800000, "instalment": 6250, "arrears": 11500000 }
+            }
+          }
+        },
+        {
+          "on": ["ARY"],
+          "by": ["ZAN", "MRI", "VRP", "JEN"],
+          "terms": {
+            "reparations": {
+              "to": { "ZAN": 0.35, "MRI": 0.25, "VRP": 0.25, "JEN": 0.15 },
+              "money": { "total": 200000000, "outstanding": 184400000, "instalment": 10500 },
+              "resources": {
+                "oil": { "total": 12000, "outstanding": 4570, "instalment": 5 },
+                "textiles": { "total": 24000, "outstanding": 9140, "instalment": 10 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Treaty of Santa Ania",
+      "signed": "1919-06-02",
+      "parties": [
+        {
+          "on": ["TVC"],
+          "by": ["TRN", "SAN"],
+          "terms": {
+            "disarmed": true,
+            "reparations": {
+              "to": { "TRN": 0.7, "SAN": 0.3 },
+              "money": { "total": 110000000, "outstanding": 95900000, "instalment": 5500 }
+            }
+          }
+        },
+        {
+          "on": ["ONW"],
+          "by": ["TRN", "SAN"],
+          "terms": {
+            "disarmed": true,
+            "reparations": {
+              "to": { "TRN": 0.7, "SAN": 0.3 },
+              "money": { "total": 2300000, "outstanding": 2000000, "instalment": 115 }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

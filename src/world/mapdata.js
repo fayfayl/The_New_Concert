@@ -1,24 +1,8 @@
-/*
- * mapdata.js — everything derived from the province bitmap.
- *
- * Shared by the browser and by sync-provinces.js, which precomputes all of it
- * into data/map-cache.bin so the page does not have to. That sharing is the
- * point: these scans decide adjacency, borders, and where labels sit, and a
- * build script quietly disagreeing with the renderer would be a miserable bug
- * to track down. There is one copy, and both sides run it.
- *
- * Everything here is pure — no canvas, no DOM, no module state — so it runs
- * unchanged under Node. Anything that has to measure text or touch a canvas
- * stays in main.js.
- */
+// Province bitmap analysis shared by the browser and the sync script.
 
 export const LABEL_HIST_BUCKET = 3;   // map pixels per slice, when measuring width along an axis
 
-/**
- * Accepts "#c44a3e", the shorthand "#c43", or an existing [r,g,b] array, and
- * always returns [r,g,b]. Throws on anything else rather than quietly yielding
- * a colour that would never match a pixel.
- */
+// Converts a hex string or [r,g,b] to [r,g,b]; throws on anything else.
 export function toRgb(value) {
   if (Array.isArray(value)) return value;
   let h = String(value).trim().replace(/^#/, '');
@@ -28,15 +12,7 @@ export function toRgb(value) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/**
- * Puts the raw JSON into the shape the rest of the file expects, so nothing
- * downstream has to handle more than one form of anything:
- *   - every colour becomes [r,g,b], whatever it was written as
- *   - `terrain` and `climate` become lists, so a bare string works as shorthand
- *     for one tag and a province with neither still answers with an empty list
- *   - polities get a Map by id, since they are looked up per province per repaint
- * Mutates and returns the same object.
- */
+// Normalises the province table's colours and list fields.
 export function normaliseTable(table) {
   table.oceanColour = toRgb(table.oceanColour);
   for (const q of table.polities) q.colour = toRgb(q.colour);
@@ -51,23 +27,10 @@ export function normaliseTable(table) {
 
 export const OCEAN = 0;                    // province index 0 is reserved for sea and empty space
 
-// Packs a colour into one integer so it can key a Map. Comparing three separate
-// channels per pixel, or building "r,g,b" strings, would both be far slower.
+// Packs an RGB colour into one integer key.
 export const rgbKey = (r, g, b) => (r << 16) | (g << 8) | b;
 
-/**
- * Turns the province table and the bitmap into the world model everything else
- * reads: which province owns each pixel, who borders whom, what is coastal, and
- * where each province sits.
- *
- * TWO WAYS TO NAME A PROVINCE, and the distinction matters:
- *   id     a string, e.g. "rodtfjell". The public name. Events and save data use
- *          it, so it survives the map being redrawn.
- *   index  a small integer. Internal only. The per-pixel array is a typed array
- *          and can hold nothing but numbers, so pixels are stored as indices.
- * buildWorld() assigns the index and is the only place that should care how the
- * two relate; everything outside works in ids.
- */
+// Builds the world model from the province table and the bitmap.
 export function buildWorld(table, image) {
   const { width, height } = image;
   const { byId, atIndex, colourToIndex } = indexProvinces(table);
@@ -81,13 +44,7 @@ export function buildWorld(table, image) {
   return { width, height, provinceAt, atIndex, byId, adjacency, coastal, bounds, table };
 }
 
-/**
- * Gives every province its integer index and builds the three lookups the rest
- * of buildWorld() needs: id -> province, index -> province, colour -> index.
- *
- * A province with a missing or duplicate id is warned about and skipped rather
- * than throwing, so one bad row cannot take the whole map down.
- */
+// Assigns province indices and builds id, index and colour lookups.
 export function indexProvinces(table) {
   const byId = new Map();
   const atIndex = [null];            // slot 0 is OCEAN, so real provinces start at 1
@@ -108,18 +65,9 @@ export function indexProvinces(table) {
   return { byId, atIndex, colourToIndex };
 }
 
-/**
- * Reduces the bitmap to one province index per pixel — the array every later
- * pass reads instead of the image itself.
- *
- * A colour that is in neither the JSON nor the ocean is counted and reported,
- * then left as ocean. That is almost always a stray anti-aliased edge or a
- * province someone painted but never added to the table.
- */
+// Maps every pixel to a province index.
 export function mapPixels(image, table, colourToIndex) {
   const px = image.data;
-  // Two bytes per pixel where the province count allows it. On a 6000x2650 map
-  // that is 32MB instead of 64MB, and the array is walked constantly.
   const Store = table.provinces.length < 65535 ? Uint16Array : Int32Array;
   const provinceAt = new Store(image.width * image.height);
   const oceanKey = rgbKey(...table.oceanColour);
@@ -127,7 +75,7 @@ export function mapPixels(image, table, colourToIndex) {
 
   for (let i = 0, p = 0; i < px.length; i += 4, p++) {
     const k = rgbKey(px[i], px[i + 1], px[i + 2]);
-    if (k === oceanKey) continue;                  // array is already 0
+    if (k === oceanKey) continue;
     const index = colourToIndex.get(k);
     if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
     else provinceAt[p] = index;
@@ -135,31 +83,9 @@ export function mapPixels(image, table, colourToIndex) {
   return { provinceAt, unknown };
 }
 
-/**
- * Derives adjacency, coastline and per-province bounds in a single pass — the
- * step that makes the bitmap, rather than any hand-written list, the authority
- * on which provinces touch.
- *
- * Each pixel is compared only with the one to its RIGHT and the one BELOW. That
- * is enough to catch every touching pair exactly once: a left-right pair is seen
- * from the left pixel, a top-bottom pair from the upper one. Checking all four
- * directions would find the same pairs twice over.
- *
- * Provinces meeting only at a diagonal do not count as neighbours, which matches
- * how armies move — corner to corner is not a shared border.
- *
- * The loop works in integer indices for speed but records results against public
- * string ids, so callers never see an index.
- */
+// Derives adjacency, coastline and per-province bounds in one pass.
 
-/**
- * How many pixels two provinces must share before they count as neighbours.
- *
- * At 2, a single-pixel contact is ignored. That is not a frontier but a drawing
- * artefact — the pixel where three borders nearly meet, or a coastline a pixel
- * out of true. Raise it if the map is drawn coarsely and short contacts start
- * being meaningful; set it to 1 to count every touch as before.
- */
+// Shared pixels needed before two provinces count as neighbours.
 export const MIN_BORDER_PX = 2;
 
 export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
@@ -169,13 +95,6 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
   const bounds = new Map();
   const idOf = (index) => atIndex[index].id;
 
-  // Touching pixels are COUNTED first and turned into neighbours afterwards,
-  // because how much two provinces touch decides whether they are neighbours at
-  // all — see MIN_BORDER_PX below.
-  //
-  // The key packs both indices into one number rather than a string. This runs
-  // once per pixel along every boundary on the map, and building a string for
-  // each would cost more than the whole scan.
   const touch = new Map();
 
   const link = (a, b) => {
@@ -193,16 +112,12 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
       const i = y * width + x;
       const index = provinceAt[i];
 
-      // Grow this province's box, count its pixels, and sum their positions.
       if (index !== OCEAN) {
         const id = idOf(index);
         let bb = bounds.get(id);
         if (!bb) {
           bounds.set(id, (bb = {
             minX: x, minY: y, maxX: x, maxY: y, n: 0, sx: 0, sy: 0,
-            // The two halves of the map, kept apart so that a province holding
-            // ground on both sides of the seam can be given a box that describes
-            // where it is. See resolveWrap.
             maxLeft: -1, minRight: width, nLeft: 0, sxLeft: 0,
           }));
         }
@@ -213,30 +128,13 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
         else if (x < bb.minRight) bb.minRight = x;
       }
 
-      // The pair to the right, and at the last column that is column 0 of the
-      // same row: the map is a globe and its left and right edges are the same
-      // meridian. Land drawn to both edges is one landmass, so provinces meeting
-      // there are neighbours, and an army may cross. Nothing wraps vertically,
-      // since the poles are not joined to anything.
+      // Right-hand pair, wrapping to column 0 at the map edge.
       link(index, provinceAt[x + 1 < width ? i + 1 : y * width]);
       if (y + 1 < height) link(index, provinceAt[i + width]); // pair below
     }
   }
-  // Position sums become centroids now the counts are final. Note this is the
-  // centre of MASS, not of the box: for an L-shaped province it can fall outside.
   for (const bb of bounds.values()) resolveWrap(bb, width);
 
-  // Now decide which of those contacts are real frontiers.
-  //
-  // Two provinces meeting along a single pixel are not neighbours in any sense
-  // the game should act on. It is what a hand-drawn map produces where three
-  // borders nearly meet, or where a coastline is one pixel out — a place the two
-  // shapes graze rather than adjoin. Treating it as a frontier gives an army a
-  // route through a gap too small to see, and lights a country on the far side
-  // of a mountain range when its neighbour is selected.
-  //
-  // Diagonal contact was already excluded, for the same reason at a smaller
-  // scale. This is that rule carried one step further.
   let dropped = 0;
   for (const [key, n] of touch) {
     if (n < MIN_BORDER_PX) { dropped++; continue; }
@@ -248,48 +146,8 @@ export function scanAdjacency(provinceAt, width, height, byId, atIndex) {
   return { adjacency, coastal, bounds, contacts: touch.size, dropped };
 }
 
-/**
- * How far every land pixel is from the nearest NATIONAL border, so the country
- * colour can be strong at the frontier and fade away inland.
- *
- * A national border means a boundary with a different owner, or with open sea.
- * Province subdivisions inside one country do not count — they get their thin
- * line and nothing more.
- *
- * This is a two-pass chamfer distance transform. The first pass carries
- * distances down and right, the second back up and left; between them every
- * pixel has effectively seen the whole map, in two linear passes rather than a
- * search per pixel.
- *
- * A diagonal step is weighted 4 against 3 for an orthogonal one, approximating
- * the true ratio of sqrt(2). That keeps the fade within 5.7% of a circle in
- * every direction — close enough to show no corners — while a distance still
- * fits in one byte, holding the field to 16MB rather than the 64MB an exact
- * float field would take. The weights bound how far can be measured, at
- * 255/3 = 85 map pixels, which FADE_PX has to stay under.
- *
- * The field depends on who owns what, so a province changing hands invalidates
- * part of it. It does not have to be rebuilt whole: see refreshBorderDistance,
- * which redoes a rectangle of it and is what ownership changes use.
- */
-/**
- * Settles a province box, and its centroid, against the map wrapping.
- *
- * A box is one rectangle and the map has no left or right edge, so a province
- * holding ground on both sides of the seam gets a box spanning the whole map.
- * Verley-Maret occupies column 5999 and columns 0 to 381, which is 383 columns
- * of map, and its plain box is 6000 wide.
- *
- * Every pixel below the midpoint is at or before `maxLeft`, and every pixel at
- * or above it is at or after `minRight`, so nothing lies between the two. The
- * wrapped box therefore runs from `minRight` to `maxLeft + width` and holds
- * every pixel the province has, whatever its shape.
- *
- * Whichever box is narrower wins. A province spanning the middle of the map
- * rather than the seam keeps its plain box, since the wrapped one comes out
- * wider. `maxX` may therefore be at or past `width`, and every reader of it
- * takes x modulo width.
- */
+// Chamfer distance from each land pixel to the nearest national border.
+// Fixes a province's box and centroid for ground across the map seam.
 export function resolveWrap(bb, width) {
   bb.cy = bb.sy / bb.n;
 
@@ -305,17 +163,11 @@ export function resolveWrap(bb, width) {
 
   bb.minX = bb.minRight;
   bb.maxX = bb.maxLeft + width;
-  // The left-hand pixels sit a map width further along in this frame, so the
-  // centroid is summed there and brought back into the map afterwards. Averaging
-  // the raw x instead puts the centre of a seam province in the far hemisphere.
   bb.cx = ((bb.sx + bb.nLeft * width) / bb.n) % width;
   return bb;
 }
 
-/**
- * The sea equivalent of normaliseTable. Colours become [r,g,b] and the tag list
- * is made a list, so nothing downstream handles more than one form of either.
- */
+// Normalises the sea table's colours and tag lists.
 export function normaliseSeaTable(table) {
   table.landColour = toRgb(table.landColour);
   for (const r of table.regions) {
@@ -326,21 +178,8 @@ export function normaliseSeaTable(table) {
   return table;
 }
 
-/**
- * sea.png read the way provinces.png is: one flat colour per region, the same
- * size, and the background colour standing for land.
- *
- * Index 0 means LAND here, where in the province world it means sea. The two
- * arrays are therefore complements of each other, and a pixel is in exactly one
- * of them.
- *
- * scanAdjacency does the second half unchanged. It was written against a
- * per-pixel index array and a table of things with ids, which is what this is,
- * so sea regions get the same wrapped bounds, the same centroids and the same
- * MIN_BORDER_PX rule about what counts as a border. Its `coastal` set comes back
- * meaning regions that touch land, which is all of them, and is discarded.
- */
-/** indexProvinces for the sea. Slot 0 is land, so real regions start at 1. */
+// Maps sea.png to sea region indices, with 0 as land.
+// Indexes sea regions; slot 0 is land.
 export function indexSea(table) {
   const byId = new Map();
   const atIndex = [null];
@@ -373,7 +212,7 @@ export function buildSeaWorld(table, image) {
 
   for (let i = 0, p = 0; i < px.length; i += 4, p++) {
     const k = rgbKey(px[i], px[i + 1], px[i + 2]);
-    if (k === landKey) continue;           // the array is already 0
+    if (k === landKey) continue;
     const index = colourToIndex.get(k);
     if (index === undefined) unknown.set(k, (unknown.get(k) || 0) + 1);
     else seaAt[p] = index;
@@ -387,17 +226,8 @@ export function buildSeaWorld(table, image) {
   return { width, height, seaAt, atIndex, byId, adjacency, bounds, table, unknown: unknown.size };
 }
 
-/**
- * counties.json, on the same terms as the province and sea tables: colours
- * become [r,g,b] and the terrain list is made a list.
- */
-/**
- * The sea subregions, which live in sea.json beside the regions they came from.
- *
- * One table, because a subregion is meaningless without its region and the two
- * are edited together. `landColour` is the sea table's, so this normalises what
- * normaliseSeaTable has not already.
- */
+// Normalises the county table's colours and terrain lists.
+// Normalises the sea subregion table.
 export function normaliseSubTable(table) {
   for (const s of table.subregions || []) {
     s.colour = toRgb(s.colour);
@@ -464,7 +294,7 @@ export function normaliseCountyTable(table) {
   return table;
 }
 
-/** indexProvinces for the counties. Slot 0 is sea, so real counties start at 1. */
+// Indexes counties; slot 0 is sea.
 export function indexCounties(table) {
   const byId = new Map();
   const atIndex = [null];
@@ -485,15 +315,7 @@ export function indexCounties(table) {
   return { byId, atIndex, colourToIndex };
 }
 
-/**
- * counties.png read the way provinces.png is: one flat colour per county, the
- * same size, with the ocean colour standing for water.
- *
- * The adjacency this produces is the one armies move on, so it uses the same
- * scanAdjacency as the provinces do: edges only, no diagonals, wrapping east to
- * west, and a contact shorter than MIN_BORDER_PX read as a drawing artefact
- * rather than a frontier.
- */
+// Maps counties.png to county indices and county adjacency.
 export function buildCountyWorld(table, image) {
   const { width, height } = image;
   const { byId, atIndex, colourToIndex } = indexCounties(table);
@@ -523,19 +345,10 @@ export const CHAMFER_ORTH = 3;
 export const CHAMFER_DIAG = 4;
 export const BORDER_DIST_MAX = 255;
 
-// The furthest a border can make itself felt, in map pixels. A distance is
-// stored pre-scaled by CHAMFER_ORTH and saturates at BORDER_DIST_MAX, so
-// nothing beyond this can be affected by a border appearing or disappearing —
-// which is what bounds the rectangle an ownership change has to redo.
+// Furthest a border affects the distance field, in map pixels.
 export const BORDER_DIST_REACH = Math.floor(BORDER_DIST_MAX / CHAMFER_ORTH);
 
-/**
- * Owner per province index, as a small integer.
- *
- * Index 0 is ocean and keeps -1, which matches no country, so every coastline
- * counts as a frontier. Rebuilt from the table on every call, so it always
- * reflects the owners as they stand rather than as they loaded.
- */
+// Owner ordinal per province index, -1 for ocean.
 export function ownerOrdinals(atIndex) {
   const ownerAt = new Int32Array(atIndex.length).fill(-1);
   const ordinal = new Map();
@@ -553,20 +366,7 @@ export function buildBorderDistance(world) {
   return dist;
 }
 
-/**
- * Recomputes the distance field over one rectangle of the map, in place.
- *
- * `box` is {x0, y0, x1, y1} in map pixels, half-open, or null for the whole
- * map. Both passes read freely OUTSIDE the box and only ever write inside it,
- * so a distance owed to a border beyond the rectangle still arrives: the path
- * from that border crosses the boundary at a pixel whose value is already
- * right, and the passes carry it in from there.
- *
- * That is only true while every pixel outside the box does hold its correct
- * distance. Which pixels an ownership change can disturb is bounded by
- * BORDER_DIST_REACH, so a caller that grows the changed province's bounding box
- * by that much is safe; ownership.js is where that is done.
- */
+// Recomputes the border distance field over one rectangle, in place.
 export function refreshBorderDistance(world, dist, box) {
   const { width, height, provinceAt, atIndex } = world;
   const ownerAt = ownerOrdinals(atIndex);
@@ -579,30 +379,11 @@ export function refreshBorderDistance(world, dist, box) {
 
   const MAX = BORDER_DIST_MAX;
 
-  // Seeds: the sea, and any land pixel with a differently owned neighbour. All
-  // four directions are tested, unlike the border drawing which needs only two
-  // — a one-sided seed would bias the whole field a pixel in one direction.
-  // Everything else in the box is reset to MAX, so a rectangle redone after a
-  // border disappeared is not left holding the distances that border set.
   for (let y = y0; y < y1; y++) {
     for (let x = x0; x < x1; x++) {
       const i = y * width + x;
       const index = provinceAt[i];
       if (index === OCEAN) { dist[i] = 0; continue; }
-      // NO DIRECTION FALLS BACK TO -1, in any of the four. Sideways it wraps,
-      // because the map does. Up and down fall back to the pixel's own owner,
-      // which is the same as not testing that direction at all.
-      //
-      // -1 means "somebody else is there", and there is nobody on the other side
-      // of either edge. Sideways it made column 0 and the last column a frontier
-      // down open country that is not divided at all. Vertically it did the same
-      // to the first and last row: 100% of the 4,246 land pixels in row 2649 came
-      // out as frontier against 0.1% one row in, and a frontier is drawn at full
-      // strength, so it was a solid line straight across the bottom of the map
-      // where Kontaria runs off the edge.
-      //
-      // The map is a band cut out of the globe. A cut is not a border.
-      // See test/borderdist-map.mjs, which measures all four edges.
       const mine = ownerAt[index];
       const left = ownerAt[provinceAt[x > 0 ? i - 1 : i + width - 1]];
       const right = ownerAt[provinceAt[x + 1 < width ? i + 1 : y * width]];
@@ -614,22 +395,9 @@ export function refreshBorderDistance(world, dist, box) {
 
   const A = CHAMFER_ORTH, B = CHAMFER_DIAG;
 
-  // The SEEDS wrap, as the note above says, so a frontier crossing the map seam is
-  // marked on both sides of it. The distances that spread out from those seeds did
-  // not, and that is the other half of the same problem: a pixel in the last column
-  // could not be told how far it was from a frontier just east of the first column,
-  // so it kept MAX while its neighbour across the seam held a small number. The
-  // shading is read straight off this field, and a step from MAX to nearly zero in
-  // the space of one column draws as a hard line down open country. On the map that
-  // is x 5999, the antimeridian.
-  //
-  // Only a pass over the whole width can wrap. A partial box that stops short of
-  // either edge has no seam in it to cross.
+  // Wraps the sweep across the map seam for full-width boxes.
   const wrapX = x0 === 0 && x1 === width;
 
-  // How far a distance can travel before it saturates, which is as far as anything
-  // needs to reach around the seam. Anything past this is already MAX on both
-  // sides and has nothing to say to the other.
   const tail = wrapX ? Math.min(BORDER_DIST_REACH + 1, width >> 1) : 0;
 
   const left = (i, x, y) => (x > 0 ? dist[i - 1] : wrapX ? dist[y * width + width - 1] : MAX) + A;
@@ -648,13 +416,10 @@ export function refreshBorderDistance(world, dist, box) {
       if (y > 0) {
         d = Math.min(d, dist[i - width] + A, upLeft(i, x, y), upRight(i, x, y));
       }
-      dist[i] = d > MAX ? MAX : d;      // clamp by hand: Uint8Array wraps, it does not saturate
+      dist[i] = d > MAX ? MAX : d;
     };
     for (let x = x0; x < x1; x++) step(x);
 
-    // The row again, over its first few columns. The reads above the row were
-    // final when they were taken, but the one to the LEFT of column 0 is the last
-    // column of this same row, which the sweep had not reached yet. Now it has.
     for (let x = 0; x < tail; x++) step(x);
   }
 
@@ -670,19 +435,11 @@ export function refreshBorderDistance(world, dist, box) {
       dist[i] = d > MAX ? MAX : d;
     };
     for (let x = x1 - 1; x >= x0; x--) step(x);
-    for (let x = width - 1; x >= width - tail; x--) step(x);   // the same, at the other end
+    for (let x = width - 1; x >= width - tail; x--) step(x);
   }
 }
 
-/**
- * Reports colours found in the bitmap that no province claims, worst first.
- *
- * Each is shown with the nearest colour that IS in the table, because the
- * distance says what went wrong. A distance of only a few points means the same
- * colour arrived slightly altered — anti-aliasing, lossy compression, or the
- * colour management that loadPixels() turns off. A large distance means a
- * genuinely unregistered province.
- */
+// Reports unclaimed bitmap colours with their nearest table colour.
 export function warnUnknownColours(unknown, table) {
   const rows = [...unknown.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, n]) => {
     const rgb = [(k >> 16) & 255, (k >> 8) & 255, k & 255];
@@ -701,11 +458,7 @@ export function warnUnknownColours(unknown, table) {
   );
 }
 
-/**
- * Reports provinces listed in the JSON whose colour appears nowhere in the
- * bitmap. They have no pixels, so they are unclickable and invisible, and behave
- * as ocean. Usually a typo in the colour, or a province painted over.
- */
+// Reports provinces whose colour appears nowhere in the bitmap.
 export function warnEmptyProvinces(byId, bounds) {
   const empty = [...byId.values()].filter((p) => !bounds.has(p.id));
   if (empty.length) {
@@ -716,37 +469,11 @@ export function warnEmptyProvinces(byId, bounds) {
   }
 }
 
-/**
- * The two full-map passes behind the labels: which provinces form one block,
- * each block's principal axis, and the sums that the spine and the inland fade
- * are fitted from. Returns null when there is nothing to label.
- *
- * Split from the label building itself because this half is pure arithmetic over
- * every pixel on the map — by far the most expensive thing at load, and so worth
- * precomputing — while the other half has to measure real text, which needs a
- * canvas and can only happen in the browser.
- */
+// Full-map label passes: blocks, principal axes and fit sums.
 /** A narrow channel of sea still counts as one country, up to this many pixels. */
 export const NEAR_GAP = 5;
 
-/**
- * Which provinces come within NEAR_GAP pixels of each other across open water.
- *
- * Touching is too strict a test for labelling. An island a few pixels off the
- * coast is plainly part of the same country to anyone looking at the map, but
- * scanAdjacency() sees no shared border and the label machinery treats it as a
- * separate territory — so it gets a name of its own, in tiny type, instead of
- * being swept into the one big label it belongs to.
- *
- * This grows every province outwards through the sea, one ring at a time, up to
- * `radius`. Where two growths meet, the provinces behind them are that far apart
- * and are recorded as near neighbours. One pass over the coastal water settles
- * every pair at once, which is why this is cheap despite sounding expensive:
- * only sea within `radius` of land is ever visited.
- *
- * The spread goes through WATER only. Two provinces separated by a third are
- * already connected through it, or deliberately are not.
- */
+// Provinces within NEAR_GAP pixels of each other across water.
 export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
   const claim = new Uint16Array(provinceAt.length);   // which province reached this water
   const dist = new Uint8Array(provinceAt.length);
@@ -774,14 +501,13 @@ export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
         const ny = y + (k === 2 ? -1 : k === 3 ? 1 : 0);
         if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
         const j = ny * width + nx;
-        if (provinceAt[j] !== OCEAN) continue;        // land is scanAdjacency's business
+        if (provinceAt[j] !== OCEAN) continue;
 
         if (!claim[j]) {
           claim[j] = claim[i];
           dist[j] = step;
           next.push(j);
         } else if (claim[j] !== claim[i] && dist[j] + step <= radius) {
-          // Two growths have met: their provinces are dist[j] + step apart.
           link(claim[i], claim[j]);
         }
       }
@@ -794,32 +520,13 @@ export function nearbyProvinces(provinceAt, width, height, radius = NEAR_GAP) {
 /** The owner id that means nobody. Land holding it is never labelled. */
 export const UNOWNED = 'NONE';
 
-/**
- * Who holds the ground: the occupier where there is one, the owner otherwise.
- *
- * `owner` is the de jure owner and stays put under occupation, since it is what a
- * peace treaty transfers and what a claim is measured against. Everything DRAWN
- * reads this instead, because a political map shows who is in control. So an
- * occupied province takes the occupier's colour, sits inside the occupier's
- * border, and counts toward the occupier's name.
- */
+// Who holds a province: the occupier, else the owner.
 export const controllerOf = (p) => p.occupier || p.owner;
 
 /** Whether somebody other than its owner holds the province. */
 export const isOccupied = (p) => !!(p?.occupier && p.occupier !== p.owner);
 
-/**
- * What decides whether two touching provinces are separated by a frontier.
- *
- * Not the same question as who holds the ground. Fatiras is held by Vosennac and
- * so is Marche de Fatiras, so `controllerOf` gives both the same answer and the
- * line between them would be drawn as an internal subdivision. It is not one:
- * one is Voseni soil and the other is Cunarian soil under occupation, and the
- * front between them is exactly where the map should show a border.
- *
- * So occupied ground keys on the pair, occupier and owner both. Two occupations
- * by the same power over different countries separate for the same reason.
- */
+// Key that decides whether a frontier separates two touching provinces.
 export const frontierKeyOf = (p) => (isOccupied(p)
   ? `${p.occupier}>${p.owner}`
   : controllerOf(p));
@@ -830,19 +537,7 @@ export const isLabelled = (world, p) => {
   return held !== UNOWNED && world.table.polityById.has(held);
 };
 
-/**
- * The polity at the top of a chain of `parent` links, which is the country a
- * province is really part of.
- *
- * `parent` means a constituent of one realm: Fellnor and Avanta are two halves
- * of one empire, so no frontier runs between them and one name covers both.
- * `suzerain` is deliberately NOT followed, being the looser hold a power has
- * over a colony — a colony is its own country on the map, drawn with its own
- * frontier and its own name, whoever it answers to.
- *
- * The walk is bounded rather than trusting the data, since a parent loop
- * written by hand would otherwise hang the page at load.
- */
+// Top polity of a province's parent chain.
 export function realmOf(table, id) {
   let at = id;
   for (let step = 0; step < 8; step++) {
@@ -854,14 +549,7 @@ export function realmOf(table, id) {
   return at;
 }
 
-/**
- * Whether `owner` is `id` or sits anywhere below it on the parent chain.
- *
- * Walked rather than answered with realmOf(), because realmOf answers with the
- * top of the chain. Fellnor's own colonies sit under Fellnor and under the
- * empire above it, and asking about Fellnor has to reach them: realmOf would
- * answer Fellnor-Avanta for every one and match none of them to Fellnor.
- */
+// Whether owner is id or anywhere below it on the parent chain.
 export function isUnder(table, owner, id) {
   let at = owner;
   for (let step = 0; step < 8 && at; step++) {
@@ -878,12 +566,7 @@ export function membersOf(table, id) {
   return [...(table?.polityById?.values() || [])].filter((q) => q.parent === id && q.id !== id);
 }
 
-/**
- * Connected pieces of a set of province indices, over the labelling graph.
- *
- * Shared by the label blocks, by a realm's blocks, and by ownership.js when a
- * province leaving a block cuts what is left in two — all the same question.
- */
+// Connected pieces of a set of provinces over the labelling graph.
 export function componentsOf(world, near, members) {
   const inSet = new Set(members);
   const seen = new Set();
@@ -909,22 +592,14 @@ export function componentsOf(world, near, members) {
   return parts;
 }
 
-/**
- * A province's neighbours for LABELLING, which is its real neighbours plus the
- * ones it comes within NEAR_GAP of across water. Returns ids.
- */
+// Labelling neighbours of a province: real ones plus those within NEAR_GAP.
 export function labelNeighbours(world, near, id) {
   const extra = near && near.get(world.byId.get(id).index);
   if (!extra) return world.adjacency.get(id);
   return [...world.adjacency.get(id), ...[...extra].map((ix) => world.atIndex[ix].id)];
 }
 
-/*
- * The two accumulators below are shared by the full-map build and by the
- * per-block rebuild an ownership change runs. One copy of the arithmetic, so a
- * block recomputed after changing hands is identical to the same block computed
- * from cold, and a province changing owner cannot make its country's name jump.
- */
+// Moment and fit accumulators shared by full and per-block builds.
 
 export const newMoments = () => ({ n: 0, sx: 0, sy: 0, sxx: 0, sxy: 0, syy: 0 });
 
@@ -934,7 +609,7 @@ export function addMoment(a, x, y) {
 
 /** Centroid and principal axis, or null for a block too small to have one. */
 export function blockAxis(a) {
-  if (a.n < 12) return null;                  // too few pixels for a meaningful axis
+  if (a.n < 12) return null;
   const cx = a.sx / a.n, cy = a.sy / a.n;
   const vxx = a.sxx / a.n - cx * cx;
   const vxy = a.sxy / a.n - cx * cy;
@@ -951,8 +626,8 @@ export const newFit = () => ({
 /** One pixel measured along the block's axis (t) and across it (u). */
 export function addFitSample(f, g, x, y) {
   const dx = x - g.cx, dy = y - g.cy;
-  const t = dx * g.ux + dy * g.uy;          // along the axis
-  const u = -dx * g.uy + dy * g.ux;         // perpendicular to it
+  const t = dx * g.ux + dy * g.uy;
+  const u = -dx * g.uy + dy * g.ux;
   if (t < f.tMin) f.tMin = t; else if (t > f.tMax) f.tMax = t;
   const bucket = Math.floor(t / LABEL_HIST_BUCKET);      // land per slice along the axis
   f.hist.set(bucket, (f.hist.get(bucket) || 0) + 1);
@@ -962,13 +637,7 @@ export function addFitSample(f, g, x, y) {
   f.u0 += u; f.u1 += u * t; f.u2 += u * t2;
 }
 
-/**
- * Groups provinces into blocks: flood fill the adjacency graph, never crossing
- * into a different owner. Unowned land gets no label.
- *
- * Each block carries its members as province indices, so a block can be
- * measured, split or merged later without another pass over the map.
- */
+// Groups provinces into same-owner blocks by flood fill.
 export function buildBlocks(world, near) {
   const { byId, atIndex } = world;
   const blocks = [];
@@ -1013,7 +682,6 @@ export function attachBlockMembers(geometry) {
 export function computeLabelGeometry(world) {
   const { width, provinceAt } = world;
 
-  // Provinces that all but touch count as touching for labelling — see above.
   const height = provinceAt.length / width;
   const near = nearbyProvinces(provinceAt, width, height);
 
@@ -1021,11 +689,6 @@ export function computeLabelGeometry(world) {
   if (!built) return null;
   const { blocks, blockAt } = built;
 
-  // --- STEP 1: one pass over the map summing each block's pixel positions, which
-  //     gives the centroid and covariance, and from those the principal axis.
-  // Both passes below walk x and y as loop counters rather than deriving them
-  // from the index. A division and a modulo per pixel is invisible on a small
-  // map and tens of millions of operations on a large one.
   const acc = blocks.map(newMoments);
   for (let y = 0, i = 0; y < height; y++) {
     for (let x = 0; x < width; x++, i++) {
@@ -1035,9 +698,6 @@ export function computeLabelGeometry(world) {
   }
   const geo = acc.map(blockAxis);
 
-  // --- STEP 2: a second pass, now that the axis is known. Each pixel is measured
-  //     along it (t) and across it (u). The sums feed the least-squares spine,
-  //     and the tally of pixels per slice of t feeds denseRange.
   const fit = geo.map((g) => g && newFit());
   for (let y = 0, i = 0; y < height; y++) {
     for (let x = 0; x < width; x++, i++) {
@@ -1046,47 +706,11 @@ export function computeLabelGeometry(world) {
     }
   }
 
-  // `near` travels with the geometry. Rebuilding it costs a pass over every
-  // coastal pixel on the map, and an ownership change needs the same graph the
-  // blocks were built from to decide what merges with what.
   return { blocks, blockAt, geo, fit, near };
 }
 
-/**
- * Blocks for the REALMS, alongside the blocks for their members.
- *
- * A realm made of several polities has two names that could be written across
- * it — the empire's, and each kingdom's — and which one belongs on the map
- * depends on how much of the screen the country fills. So both are built, and
- * §4 of main.js decides between them by size, the same measure that decides
- * whether any label is worth drawing at all.
- *
- * Blocks are only added for a realm that HAS members below it. A country whose
- * polity is its own realm, which is nearly all of them, already had its label.
- *
- * Cheap despite adding a second layer: the geometry is measured over the member
- * provinces' bounding boxes rather than over the map, and only a handful of
- * countries on the map are composite.
- *
- * Rebuilt rather than updated when provinces change hands, since which provinces
- * a realm holds is exactly what changes then. Returns the blocks touched.
- */
-/**
- * One block per country listed, holding every province it owns whether or not
- * the pieces touch.
- *
- * Ordinary blocks are contiguous by construction, which is what a name written
- * along a landmass needs and is no use to a country that has no landmass. An
- * island country is several blocks of one province each, none of them able to
- * carry the name, and naming the largest leaves the rest of the country bare.
- * This is the other shape: one block for the whole country, so a name can run
- * across islands buildBlocks would never have joined.
- *
- * `plan` maps a polity id to the province indices its block should hold. Slots
- * are recycled the way realm blocks recycle them, so calling this on every
- * ownership change does not grow the arrays. Returns the blocks now holding a
- * country and the slots left over, whose labels the caller drops.
- */
+// Builds realm blocks alongside their members' blocks.
+// One block per listed country, holding all its provinces.
 export function setIslandBlocks(world, geometry, plan) {
   const spare = [];
   geometry.blocks.forEach((blk, b) => {
@@ -1119,9 +743,6 @@ export function setIslandBlocks(world, geometry, plan) {
 export function addRealmBlocks(world, geometry) {
   if (!geometry) return [];
 
-  // Empty the ones from last time and keep their slots. A block id indexes into
-  // three arrays and into the caller's labels, so growing the arrays on every
-  // ownership change would leak a slot each time.
   const spare = [];
   geometry.blocks.forEach((blk, b) => {
     if (!blk) return;
@@ -1148,8 +769,6 @@ export function addRealmBlocks(world, geometry) {
   const touched = [];
   const realmBlockAt = new Map();
   for (const [realm, members] of byRealm) {
-    // One block per contiguous piece, as for any other block: a realm split
-    // across a sea gets its name written on each half.
     for (const part of componentsOf(world, geometry.near, members)) {
       let b;
       if (spare.length) b = spare.pop();
@@ -1165,8 +784,6 @@ export function addRealmBlocks(world, geometry) {
     }
   }
 
-  // Each member block is pointed at the realm block covering it, so its label
-  // knows whose name is standing in for its own.
   for (const blk of geometry.blocks) {
     if (!blk || blk.level === 'realm' || !blk.members.length) continue;
     const b = realmBlockAt.get(blk.members[0]);
@@ -1175,10 +792,6 @@ export function addRealmBlocks(world, geometry) {
 
   computeBlockGeometry(world, geometry, touched);
 
-  // How tall the realm's ground is, in map pixels, which is what decides when
-  // its name gives way to its members'. Taken over the member provinces only,
-  // so a colony half a world away does not stretch it: colonies hang off
-  // `suzerain` and are never in a realm block to begin with.
   for (const b of touched) {
     const blk = geometry.blocks[b];
     let top = Infinity, bottom = -Infinity;
@@ -1191,17 +804,10 @@ export function addRealmBlocks(world, geometry) {
     blk.spanY = bottom >= top ? bottom - top + 1 : 0;
   }
 
-  return touched.concat(spare);          // the leftovers lose their labels
+  return touched.concat(spare);
 }
 
-/**
- * Redoes the geometry of named blocks only, by walking their member provinces
- * rather than the map.
- *
- * Cost is the member provinces' bounding boxes, not 15.9 million pixels, which
- * is what makes recomputing a label affordable when a province changes hands.
- * Blocks left empty by a change come back as null and lose their label.
- */
+// Recomputes geometry for named blocks from their member provinces.
 export function computeBlockGeometry(world, geometry, ids) {
   const { width, provinceAt, bounds, atIndex } = world;
 
@@ -1213,9 +819,6 @@ export function computeBlockGeometry(world, geometry, ids) {
       continue;
     }
 
-    // Each member is walked over its OWN box and counted only where the pixel
-    // is really its own, so two members with overlapping boxes cannot count the
-    // same pixel twice.
     const acc = newMoments();
     for (const ix of blk.members) {
       const bb = bounds.get(atIndex[ix].id);

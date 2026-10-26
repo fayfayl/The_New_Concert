@@ -1,37 +1,6 @@
-/*
- * ownership.js — provinces changing hands after load.
- *
- * Three things are derived from who owns what, and each is handled differently
- * when an owner changes:
- *
- *   colours     Worked out fresh on every repaint from the province's current
- *               owner, so they need nothing here beyond a repaint of the right
- *               pixels. The same is true of the borders, which are found per
- *               pixel by comparing owners rather than stored.
- *   borderDist  A distance field over every pixel, used for the inland fade.
- *               Redone over a rectangle, not the map.
- *   labels      Provinces are grouped into blocks of one owner, and each block
- *               is measured. Only the blocks a change touches are regrouped and
- *               remeasured.
- *
- * The map is 15.9 million pixels and a country's label geometry is two passes
- * over all of them, so doing either from scratch per change is not an option:
- * a war moves provinces constantly and this has to cost about what the province
- * itself is worth.
- *
- * Nothing here draws or measures text. setOwners() reports which blocks need
- * their label rebuilt and which rectangles need repainting, and the caller does
- * both — building a label means measuring real type, which needs a canvas.
- *
- * COUNTIES. When counties arrive they are the same shape of problem one level
- * down: a county changes hands, its province's owner is whatever its counties
- * add up to, and only then does any of the above run. The entry point stays
- * setOwners(), taking province-level results.
- */
+// Updates colours, blocks and border distances when provinces change hands.
 
-// Versioned for the same reason main.js versions its own imports: a static
-// import here would resolve to an unversioned URL and could come from cache
-// while the rest of the program is fresh.
+// Query string this module was loaded with, for versioned imports.
 const VERSION = new URL(import.meta.url).search;
 
 const {
@@ -39,24 +8,10 @@ const {
   computeBlockGeometry, labelNeighbours, isLabelled, componentsOf,
 } = await import(`./mapdata.js${VERSION}`);
 
-// How far outside a changed province the distance field has to be redone. A
-// border appearing or disappearing cannot be felt further than the field can
-// measure, and the extra pixel covers the neighbouring pixels whose own seed
-// test reads across the province's edge.
+// Padding around a changed province for the border distance redo.
 const MARGIN = BORDER_DIST_REACH + 1;
 
-/**
- * Hands provinces to new owners.
- *
- * `changes` is an iterable of [provinceId, polityId]. Unknown ids and changes
- * that are not changes are skipped with a warning rather than throwing, since
- * this will be driven by events and by the AI.
- *
- * Returns null when nothing changed, otherwise:
- *   changed  the province ids that moved
- *   blocks   Set of label block ids whose label must be rebuilt
- *   boxes    map rectangles whose pixels are now wrong, {x0, y0, x1, y1}
- */
+// Hands provinces to new owners; returns the touched blocks or null.
 export function setOwners(world, geometry, changes) {
   const changed = [];
   const blocks = new Set();
@@ -68,8 +23,6 @@ export function setOwners(world, geometry, changes) {
     if (!world.table.polityById.has(owner)) { console.warn(`setOwners: no polity "${owner}"`); continue; }
     if (p.owner === owner) continue;
 
-    // One province at a time, each seeing the owners as they stand at that
-    // moment, so a batch behaves exactly as the same changes made in order.
     if (geometry) leaveBlock(world, geometry, p, blocks);
     p.owner = owner;
     if (geometry) joinBlock(world, geometry, p, blocks);
@@ -82,8 +35,6 @@ export function setOwners(world, geometry, changes) {
     return bb ? regionsFor(world, bb) : [];
   }));
 
-  // Owners are all written by now, so a rectangle redone here sees the finished
-  // state and two overlapping rectangles cannot disagree.
   if (world.borderDist) {
     for (const box of boxes) refreshBorderDistance(world, world.borderDist, box);
   }
@@ -94,15 +45,7 @@ export function setOwners(world, geometry, changes) {
 
 // ------------------------------------------------------------------ blocks
 
-/**
- * Takes a province out of its block, splitting what is left if it no longer
- * hangs together.
- *
- * Losing a province can cut a block in two: a corridor between two halves of a
- * country, or the last province linking an island group to the mainland. Each
- * surviving piece becomes a block of its own and gets its own copy of the
- * country's name, which is what a cold load would have produced.
- */
+// Removes a province from its block, splitting the remainder if cut.
 function leaveBlock(world, geometry, p, touched) {
   const b = geometry.blockAt[p.index];
   if (b < 0) return;                       // unowned, or never in a block
@@ -125,14 +68,7 @@ function leaveBlock(world, geometry, p, touched) {
   }
 }
 
-/**
- * Puts a province into the block of its new owner, merging any blocks it now
- * joins together.
- *
- * A province can adjoin several blocks of the same owner at once, which is what
- * completing a land bridge looks like. All of them become one. A province with
- * no such neighbour starts a block of its own.
- */
+// Adds a province to its new owner's block, merging blocks it joins.
 function joinBlock(world, geometry, p, touched) {
   if (!isLabelled(world, p)) return;       // unowned land belongs to no block
 
@@ -163,13 +99,7 @@ function joinBlock(world, geometry, p, touched) {
   touched.add(target);
 }
 
-/**
- * Appends an empty block and returns its id.
- *
- * Emptied blocks keep their slot rather than being removed, because a block id
- * is an index into three parallel arrays and into the caller's labels. Renumbering
- * them on every change would mean rebuilding every label on the map.
- */
+// Appends an empty block and returns its id.
 function addBlock(geometry, owner) {
   const b = geometry.blocks.length;
   geometry.blocks.push({ owner, members: [] });
@@ -180,13 +110,7 @@ function addBlock(geometry, owner) {
 
 // ----------------------------------------------------------------- regions
 
-/**
- * The rectangles a province's change can have disturbed, grown by MARGIN.
- *
- * One rectangle usually, two for a province near the map's seam: east and west
- * are the same meridian, so a border there is felt on both edges of the bitmap.
- * A province wide enough that the grown box laps itself takes the full width.
- */
+// Rectangles a province's change can disturb, grown by MARGIN.
 function regionsFor(world, bb) {
   const y0 = Math.max(0, bb.minY - MARGIN);
   const y1 = Math.min(world.height, bb.maxY + 1 + MARGIN);
@@ -201,11 +125,7 @@ function regionsFor(world, bb) {
   return out;
 }
 
-/**
- * Merges overlapping rectangles, so a batch of neighbouring provinces is redone
- * once rather than once each. Purely an economy: overlapping rectangles would
- * give the same answer, just more slowly.
- */
+// Merges overlapping rectangles.
 function mergeBoxes(list) {
   const out = [];
   for (const box of list) {
