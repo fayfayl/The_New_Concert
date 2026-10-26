@@ -1356,7 +1356,7 @@
       "effects": {
         "stability": 8,
         "conscriptionRaiseCost": -0.2,
-        "relationsWithTarget": -30,
+        "relationsFromTarget": -30,
         "ideologySupportPerDay": {
           "Fascism": 0.012,
           "Conservatism": 0.004
@@ -1514,7 +1514,7 @@
       ],
       "target": "VOS",
       "effects": {
-        "relationsWithTarget": 25,
+        "relationsFromTarget": 25,
         "politicalPower": -0.1,
         "research": 0.08
       },
@@ -1819,7 +1819,7 @@
       "target": "VRP",
       "effects": {
         "stability": 5,
-        "relationsWithTarget": -20
+        "relationsFromTarget": -20
       },
       "permanent": false,
       "tags": []
@@ -3592,7 +3592,7 @@
         "LPC"
       ],
       "effects": {
-        "relationsWithTarget": 20,
+        "relationsFromTarget": 20,
         "tradeIncomeWithTarget": 0.4,
         "tradeIncome": -0.2,
         "taxRevenue": -0.2,
@@ -3619,7 +3619,7 @@
         "ARV"
       ],
       "effects": {
-        "relationsWithTarget": 20,
+        "relationsFromTarget": 20,
         "tradeIncomeWithTarget": 0.2,
         "tradeIncome": -0.1,
         "taxRevenue": -0.1,

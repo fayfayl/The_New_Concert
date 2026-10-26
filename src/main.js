@@ -11,7 +11,7 @@ const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'rend
 const loaded = await Promise.all(MODULES.map((n) => import(`./${n}.js${VERSION}`)));
 const all = Object.assign({}, ...loaded);
 for (const m of loaded) m.link?.(all);
-const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween } = all;
+const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween } = all;
 
 // Loads the data, builds the model, and starts the render loop.
 async function init() {
@@ -178,6 +178,13 @@ async function init() {
     for (const [id, [total, n]] of seen) if (world.stats[id]) world.stats[id].struckAverage = total / n;
   }
   world.polityValues = polityValues?.polities ?? null;
+  // Wars running at the start, from the war records, in both countries' lists.
+  for (const x of (relationTable?.relations || []).filter((r) => r.band === 'war')) {
+    for (const [a, b] of [[x.first, x.second], [x.second, x.first]]) {
+      const v = world.polityValues?.[a];
+      if (v && !(v.atWar ||= []).includes(b)) v.atWar.push(b);
+    }
+  }
   world.government = startGovernment
     ? { byPolity: new Map((startGovernment.polities || []).map((g) => [g.id, g])),
         defaults: startGovernment.defaults || null,
@@ -377,6 +384,8 @@ async function init() {
       return { resource, rate, held: Number((v.reserves?.[resource] || 0).toFixed(2)) };
     },
     build: (tag, project, where, to) => queueConstruction(state.world, tag, project, where, to),
+    // Development aid: a level built in another country's province, at the builder's expense and political power.
+    developmentAid: (tag, project, where, to) => giveDevelopmentAid(state.world, tag, project, where, to),
     produce: (tag, item, count = 1, generation = 1) => queueEquipment(state.world, tag, item, count, generation),
     layDown: (tag, hull, county, generation = 1) => queueShip(state.world, tag, hull, county, generation),
     queue: (tag) => queuesOf(state.world, tag),
@@ -409,26 +418,28 @@ async function init() {
       return { reserves, equipment, ships, storagePerDay: r((made.stockpileStorage || 0) + (live.lastSupply.get(tag)?.storage || 0)) };
     },
     fleet: (tag) => [...(state.world?.polityValues?.[tag]?.fleet || [])],
-    // Relations between two polities and what they are made of.
+    // A's view of b and what it is made of, and b's view of a.
     relations: (a, b) => {
       const w = state.world;
       for (const t of [a, b]) if (!w?.table?.polityById?.has(t)) throw new Error(`no polity "${t}"`);
-      const x = relationsBetween(a, b);
-      if (!x) return null;
-      const r = (n) => Number(n.toFixed(1));
-      return { relations: r(x.value), base: r(x.base), distance: r(x.distance), history: Object.fromEntries(x.parts.map(([k, n]) => [k, r(n)])), tension: r(-x.tension) };
+      const r = (n) => Number(n.toFixed(2));
+      const view = (x) => (x ? { relations: r(x.value), base: r(x.base), distance: r(x.distance), history: Object.fromEntries(x.parts.map(([k, n]) => [k, r(n)])), tension: r(-x.tension) } : null);
+      const x = relationsBetween(a, b), y = relationsBetween(b, a);
+      if (!x && !y) return null;
+      return { view: view(x), reverse: view(y) };
     },
-    // Every relation a polity holds, best first.
+    // A polity's view of every other, best first, and every other's view of it.
     relationsOf: (tag) => {
       const w = state.world;
       if (!w?.table?.polityById?.has(tag)) throw new Error(`no polity "${tag}"`);
-      const rows = [];
+      const view = [], reverse = [];
       for (const [k, x] of live.lastRelations) {
-        const [a, b] = k.split('|');
-        if (a === tag || b === tag) rows.push([a === tag ? b : a, Number(x.value.toFixed(1))]);
+        const [a, b] = k.split('>');
+        if (a === tag) view.push([b, Number(x.value.toFixed(2))]);
+        if (b === tag) reverse.push([a, Number(x.value.toFixed(2))]);
       }
-      rows.sort((p, q) => q[1] - p[1]);
-      return Object.fromEntries(rows);
+      const best = (rows) => Object.fromEntries(rows.sort((p, q) => q[1] - p[1]));
+      return { view: best(view), reverse: best(reverse) };
     },
     // World tension and who raised it.
     tension: () => {
@@ -487,9 +498,9 @@ async function init() {
     setLaw: setLawFromConsole,
     setForm: setFormFromConsole,
     setDoctrine: setDoctrineFromConsole,
-    addPolicy: (tag, name, target) => setActFromConsole(tag, 'policy', name, target, true),
+    addPolicy: (tag, name, target, toward) => setActFromConsole(tag, 'policy', name, target, true, toward),
     removePolicy: (tag, name, target) => setActFromConsole(tag, 'policy', name, target, false),
-    addDecree: (tag, name, target) => setActFromConsole(tag, 'decree', name, target, true),
+    addDecree: (tag, name, target, toward) => setActFromConsole(tag, 'decree', name, target, true, toward),
     removeDecree: (tag, name, target) => setActFromConsole(tag, 'decree', name, target, false),
     addSpirit: (tag, id) => setSpiritFromConsole(tag, id, true),
     removeSpirit: (tag, id) => setSpiritFromConsole(tag, id, false),

@@ -7,8 +7,8 @@ const { countyFortCeiling } = await import(`../world/ceilings.js${VERSION}`);
 const { state, worldChanged } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let LEVEL_TYPES, builtLevel, doctrineOf, governmentPosition, railShare, colonyHolder, unlockedSlots, usableCeiling, lawCeilingOf, unavailable, startAct, fadeAct, restartWait, endsWithDecree;
-export function link(all) { ({ LEVEL_TYPES, builtLevel, doctrineOf, governmentPosition, railShare, colonyHolder, unlockedSlots, usableCeiling, lawCeilingOf, unavailable, startAct, fadeAct, restartWait, endsWithDecree } = all); }
+let LEVEL_TYPES, builtLevel, doctrineOf, governmentPosition, railShare, colonyHolder, unlockedSlots, usableCeiling, lawCeilingOf, unavailable, startAct, fadeAct, restartWait, endsWithDecree, enactInfrastructure;
+export function link(all) { ({ LEVEL_TYPES, builtLevel, doctrineOf, governmentPosition, railShare, colonyHolder, unlockedSlots, usableCeiling, lawCeilingOf, unavailable, startAct, fadeAct, restartWait, endsWithDecree, enactInfrastructure } = all); }
 
 // Console setters: change things at no cost; names, availability and ceilings are checked.
 
@@ -90,8 +90,8 @@ function setDoctrineFromConsole(tag, branch, school) {
   return governmentChanged(tag);
 }
 
-// Adds or removes a policy or decree, with an optional target.
-function setActFromConsole(tag, kind, name, target, on) {
+// Adds or removes a policy or decree, with an optional target and toward, "for" or "against" it.
+function setActFromConsole(tag, kind, name, target, on, toward) {
   const g = consoleGov(tag);
   const table = kind === 'policy'
     ? state.world.government.policies?.policies || []
@@ -105,11 +105,13 @@ function setActFromConsole(tag, kind, name, target, on) {
   const same = (x) => nameOf(x) === name && (target === undefined || x?.target === target);
   if (on) {
     if (held.some(same)) throw new Error(`${tag} already holds ${kind} "${name}"`);
+    if (toward !== undefined && toward !== 'for' && toward !== 'against') throw new Error('toward is "for" or "against"');
     const why = unavailable(state.world, tag, kind, act, target);
     if (why) throw new Error(why);
     const wait = restartWait(g, kind, name, target);
     if (wait) throw new Error(`${name} may start again in ${wait} days`);
-    held.push(startAct(state.world, kind, name, target));
+    held.push(startAct(state.world, kind, name, target, toward));
+    if (kind === 'decree') enactInfrastructure(state.world, tag, held[held.length - 1]);
     g[field] = held;
     if (kind === 'decree') endsWithDecree(state.world, g, act, target);
   } else {

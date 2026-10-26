@@ -1,6 +1,6 @@
 {
   "notes": [
-    "politicalPower, treasury ($), manpower, commandPower: starting stocks. atWar: polities at war with on the start date.",
+    "politicalPower, treasury ($), manpower, commandPower: starting stocks.",
     "baseWeariness = min(3, daysAtWar / 720) + 400 * cumulativeDeaths / population, times wearinessModifier.",
     "Per battle: weariness += baseWeariness * (100 * deaths / population) * ground; ground 1.0 on own ground, 2.5 elsewhere.",
     "cumulativeDeaths counts civilians and soldiers. wearinessModifier: product of every modifier on the polity.",
@@ -16,8 +16,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BLA": {
       "politicalPower": 15,
@@ -28,8 +27,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LEO": {
       "politicalPower": 15,
@@ -40,8 +38,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "FNA": {
       "politicalPower": 50,
@@ -52,8 +49,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "FLN": {
       "politicalPower": 50,
@@ -64,8 +60,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AVN": {
       "politicalPower": 50,
@@ -76,8 +71,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "RGC": {
       "politicalPower": 25,
@@ -88,8 +82,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "STN": {
       "politicalPower": 25,
@@ -100,8 +93,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "FAC": {
       "politicalPower": 25,
@@ -112,8 +104,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KTR": {
       "politicalPower": 25,
@@ -124,8 +115,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "RGA": {
       "politicalPower": 25,
@@ -136,8 +126,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HLT": {
       "politicalPower": 25,
@@ -148,8 +137,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SKG": {
       "politicalPower": 10,
@@ -160,8 +148,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NNF": {
       "politicalPower": 25,
@@ -172,8 +159,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MLR": {
       "politicalPower": 25,
@@ -184,8 +170,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HML": {
       "politicalPower": 25,
@@ -196,8 +181,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TPW": {
       "politicalPower": 25,
@@ -208,8 +192,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BND": {
       "politicalPower": 25,
@@ -220,8 +203,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "FSP": {
       "politicalPower": 25,
@@ -232,8 +214,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ADH": {
       "politicalPower": 25,
@@ -244,8 +225,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MBY": {
       "politicalPower": 25,
@@ -256,8 +236,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "EMB": {
       "politicalPower": 25,
@@ -268,8 +247,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "GDV": {
       "politicalPower": 25,
@@ -280,8 +258,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "FNY": {
       "politicalPower": 25,
@@ -292,8 +269,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ANY": {
       "politicalPower": 25,
@@ -304,8 +280,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HTL": {
       "politicalPower": 10,
@@ -316,8 +291,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HTH": {
       "politicalPower": 25,
@@ -328,8 +302,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AGN": {
       "politicalPower": 25,
@@ -340,8 +313,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BWN": {
       "politicalPower": 25,
@@ -352,8 +324,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KWZ": {
       "politicalPower": 25,
@@ -364,8 +335,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "YNK": {
       "politicalPower": 40,
@@ -376,8 +346,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HEL": {
       "politicalPower": 10,
@@ -388,8 +357,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "GWR": {
       "politicalPower": 40,
@@ -400,8 +368,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NDN": {
       "politicalPower": 25,
@@ -412,8 +379,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TRW": {
       "politicalPower": 25,
@@ -424,8 +390,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "PWL": {
       "politicalPower": 10,
@@ -436,8 +401,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LND": {
       "politicalPower": 25,
@@ -448,8 +412,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KYI": {
       "politicalPower": 25,
@@ -460,8 +423,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CKP": {
       "politicalPower": 25,
@@ -472,8 +434,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "GCB": {
       "politicalPower": 25,
@@ -484,8 +445,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VSW": {
       "politicalPower": 25,
@@ -496,8 +456,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TMI": {
       "politicalPower": 25,
@@ -508,8 +467,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SPK": {
       "politicalPower": 30,
@@ -520,8 +478,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VUG": {
       "politicalPower": 25,
@@ -532,8 +489,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SBY": {
       "politicalPower": 100,
@@ -544,8 +500,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KGN": {
       "politicalPower": 40,
@@ -556,8 +511,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TWD": {
       "politicalPower": 75,
@@ -568,8 +522,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SWD": {
       "politicalPower": 40,
@@ -580,8 +533,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KAN": {
       "politicalPower": 30,
@@ -592,8 +544,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KVP": {
       "politicalPower": 25,
@@ -604,8 +555,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NDV": {
       "politicalPower": 10,
@@ -616,8 +566,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KNT": {
       "politicalPower": 25,
@@ -628,8 +577,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ADK": {
       "politicalPower": 25,
@@ -640,8 +588,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NAS": {
       "politicalPower": 25,
@@ -652,8 +599,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "WRL": {
       "politicalPower": 25,
@@ -664,8 +610,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LCL": {
       "politicalPower": 25,
@@ -676,8 +621,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LLT": {
       "politicalPower": 25,
@@ -688,8 +632,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KNY": {
       "politicalPower": 25,
@@ -700,8 +643,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "PEL": {
       "politicalPower": 75,
@@ -712,8 +654,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AJX": {
       "politicalPower": 60,
@@ -724,8 +665,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "OMB": {
       "politicalPower": 40,
@@ -736,8 +676,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VOS": {
       "politicalPower": 100,
@@ -748,8 +687,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NPW": {
       "politicalPower": 25,
@@ -760,8 +698,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MZI": {
       "politicalPower": 25,
@@ -772,8 +709,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TBI": {
       "politicalPower": 25,
@@ -784,8 +720,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SKI": {
       "politicalPower": 10,
@@ -796,8 +731,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NLV": {
       "politicalPower": 25,
@@ -808,8 +742,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VSP": {
       "politicalPower": 30,
@@ -820,8 +753,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VKN": {
       "politicalPower": 25,
@@ -832,8 +764,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SVA": {
       "politicalPower": 25,
@@ -844,8 +775,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SRS": {
       "politicalPower": 75,
@@ -856,8 +786,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SCN": {
       "politicalPower": 10,
@@ -868,11 +797,7 @@
       "weariness": 9,
       "cumulativeDeaths": 133431,
       "daysAtWar": 1505,
-      "wearinessModifier": 0.85,
-      "atWar": [
-        "CFR",
-        "NCN"
-      ]
+      "wearinessModifier": 0.85
     },
     "NCN": {
       "politicalPower": 25,
@@ -883,11 +808,7 @@
       "weariness": 8.8,
       "cumulativeDeaths": 115027,
       "daysAtWar": 1505,
-      "wearinessModifier": 0.85,
-      "atWar": [
-        "CFR",
-        "SCN"
-      ]
+      "wearinessModifier": 0.85
     },
     "NLN": {
       "politicalPower": 25,
@@ -898,8 +819,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ATT": {
       "politicalPower": 10,
@@ -910,8 +830,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CFR": {
       "politicalPower": 15,
@@ -922,11 +841,7 @@
       "weariness": 13.8,
       "cumulativeDeaths": 88572,
       "daysAtWar": 1505,
-      "wearinessModifier": 1.05,
-      "atWar": [
-        "NCN",
-        "SCN"
-      ]
+      "wearinessModifier": 1.05
     },
     "JEN": {
       "politicalPower": 25,
@@ -937,8 +852,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "JMB": {
       "politicalPower": 25,
@@ -949,8 +863,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KRT": {
       "politicalPower": 25,
@@ -961,8 +874,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "DOB": {
       "politicalPower": 25,
@@ -973,8 +885,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "JSP": {
       "politicalPower": 25,
@@ -985,8 +896,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "JMN": {
       "politicalPower": 25,
@@ -997,8 +907,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TJV": {
       "politicalPower": 10,
@@ -1009,8 +918,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LOX": {
       "politicalPower": 50,
@@ -1021,8 +929,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SPT": {
       "politicalPower": 75,
@@ -1033,8 +940,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AUS": {
       "politicalPower": 60,
@@ -1045,8 +951,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SAN": {
       "politicalPower": 25,
@@ -1056,9 +961,8 @@
       "baseWeariness": 0,
       "weariness": 0,
       "cumulativeDeaths": 0,
-      "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "daysAtWar": 1232,
+      "wearinessModifier": 1
     },
     "CAC": {
       "politicalPower": 25,
@@ -1069,8 +973,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SVP": {
       "politicalPower": 15,
@@ -1081,10 +984,7 @@
       "weariness": 14.2,
       "cumulativeDeaths": 250000,
       "daysAtWar": 1232,
-      "wearinessModifier": 1,
-      "atWar": [
-        "CNC"
-      ]
+      "wearinessModifier": 1
     },
     "TDC": {
       "politicalPower": 25,
@@ -1095,8 +995,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "PLT": {
       "politicalPower": 25,
@@ -1107,8 +1006,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SCB": {
       "politicalPower": 25,
@@ -1119,8 +1017,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ALG": {
       "politicalPower": 25,
@@ -1131,8 +1028,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SMN": {
       "politicalPower": 25,
@@ -1143,8 +1039,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "RDZ": {
       "politicalPower": 25,
@@ -1155,8 +1050,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SMG": {
       "politicalPower": 25,
@@ -1167,8 +1061,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MBR": {
       "politicalPower": 25,
@@ -1179,8 +1072,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BKA": {
       "politicalPower": 25,
@@ -1191,8 +1083,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NCM": {
       "politicalPower": 25,
@@ -1203,8 +1094,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ABH": {
       "politicalPower": 25,
@@ -1215,8 +1105,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LVS": {
       "politicalPower": 25,
@@ -1227,8 +1116,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "DAG": {
       "politicalPower": 15,
@@ -1239,8 +1127,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "WEI": {
       "politicalPower": 25,
@@ -1251,8 +1138,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "EPT": {
       "politicalPower": 50,
@@ -1263,8 +1149,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NNT": {
       "politicalPower": 30,
@@ -1275,8 +1160,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CHV": {
       "politicalPower": 75,
@@ -1287,8 +1171,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LPC": {
       "politicalPower": 50,
@@ -1299,8 +1182,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SPD": {
       "politicalPower": 25,
@@ -1311,8 +1193,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ARV": {
       "politicalPower": 40,
@@ -1323,8 +1204,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MNT": {
       "politicalPower": 50,
@@ -1335,8 +1215,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SNE": {
       "politicalPower": 30,
@@ -1347,8 +1226,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VAK": {
       "politicalPower": 30,
@@ -1359,8 +1237,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ROS": {
       "politicalPower": 30,
@@ -1371,8 +1248,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SUK": {
       "politicalPower": 40,
@@ -1383,8 +1259,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NAH": {
       "politicalPower": 75,
@@ -1395,8 +1270,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TVC": {
       "politicalPower": 25,
@@ -1407,8 +1281,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ONW": {
       "politicalPower": 25,
@@ -1419,8 +1292,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TRN": {
       "politicalPower": 60,
@@ -1431,8 +1303,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ATH": {
       "politicalPower": 50,
@@ -1443,8 +1314,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NCO": {
       "politicalPower": 40,
@@ -1455,8 +1325,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "DIM": {
       "politicalPower": 40,
@@ -1467,8 +1336,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SHN": {
       "politicalPower": 40,
@@ -1479,8 +1347,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TGY": {
       "politicalPower": 40,
@@ -1491,8 +1358,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "GRG": {
       "politicalPower": 50,
@@ -1503,8 +1369,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "EMS": {
       "politicalPower": 60,
@@ -1515,8 +1380,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ARY": {
       "politicalPower": 15,
@@ -1527,8 +1391,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KWE": {
       "politicalPower": 50,
@@ -1539,8 +1402,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "JSH": {
       "politicalPower": 40,
@@ -1551,8 +1413,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ILT": {
       "politicalPower": 15,
@@ -1563,8 +1424,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BUM": {
       "politicalPower": 100,
@@ -1575,8 +1435,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SIS": {
       "politicalPower": 30,
@@ -1587,8 +1446,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "QRG": {
       "politicalPower": 10,
@@ -1599,8 +1457,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AGR": {
       "politicalPower": 50,
@@ -1611,8 +1468,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VRP": {
       "politicalPower": 75,
@@ -1623,8 +1479,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ZAN": {
       "politicalPower": 60,
@@ -1635,8 +1490,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "VKD": {
       "politicalPower": 15,
@@ -1647,8 +1501,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NKO": {
       "politicalPower": 50,
@@ -1659,8 +1512,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "QCO": {
       "politicalPower": 50,
@@ -1671,8 +1523,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TNA": {
       "politicalPower": 40,
@@ -1683,8 +1534,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "BDI": {
       "politicalPower": 25,
@@ -1695,8 +1545,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ATN": {
       "politicalPower": 25,
@@ -1707,8 +1556,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TNG": {
       "politicalPower": 50,
@@ -1719,8 +1567,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "TNM": {
       "politicalPower": 75,
@@ -1731,8 +1578,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "UKH": {
       "politicalPower": 50,
@@ -1743,8 +1589,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "THD": {
       "politicalPower": 40,
@@ -1755,8 +1600,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "LNZ": {
       "politicalPower": 75,
@@ -1767,8 +1611,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KRF": {
       "politicalPower": 60,
@@ -1779,8 +1622,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MRI": {
       "politicalPower": 50,
@@ -1791,8 +1633,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ZUN": {
       "politicalPower": 40,
@@ -1803,8 +1644,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KLT": {
       "politicalPower": 60,
@@ -1815,8 +1655,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HNU": {
       "politicalPower": 25,
@@ -1827,8 +1666,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "PMK": {
       "politicalPower": 60,
@@ -1839,8 +1677,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CAF": {
       "politicalPower": 25,
@@ -1851,11 +1688,7 @@
       "weariness": 3.8,
       "cumulativeDeaths": 75000,
       "daysAtWar": 661,
-      "wearinessModifier": 0.85,
-      "atWar": [
-        "KOF",
-        "MNJ"
-      ]
+      "wearinessModifier": 0.85
     },
     "GAN": {
       "politicalPower": 10,
@@ -1866,11 +1699,7 @@
       "weariness": 6.2,
       "cumulativeDeaths": 35000,
       "daysAtWar": 661,
-      "wearinessModifier": 1.1,
-      "atWar": [
-        "KOF",
-        "MNJ"
-      ]
+      "wearinessModifier": 1.1
     },
     "MWU": {
       "politicalPower": 10,
@@ -1881,11 +1710,7 @@
       "weariness": 5.7,
       "cumulativeDeaths": 22000,
       "daysAtWar": 661,
-      "wearinessModifier": 1.1,
-      "atWar": [
-        "KOF",
-        "MNJ"
-      ]
+      "wearinessModifier": 1.1
     },
     "KOF": {
       "politicalPower": 40,
@@ -1896,12 +1721,7 @@
       "weariness": 2.4,
       "cumulativeDeaths": 110000,
       "daysAtWar": 661,
-      "wearinessModifier": 1,
-      "atWar": [
-        "CAF",
-        "GAN",
-        "MWU"
-      ]
+      "wearinessModifier": 1
     },
     "MNJ": {
       "politicalPower": 10,
@@ -1912,12 +1732,7 @@
       "weariness": 7.1,
       "cumulativeDeaths": 700,
       "daysAtWar": 661,
-      "wearinessModifier": 1.1,
-      "atWar": [
-        "CAF",
-        "GAN",
-        "MWU"
-      ]
+      "wearinessModifier": 1.1
     },
     "ETA": {
       "politicalPower": 25,
@@ -1928,8 +1743,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SGQ": {
       "politicalPower": 60,
@@ -1940,8 +1754,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AMR": {
       "politicalPower": 25,
@@ -1952,8 +1765,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SOA": {
       "politicalPower": 40,
@@ -1964,8 +1776,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AMY": {
       "politicalPower": 100,
@@ -1976,8 +1787,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HNM": {
       "politicalPower": 50,
@@ -1988,8 +1798,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AKA": {
       "politicalPower": 75,
@@ -2000,8 +1809,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "HMA": {
       "politicalPower": 30,
@@ -2012,8 +1820,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AKD": {
       "politicalPower": 30,
@@ -2024,8 +1831,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MRD": {
       "politicalPower": 40,
@@ -2036,8 +1842,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "JNI": {
       "politicalPower": 50,
@@ -2048,8 +1853,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "WRK": {
       "politicalPower": 50,
@@ -2060,8 +1864,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AJB": {
       "politicalPower": 50,
@@ -2072,8 +1875,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "RKO": {
       "politicalPower": 40,
@@ -2084,8 +1886,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AGL": {
       "politicalPower": 30,
@@ -2096,8 +1897,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CDM": {
       "politicalPower": 15,
@@ -2108,8 +1908,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "URT": {
       "politicalPower": 10,
@@ -2120,8 +1919,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ENY": {
       "politicalPower": 60,
@@ -2132,8 +1930,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MBG": {
       "politicalPower": 50,
@@ -2144,8 +1941,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "AKN": {
       "politicalPower": 75,
@@ -2156,8 +1952,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CIG": {
       "politicalPower": 60,
@@ -2168,8 +1963,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SRV": {
       "politicalPower": 60,
@@ -2180,8 +1974,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "XND": {
       "politicalPower": 60,
@@ -2192,8 +1985,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "KPY": {
       "politicalPower": 60,
@@ -2204,8 +1996,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SGA": {
       "politicalPower": 60,
@@ -2216,8 +2007,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "IOK": {
       "politicalPower": 30,
@@ -2228,8 +2018,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "OKU": {
       "politicalPower": 5,
@@ -2240,8 +2029,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "SNG": {
       "politicalPower": 30,
@@ -2252,8 +2040,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "NHB": {
       "politicalPower": 60,
@@ -2264,8 +2051,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CSL": {
       "politicalPower": 60,
@@ -2276,8 +2062,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "GOI": {
       "politicalPower": 50,
@@ -2288,8 +2073,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "MWK": {
       "politicalPower": 40,
@@ -2300,8 +2084,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "OKH": {
       "politicalPower": 25,
@@ -2312,8 +2095,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "OWC": {
       "politicalPower": 40,
@@ -2324,8 +2106,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "ANH": {
       "politicalPower": 50,
@@ -2336,8 +2117,7 @@
       "weariness": 0,
       "cumulativeDeaths": 0,
       "daysAtWar": 0,
-      "wearinessModifier": 1,
-      "atWar": []
+      "wearinessModifier": 1
     },
     "CNC": {
       "politicalPower": 15,
@@ -2348,10 +2128,7 @@
       "weariness": 5,
       "cumulativeDeaths": 85000,
       "daysAtWar": 1232,
-      "wearinessModifier": 0.75,
-      "atWar": [
-        "SVP"
-      ]
+      "wearinessModifier": 0.75
     }
   }
 }

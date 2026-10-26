@@ -1,5 +1,5 @@
 {
-  "note": "cost: opening price in political power, before tensionDiscount and any charge given in effect. options: one act, its kind chosen when taken, each kind with its own cost and needs. notByMembers: a realm's member may not take it; its realm does. bindsMembers: when a realm takes it or is its target, every member takes part with it. cooldownDays: days before a country may take it again against the same country.",
+  "note": "cost: opening price in political power, before tensionDiscount and any charge given in effect. options: one act, its kind chosen when taken, each kind with its own cost and needs. notByMembers: a realm's member may not take it; its realm does. bindsMembers: when a realm takes it or is its target, every member takes part with it. cooldownDays: days before a country may take it again against the same country. notAgainstOwnVassals: a country may not take it against its own colonies, puppets or other vassals. notByVassals: a colony, puppet or other vassal may not take it against anyone; its suzerain does. notAgainstOwnSuzerain: a vassal may take it, but not against its own suzerain. needs: a relations figure is read as the target's view of the actor, so a country may act toward one it dislikes when the other is willing.",
   "tensionDiscount": {
     "note": "perPoint: political power off the act per point of world tension, floored at floor times the listed cost.",
     "floor": 0.5,
@@ -13,21 +13,25 @@
       "name": "Improve relations",
       "cost": 25,
       "needs": "not at war",
-      "effect": "+0.1 relations per day while it runs, to a ceiling of +30 from this source. Once it stops, what it built fades 10 a year. Costs 0.2 political power per day on the same compass point, rising to 0.4 per day at opposite corners"
+      "effect": "+0.1 a day to the other's view of the actor while it runs, to a ceiling of +30 from this source, and a quarter of that to the actor's view of the other. Once it stops, what it built fades 10 a year. Costs 0.2 political power per day on the same compass point, rising to 0.4 per day at opposite corners"
     },
     {
       "name": "Denounce",
+      "notByVassals": true,
+      "notAgainstOwnVassals": true,
       "notByMembers": true,
       "cost": 20,
       "cooldownDays": 180,
-      "effect": "-20 relations at once, fading 5 a year, and the other side may not improve relations for 90 days. A second denunciation adds to what is left of the first"
+      "effect": "-20 to each side's view of the other at once, fading 5 a year, and the other side may not improve relations for 90 days. A second denunciation, by either side, adds another -20 to both views on top of what is left"
     },
     {
       "name": "Guarantee",
+      "notByVassals": true,
+      "notAgainstOwnVassals": true,
       "notByMembers": true,
       "cost": 50,
       "needs": "+25 relations",
-      "effect": "the guarantor enters any war declared on the guaranteed. Refusing costs 40 stability and every guarantee it holds"
+      "effect": "the guarantor enters any war declared on the guaranteed. Refusing costs 30 stability, recovering over a year at 2.5 a month, and every guarantee it holds"
     },
     {
       "name": "Non-aggression pact",
@@ -78,16 +82,18 @@
     },
     {
       "name": "Sanctions",
+      "notAgainstOwnSuzerain": true,
+      "notAgainstOwnVassals": true,
       "notByMembers": true,
       "bindsMembers": true,
       "cost": 30,
-      "effect": "the target's exportable surplus and importable shortfall fall 0.25 for as long as they hold, -30 relations. Costs 2% of political power income a day on top of the opening charge"
+      "effect": "the target's exportable surplus and importable shortfall fall 0.25 for as long as they hold, -30 to the target's view of the sanctioner. Costs 2% of political power income a day on top of the opening charge"
     },
     {
       "name": "State agreement",
       "cost": 20,
       "needs": "not at war with them",
-      "effect": "a daily supply of one good for a term: a resource, equipment or ships, sent as the things themselves, from the supplier's stock or built for the order. At a price, in money or in goods, it is a trade, +0.05 relations a day to +10; at no price it is lend lease, +0.05 a day to +30. Cancelling early costs the canceller -15 relations"
+      "effect": "a daily supply of one good for a term: a resource, equipment or ships, sent as the things themselves, from the supplier's stock or built for the order. At a price, in money or in goods, it is a trade, +0.05 a day to the receiver's view of the supplier to +10; at no price it is lend lease, +0.05 a day to +30. The supplier's view of the receiver takes a quarter of either. Cancelling early costs the canceller -15 relations"
     },
     {
       "name": "Development aid",
@@ -111,7 +117,7 @@
       "name": "Send volunteers",
       "cost": 30,
       "needs": "the target at war",
-      "effect": "up to 3 divisions fight under the target's command without a war. Losses are yours. -25 relations with the other side"
+      "effect": "up to 3 divisions fight under the target's command without a war. Losses are yours. -25 to the view of the sender held by every country the target is at war with, +10 to the target's view of the sender"
     },
     {
       "name": "Expeditionary force",
@@ -121,12 +127,16 @@
     },
     {
       "name": "Justify war",
+      "notByVassals": true,
+      "notAgainstOwnVassals": true,
       "notByMembers": true,
       "cost": 60,
       "effect": "a casus belli against one country, good for a year. 60 over 60 days, or 25 over 25 days on a claim"
     },
     {
       "name": "Declare war",
+      "notByVassals": true,
+      "notAgainstOwnVassals": true,
       "notByMembers": true,
       "bindsMembers": true,
       "cost": 200,

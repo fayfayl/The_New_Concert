@@ -1,5 +1,5 @@
 {
-  "note": "Each relation is recorded once, between first and second. bands: the kinds the diplomacy panel groups by; an empty band is not shown for a country.",
+  "note": "Each relation is recorded once, between first and second. bands: the kinds the diplomacy panel groups by; an empty band is not shown for a country. war: the named war a war pair belongs to.",
   "bands": [
     {
       "id": "allies",
@@ -41,8 +41,9 @@
     },
     {
       "id": "improving",
-      "name": "Improving relations",
-      "of": "both"
+      "name": "Improving relations with",
+      "of": "first",
+      "mirror": "Improving relations with us"
     },
     {
       "id": "denounced",
@@ -61,6 +62,12 @@
       "name": "Volunteers sent to",
       "of": "first",
       "mirror": "Volunteers from"
+    },
+    {
+      "id": "developmentAid",
+      "name": "Development aid to",
+      "of": "first",
+      "mirror": "Development aid from"
     }
   ],
   "relations": [
@@ -140,19 +147,19 @@
       "band": "improving",
       "first": "KRN",
       "second": "FNA",
-      "progress": 8
+      "since": "1926-03-22"
     },
     {
       "band": "improving",
       "first": "JEN",
       "second": "FNA",
-      "progress": 10
+      "since": "1923-06-01"
     },
     {
       "band": "improving",
       "first": "JEN",
       "second": "MRI",
-      "progress": 10
+      "since": "1923-06-01"
     },
     {
       "band": "guarantee",
@@ -163,7 +170,7 @@
       "band": "improving",
       "first": "FNA",
       "second": "KGN",
-      "progress": 15
+      "since": "1926-01-11"
     },
     {
       "band": "denounced",
@@ -175,13 +182,13 @@
       "band": "improving",
       "first": "AMY",
       "second": "TWD",
-      "progress": 5
+      "since": "1926-04-21"
     },
     {
       "band": "improving",
       "first": "KGN",
       "second": "SWD",
-      "progress": 5
+      "since": "1926-04-21"
     },
     {
       "band": "sanctions",
@@ -220,25 +227,19 @@
       "band": "improving",
       "first": "CSL",
       "second": "NCN",
-      "progress": 10
+      "since": "1924-03-01"
     },
     {
       "band": "improving",
       "first": "BUM",
       "second": "NCN",
-      "progress": 10
-    },
-    {
-      "band": "improving",
-      "first": "EMS",
-      "second": "NCN",
-      "progress": 10
+      "since": "1924-06-01"
     },
     {
       "band": "improving",
       "first": "QRG",
       "second": "SCN",
-      "progress": 10
+      "since": "1924-02-01"
     },
     {
       "band": "stateAgreement",
@@ -247,7 +248,8 @@
       "good": "iron",
       "amount": 1,
       "price": 0,
-      "progress": 20
+      "since": "1924-03-01",
+      "until": "1929-03-01"
     },
     {
       "band": "stateAgreement",
@@ -256,7 +258,8 @@
       "good": "oil",
       "amount": 1,
       "price": 0,
-      "progress": 15
+      "since": "1924-06-01",
+      "until": "1929-06-01"
     },
     {
       "band": "stateAgreement",
@@ -265,7 +268,8 @@
       "good": "infantryEquipment",
       "amount": 1,
       "price": 0,
-      "progress": 15
+      "since": "1924-09-01",
+      "until": "1929-09-01"
     },
     {
       "band": "stateAgreement",
@@ -274,7 +278,8 @@
       "good": "iron",
       "amount": 2,
       "price": 0,
-      "progress": 20
+      "since": "1924-02-01",
+      "until": "1929-02-01"
     },
     {
       "band": "volunteers",
@@ -288,7 +293,9 @@
       "second": "NCN",
       "good": "infantryEquipment",
       "amount": 2,
-      "price": 0
+      "price": 0,
+      "since": "1924-06-01",
+      "until": "1929-06-01"
     },
     {
       "band": "stateAgreement",
@@ -296,7 +303,9 @@
       "second": "NCN",
       "good": "infantryEquipment",
       "amount": 1,
-      "price": 0
+      "price": 0,
+      "since": "1924-03-01",
+      "until": "1929-03-01"
     },
     {
       "band": "stateAgreement",
@@ -304,7 +313,337 @@
       "second": "SCN",
       "good": "infantryEquipment",
       "amount": 1,
-      "price": 0
+      "price": 0,
+      "since": "1924-02-01",
+      "until": "1929-02-01"
+    },
+    {
+      "band": "denounced",
+      "first": "AUS",
+      "second": "SAN",
+      "on": "1924-07-28"
+    },
+    {
+      "band": "denounced",
+      "first": "SAN",
+      "second": "AUS",
+      "on": "1924-07-28"
+    },
+    {
+      "band": "stateAgreement",
+      "first": "SAN",
+      "second": "SVP",
+      "good": "infantryEquipment",
+      "amount": 3,
+      "price": 0,
+      "since": "1923-01-25",
+      "until": "1928-01-25"
+    },
+    {
+      "band": "stateAgreement",
+      "first": "SAN",
+      "second": "SVP",
+      "good": "armouredCar",
+      "amount": 1,
+      "price": 0,
+      "since": "1923-01-25",
+      "until": "1928-01-25"
+    },
+    {
+      "band": "stateAgreement",
+      "first": "SAN",
+      "second": "SVP",
+      "good": "lightTank",
+      "amount": 0.4,
+      "price": 0,
+      "since": "1923-01-25",
+      "until": "1928-01-25"
+    },
+    {
+      "band": "volunteers",
+      "first": "SAN",
+      "second": "SVP",
+      "divisions": 3
+    },
+    {
+      "band": "improving",
+      "first": "JEN",
+      "second": "AUS",
+      "since": "1923-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "AMY",
+      "second": "AUS",
+      "since": "1924-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "EMS",
+      "second": "AUS",
+      "since": "1922-05-14"
+    },
+    {
+      "band": "improving",
+      "first": "EMS",
+      "second": "JSH",
+      "since": "1922-05-14"
+    },
+    {
+      "band": "improving",
+      "first": "EMS",
+      "second": "KWE",
+      "since": "1922-05-14"
+    },
+    {
+      "band": "guarantee",
+      "first": "AUS",
+      "second": "EMS"
+    },
+    {
+      "band": "guarantee",
+      "first": "ZAN",
+      "second": "VKD"
+    },
+    {
+      "band": "guarantee",
+      "first": "ZAN",
+      "second": "NKO"
+    },
+    {
+      "band": "improving",
+      "first": "NKO",
+      "second": "VKD",
+      "since": "1925-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "ZAN",
+      "second": "MRI",
+      "since": "1920-01-03"
+    },
+    {
+      "band": "improving",
+      "first": "ZAN",
+      "second": "FNA",
+      "since": "1920-01-03"
+    },
+    {
+      "band": "denounced",
+      "first": "ZAN",
+      "second": "VRP",
+      "on": "1924-02-01"
+    },
+    {
+      "band": "denounced",
+      "first": "VRP",
+      "second": "ZAN",
+      "on": "1924-02-01"
+    },
+    {
+      "band": "improving",
+      "first": "ZAN",
+      "second": "NKO",
+      "since": "1925-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "KRF",
+      "second": "MRI",
+      "since": "1926-02-01"
+    },
+    {
+      "band": "improving",
+      "first": "MRI",
+      "second": "FNA",
+      "since": "1922-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "AKA",
+      "second": "MRI",
+      "since": "1925-01-01"
+    },
+    {
+      "band": "improving",
+      "first": "ILT",
+      "second": "VOS",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "VRP",
+      "second": "AGR",
+      "since": "1925-11-12"
+    },
+    {
+      "band": "improving",
+      "first": "QRG",
+      "second": "VRP",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "HNU",
+      "second": "VRP",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "PMK",
+      "second": "MRI",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "PMK",
+      "second": "SGQ",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "PMK",
+      "second": "VRP",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "PMK",
+      "second": "VOS",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "improving",
+      "first": "SGQ",
+      "second": "JNI",
+      "since": "1923-06-01"
+    },
+    {
+      "band": "improving",
+      "first": "JNI",
+      "second": "SGQ",
+      "since": "1923-06-01"
+    },
+    {
+      "band": "stateAgreement",
+      "first": "SGQ",
+      "second": "CAF",
+      "good": "infantryEquipment",
+      "amount": 2,
+      "price": 0,
+      "since": "1924-10-01",
+      "until": "1929-10-01"
+    },
+    {
+      "band": "war",
+      "first": "SCN",
+      "second": "NCN",
+      "since": "1923-12-07",
+      "war": "Cunarian Civil War"
+    },
+    {
+      "band": "war",
+      "first": "SCN",
+      "second": "CFR",
+      "since": "1923-12-07",
+      "war": "Cunarian Civil War"
+    },
+    {
+      "band": "war",
+      "first": "NCN",
+      "second": "CFR",
+      "since": "1923-12-07",
+      "war": "Cunarian Civil War"
+    },
+    {
+      "band": "war",
+      "first": "CNC",
+      "second": "SAN",
+      "since": "1923-01-25",
+      "war": "Continental Revolution"
+    },
+    {
+      "band": "war",
+      "first": "CNC",
+      "second": "SVP",
+      "since": "1923-01-25",
+      "war": "Continental Revolution"
+    },
+    {
+      "band": "war",
+      "first": "CAF",
+      "second": "KOF",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "war",
+      "first": "CAF",
+      "second": "MNJ",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "war",
+      "first": "GAN",
+      "second": "KOF",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "war",
+      "first": "GAN",
+      "second": "MNJ",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "war",
+      "first": "MWU",
+      "second": "KOF",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "war",
+      "first": "MWU",
+      "second": "MNJ",
+      "since": "1924-08-18",
+      "war": "Fuinamese Civil War"
+    },
+    {
+      "band": "denounced",
+      "first": "AKA",
+      "second": "AMY",
+      "on": "1924-12-01"
+    },
+    {
+      "band": "improving",
+      "first": "ANH",
+      "second": "AKA",
+      "since": "1926-03-02"
+    },
+    {
+      "band": "denounced",
+      "first": "JNI",
+      "second": "MRD",
+      "on": "1925-06-01"
+    },
+    {
+      "band": "denounced",
+      "first": "MRD",
+      "second": "JNI",
+      "on": "1925-06-01"
+    },
+    {
+      "band": "stateAgreement",
+      "first": "VOS",
+      "second": "CNC",
+      "good": "infantryEquipment",
+      "amount": 2,
+      "price": 0,
+      "since": "1924-06-01",
+      "until": "1929-06-01"
     }
   ]
 }

@@ -5,8 +5,8 @@ const { groundCost, countyFortCeiling } = await import(`../world/ceilings.js${VE
 const { clock, everyDay, live, worldChanged } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let activeAgreements, DOCKYARD_PORT_PX, builtLevel, countyGround, manpowerOf, occupiedFraction, railShare, setBuilding, unlockedSlots, usableCeiling;
-export function link(all) { ({ activeAgreements, DOCKYARD_PORT_PX, builtLevel, countyGround, manpowerOf, occupiedFraction, railShare, setBuilding, unlockedSlots, usableCeiling } = all); }
+let activeAgreements, shipmentDue, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling;
+export function link(all) { ({ activeAgreements, shipmentDue, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling } = all); }
 
 const MEDIAN_PROVINCE_KM2 = 40224;
 // Construction a level adds to projects in its own province.
@@ -63,10 +63,17 @@ function ownGround(w, tag, p) {
   if (occupiedFraction(w, p) > 0) throw new Error(`"${p.id}" is occupied`);
 }
 
+// Ground a polity may build on for another: someone else's, and not occupied.
+function aidGround(w, tag, p) {
+  if (!p || !p.owner || p.owner === tag) throw new Error(`"${p?.id}" is not another country's`);
+  if (occupiedFraction(w, p) > 0) throw new Error(`"${p.id}" is occupied`);
+}
+
 const scaled = (bill, k) => Object.fromEntries(Object.entries(bill || {}).map(([r, n]) => [r, n * k]));
 
-// Queues a construction project; returns what it costs.
-function queueConstruction(w, tag, id, where, to) {
+// Queues a construction project; returns what it costs. aid builds on another country's ground.
+function queueConstruction(w, tag, id, where, to, aid = false) {
+  const ground = aid ? aidGround : ownGround;
   const proj = projectOf(w, id);
   if (!proj) throw new Error(`no project "${id}"; try ${(tables(w).construction?.projects || []).map((x) => `"${x.id}"`).join(', ')}`);
   if (proj.requires) throw new Error(`${proj.name} needs ${proj.requires}, which is not researched`);
@@ -78,7 +85,7 @@ function queueConstruction(w, tag, id, where, to) {
     const p = w.byId?.get(where);
     const st = w.stats?.[where];
     if (!p || !st) throw new Error(`no province "${where}"`);
-    ownGround(w, tag, p);
+    ground(w, tag, p);
     province = where;
     if (proj.level) {
       const [built = 0, ceiling = 0] = Array.isArray(st[proj.level]) ? st[proj.level] : [builtLevel(st, proj.level), 0];
@@ -98,7 +105,7 @@ function queueConstruction(w, tag, id, where, to) {
     const c = w.counties?.byId?.get(where);
     if (!c) throw new Error(`no county "${where}"`);
     const p = w.byId?.get(c.province);
-    ownGround(w, tag, p);
+    ground(w, tag, p);
     if (c.occupier) throw new Error(`"${where}" is occupied`);
     province = c.province;
     county = where;
@@ -128,8 +135,49 @@ function queueConstruction(w, tag, id, where, to) {
     project: id, province, county, to: to ?? null, total, progress: 0,
     money: total * proj.moneyPerPoint, materials: scaled(proj.materials, multiplier),
   };
+  if (aid) entry.aid = true;
   v.construction.push(entry);
   return { project: id, where, points: Math.round(total), money: Math.round(entry.money), materials: round(entry.materials) };
+}
+
+// Development aid: political power a level at full relations' distance, abroad and in a colony of one's own.
+const AID_POLITICAL_POWER = 15;
+const COLONY_AID_POLITICAL_POWER = 5;
+// What anyone may build abroad, and what a suzerain may also build in its own colony.
+const AID_PROJECTS = ['road', 'electricity', 'rail'];
+const COLONY_AID_PROJECTS = [...AID_PROJECTS, 'fortification', 'antiAir', 'radar', 'supplyHub', 'airBase', 'dockyard', 'eyrie', 'syntheticOil', 'syntheticRubber'];
+
+// Queues a level in another country's province at the builder's expense; returns what it costs.
+function giveDevelopmentAid(w, tag, id, where, to) {
+  const proj = projectOf(w, id);
+  const province = proj?.on === 'county' ? w.counties?.byId?.get(where)?.province : where;
+  if (!proj) return queueConstruction(w, tag, id, where, to, true);
+  if (!province) throw new Error(`no ${proj.on} "${where}"`);
+  const host = w.byId?.get(province)?.owner;
+  if (!host || host === tag) throw new Error(`"${where}" is not another country's`);
+  const own = colonyHolder(w, host) === tag;
+  const open = own ? COLONY_AID_PROJECTS : AID_PROJECTS;
+  if (!open.includes(id)) throw new Error(`development aid builds ${open.map((x) => `"${x}"`).join(', ')}${own ? '' : ' abroad'}`);
+  if ((w.polityValues?.[tag]?.atWar || []).includes(host)) throw new Error(`${tag} is at war with ${host}`);
+  const view = relationsBetween(host, tag)?.value;
+  if (typeof view !== 'number') throw new Error(`no view of ${tag} held by ${host} yet`);
+  if (view < 0) throw new Error(`${host}'s view of ${tag} is ${view.toFixed(1)}, below 0`);
+  const cost = (own ? COLONY_AID_POLITICAL_POWER : AID_POLITICAL_POWER) * (100 - view) / 100;
+  const v = valuesOf(w, tag);
+  if ((v.politicalPower || 0) < cost) throw new Error(`${tag} holds ${(v.politicalPower || 0).toFixed(1)} political power of ${cost.toFixed(1)}`);
+  const out = queueConstruction(w, tag, id, where, to, true);
+  v.politicalPower -= cost;
+  return { ...out, host, politicalPower: Number(cost.toFixed(2)) };
+}
+
+// A finished level of development aid, on the record of who keeps it up.
+function recordAid(w, tag, x) {
+  const host = w.byId?.get(x.province)?.owner;
+  const table = w.government?.relations;
+  if (!host || host === tag || !table) return;
+  const same = (table.relations ||= []).find((r) => r.band === 'developmentAid' && r.first === tag && r.second === host && r.province === x.province && r.infrastructure === x.project);
+  if (same) same.levels += 1;
+  else table.relations.push({ band: 'developmentAid', first: tag, second: host, province: x.province, infrastructure: x.project, levels: 1 });
 }
 
 // Queues items of equipment.
@@ -169,7 +217,8 @@ const round = (bag) => Object.fromEntries(Object.entries(bag || {}).map(([k, n])
 const keptFor = (kept, bill) => Object.keys(bill || {}).reduce((a, r) => a * (kept[r] ?? 1), 1);
 
 // Finishes a construction project on the map.
-function complete(w, x) {
+function complete(w, x, tag) {
+  if (x.aid) recordAid(w, tag, x);
   const proj = projectOf(w, x.project);
   const st = w.stats?.[x.province];
   if (proj.level && proj.on === 'province') {
@@ -228,7 +277,7 @@ function dailyProduction(w) {
       day.constructionMoney += x.money * work / x.total;
       draw(x.materials, work / x.total);
       if (x.progress >= x.total - 1e-9) {
-        complete(w, x);
+        complete(w, x, tag);
         v.construction.splice(v.construction.indexOf(x), 1);
         day.completed.push(x.project + ' ' + (x.county || x.province));
         changed = true;
@@ -237,16 +286,17 @@ function dailyProduction(w) {
 
     // Equipment: points in queue order into the stockpile.
     pool = made.equipment || 0;
-    // State agreements in equipment come first: the items themselves, from our stock, and built in our factories for the rest.
+    // State agreements in equipment come first: the items themselves, from our stock and built in our factories, readied for the next shipment.
     for (const x of activeAgreements(w).filter((y) => y.first === tag && itemOf(w, y.good))) {
       const item = itemOf(w, x.good);
       const rv = w.polityValues?.[x.second];
       if (!rv) continue;
       rv.stockpile ||= {};
       v.stockpile ||= {};
-      const order = ((v.orders ||= {})[x.second + '|' + x.good] ||= { owed: 0, progress: 0 });
+      const order = ((v.orders ||= {})[x.second + '|' + x.good] ||= { owed: 0, progress: 0, ready: {} });
+      order.ready ||= {};
       order.owed += x.amount || 0;
-      const send = (k) => { rv.stockpile[k] = (rv.stockpile[k] || 0) + 1; order.owed -= 1; };
+      const send = (k) => { order.ready[k] = (order.ready[k] || 0) + 1; order.owed -= 1; };
       // From stock, newest generation first.
       const stock = Object.keys(v.stockpile).filter((k) => k.startsWith(x.good + ':')).sort((a, b) => Number(b.split(':')[1]) - Number(a.split(':')[1]));
       for (const k of stock) {
@@ -268,8 +318,21 @@ function dailyProduction(w) {
         order.progress -= cost;
         send(item.id + ':1');
       }
-      // What could not be sent is owed no further than a day's worth.
+      // What could not be readied is owed no further than a day's worth.
       order.owed = Math.min(order.owed, Math.max(1, x.amount || 0));
+      // On its day the shipment is sent.
+      if (shipmentDue(x)) {
+        for (const [k, n] of Object.entries(order.ready)) rv.stockpile[k] = (rv.stockpile[k] || 0) + n;
+        order.ready = {};
+      }
+    }
+    // Orders for agreements out of force: readied items go back to our stockpile.
+    const held = new Set(activeAgreements(w).filter((y) => y.first === tag).map((y) => y.second + '|' + y.good));
+    for (const [k, order] of Object.entries(v.orders || {})) {
+      if (held.has(k)) continue;
+      v.stockpile ||= {};
+      for (const [g, n] of Object.entries(order.ready || {})) v.stockpile[g] = (v.stockpile[g] || 0) + n;
+      delete v.orders[k];
     }
     wish = pool;
     for (const x of [...(v.production || [])]) {
@@ -353,4 +416,4 @@ function queuesOf(w, tag) {
   };
 }
 
-export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, queueEquipment, queueShip, cancelQueued, dailyProduction, queuesOf, genCost };
+export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, AID_POLITICAL_POWER, COLONY_AID_POLITICAL_POWER, AID_PROJECTS, COLONY_AID_PROJECTS, giveDevelopmentAid, recordAid, queueEquipment, queueShip, cancelQueued, dailyProduction, queuesOf, genCost };

@@ -5,8 +5,8 @@ const { clock, everyDay, invalidateView, worldChanged } = await import(`../core/
 const { actKey, industryKind, nameOf } = await import(`./government.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let colonyHolder, heldIdeology, occupiedFraction, partiesOf, spiritById;
-export function link(all) { ({ colonyHolder, heldIdeology, occupiedFraction, partiesOf, spiritById } = all); }
+let aidRecords, colonyHolder, heldIdeology, occupiedFraction, partiesOf, spiritById;
+export function link(all) { ({ aidRecords, colonyHolder, heldIdeology, occupiedFraction, partiesOf, spiritById } = all); }
 
 // A policy cancelled may be started again after this many days.
 const RESTART_DAYS = 30;
@@ -28,11 +28,15 @@ function startingDaysLeft(id, x, act) {
   return Math.max(1, Math.round(((h >>> 0) / 4294967296) * act.durationDays));
 }
 
-// A held act starting today, coming on over its ramp.
-function startAct(w, kind, name, target) {
-  const { ramp } = timingOf(w, kind, actOf(w, kind, name));
+// A held act starting today, coming on over its ramp; toward is "for" or "against" its target.
+function startAct(w, kind, name, target, toward) {
+  const act = actOf(w, kind, name);
+  const { ramp } = timingOf(w, kind, act);
   const x = { [kind]: name, since: clock.day, strength: ramp ? 0 : 1 };
   if (target !== undefined) x.target = target;
+  if (toward !== undefined) x.toward = toward;
+  // A duration decree runs its full term.
+  if (kind === 'decree' && act?.durationDays) x.daysLeft = act.durationDays;
   return x;
 }
 
@@ -57,8 +61,14 @@ function restartWait(gov, kind, name, target) {
 
 // Enacting a decree ends what it names and the spirits it names by tag; a decree that only ends another is then done.
 function endsWithDecree(w, gov, act, target) {
+  // Aimed at every ideology, it replaces the same decree aimed at one.
+  if (target === 'all' && act?.target === 'ideology') {
+    const narrow = (y) => nameOf(y) === act.name && y?.target !== undefined && y?.target !== null && y?.target !== 'all';
+    for (const y of (gov.decrees || []).filter(narrow)) fadeAct(w, gov, y);
+    gov.decrees = (gov.decrees || []).filter((y) => !narrow(y));
+  }
   if (act?.ends) {
-    const same = (y) => nameOf(y) === act.ends && (target === undefined || target === null || y?.target === undefined || y?.target === target);
+    const same = (y) => nameOf(y) === act.ends && (target === undefined || target === null || target === 'all' || y?.target === undefined || y?.target === target);
     for (const y of (gov.decrees || []).filter(same)) fadeAct(w, gov, y);
     gov.decrees = (gov.decrees || []).filter((y) => !same(y) && nameOf(y) !== act.name);
   }
@@ -155,6 +165,36 @@ function lawCeilingOf(w, id, category, above = null) {
   return at === null ? null : options[at];
 }
 
+// Development aid records on an infrastructure target: one kind in one province, kept up.
+const aidOn = (w, target) => aidRecords(w).filter((x) => x.levels > 0 && x.province === target?.province && x.infrastructure === target?.infrastructure);
+
+// Decrees moving the upkeep of development aid.
+const HAND_OVER = 'Hand over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME';
+const TAKE_OVER = 'Take over INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME';
+const REQUEST_HAND_OVER = 'Request hand over of INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME';
+
+// Clears a builder's record of one kind in one province; the upkeep falls to the host.
+function clearAid(w, builder, target) {
+  const table = w.government?.relations;
+  if (!table) return;
+  table.relations = table.relations.filter((x) => !(x.band === 'developmentAid' && x.first === builder
+    && x.province === target.province && x.infrastructure === target.infrastructure));
+}
+
+// An infrastructure decree just enacted: hand over, take over, or ask the builder.
+function enactInfrastructure(w, id, x) {
+  const name = nameOf(x);
+  if (![HAND_OVER, TAKE_OVER, REQUEST_HAND_OVER].includes(name) || !x?.target) return;
+  if (name === HAND_OVER) return clearAid(w, id, x.target);
+  const builders = [...new Set(aidOn(w, x.target).filter((y) => y.first !== id).map((y) => y.first))];
+  const builder = x.target.builder || builders[0];
+  if (!x.target.builder && builders.length > 1) throw new Error(`name the builder: ${builders.join(', ')}`);
+  x.target = { ...x.target, builder };
+  if (name === TAKE_OVER) return clearAid(w, builder, x.target);
+  x.answer = 'accepted';
+  clearAid(w, builder, x.target);
+}
+
 // Whether one availability condition holds for a country and a target.
 function conditionHolds(w, id, key, value, target) {
   const g = w.government;
@@ -187,9 +227,9 @@ function conditionHolds(w, id, key, value, target) {
     case 'targetIndustry': return industryKind(target) === value;
     case 'targetStateOwned': return (gov.stateOwned || []).includes(target) === value;
     case 'occupation': return provinces.some((p) => p.occupier === id && occupiedFraction(w, p) > 0) === value;
-    // Nobody holds infrastructure abroad until development aid is built.
-    case 'targetInfrastructure':
-    case 'targetForeignInfrastructure': return !value;
+    case 'targetInfrastructure': return aidOn(w, target).some((x) => x.first === id) === value;
+    case 'targetForeignInfrastructure': return (w.byId?.get(target?.province)?.owner === id
+      && aidOn(w, target).some((x) => x.first !== id && (!target?.builder || x.first === target.builder))) === value;
     default: return false;
   }
 }
@@ -213,4 +253,4 @@ function unavailable(w, id, kind, act, target) {
   return barred ? `${act.name} is barred by ${Object.keys(barred).join(', ')}` : null;
 }
 
-export { RESTART_DAYS, timingOf, startingDaysLeft, startAct, fadeAct, restartWait, endsWithDecree, prospect, completeDecree, dailyActs, lawCeilingOf, conditionHolds, unavailable };
+export { HAND_OVER, TAKE_OVER, REQUEST_HAND_OVER, clearAid, enactInfrastructure, RESTART_DAYS, timingOf, startingDaysLeft, startAct, fadeAct, restartWait, endsWithDecree, prospect, completeDecree, dailyActs, lawCeilingOf, conditionHolds, unavailable };

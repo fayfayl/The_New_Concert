@@ -402,7 +402,8 @@ const ABROAD = new Set(['relationsWithHolders', 'ideologySupportPerDay', 'driftM
 
 // Per-act effects of a country's own acts on one modifier, per province.
 // Acts a government holds with its realm's and the defaults folded in.
-export const actKey = (x) => nameOf(x) + '|' + (x?.target ?? '');
+// An infrastructure target keys by its kind and province.
+export const actKey = (x) => nameOf(x) + '|' + (x?.target && typeof x.target === 'object' ? x.target.infrastructure + '@' + x.target.province : x?.target ?? '');
 const once = (list) => [...new Map(list.map((x) => [actKey(x), x])).values()];
 export function heldActs(gov, parent = null, defaults = null) {
   const laws = { ...(defaults?.laws || {}), ...(parent?.laws || {}), ...(gov?.laws || {}) };

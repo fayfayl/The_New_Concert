@@ -6,6 +6,8 @@
   <title>The New Concert</title>
   <link rel="icon" href="./data/icons/capital.png">
   <link rel="preload" as="image" href="./data/img/ui/start_menu_bg.jpg">
+  <!-- Stamp mask; mask images are fetched in CORS mode. -->
+  <link rel="preload" as="image" href="./data/ui/texture-tile.png" crossorigin>
   <link rel="stylesheet" href="./src/style.css">
 </head>
 
@@ -14,7 +16,7 @@
   <!-- Start menu, shown once the map is built. -->
   <div id="start" class="pending" aria-hidden="true">
     <div class="start-panel">
-      <h1>The New Concert</h1>
+      <h1>The New Concert<span class="title-stamp">Indev</span></h1>
 
       <div class="start-buttons">
         <button id="start-enter" data-sfx="paper">Enter</button>
@@ -25,8 +27,8 @@
 
       <p>
         The New Concert is an in-development game.
-        Currently, there is no game to speak of so have fun looking at an
-        incomplete map.
+        Currently, there is no game to speak of so have fun just looking at a
+        map.
       </p>
     </div>
 
@@ -39,6 +41,25 @@
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.9 <span>26 Oct 2026</span></h3>
+            <ul>
+              <li>Added relations and (most) of their mechanics between countries, can only be seen
+                through commands though currently.</li>
+              <li>Diplomacy panel now actually shows relations besides guaranteeing and puppet
+                relations.</li>
+              <li>Queue for construction, equipment etc should be in, but I haven't tested it.</li>
+              <li>More flags (special thanks to Histepford), some government fixes, and corrected
+                Tavociel's population.</li>
+              <li>Realms now have a national tax law.</li>
+              <li>Resources work now, but because trade hasn't been added, everyone has a shortage of
+                something.</li>
+              <li>Polities have starting values now, such as political power, treasury, etc. Unviewable
+                except through commands currently.</li>
+              <li>Added 'indev' stamp to main title.</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.8.b <span>21 Oct 2026</span></h3>
             <ul>

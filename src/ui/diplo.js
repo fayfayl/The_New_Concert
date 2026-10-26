@@ -4,8 +4,8 @@ const VERSION = new URL(import.meta.url).search;
 const { els, state } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let closeCard, diploRow, doctrineOf, doctrineTip, flagSlug, flagSrc, governmentPosition, label, lawTip, manpowerOf, manpowerTip, maskFlagShading, menText, meterTip, modifierLines, playSelect, provincesUnder, relationTip, selectCounty, shortNameOf, spiritById, spiritTip, stabilityOf, stabilityTip;
-export function link(all) { ({ closeCard, diploRow, doctrineOf, doctrineTip, flagSlug, flagSrc, governmentPosition, label, lawTip, manpowerOf, manpowerTip, maskFlagShading, menText, meterTip, modifierLines, playSelect, provincesUnder, relationTip, selectCounty, shortNameOf, spiritById, spiritTip, stabilityOf, stabilityTip } = all); }
+let activeAgreements, activeLeases, voicedKey, closeCard, diploRow, doctrineOf, doctrineTip, flagSlug, flagSrc, governmentPosition, label, lawTip, manpowerOf, manpowerTip, maskFlagShading, menText, meterTip, modifierLines, playSelect, provincesUnder, relationTip, selectCounty, shortNameOf, spiritById, spiritGuarantees, spiritTip, stabilityOf, stabilityTip;
+export function link(all) { ({ activeAgreements, activeLeases, voicedKey, closeCard, diploRow, doctrineOf, doctrineTip, flagSlug, flagSrc, governmentPosition, label, lawTip, manpowerOf, manpowerTip, maskFlagShading, menText, meterTip, modifierLines, playSelect, provincesUnder, relationTip, selectCounty, shortNameOf, spiritById, spiritGuarantees, spiritTip, stabilityOf, stabilityTip } = all); }
 
 const cardOpen = () => els.card.classList.contains('open');
 
@@ -14,28 +14,6 @@ const cardOpen = () => els.card.classList.contains('open');
 // Draws the Actions box as a WIP stamp.
 function paintDiploActions() {
   els.diploActions.innerHTML = '<h3>Actions</h3><div class="diplo-stamp"><span>WIP</span></div>';
-}
-
-// The Relations box: who this country stands with, and how.
-// Guarantees a country's spirits grant, as relation records.
-function spiritGuarantees(w, polityId) {
-  const held = w.government?.byPolity;
-  if (!held) return [];
-  const out = [];
-  for (const [id, gov] of held) {
-    for (const name of gov?.spirits || []) {
-      const v = spiritById(w, name)?.effects?.guaranteedBy;
-      if (!v || typeof v.polity !== 'string' || v.polity === id) continue;
-      if (Array.isArray(v.whileForm) && !v.whileForm.includes(gov.form)) continue;
-      if (v.whileIndependent && w.table?.polityById?.get(id)?.suzerain) continue;
-      const halves = (w.government?.spirits?.spirits || [])
-        .filter((s) => s.effects?.guarantees?.spirit === name).map((s) => s.id || s.name);
-      if (halves.length && !halves.some((e) => held.get(v.polity)?.spirits?.includes(e))) continue;
-      if (id !== polityId && v.polity !== polityId) continue;
-      out.push({ band: 'guarantee', first: v.polity, second: id, spirit: name });
-    }
-  }
-  return out;
 }
 
 // Relation band shared by a puppet and its suzerain.
@@ -50,6 +28,12 @@ function puppetRelations(w, polityId) {
     .map((p) => ({ band: 'puppet', first: p.suzerain, second: p.id }));
 }
 
+// Wars this country is fighting, as relation records.
+function warRelations(w, polityId) {
+  return (w.polityValues?.[polityId]?.atWar || []).map((id) => ({ band: 'war', first: polityId, second: id }));
+}
+
+// The Relations box: who this country stands with, and how.
 function paintDiploRelations(w, polityId) {
   const box = els.diploRelations;
   box.replaceChildren();
@@ -58,14 +42,42 @@ function paintDiploRelations(w, polityId) {
   box.append(h);
 
   const table = w.government?.relations;
-  const carried = spiritGuarantees(w, polityId).concat(puppetRelations(w, polityId));
+  const carried = spiritGuarantees(w, polityId).concat(puppetRelations(w, polityId), warRelations(w, polityId));
   const pol = (id) => w.table?.polityById?.get(id);
   const shortName = (id) => shortNameOf(pol(id)) || id;
 
   let n = 0;
   for (const band of [PUPPET_BAND, ...(table?.bands || [])]) {
-    const rows = (table?.relations || []).filter((x) => x.band === band.id)
+    // Wars come from the live lists, which the war records seed.
+    let rows = (table?.relations || []).filter((x) => x.band === band.id && x.band !== 'war')
       .concat(carried.filter((x) => x.band === band.id));
+    // A denunciation leaves the panel once what it cost has faded.
+    if (band.id === 'denounced') {
+      rows = rows.filter((r) => (w.relationHistory?.[voicedKey(w, r.first, r.second)]?.['denounced by ' + (pol(r.first)?.short || r.first)] || 0) < 0);
+    }
+    // Agreements and leases past their end leave the panel.
+    if (band.id === 'stateAgreement') rows = rows.filter((r) => activeAgreements(w).includes(r));
+    if (band.id === 'lease') rows = rows.filter((r) => activeLeases(w).includes(r));
+    // State agreements between the same supplier and receiver share one flag.
+    if (band.id === 'stateAgreement') {
+      const byPair = new Map();
+      for (const r of rows) {
+        const k = r.first + '|' + r.second;
+        if (byPair.has(k)) byPair.get(k).goods.push(r);
+        else byPair.set(k, { ...r, goods: [r] });
+      }
+      rows = [...byPair.values()];
+    }
+    // Development aid between the same builder and host shares one flag.
+    if (band.id === 'developmentAid') {
+      const byPair = new Map();
+      for (const r of rows.filter((x) => x.levels > 0)) {
+        const k = r.first + '|' + r.second;
+        if (byPair.has(k)) byPair.get(k).aid.push(r);
+        else byPair.set(k, { ...r, aid: [r] });
+      }
+      rows = [...byPair.values()];
+    }
     // One row per relation kind, with a fan of flags.
     const decks = new Map();
     for (const r of rows) {
@@ -333,4 +345,4 @@ function showDiploTab(which) {
   els.diploPaneLedger.hidden = on;
 }
 
-export { cardOpen, paintDiploActions, spiritGuarantees, PUPPET_BAND, puppetRelations, paintDiploRelations, diploForces, SPIRIT_ART, LAW_ART, openDiplo, diploOpen, paintDiploLeader, leaderTip, paintDiploFlag, closeDiplo, showDiploTab };
+export { cardOpen, paintDiploActions, PUPPET_BAND, puppetRelations, paintDiploRelations, diploForces, SPIRIT_ART, LAW_ART, openDiplo, diploOpen, paintDiploLeader, leaderTip, paintDiploFlag, closeDiplo, showDiploTab };

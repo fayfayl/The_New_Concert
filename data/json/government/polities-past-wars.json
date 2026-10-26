@@ -106,6 +106,30 @@
         ["AGL"],
         ["MBG"]
       ]
+    },
+    {
+      "name": "Manaquan War",
+      "ended": "1920-01-01",
+      "sides": [
+        ["JEN", "JMB", "KRT", "DOB", "JSP", "JMN", "TJV"],
+        ["AUS"]
+      ]
+    },
+    {
+      "name": "Amryn invasion of Marimaa",
+      "ended": "1923-06-01",
+      "sides": [
+        ["AMY"],
+        ["MRI"]
+      ]
+    },
+    {
+      "name": "Shinchi Revolution",
+      "ended": "1925-02-21",
+      "sides": [
+        ["AKA", "AKD", "HMA", "SNG"],
+        ["SHN"]
+      ]
     }
   ]
 }

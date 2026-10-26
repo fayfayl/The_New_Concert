@@ -437,22 +437,62 @@
     "relationsWithTarget": {
       "unit": "points",
       "means": "relations with the country named",
-      "shown": "POINTS relations with POLITY_NAME"
+      "shown": "POINTS opinions on POLITY_NAME"
+    },
+    "relationsFromTarget": {
+      "unit": "points",
+      "means": "the view of the polity held by the country named",
+      "shown": "POINTS opinions of POLITY_NAME"
+    },
+    "relationsFadePerYear": {
+      "unit": "points",
+      "means": "how much the act's relationsWithTarget and relationsFromTarget fade a year from the day it was enacted",
+      "shown": "fading POINTS a year"
+    },
+    "relationsFromTargets": {
+      "unit": "points",
+      "means": "the view of the polity held by each country named",
+      "shown": "POINTS opinions of POLITY_NAME"
+    },
+    "relationsWithTargets": {
+      "unit": "points",
+      "means": "relations with each country named, as the holder's own view",
+      "shown": "POINTS opinions on POLITY_NAME"
     },
     "relationsWithTargetPerDay": {
       "unit": "perDay",
       "means": "relations with the country named, added each day while it holds, up to relationsWithTargetCeiling",
-      "shown": "PERDAY relations a day with POLITY_NAME"
+      "shown": "PERDAY opinions of POLITY_NAME a day"
     },
     "relationsWithTargetCeiling": {
       "unit": "points",
       "means": "the most relationsWithTargetPerDay builds with the country named",
-      "shown": "up to POINTS relations with POLITY_NAME"
+      "shown": "up to POINTS opinions of POLITY_NAME"
+    },
+    "ownViewOfTargetPerDay": {
+      "unit": "perDay",
+      "means": "the polity's own view of the country named, added each day while it holds, down when held against it and up when held for it, to ownViewOfTargetCeiling",
+      "shown": "PERDAY opinions on POLITY_NAME a day"
+    },
+    "ownViewOfTargetCeiling": {
+      "unit": "points",
+      "means": "the most ownViewOfTargetPerDay moves the polity's own view of the country named, either way",
+      "shown": "up to POINTS opinions on POLITY_NAME"
+    },
+    "targetViewPerDay": {
+      "unit": "perDay",
+      "means": "the target's view of the polity, added each day while it holds, down when held against the target and up when held for it, to targetViewCeiling",
+      "shown": "PERDAY opinions of POLITY_NAME a day"
+    },
+    "targetViewCeiling": {
+      "unit": "points",
+      "means": "the most targetViewPerDay moves the target's view of the polity, either way",
+      "shown": "up to POINTS opinions of POLITY_NAME"
     },
     "relationsWithHolders": {
       "unit": "points",
       "means": "relations with every country holding the ideology named",
-      "shown": "POINTS relations with IDEOLOGY_DEMONYM countries"
+      "shown": "POINTS opinions of IDEOLOGY_DEMONYM countries"
     },
     "repudiates": {
       "unit": "flag",
@@ -462,12 +502,12 @@
     "relationsWithImposers": {
       "unit": "points",
       "means": "relations with every country that imposed a treaty on the polity, under by in polities-treaties.json",
-      "shown": "POINTS relations with the treaty's imposers"
+      "shown": "POINTS opinions of the treaty's imposers"
     },
     "relationsWithColonies": {
       "unit": "points",
       "means": "relations with every colony the polity holds",
-      "shown": "POINTS relations with its colonies"
+      "shown": "POINTS opinions on and of its colonies"
     },
     "cannotMilitaryAlly": {
       "unit": "flag",

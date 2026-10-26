@@ -437,6 +437,7 @@
     {
       "id": "VOS",
       "form": "Constitutional monarchy",
+      "leader": "florent_seyres",
       "startingIdeology": "Corporatism",
       "laws": {
         "conscription": "Limited conscription",
@@ -848,7 +849,7 @@
     },
     {
       "id": "AUS",
-      "form": "Parliamentary republic",
+      "form": "Constitutional monarchy",
       "startingIdeology": "Corporatism",
       "laws": {
         "conscription": "Extensive conscription",
@@ -2243,7 +2244,15 @@
         "Improve worker conditions"
       ],
       "decrees": [
-        "Censor the press"
+        "Censor the press",
+        {
+          "decree": "Stance on POLITY_NAME",
+          "target": "TRN",
+          "toward": "against",
+          "since": "1923-11-21",
+          "until": "1925-02-21",
+          "expired": true
+        }
       ],
       "stateOwned": [
         "rail"
@@ -3631,7 +3640,14 @@
       "policies": [],
       "decrees": [
         "Literacy campaign",
-        "Land reform"
+        "Land reform",
+        {
+          "decree": "Stance on POLITY_NAME",
+          "target": "RKO",
+          "toward": "for",
+          "progress": 10,
+          "daysLeft": 265
+        }
       ],
       "stateOwned": [
         "rail"

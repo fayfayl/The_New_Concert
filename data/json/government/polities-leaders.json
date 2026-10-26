@@ -108,6 +108,25 @@
         "decreeCost": -0.3,
         "unrestPerDay": -0.02
       }
+    },
+    {
+      "id": "florent_seyres",
+      "polity": "VOS",
+      "name": "Florent Seyrès",
+      "title": "Prime Minister",
+      "portrait": "florent_seyres",
+      "party": "National Party",
+      "effects": {
+        "politicalPowerPerDay": 1.5,
+        "ideologySupportPerDay": {
+          "Corporatism": 0.01
+        },
+        "relationsFromTargets": {
+          "MRI": -15,
+          "FNA": -15,
+          "SAN": -15
+        }
+      }
     }
   ]
 }

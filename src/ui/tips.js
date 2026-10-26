@@ -3,8 +3,8 @@
 const VERSION = new URL(import.meta.url).search;
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let RESOURCE_ICON, RESOURCE_NAME, RESOURCE_SHEET_COLS, RUNDEAN_MONTHS, fillTokens, label, shortNameOf, spiritById;
-export function link(all) { ({ RESOURCE_ICON, RESOURCE_NAME, RESOURCE_SHEET_COLS, RUNDEAN_MONTHS, fillTokens, label, shortNameOf, spiritById } = all); }
+let SHIPMENT_DAYS, RESOURCE_ICON, RESOURCE_NAME, RESOURCE_SHEET_COLS, RUNDEAN_MONTHS, fillTokens, label, shortNameOf, spiritById;
+export function link(all) { ({ SHIPMENT_DAYS, RESOURCE_ICON, RESOURCE_NAME, RESOURCE_SHEET_COLS, RUNDEAN_MONTHS, fillTokens, label, shortNameOf, spiritById } = all); }
 
 // Marks a named thing in a tooltip.
 const tipName = (s) => (s || s === 0 ? '<span class="named">' + s + '</span>' : '');
@@ -79,6 +79,18 @@ function resourceIcon(kind) {
     + ';--row:' + Math.floor(cell / RESOURCE_SHEET_COLS) + '"></i>';
 }
 
+// A shipment: the daily figure over the interval, and the interval.
+const everyOf = (x) => x.every ?? SHIPMENT_DAYS;
+const perShipment = (n, x) => (Math.round(n * everyOf(x) * 10) / 10).toLocaleString('en-GB');
+const intervalOf = (x) => ' every ' + everyOf(x) + ' days';
+
+// A count of equipment items, plural past one; infantry equipment is counted in sets and takes none.
+function equipmentCount(w, id, n) {
+  const item = (w.production?.equipment?.items || []).find((x) => x.id === id);
+  const name = (item?.name || id).toLowerCase();
+  return n + ' ' + tipName(item?.unit || Number(String(n).replace(/,/g, '')) === 1 ? name : name + 's');
+}
+
 // A relation's title in its tooltip, by band.
 const RELATION_TITLE = {
   puppet: () => 'Puppet',
@@ -91,11 +103,13 @@ const RELATION_TITLE = {
   improving: () => 'Improving relations',
   nonAggression: () => 'Non-aggression pact',
   stateAgreement: (r) => {
-    const price = typeof r.price === 'number' ? { money: r.price } : r.price || {};
-    return Object.values(price).some((n) => n > 0) ? 'State agreement' : 'Lend lease';
+    const paidIn = (r) => { const p = typeof r.price === 'number' ? { money: r.price } : r.price || {}; return Object.values(p).some((n) => n > 0); };
+    const list = r.goods || [r];
+    return list.every(paidIn) ? 'State agreement' : list.some(paidIn) ? 'Lend lease and state agreement' : 'Lend lease';
   },
   volunteers: () => 'Volunteers',
   lease: () => 'Lease',
+  developmentAid: () => 'Development aid',
 };
 
 // An ISO date in the game's calendar.
@@ -103,6 +117,9 @@ function calendarDate(iso) {
   const d = new Date(Date.parse(iso));
   return d.getUTCDate() + ' ' + RUNDEAN_MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
 }
+
+// An end date: a full date, or a year meaning 1 January of it.
+const endDate = (until) => tipName(calendarDate(typeof until === 'number' ? until + '-01-01' : until));
 
 // Tooltip terms of one standing relation.
 function relationTip(w, band, r, other = null) {
@@ -124,15 +141,45 @@ function relationTip(w, band, r, other = null) {
   if (r.band === 'war') return line(first + ' and ' + second + ' are at war');
   if (r.band === 'volunteers') return line(first + ' has sent ' + (r.divisions ? r.divisions + ' divisions of ' : '') + 'volunteers to fight for ' + second);
   if (r.band === 'stateAgreement') {
-    const good = (g, n) => (RESOURCE_NAME[g] ? n + ' ' + resourceIcon(g) + ' ' + tipName(RESOURCE_NAME[g].toLowerCase())
-      : n + ' ' + tipName(((w.production?.equipment?.items || []).find((x) => x.id === g)?.name || g).toLowerCase()));
-    const price = typeof r.price === 'number' ? { money: r.price } : r.price || {};
-    const paid = Object.entries(price).filter(([, n]) => n > 0)
-      .map(([k, n]) => (k === 'money' ? tipName('$' + n) : good(k, n))).join(' and ');
+    const good = (g, n) => (RESOURCE_NAME[g] ? n + ' ' + resourceIcon(g) + tipName(RESOURCE_NAME[g].toLowerCase())
+      : equipmentCount(w, g, n));
+    const paidFor = (x) => {
+      const price = typeof x.price === 'number' ? { money: x.price } : x.price || {};
+      return Object.entries(price).filter(([, n]) => n > 0)
+        .map(([k, n]) => (k === 'money' ? '$' + perShipment(n, x) : good(k, perShipment(n, x)))).join(' and ');
+    };
+    const until = (x) => (x.until ? ' until ' + endDate(x.until) : '');
+    const list = r.goods || [r];
     // Laid out as a lease is: what and from whom, to whom and until when, and the price under it.
-    return capitaliseArticle(head + '<div>' + good(r.good, r.amount) + ' from ' + first + '</div>'
-      + '<div>to ' + second + (r.until ? ' until ' + (typeof r.until === 'number' ? r.until : calendarDate(r.until)) : '') + '.</div>')
-      + (paid ? '<div class="sub">' + paid + ' per day</div>' : '');
+    if (list.length === 1) {
+      const paid = paidFor(r);
+      return capitaliseArticle(head + '<div>' + good(r.good, perShipment(r.amount, r)) + intervalOf(r) + ' from ' + first + '</div>'
+        + '<div>to ' + second + until(r) + '.</div>')
+        + (paid ? '<div class="sub">' + paid + intervalOf(r) + '</div>' : '');
+    }
+    // Several goods: one line each, then from whom and to whom.
+    // The interval and the end are said once where every good shares them.
+    const shared = list.every((x) => everyOf(x) === everyOf(list[0]));
+    const ends = list.every((x) => x.until === list[0].until);
+    return capitaliseArticle(head + list.map((x) => {
+      const paid = paidFor(x);
+      return '<div>' + good(x.good, perShipment(x.amount, x)) + (shared ? '' : intervalOf(x)) + (ends ? '' : until(x)) + (paid ? ', for ' + paid : '') + '</div>';
+    }).join('') + '<div>' + (shared ? intervalOf(list[0]).trim() + ' ' : '') + 'from ' + first + '</div><div>to ' + second + (ends ? until(list[0]) : '') + '.</div>');
+  }
+
+  // Development aid: what the builder keeps up, a line each, then where it stands.
+  if (r.band === 'developmentAid') {
+    const projects = w.production?.construction?.projects || [];
+    const list = r.aid || [r];
+    return capitaliseArticle(head + list.map((x) => {
+      const proj = projects.find((p) => p.id === x.infrastructure);
+      const what = (proj?.name || x.infrastructure).toLowerCase();
+      const one = x.levels === 1;
+      const unit = x.infrastructure === 'rail' ? 'railed count' + (one ? 'y' : 'ies')
+        : proj?.on === 'county' && x.infrastructure !== 'fortification' ? what + (one ? '' : 's') : what + ' level' + (one ? '' : 's');
+      const q = w.byId?.get(x.province);
+      return '<div>' + x.levels + ' ' + tipName(unit) + ' in ' + tipName(q?.name || x.province) + '</div>';
+    }).join('') + '<div>kept up by ' + first + ' for ' + second + '.</div>');
   }
 
   if (r.band !== 'lease') {
@@ -141,13 +188,13 @@ function relationTip(w, band, r, other = null) {
   }
 
   const q = (w.table?.provinces || []).find((x) => x.id === r.province);
-  const rent = r.rent?.money != null ? '$' + r.rent.money + ' per day'
-    : r.rent ? Object.entries(r.rent).map(([k, v]) => v + ' ' + k).join(', ') + ' per day' : null;
+  const rent = r.rent?.money != null ? '$' + perShipment(r.rent.money, r) + intervalOf(r)
+    : r.rent ? Object.entries(r.rent).map(([k, v]) => perShipment(v, r) + ' ' + tipName(k)).join(', ') + intervalOf(r) : null;
   const what = (RESOURCE_NAME[r.resource] ?? r.resource).toLowerCase();
-  return capitaliseArticle(head + '<div>' + r.amount + ' ' + resourceIcon(r.resource) + ' '
+  return capitaliseArticle(head + '<div>' + r.amount + ' ' + resourceIcon(r.resource)
     + tipName(what) + ' from ' + tipName(q ? q.name : r.province) + ', '
     + flaggedName(pol(r.first), shortName(r.first)) + '</div>'
-    + '<div>to ' + flaggedName(pol(r.second), shortName(r.second)) + ' until ' + r.until + '.</div>')
+    + '<div>to ' + flaggedName(pol(r.second), shortName(r.second)) + ' until ' + endDate(r.until) + '.</div>')
     + (rent ? '<div class="sub">' + rent + '</div>' : '');
 }
 
@@ -219,13 +266,16 @@ function modifierLines(w, key, v, stated = false, target = null, keepZero = fals
     && (typeof v.polity === 'string' || Array.isArray(v.whileForm));
   if (v && typeof v === 'object' && !Array.isArray(v) && !settings) {
     const say = (s) => {
-      if (RESOURCE_NAME[s]) return resourceIcon(s) + ' ' + tipName(RESOURCE_NAME[s].toLowerCase());
+      if (RESOURCE_NAME[s]) return resourceIcon(s) + tipName(RESOURCE_NAME[s].toLowerCase());
       const law = lawLabel(w, s);
       return law ? law.toLowerCase()
         : String(s).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
     };
+    // A map keyed by countries: one line each, the country as its target.
+    const byPolity = Object.keys(v).every((k) => w.table?.polityById?.has(k));
     return Object.entries(v).filter(([, n]) => !dead(n))
-      .map(([subject, n]) => modifierLine(w, key, n, say(subject), stated, target))
+      .map(([subject, n]) => (byPolity ? modifierLine(w, key, n, null, stated, subject)
+        : modifierLine(w, key, n, say(subject), stated, target)))
       .join('');
   }
   return modifierLine(w, key, v, null, stated, target);

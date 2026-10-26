@@ -189,8 +189,13 @@
         "ideologySupportPerDay": {
           "governing": 0.02
         },
-        "happinessPenalties": -0.3
-      }
+        "happinessPenalties": -0.3,
+        "ownViewOfTargetPerDay": 0.1,
+        "ownViewOfTargetCeiling": 30,
+        "targetViewPerDay": 0.1,
+        "targetViewCeiling": 30
+      },
+      "note": "May be held with a target and toward, against or for; without a target ownViewOfTargetPerDay does nothing."
     },
     {
       "name": "Industrial subsidies",
@@ -261,7 +266,8 @@
         "claimProgress": true,
         "equipmentLosses": true,
         "manpowerLosses": true,
-        "relationsWithTarget": -40
+        "relationsFromTarget": -40,
+        "relationsWithTarget": -20
       },
       "available": {
         "targetNeighbour": true,

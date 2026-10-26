@@ -8,8 +8,8 @@ const { LEVELS, FACTORIES, BUILDINGS } = await import(`../world/provincestats.js
 const { CLOCK_EPOCH, DAY_MS, clock, everyDay, forgetOnChange, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let actEffect, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice;
-export function link(all) { ({ actEffect, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice } = all); }
+let actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays;
+export function link(all) { ({ actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays } = all); }
 
 // Sum of one modifier across everything a country carries.
 function nationalModifier(w, polityId, key) {
@@ -455,6 +455,43 @@ function dailyBooks(w, day) {
       of(p.occupier)[line] += base * unrest * occupied * OCCUPIED_UPKEEP * (1 + nationalModifier(w, p.occupier, 'maintenance'));
     }
   };
+  // Development aid: builders and the levels they keep up, per province and kind.
+  const aid = new Map();
+  for (const x of aidRecords(w)) {
+    if (!x.levels) continue;
+    const kinds = aid.get(x.province) || new Map();
+    kinds.set(x.infrastructure, [...(kinds.get(x.infrastructure) || []), [x.first, x.levels]]);
+    aid.set(x.province, kinds);
+  }
+  // Units of each aided kind standing in a province: levels, railed counties, fort levels, buildings.
+  const units = new Map();
+  for (const c of aid.size ? w.counties?.byId?.values() || [] : []) {
+    const kinds = aid.get(c.province);
+    if (!kinds) continue;
+    const n = units.get(c.province) || {};
+    if (c.rail !== undefined) n.rail = (n.rail || 0) + 1;
+    if (c.fortification) n.fortification = (n.fortification || 0) + c.fortification;
+    for (const kind of BUILDINGS) if (c[kind]) n[kind] = (n[kind] || 0) + 1;
+    units.set(c.province, n);
+  }
+  for (const id of aid.keys()) {
+    const st = w.stats?.[id] || {};
+    const n = units.get(id) || {};
+    for (const k of LEVELS) n[k] = Array.isArray(st[k]) ? st[k][0] : Number(st[k]) || 0;
+    units.set(id, n);
+  }
+  // Charges a builder its share of an aided kind's upkeep, and the rest, where kept, to whoever keeps the province.
+  const keepAided = (p, line, base, kind, rest = true) => {
+    let left = base;
+    const total = units.get(p.id)?.[kind] || 0;
+    for (const [by, n] of total ? aid.get(p.id)?.get(kind) || [] : []) {
+      const share = Math.min(left, base * n / total);
+      const unrest = (w.stats?.[p.id]?.unrest || 0) >= 40 ? UNREST_UPKEEP : 1;
+      of(by)[line] += share * unrest * (1 + nationalModifier(w, by, 'maintenance'));
+      left -= share;
+    }
+    if (left > 0 && rest) keep(p, line, left);
+  };
   const rates = upkeepRates(w);
   // What the state owns, its realm's holdings included.
   const ownedBy = new Map();
@@ -469,11 +506,10 @@ function dailyBooks(w, day) {
     const g = ground.get(p.id) || [0, 0];
     g[0] += groundCost(c) * (c.area || 0); g[1] += c.area || 0;
     ground.set(p.id, g);
-    for (const kind of BUILDINGS) if (c[kind] && rates.buildings[kind]) keep(p, 'maintenance', rates.buildings[kind]);
-    if (c.fortification) keep(p, 'maintenance', rates.fortification * c.fortification * groundCost(c));
-    // Private railways keep their own track.
-    if (c.rail === undefined || !owned(p.owner).has('rail')) continue;
-    keep(p, 'rail', rates.rail * groundCost(c));
+    for (const kind of BUILDINGS) if (c[kind] && rates.buildings[kind]) keepAided(p, 'maintenance', rates.buildings[kind], kind);
+    if (c.fortification) keepAided(p, 'maintenance', rates.fortification * c.fortification * groundCost(c), 'fortification');
+    // Private railways keep their own track; a builder keeps up what it built.
+    if (c.rail !== undefined) keepAided(p, 'rail', rates.rail * groundCost(c), 'rail', owned(p.owner).has('rail'));
   }
 
   for (const p of w.table?.provinces || []) {
@@ -485,7 +521,11 @@ function dailyBooks(w, day) {
     let levels = 0;
     for (const k of LEVELS) {
       const built = Array.isArray(st[k]) ? st[k][0] : Number(st[k]) || 0;
-      if (built) levels += built * rates.levels[k] * (rates.area.has(k) ? areaTerm : 1);
+      if (!built) continue;
+      const cost = built * rates.levels[k] * (rates.area.has(k) ? areaTerm : 1);
+      // A kind a builder keeps up is billed on its own.
+      if (aid.get(p.id)?.has(k)) keepAided(p, 'maintenance', cost * groundMean, k);
+      else levels += cost;
     }
     if (levels) keep(p, 'maintenance', levels * groundMean);
     let works = 0;
@@ -533,19 +573,20 @@ function dailyBooks(w, day) {
     for (const [to, share] of Object.entries(due.to)) of(to).reparationsIn += due.money * share;
   }
 
-  // State agreements at a price in money, paid by the receiver to the supplier.
+  // State agreements at a price in money, paid by the receiver to the supplier for each shipment as it is sent, for the days it gathered.
   for (const x of activeAgreements(w)) {
-    const money = agreementPrice(x).money || 0;
-    if (!money) continue;
+    const money = (agreementPrice(x).money || 0) * shipmentDays(w, x);
+    if (!money || !shipmentDue(x)) continue;
     of(x.second).agreements += money;
     of(x.first).agreementsIn += money;
   }
 
-  // Lease rents, paid by the lessee to the lessor.
+  // Lease rents, paid by the lessee to the lessor for each shipment as it is sent, for the days it gathered.
   for (const x of activeLeases(w)) {
-    if (!x.rent?.money) continue;
-    of(x.second).rent += x.rent.money;
-    of(x.first).rentIn += x.rent.money;
+    if (!x.rent?.money || !shipmentDue(x)) continue;
+    const money = x.rent.money * shipmentDays(w, x);
+    of(x.second).rent += money;
+    of(x.first).rentIn += money;
   }
 
   for (const [id, values] of Object.entries(w.polityValues || {})) {

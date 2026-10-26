@@ -775,9 +775,10 @@
         "targetForeignInfrastructure": true
       },
       "effects": {
-        "relationsWithTarget": -15
+        "relationsFromTarget": -15,
+        "relationsFadePerYear": 5
       },
-      "note": "relationsWithTarget falls on the builder of the infrastructure."
+      "note": "relationsFromTarget falls on the builder's view of the host."
     },
     {
       "name": "Request hand over of INFRASTRUCTURE_NAME infrastructure in PROVINCE_NAME",
@@ -795,6 +796,28 @@
       },
       "effects": {},
       "note": "The builder accepts or refuses; on acceptance upkeep moves as under Hand over."
+    },
+    {
+      "name": "Stance on POLITY_NAME",
+      "description": "We take a line on POLITY_NAME.",
+      "target": "country",
+      "cost": 40,
+      "durationDays": 365,
+      "thenPermanent": false,
+      "compass": [
+        0,
+        0
+      ],
+      "available": {
+        "unless": {
+          "targetAtWar": true
+        }
+      },
+      "effects": {
+        "ownViewOfTargetPerDay": 0.1,
+        "ownViewOfTargetCeiling": 30
+      },
+      "note": "Held for or against the target, under toward, as Propaganda is. Moves the holder's own view only."
     }
   ],
   "stateOwnership": {

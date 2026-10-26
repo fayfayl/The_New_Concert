@@ -79,23 +79,44 @@ function heldYields(w, p, st) {
   return out;
 }
 
+// Whether a lease or agreement is in force today: begun, not ended, and its two parties not at war with each other.
+function inForce(w, x) {
+  const today = CLOCK_EPOCH + clock.day * DAY_MS;
+  const ends = x.until === undefined ? Infinity : typeof x.until === 'number' ? Date.UTC(x.until, 0, 1) : Date.parse(x.until);
+  if (ends <= today || Date.parse(x.since) >= today) return false;
+  return !(w.polityValues?.[x.first]?.atWar || []).includes(x.second) && !(w.polityValues?.[x.second]?.atWar || []).includes(x.first);
+}
+
 // Leases in force today: until a date, or 1 January of a year for those signed before the start.
 function activeLeases(w) {
-  const today = CLOCK_EPOCH + clock.day * DAY_MS;
-  const ends = (x) => (typeof x.until === 'number' ? Date.UTC(x.until, 0, 1) : Date.parse(x.until));
-  return (w.government?.relations?.relations || []).filter((x) => x.band === 'lease' && !(ends(x) <= today));
+  return (w.government?.relations?.relations || []).filter((x) => x.band === 'lease' && inForce(w, x));
 }
 
 // State agreements in force today, until their end where they have one.
 function activeAgreements(w) {
-  const today = CLOCK_EPOCH + clock.day * DAY_MS;
-  const ends = (x) => (x.until === undefined ? Infinity : typeof x.until === 'number' ? Date.UTC(x.until, 0, 1) : Date.parse(x.until));
-  return (w.government?.relations?.relations || []).filter((x) => x.band === 'stateAgreement' && !(ends(x) <= today));
+  return (w.government?.relations?.relations || []).filter((x) => x.band === 'stateAgreement' && inForce(w, x));
 }
 
 // What a state agreement asks in return, a day: $ under money and goods by name; nothing is lend lease.
 function agreementPrice(x) {
   return typeof x.price === 'number' ? { money: x.price } : { ...(x.price || {}) };
+}
+
+// Shipments: what a lease or state agreement sends gathers with the sender and is sent every so many days.
+const SHIPMENT_DAYS = 30;
+const shipmentKey = (x) => [x.band, x.first, x.second, x.province || '', x.good || x.resource || ''].join('|');
+// Whether a lease or agreement sends today; each keeps its own day of the interval.
+function shipmentDue(x) {
+  const every = x.every ?? SHIPMENT_DAYS;
+  let h = 0;
+  for (const c of shipmentKey(x)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return (clock.day + (h % every)) % every === 0;
+}
+// Days gathered for the shipment sent today: since the last one, the start, its signing or its last day out of force.
+function shipmentDays(w, x) {
+  const signed = Math.floor((Date.parse(x.since) - CLOCK_EPOCH) / DAY_MS) || 0;
+  const from = Math.max(0, signed, w.shipmentStops?.[shipmentKey(x)] ?? 0);
+  return Math.max(0, Math.min(x.every ?? SHIPMENT_DAYS, clock.day - from));
 }
 
 // One day of every country's resources.
@@ -121,6 +142,12 @@ function dailySupply(w, settle = false) {
   const local = new Map();   // unconnected province id -> its own food met
   const leased = new Map();  // province id -> leases on its deposits
   for (const x of activeLeases(w)) leased.set(x.province, [...(leased.get(x.province) || []), x]);
+  // Goods gathered for a shipment, by lease or agreement and kind; only on a real day.
+  const gather = (x, part, kind, n, to) => {
+    if (!settle || !n) return;
+    const s = ((w.shipments ||= {})[shipmentKey(x) + '|' + part + '|' + kind] ||= { to, kind, n: 0 });
+    s.n += n;
+  };
 
   for (const p of w.table?.provinces || []) {
     const st = w.stats?.[p.id];
@@ -129,14 +156,14 @@ function dailySupply(w, settle = false) {
     const occupied = occupiedFraction(w, p);
     const efficiency = occupied > 0 && p.occupier ? occupied * occupationEfficiencyOf(w, p) : 0;
     const yields = heldYields(w, p, st);
-    // Leased units yield at the province's development and go to the lessee.
+    // Leased units yield at the province's development and gather for the lessee's shipment.
     for (const x of leased.get(p.id) || []) {
       const units = w.resources?.[p.id]?.[x.resource] || 0;
       const n = yields[x.resource] || 0;
       if (x.first !== p.owner || !units || !n) continue;
       const share = n * Math.min(1, x.amount / units);
       yields[x.resource] = n - share;
-      add(of(x.second).yields, x.resource, share * (1 - occupied));
+      gather(x, 'goods', x.resource, share * (1 - occupied), x.second);
     }
     for (const [kind, n] of Object.entries(yields)) {
       add(b.yields, kind, n * (1 - occupied));
@@ -213,33 +240,57 @@ function dailySupply(w, settle = false) {
     }
   }
 
-  // State agreements in a resource: from the supplier's yield to the receiver's, as much as it has.
+  // State agreements in a resource: set aside from the supplier's yield for the receiver's shipment, as much as it has.
   for (const x of activeAgreements(w).filter((y) => (w.resourceKinds || []).includes(y.good))) {
     const given = Math.min(x.amount || 0, out.get(x.first)?.yields?.[x.good] || 0);
     if (!given) continue;
     out.get(x.first).yields[x.good] -= given;
-    add(of(x.second).yields, x.good, given);
+    gather(x, 'goods', x.good, given, x.second);
   }
-  // A price in goods: from the receiver's yield to the supplier's, as much as it has.
+  // A price in goods: set aside from the receiver's yield for the supplier.
   for (const x of activeAgreements(w)) {
     for (const [kind, n] of Object.entries(agreementPrice(x))) {
       if (kind === 'money' || !(w.resourceKinds || []).includes(kind)) continue;
       const given = Math.min(n, out.get(x.second)?.yields?.[kind] || 0);
       if (!given) continue;
       out.get(x.second).yields[kind] -= given;
-      add(of(x.first).yields, kind, given);
+      gather(x, 'price', kind, given, x.first);
     }
   }
-
-  // Rent paid in kind, from the lessee's yield to the lessor's.
+  // Rent in kind: set aside from the lessee's yield for the lessor.
   for (const x of activeLeases(w)) {
     for (const [kind, n] of Object.entries(x.rent || {})) {
       if (kind === 'money') continue;
       const given = Math.min(n, out.get(x.second)?.yields?.[kind] || 0);
       if (!given) continue;
       out.get(x.second).yields[kind] -= given;
-      add(of(x.first).yields, kind, given);
+      gather(x, 'price', kind, given, x.first);
     }
+  }
+  // Shipments due today are sent, into the receiver's reserve.
+  if (settle) {
+    const held = [...activeLeases(w), ...activeAgreements(w)];
+    const send = (x, back) => {
+      const head = shipmentKey(x) + '|';
+      for (const [k, s] of Object.entries(w.shipments || {})) {
+        if (!k.startsWith(head) || !s.n) continue;
+        const v = w.polityValues?.[back ? (s.to === x.first ? x.second : x.first) : s.to];
+        if (v) (v.reserves ||= {})[s.kind] = (v.reserves[s.kind] || 0) + s.n;
+        s.n = 0;
+      }
+    };
+    for (const x of held) if (shipmentDue(x)) send(x, false);
+    // Leases and agreements out of force: what had gathered goes back to its sender.
+    const heldKeys = new Set(held.map(shipmentKey));
+    for (const x of w.government?.relations?.relations || []) {
+      if ((x.band !== 'lease' && x.band !== 'stateAgreement') || heldKeys.has(shipmentKey(x))) continue;
+      (w.shipmentStops ||= {})[shipmentKey(x)] = clock.day;
+      send(x, true);
+    }
+    // War between the parties ends a lease or agreement for good.
+    const atWar = (x) => (w.polityValues?.[x.first]?.atWar || []).includes(x.second) || (w.polityValues?.[x.second]?.atWar || []).includes(x.first);
+    const rel = w.government?.relations;
+    if (rel?.relations) rel.relations = rel.relations.filter((x) => !((x.band === 'lease' || x.band === 'stateAgreement') && atWar(x)));
   }
 
   for (const [id, b] of out) {
@@ -372,4 +423,4 @@ everyDay((w) => {
   if (moved) { w.resourceLines = buildResourceLines(w); invalidateView(); }
 });
 
-export { COAL_POWER, GAS_POWER, OIL_FUEL, TIMBER_POWER, PEOPLE_PER_FOOD, PER_PERSON, FISH_TIER, FERTILISER, UNFERTILISED, FOOD_HAPPINESS, GOODS_HAPPINESS, GOLD_HAPPINESS, SHORTAGE_K, RESERVE_DAYS, RESERVE_STORAGE, lostAt, activeLeases, activeAgreements, agreementPrice, provinceYields, heldYields, dailySupply, foodHappiness };
+export { COAL_POWER, GAS_POWER, OIL_FUEL, TIMBER_POWER, PEOPLE_PER_FOOD, PER_PERSON, FISH_TIER, FERTILISER, UNFERTILISED, FOOD_HAPPINESS, GOODS_HAPPINESS, GOLD_HAPPINESS, SHORTAGE_K, RESERVE_DAYS, RESERVE_STORAGE, lostAt, SHIPMENT_DAYS, shipmentKey, shipmentDue, shipmentDays, activeLeases, activeAgreements, agreementPrice, provinceYields, heldYields, dailySupply, foodHappiness };

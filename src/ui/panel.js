@@ -60,8 +60,13 @@ const demonymOf = (ideology) => bareDemonym(ideology.movement);
 
 // Fills name tokens in a decree or policy name from its target.
 function fillTokens(text, target, tables, polity, mark = false) {
-  const gold = (s) => (mark ? flaggedName(polity, s) : s);
   const named = typeof target === 'string' ? target : null;
+  // A country target names itself; otherwise the polity given.
+  const country = (named && state.world?.table?.polityById?.get(named)) || polity;
+  const gold = (s) => (mark ? flaggedName(country, s) : s);
+  // An infrastructure target: a construction project in a province.
+  const built = target && typeof target === 'object' ? target : null;
+  const project = built && (state.world?.production?.construction?.projects || []).find((x) => x.id === built.infrastructure);
   const movement = named === 'all'
     ? tables.ideologies.allMovement
     : tables.ideologies.ideologies.find((i) => i.name === named)?.movement;
@@ -71,9 +76,11 @@ function fillTokens(text, target, tables, polity, mark = false) {
     .replaceAll('MOVEMENT_NAME', movement ?? named ?? '')
     .replaceAll('INDUSTRY_NAME', industryName(named))
     .replaceAll('RESOURCE_NAME', mark && RESOURCE_NAME[named]
-      ? resourceIcon(named) + ' ' + tipName(RESOURCE_NAME[named].toLowerCase())
+      ? resourceIcon(named) + tipName(RESOURCE_NAME[named].toLowerCase())
       : (RESOURCE_NAME[named] ?? named ?? '').toLowerCase())
-    .replaceAll('POLITY_NAME', gold(shortNameOf(polity, true)));
+    .replaceAll('INFRASTRUCTURE_NAME', (project?.name ?? built?.infrastructure ?? '').toLowerCase())
+    .replaceAll('PROVINCE_NAME', state.world?.byId?.get(built?.province)?.name ?? built?.province ?? '')
+    .replaceAll('POLITY_NAME', gold(shortNameOf(country, true)));
 }
 
 // Display name for an industry kind; fertile land and livestock render bare.
