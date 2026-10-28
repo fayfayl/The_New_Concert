@@ -6,7 +6,7 @@ It runs in a browser and requires no installation.
 
 ## Status
 
-The map is finished, with its provinces, counties, cities and sea regions. There are no armies, combat, trade, research or events yet.
+The map is finished, with its provinces, counties, cities and sea regions. There are no armies, combat, research or events yet. Resources and consumer goods trade daily on the automatic market, under each country's tariffs; trade routes and bunkering are not in yet.
 
 Province statistics are complete. `data/json/province/province-stats.json` holds the maximums the terrain allows, and `data/json/province/provinces-starting-infrastructure.json` holds what a game begins with. The world carries 2,223,477,000 people across 1,514 provinces at the 1926 figure, 19 resource types across 1,521 provinces, and road, electricity, radar, supply hub, anti-air and air base levels across 1,503 provinces. 1,996 civilian and 295 military factories occupy 8,195 building slots, 1,624 counties are fortified, 4,008 counties are railed, and 108 eyries, 156 naval dockyards and 1 synthetic rubber plant are built.
 
@@ -80,7 +80,7 @@ The loop now catches its own faults, re-arms regardless, and reports the first o
 - **Political mode.** Provinces coloured by owner.
 - **Provinces mode.** Every province has its own colour.
 - **Terrain mode.** Landform combined with the climate on it, in twelve Köppen groups from ice cap to rainforest. Impassable areas are darker.
-- **County boundaries follow rivers**, by `node sync-provinces.js --snap-rivers --write`.
+- **County boundaries follow rivers**, by `node test/sync-provinces.js --snap-rivers --write`.
 - **Rivers.** 79,366 pixels, routed across the 144 inland lakes they meet. They fade in from 100% zoom and darken with the landscape at night.
 - **Sea subregions, in the Navy mode.** 4,005 of them under the 95 sea regions, the same relationship a county has to a province. Each carries a seafloor depth zone.
 - **Counties mode.** The level below provinces, 14,095 of them, each in its own colour.
@@ -112,7 +112,7 @@ The loop now catches its own faults, re-arms regardless, and reports the first o
 - **Intel Ledger.** The dossier's second tab shows a country's laws and doctrine as tiles, its forts, factories and dockyards, and empty Ministers and Commanders slots.
 - **Tooltips for laws, spirits and doctrine.** Hover a tile in the dossier for its effects, written as the figures they change.
 - **Government panel.** In the debug menu, the selected province's government: form, ideology, compass position, policy slots, laws, doctrine, policies, decrees, spirits and what the laws cost. A realm member shows both its realm's and its own.
-- **Console commands.** The `game` object in the browser console, in families: ownership and buildings, the clock and camera, government (`setLaw`, `addPolicy`, `addSpirit`), economy (`industry`, `supply`, `treasury`, `reserve`), production (`build`, `produce`, `layDown`, `queue`), relations (`relations`, `relationsOf`, `treaties`) and infrastructure (`setLevel`, `setFactories`, `addRail`).
+- **Console commands.** The `game` object in the browser console, in families: ownership and buildings, the clock and camera, government (`setLaw`, `addPolicy`, `addSpirit`), economy (`industry`, `supply`, `trade`, `tariffs`, `setTariff`, `treasury`, `reserve`), production (`build`, `produce`, `layDown`, `queue`), relations (`relations`, `relationsOf`, `treaties`) and infrastructure (`setLevel`, `setFactories`, `addRail`).
 - **Progressive repaint.** Changing map mode repaints in chunks across several frames, visible ones first.
 - **Debug menu** (backtick key). Overlays for province names, sea region names, adjacency, coastal provinces, selection bounds, render chunks and layer seams, plus performance figures and map totals.
 

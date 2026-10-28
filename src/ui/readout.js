@@ -8,7 +8,7 @@ let CAPITAL_AT, CAPITAL_NAME_AT, CITY_AT, CITY_NAME_AT, F_CAPITAL, F_CAPITAL_NAM
 export function link(all) { ({ CAPITAL_AT, CAPITAL_NAME_AT, CITY_AT, CITY_NAME_AT, F_CAPITAL, F_CAPITAL_NAME, F_CITY, F_CITY_NAME, F_RIVER, RIVER_ALPHA, RIVER_AT, TILE, cityFade, debug, levelLineCache, overviewCovers, panelOpen, resourceLineCache, sfx, sunShiftPx, view } = all); }
 
 // Build version shown in the debug menu.
-const BUILD = 'v0.9-indev';
+const BUILD = 'v0.10-indev';
 
 // The size a ring was traced at, for the readout.
 const ringShape = (holder) => (holder.silhouette
@@ -60,6 +60,9 @@ function updateReadout(now) {
         + `, ${resourceLineCache.size} baked`
         , perf.resources > 4)
       : '') +
+    (state.mode === 'routes'
+      ? statRow('Trade routes', `${debug.routes || 0} segments, ${debug.routeStops || 0} stops`)
+      : '') +
     (state.mode.startsWith('infra:')
       ? statRow('Layer', `${state.mode.slice(6)}, ${debug.infrastructure || 0} labelled`
         + `, ${levelLineCache.size} baked`)
@@ -92,7 +95,7 @@ function updateReadout(now) {
     statRow('Sea subregions', state.world.subs
       ? `${(state.world.subs.atIndex.length - 1).toLocaleString()} drawn`
       + `${state.hoveredSub ? `, over ${state.hoveredSub}` : ''}`
-      : 'none — run: node sync-provinces.js --regen-sea-subs --write --cache') +
+      : 'none — run: node test/sync-provinces.js --regen-sea-subs --write --cache') +
     statRow('Highlighted', [
       state.selected ? `province ${state.selected} ${ringShape(state)}` : null,
       state.county ? `county ${state.county.id} ${ringShape(state.county)}` : null,

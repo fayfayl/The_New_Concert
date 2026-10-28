@@ -9,16 +9,16 @@ import {
   normaliseTable, buildWorld, buildBorderDistance, computeLabelGeometry, MIN_BORDER_PX,
   normaliseSeaTable, buildSeaWorld, normaliseCountyTable, buildCountyWorld,
   normaliseSubTable, buildSubWorld, UNOWNED,
-} from './src/world/mapdata.js';
-import { CACHE_FILE, hashInputs, applyCountyOccupation, buildCacheMeta, packCache, buildSubMeta } from './src/world/mapcache.js';
-import { mergeStats, splitStats, LEVELS } from './src/world/provincestats.js';
-import { LEVEL_TERRAIN_CEILING, LEVEL_CLIMATE_CEILING } from './src/world/ceilings.js';
-import { makeProjection, toDegrees, MAP_NORTH_ROW, MAP_GLOBE_HEIGHT, mapLatAt, mapLonAt } from './src/world/geo.js';
+} from '../src/world/mapdata.js';
+import { CACHE_FILE, hashInputs, applyCountyOccupation, buildCacheMeta, packCache, buildSubMeta } from '../src/world/mapcache.js';
+import { mergeStats, splitStats, LEVELS } from '../src/world/provincestats.js';
+import { LEVEL_TERRAIN_CEILING, LEVEL_CLIMATE_CEILING } from '../src/world/ceilings.js';
+import { makeProjection, toDegrees, MAP_NORTH_ROW, MAP_GLOBE_HEIGHT, mapLatAt, mapLonAt } from '../src/world/geo.js';
 import {
   depthByRegion, readDepth, subregionCount, cutStraight, mendPieces,
   dissolveTiny, agglomerate, pinchOff, hashSeed, xorshiftFor, OVERSEGMENT, isShallow,
   DEPTH_BANDS, MAX_SUBREGIONS, MIN_PIECE_PX, TARGET_AREA,
-} from './src/world/subregions.js';
+} from '../src/world/subregions.js';
 import {
   readLandscape, provinceEdgeDistance, generateCounties, finishCounties,
   applyAlpine, countyColours, daysToCross, crossBudget, readCounties, URBAN,
@@ -26,9 +26,9 @@ import {
   landscapeShares, dominantIn, DOMINANT_SHARE, TERRAINS, CLIMATES,
   snapToRivers, RIVER_SNAP, crossableCounties, URBAN_CROSS_SHARE,
   bridgeLakeRivers, measureWater,
-} from './src/world/counties.js';
+} from '../src/world/counties.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const WRITE = process.argv.includes('--write');
 const RESLUG = process.argv.includes('--reslug');
@@ -1069,7 +1069,7 @@ if (CACHE) {
         // Unknown sea colours: leave the sea out and report it.
         if (sea.unknown) {
           console.log(`  sea.png has ${sea.unknown} colour(s) sea.json does not list, so the sea is`);
-          console.log(`  left out. Run: node sync-provinces.js --sea --write --cache`);
+          console.log(`  left out. Run: node test/sync-provinces.js --sea --write --cache`);
           sea = null;
         }
       }
@@ -1109,7 +1109,7 @@ if (CACHE) {
 
         if (subs.unknown) {
           console.log(`  sea_subregions.png has ${subs.unknown} colour(s) sea.json does not list, so the`);
-          console.log(`  subregions are left out. Run: node sync-provinces.js --sea-subs --write --cache`);
+          console.log(`  subregions are left out. Run: node test/sync-provinces.js --sea-subs --write --cache`);
           subs = null;
         }
       }
@@ -1193,7 +1193,7 @@ if (SNAP) {
         fs.writeFileSync(COUNTIES_PNG, encodePNG(width, height, r.countyPx));
         console.log(`  wrote ${path.relative(process.cwd(), COUNTIES_PNG)},`
           + ` previous kept as ${path.basename(backup)}`);
-        console.log(`  now run: node sync-provinces.js --counties --write   (areas and centres)`);
+        console.log(`  now run: node test/sync-provinces.js --counties --write   (areas and centres)`);
       } else {
         console.log(`  --write to apply it. The current counties.png is copied aside first.`);
       }

@@ -34,7 +34,7 @@ async function loadCache(bytes, expectedHash) {
     const cache = unpackCache(new Uint8Array(await new Response(stream).arrayBuffer()));
     if (!cache) return null;
     if (cache.meta.hash !== expectedHash) {
-      console.info('map-cache.bin is out of date and was ignored. Rebuild it with: node sync-provinces.js --cache');
+      console.info('map-cache.bin is out of date and was ignored. Rebuild it with: node test/sync-provinces.js --cache');
       return null;
     }
     return cache;

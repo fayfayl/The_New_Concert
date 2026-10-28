@@ -1,13 +1,13 @@
 // Relations between polities: each country's view of each other, from compass distance, what each has done to the other, and world tension.
 
 const VERSION = new URL(import.meta.url).search;
-const { CLOCK_EPOCH, DAY_MS, TICKS_PER_DAY, TICKS_PER_HOUR, clock, everyDay, everyTick, forgetOnChange, live } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, TICKS_PER_DAY, TICKS_PER_HOUR, clock, everyDay, everyTick, finish, forgetOnChange, live } = await import(`../core/core.js${VERSION}`);
 const { localHours, mapLonAt } = await import(`../world/geo.js${VERSION}`);
 const { nameOf } = await import(`./government.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let governmentPosition, occupiedFraction, spiritById, imposersOf, activeAgreements, colonyHolder, fillTokens;
-export function link(all) { ({ governmentPosition, occupiedFraction, spiritById, imposersOf, activeAgreements, colonyHolder, fillTokens } = all); }
+let governmentPosition, occupiedFraction, spiritById, imposersOf, activeAgreements, colonyHolder, fillTokens, highestTariffSteps;
+export function link(all) { ({ governmentPosition, occupiedFraction, spiritById, imposersOf, activeAgreements, colonyHolder, fillTokens, highestTariffSteps } = all); }
 
 // Relations: where two countries on the same compass point start, and what each point of distance costs.
 const RELATIONS_BASE = 20;
@@ -79,6 +79,10 @@ const GIVER_SHARE = 0.25;
 const CLAIMANT_SHARE = 0.5;
 // What a running action or policy built, fading a day once it stops.
 const RUNNING_FADE = 10 / 365;
+// Tariffs: what each 10% of the highest rate levied costs a day in the taxed country's view of the levier, and the most.
+const TARIFF_PER_TENTH = -1 / 30;
+const TARIFF_CAP = -30;
+const TARIFF_LABEL = 'tariffs by ';
 // The decree a dated stance record stands for.
 const STANCE = 'Stance on POLITY_NAME';
 // Friend of an enemy: the history a friendship needs, the view that makes an enemy, what each point of friendship costs, the share for a friendship only returned, and the most it costs per enemy and in all.
@@ -441,39 +445,51 @@ let terms = { standing: new Map(), tension: { value: 0, caused: new Map() }, fri
 const positionOf = (w, id) => {
   try { const pos = governmentPosition(w, id)?.position; if (pos) positions.set(id, pos); } catch { /* no position */ }
 };
-function refreshTerms(w) {
+function refreshTerms(w) { finish(termSteps(w)); }
+
+// Views worked out between pauses of the daily terms.
+const TERMS_SLICE = 100;
+
+// The same in steps, the new terms built to one side and put in at the end.
+function* termSteps(w) {
   warHistory(w);
   endedGrudges(w);
-  terms = { standing: standingParts(w), tension: tensionOf(w) };
-  terms.friends = friendParts(w);
+  const next = { standing: standingParts(w), tension: tensionOf(w) };
+  yield;
+  next.friends = yield* friendSteps(w, next);
   if (w.improveStartPending) {
     // Improve relations running at the start, rebuilt at each improving country's own rate.
     delete w.improveStartPending;
     const history = w.relationHistory;
     const built = improving(w).map((x) => {
       const days = x.since ? Math.max(0, (CLOCK_EPOCH - Date.parse(x.since)) / DAY_MS) : 0;
-      return [voicedKey(w, x.second, x.first), Math.min(IMPROVE_CEILING, improveRate(w, x.first, x.second) * days)];
+      return [voicedKey(w, x.second, x.first), Math.min(IMPROVE_CEILING, improveRate(w, x.first, x.second, next) * days)];
     });
     for (const [k, n] of built) (history[k] ||= {})['improve relations'] = n;
+    next.friends = yield* friendSteps(w, next);
   }
-  terms.friends = friendParts(w);
+  terms = next;
   if (live.lastRelations) live.lastRelations.tension = terms.tension;
 }
 
 // A's view of b without the base, tension or friends of enemies: standing terms, history, and a share of what a gave.
-function historyParts(w, a, b) {
+function historyParts(w, a, b, t = terms) {
   const k = pairKey(a, b);
   // A giver feels back a share of what its giving built in the other's view.
   const bName = w.table?.polityById?.get(b)?.short || b;
   const given = Object.entries(w.relationHistory?.[pairKey(b, a)] || {}).filter(([label]) => givenLabels(w).has(label))
     .map(([label, n]) => [label + (GIVEN_JOIN[label] || ' to ') + bName, n * GIVER_SHARE]);
-  return [...(terms.standing.get(k) || []), ...Object.entries(w.relationHistory?.[k] || {}), ...given];
+  return [...(t.standing.get(k) || []), ...Object.entries(w.relationHistory?.[k] || {}), ...given];
 }
 
 // Friend of an enemy: c's view of a, where a and b are friends by history and b is c's enemy, between voices only.
-function friendParts(w) {
+function friendParts(w, t = terms) { return finish(friendSteps(w, t)); }
+
+// The same in steps, from the terms t.
+function* friendSteps(w, t) {
   // Counted from views that carry none of their own.
-  terms.friends = new Map();
+  t.friends = new Map();
+  let worked = 0;
   const out = new Map();
   const isVoice = (id) => w.government?.byPolity?.has(id) && voiceOf(w, id) === id;
   const voices = [...(w.government?.byPolity?.keys() || [])].filter(isVoice);
@@ -483,14 +499,22 @@ function friendParts(w) {
   const ruled = (x, y) => suzerainOf(x) === y || suzerainOf(y) === x;
   // History views above the line: who thinks well of b, and whom b thinks well of.
   const fans = new Map(), friends = new Map();
-  const keys = new Set([...terms.standing.keys(), ...Object.keys(w.relationHistory || {})]);
-  for (const k of Object.keys(w.relationHistory || {})) keys.add(k.split('>').reverse().join('>'));
+  const keys = new Set([...t.standing.keys(), ...Object.keys(w.relationHistory || {})]);
+  yield;
+  // Views looked at, ten times as many to a pause.
+  let looked = 0;
+  for (const k of Object.keys(w.relationHistory || {})) {
+    if (++looked % (TERMS_SLICE * 10) === 0) yield;
+    keys.add(k.split('>').reverse().join('>'));
+  }
   // Something good in either view, standing or done.
-  const good = (k) => (terms.standing.get(k) || []).some(([, n]) => n > 0) || Object.values(w.relationHistory?.[k] || {}).some((n) => n > 0);
+  const good = (k) => (t.standing.get(k) || []).some(([, n]) => n > 0) || Object.values(w.relationHistory?.[k] || {}).some((n) => n > 0);
   for (const k of keys) {
+    if (++looked % (TERMS_SLICE * 10) === 0) yield;
     const [a, b] = k.split('>');
     if (a === b || !isVoice(a) || !isVoice(b) || (!good(k) && !good(pairKey(b, a)))) continue;
-    const n = sum(historyParts(w, a, b));
+    if (++worked % TERMS_SLICE === 0) yield;
+    const n = sum(historyParts(w, a, b, t));
     if (n <= FRIEND_LINE || ruled(a, b)) continue;
     if (!fans.has(b)) fans.set(b, []);
     fans.get(b).push([a, n]);
@@ -508,7 +532,8 @@ function friendParts(w) {
       let weight = 0;
       if (war.has(pairKey(c, b))) weight = 1;
       else {
-        const v = pairRelations(w, c, b)?.value;
+        if (++worked % TERMS_SLICE === 0) yield;
+        const v = pairRelations(w, c, b, t)?.value;
         if (typeof v === 'number' && v <= ENEMY_LINE) weight = Math.min(1, 0.5 + 0.5 * (ENEMY_LINE - v) / (RELATIONS_RANGE + ENEMY_LINE));
       }
       if (!weight) continue;
@@ -534,19 +559,19 @@ function friendParts(w) {
 }
 
 // One country's view of another, a's of b, from the positions and terms in hand.
-function pairRelations(w, a, b) {
+function pairRelations(w, a, b, t = terms) {
   // Across two realms, or between a realm's member and an outsider, the realms' own views answer.
   const va = voiceOf(w, a), vb = voiceOf(w, b);
-  if (va !== vb && (va !== a || vb !== b)) return pairRelations(w, va, vb);
+  if (va !== vb && (va !== a || vb !== b)) return pairRelations(w, va, vb, t);
   const pa = positions.get(a), pb = positions.get(b);
   if (!pa || !pb) return null;
   const distance = Math.hypot(pa[0] - pb[0], pa[1] - pb[1]);
   const base = RELATIONS_BASE - distance * RELATIONS_PER_DISTANCE;
-  const parts = [...historyParts(w, a, b), ...(terms.friends.get(pairKey(a, b)) || [])];
+  const parts = [...historyParts(w, a, b, t), ...(t.friends.get(pairKey(a, b)) || [])];
   const before = base + parts.reduce((s, [, n]) => s + n, 0);
   // What b raised in tension, weighed more heavily the further apart the two stand.
   const weight = (RELATIONS_RANGE - before) / RELATIONS_RANGE + distance / 300;
-  const charged = (terms.tension.caused.get(b) || 0) * weight;
+  const charged = (t.tension.caused.get(b) || 0) * weight;
   return { value: clampRelations(before - charged), base, parts, tension: charged, distance };
 }
 
@@ -596,19 +621,26 @@ function midnightSlots(w) {
 }
 
 // At a capital's midnight, that country's position, its view of everyone and everyone's view of it are refreshed.
-function midnightRelations(w, tick) {
+function midnightRelations(w, tick) { finish(midnightSteps(w, tick)); }
+
+// The same in steps, the views worked out to one side and put in at the end.
+function* midnightSteps(w, tick) {
   const slot = tick % TICKS_PER_DAY;
   const due = [...midnightSlots(w)].filter(([, s]) => s === slot).map(([id]) => id);
   if (!due.length) return;
-  for (const id of due) positionOf(w, id);
+  for (const id of due) { positionOf(w, id); yield; }
+  const views = [];
+  let worked = 0;
   for (const a of due) {
     for (const b of positions.keys()) {
       if (a === b) continue;
+      if (++worked % TERMS_SLICE === 0) yield;
       const x = pairRelations(w, a, b), y = pairRelations(w, b, a);
-      if (x) live.lastRelations.set(pairKey(a, b), x);
-      if (y) live.lastRelations.set(pairKey(b, a), y);
+      if (x) views.push([pairKey(a, b), x]);
+      if (y) views.push([pairKey(b, a), y]);
     }
   }
+  for (const [k, x] of views) live.lastRelations.set(k, x);
 }
 
 // A's view of b, from the last day's figures.
@@ -696,19 +728,36 @@ function givenLabels(w) {
 }
 
 // What improve relations builds a day: faster the better the improving country thinks of the other, its own share left out.
-function improveRate(w, a, b) {
-  const own = pairRelations(w, a, b);
+function improveRate(w, a, b, t = terms) {
+  const own = pairRelations(w, a, b, t);
   const view = own.value - own.parts.filter(([l]) => l.startsWith('improve relations to ')).reduce((s, [, n]) => s + n, 0);
   return Math.min(IMPROVE_RATE_MAX, Math.max(IMPROVE_RATE_MIN, IMPROVE_PER_DAY * (1 + view / 100)));
 }
 
 // Running policies and actions build history a little each day, to their ceiling.
-function growHistory(w) {
+function growHistory(w) { finish(historySteps(w)); }
+
+// Tariffs read, and views faded, between pauses of the daily history.
+const HISTORY_SLICE = 1000;
+
+// The same in steps, what fades worked out to one side and put in at the end.
+function* historySteps(w) {
   const g = w.government;
   const history = w.relationHistory || (w.relationHistory = {});
   // Labels of every running source, and those that ran today.
   const running = givenLabels(w);
   const ran = new Set();
+  // Tariffs, in the taxed country's view of the levier, by the highest rate levied on it; a voiced pair counts once at its highest.
+  const levied = new Map();
+  let worked = 0;
+  for (const [by, taxed, rate] of yield* highestTariffSteps(w)) {
+    if (++worked % HISTORY_SLICE === 0) yield;
+    const k = voicedKey(w, taxed, by);
+    const voice = k.slice(k.indexOf('>') + 1);
+    const label = TARIFF_LABEL + (w.table?.polityById?.get(voice)?.short || voice);
+    const at = k + '|' + label;
+    if (!levied.has(at) || levied.get(at)[2] < rate) levied.set(at, [k, label, rate]);
+  }
   // What is given lands in the receiver's view of the giver.
   for (const x of improving(w)) {
     const k = voicedKey(w, x.second, x.first);
@@ -716,6 +765,7 @@ function growHistory(w) {
     bag['improve relations'] = Math.min(IMPROVE_CEILING, (bag['improve relations'] || 0) + improveRate(w, x.first, x.second));
     ran.add(k + '|improve relations');
   }
+  yield;
   // State agreements build relations while they run; a pair counts once for each kind however much is sent.
   const supplying = new Set();
   for (const x of activeAgreements(w)) {
@@ -748,6 +798,14 @@ function growHistory(w) {
     bag['development aid'] = Math.max(Math.min(AID_CEILING, AID_PER_LEVEL * n), (bag['development aid'] || 0) - RUNNING_FADE);
     ran.add(k + '|development aid');
   }
+  // The tariffs levied.
+  for (const [at, [k, label, rate]] of levied) {
+    if (++worked % HISTORY_SLICE === 0) yield;
+    const bag = (history[k] ||= {});
+    bag[label] = Math.max(TARIFF_CAP, (bag[label] || 0) + TARIFF_PER_TENTH * rate * 10);
+    ran.add(at);
+  }
+  yield;
   for (const [id, gov] of g?.byPolity || []) {
     // Policies that build relations with their target while they run.
     for (const x of gov.policies || []) {
@@ -781,34 +839,42 @@ function growHistory(w) {
       }
     }
   }
+  yield;
   const turning = ownViewPolicies(w);
-  const isRunning = (label) => running.has(label) || turning.some((p) => label.startsWith(p + ' for ') || label.startsWith(p + ' against ') || label.startsWith(p + ' by '));
+  const isRunning = (label) => running.has(label) || label.startsWith(TARIFF_LABEL) || turning.some((p) => label.startsWith(p + ' for ') || label.startsWith(p + ' against ') || label.startsWith(p + ' by '));
   // A grudge fades once the war is over.
   const fighting = new Set();
   for (const [a, v] of Object.entries(w.polityValues || {})) for (const b of v.atWar || []) for (const k of bothKeys(w, a, b)) fighting.add(k);
   const allied = alliedInWar(w);
+  yield;
+  // Faded figures as [bag, label, figure], an empty figure for one gone, put in at the end.
+  const faded = [];
   for (const [k, bag] of Object.entries(history)) {
-    if (bag.war !== undefined && !fighting.has(k)) {
-      bag.war = Math.min(0, bag.war + WAR_RECOVERY);
-      if (!bag.war) delete bag.war;
-    }
+    if (++worked % HISTORY_SLICE === 0) yield;
+    // The bag's figures as faded so far.
+    let now = null;
+    const at = (label) => (now?.has(label) ? now.get(label) : bag[label]);
+    const put = (label, n) => (now ||= new Map()).set(label, n || undefined);
+    const gone = (label) => now?.has(label) && now.get(label) === undefined;
+    if (at('war') !== undefined && !fighting.has(k)) put('war', Math.min(0, at('war') + WAR_RECOVERY));
     // A denunciation, a refused guarantee or an ended act's grudge fades a little faster than trust.
     for (const label of Object.keys(bag)) {
-      if (!label.startsWith('denounced by ') && !label.startsWith('guarantee refused by ') && !label.endsWith(ENDED)) continue;
-      bag[label] = Math.min(0, bag[label] + DENOUNCE_FADE);
-      if (!bag[label]) delete bag[label];
+      if (gone(label) || (!label.startsWith('denounced by ') && !label.startsWith('guarantee refused by ') && !label.endsWith(ENDED))) continue;
+      put(label, Math.min(0, at(label) + DENOUNCE_FADE));
     }
     // A running source that has stopped fades.
     for (const label of Object.keys(bag)) {
-      if (!isRunning(label) || ran.has(k + '|' + label)) continue;
-      bag[label] = bag[label] > 0 ? Math.max(0, bag[label] - RUNNING_FADE) : Math.min(0, bag[label] + RUNNING_FADE);
-      if (!bag[label]) delete bag[label];
+      if (gone(label) || !isRunning(label) || ran.has(k + '|' + label)) continue;
+      const n = at(label);
+      put(label, n > 0 ? Math.max(0, n - RUNNING_FADE) : Math.min(0, n + RUNNING_FADE));
     }
     // Trust fades faster than distrust.
-    if (bag['brothers in arms'] !== undefined && !allied.has(k)) {
-      bag['brothers in arms'] = Math.max(0, bag['brothers in arms'] - ARMS_FADE);
-      if (!bag['brothers in arms']) delete bag['brothers in arms'];
-    }
+    if (at('brothers in arms') !== undefined && !allied.has(k)) put('brothers in arms', Math.max(0, at('brothers in arms') - ARMS_FADE));
+    for (const [label, n] of now || []) faded.push([bag, label, n]);
+  }
+  for (const [bag, label, n] of faded) {
+    if (n === undefined) delete bag[label];
+    else bag[label] = n;
   }
   for (const e of w.tension?.events || []) e.amount = Math.max(0, e.amount - TENSION_DECAY);
   if (w.tension) w.tension.events = w.tension.events.filter((e) => e.amount > 0);
@@ -816,7 +882,7 @@ function growHistory(w) {
 
 // Last day's view of every country by every other, read by the console and, later, by trade and diplomacy.
 live.lastRelations = new Map();
-everyDay((w) => { growHistory(w); refreshTerms(w); });
-everyTick(midnightRelations);
+everyDay(function* (w) { yield* historySteps(w); yield; yield* termSteps(w); });
+everyTick(midnightSteps);
 
-export { AGREEMENT_FULL_POINTS, goodPoints, agreementShare, IMPROVE_RATE_MIN, IMPROVE_RATE_MAX, improveRate, FRIEND_LINE, ENEMY_LINE, FRIEND_RATE, FRIEND_GIVEN_SHARE, FRIEND_CAP, FRIEND_TOTAL_CAP, friendParts, historyParts, GUARANTEE_PER_DAY, GUARANTEE_CEILING, GUARANTEE_REFUSAL, guarantees, spiritGuarantees, refuseGuarantee, AID_PER_LEVEL, AID_CEILING, aidRecords, RUNNING_FADE, ARMS_RELATIONS, ARMS_FADE, DENOUNCE_RELATIONS, DENOUNCE_FADE, SANCTION_RELATIONS, PACT_RELATIONS, VOLUNTEER_RELATIONS, VOLUNTEER_GRATITUDE, AGREEMENT_PER_DAY, LEND_LEASE_CEILING, AGREEMENT_CEILING, armsSince, alliedInWar, SAME_REALM, voiceOf, voicedKey, IMPROVE_PER_DAY, IMPROVE_CEILING, GIVER_SHARE, CLAIMANT_SHARE, givenLabels, bothKeys, improving, CLAIM_RELATIONS, CLAIM_CAP, OCCUPIED_RELATIONS, OCCUPIED_CAP, towardSign, ownViewLabel, WAR_RELATIONS, WAR_RECOVERY, pastWarHistory, warHistory, RELATIONS_BASE, RELATIONS_PER_DISTANCE, RELATIONS_RANGE, OCCUPATION_TENSION, TENSION_DECAY, TENSION_CAP, pairKey, standingParts, tensionOf, refreshTerms, pairRelations, dailyRelations, midnightSlots, midnightRelations, relationsBetween, growHistory };
+export { TARIFF_PER_TENTH, TARIFF_CAP, TARIFF_LABEL, AGREEMENT_FULL_POINTS, goodPoints, agreementShare, IMPROVE_RATE_MIN, IMPROVE_RATE_MAX, improveRate, FRIEND_LINE, ENEMY_LINE, FRIEND_RATE, FRIEND_GIVEN_SHARE, FRIEND_CAP, FRIEND_TOTAL_CAP, friendParts, historyParts, GUARANTEE_PER_DAY, GUARANTEE_CEILING, GUARANTEE_REFUSAL, guarantees, spiritGuarantees, refuseGuarantee, AID_PER_LEVEL, AID_CEILING, aidRecords, RUNNING_FADE, ARMS_RELATIONS, ARMS_FADE, DENOUNCE_RELATIONS, DENOUNCE_FADE, SANCTION_RELATIONS, PACT_RELATIONS, VOLUNTEER_RELATIONS, VOLUNTEER_GRATITUDE, AGREEMENT_PER_DAY, LEND_LEASE_CEILING, AGREEMENT_CEILING, armsSince, alliedInWar, SAME_REALM, voiceOf, voicedKey, IMPROVE_PER_DAY, IMPROVE_CEILING, GIVER_SHARE, CLAIMANT_SHARE, givenLabels, bothKeys, improving, CLAIM_RELATIONS, CLAIM_CAP, OCCUPIED_RELATIONS, OCCUPIED_CAP, towardSign, ownViewLabel, WAR_RELATIONS, WAR_RECOVERY, pastWarHistory, warHistory, RELATIONS_BASE, RELATIONS_PER_DISTANCE, RELATIONS_RANGE, OCCUPATION_TENSION, TENSION_DECAY, TENSION_CAP, pairKey, standingParts, tensionOf, refreshTerms, pairRelations, dailyRelations, midnightSlots, midnightRelations, midnightSteps, relationsBetween, growHistory, HISTORY_SLICE, historySteps, TERMS_SLICE, termSteps, friendSteps };

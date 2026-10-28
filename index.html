@@ -42,6 +42,18 @@
 
         <div class="dialog-body changelog-body">
           <section>
+            <h3>Indev v0.10 <span>28 Oct 2026</span></h3>
+            <ul>
+              <li>Countries now automatically trade with each other.</li>
+              <li>Added tariffs.</li>
+              <li>Added automatic trade routes which you can see using a new provisional layer.</li>
+              <li>New look for rail infrastructure layer.</li>
+              <li>Added national spirit icons for Fellnor-Avanta.</li>
+              <li>Added icon for consumer goods.</li>
+            </ul>
+          </section>
+
+          <section>
             <h3>Indev v0.9 <span>26 Oct 2026</span></h3>
             <ul>
               <li>Added relations and (most) of their mechanics between countries, can only be seen
@@ -250,6 +262,7 @@
       <button data-mode="navy" hidden>Navy</button>
       <button data-mode="resources">Resources</button>
       <button data-mode="ideology" hidden>Ideology</button>
+      <button data-mode="routes">Trade routes</button>
 
       <!-- Infrastructure layer menu. -->
       <span id="infra-menu">
@@ -291,6 +304,15 @@
     <div id="canvas-wrap">
       <canvas id="map"></canvas>
       <div id="tooltip" hidden></div>
+
+      <!-- Trade route panel, opened by clicking a route in the Trade routes layer. -->
+      <div id="route-panel" class="dialog-panel" role="dialog" aria-label="Trade route" aria-hidden="true" hidden>
+        <div id="route-panel-head" class="dialog-head">
+          <h2 id="route-panel-title">Trade route</h2>
+          <button id="route-panel-close" class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        </div>
+        <div id="route-panel-body" class="dialog-body"></div>
+      </div>
 
       <!-- Province card. -->
       <!-- County card, opened with the right button. -->
@@ -498,8 +520,8 @@
       <h1>Selected</h1>
       <h2 id="sel-name">&mdash;</h2>
       <div id="sel-body" class="hint">Click a province on the map.</div>
-      <div id="government"></div>
       <div id="neighbours"></div>
+      <div id="government"></div>
     </div>
   </div>
 

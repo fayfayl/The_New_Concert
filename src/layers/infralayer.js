@@ -3,11 +3,15 @@
 const VERSION = new URL(import.meta.url).search;
 const { mapColAt, mapRowAt } = await import(`../world/geo.js${VERSION}`);
 const { countyFortCeiling } = await import(`../world/ceilings.js${VERSION}`);
-const { forgetOnChange, state, live } = await import(`../core/core.js${VERSION}`);
+const { cssToken, forgetOnChange, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let RESOURCE_LINE, RESOURCE_MAX_LINE, RESOURCE_MIN_LINE, RESOURCE_OVERHANG, RESOURCE_SELECTED, anchorStack, builtLevel, debug, railShare, resourceFont, unlockedSlots, usableCeiling, view;
 export function link(all) { ({ RESOURCE_LINE, RESOURCE_MAX_LINE, RESOURCE_MIN_LINE, RESOURCE_OVERHANG, RESOURCE_SELECTED, anchorStack, builtLevel, debug, railShare, resourceFont, unlockedSlots, usableCeiling, view } = all); }
+
+// Rail colours: ink and paper.
+const RAIL_INK = cssToken('--ink');
+const RAIL_PAPER = cssToken('--sheet');
 
 // Rail network: a node per railed county and a link per declared line.
 let railNet = null, railNetWorld = null;
@@ -111,9 +115,13 @@ function drawRail(ctx, cssW, cssH, dx) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
+  // An atlas railway: an ink line chequered with paper.
+  const zoom = Math.min(2, Math.max(0.6, s));
   for (const pass of [0, 1]) {
-    ctx.strokeStyle = pass ? "rgba(236,242,250,.92)" : "rgba(8,10,14,.75)";
-    ctx.lineWidth = Math.max(pass ? 1.1 : 3.2, (pass ? 1.1 : 3.2) * Math.min(2, s));
+    ctx.strokeStyle = pass ? RAIL_PAPER : RAIL_INK;
+    ctx.lineWidth = (pass ? 1.6 : 3.4) * zoom;
+    ctx.lineCap = pass ? "butt" : "round";
+    ctx.setLineDash(pass ? [5 * zoom, 5 * zoom] : []);
     ctx.beginPath();
     for (const l of net.links) {
       const x0 = px(l.ax);
@@ -125,9 +133,11 @@ function drawRail(ctx, cssW, cssH, dx) {
     ctx.stroke();
   }
 
+  ctx.setLineDash([]);
+  // Stations: paper rings in ink.
   const r = Math.max(1.6, Math.min(4, 2.2 * s));
-  ctx.fillStyle = "rgba(236,242,250,.95)";
-  ctx.strokeStyle = "rgba(8,10,14,.75)";
+  ctx.fillStyle = RAIL_PAPER;
+  ctx.strokeStyle = RAIL_INK;
   ctx.lineWidth = 1.4;
   let drawn = 0;
   for (const n of net.nodes) {

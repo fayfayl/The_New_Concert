@@ -2,11 +2,11 @@
 
 const VERSION = new URL(import.meta.url).search;
 const { groundCost, countyFortCeiling } = await import(`../world/ceilings.js${VERSION}`);
-const { clock, everyDay, live, worldChanged } = await import(`../core/core.js${VERSION}`);
+const { clock, everyDay, finish, live, worldChangedSteps } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let activeAgreements, shipmentDue, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling;
-export function link(all) { ({ activeAgreements, shipmentDue, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling } = all); }
+let activeAgreements, gatherShipment, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling;
+export function link(all) { ({ activeAgreements, gatherShipment, DOCKYARD_PORT_PX, builtLevel, colonyHolder, countyGround, manpowerOf, occupiedFraction, railShare, relationsBetween, setBuilding, unlockedSlots, usableCeiling } = all); }
 
 const MEDIAN_PROVINCE_KM2 = 40224;
 // Construction a level adds to projects in its own province.
@@ -72,6 +72,25 @@ function aidGround(w, tag, p) {
 const scaled = (bill, k) => Object.fromEntries(Object.entries(bill || {}).map(([r, n]) => [r, n * k]));
 
 // Queues a construction project; returns what it costs. aid builds on another country's ground.
+
+// Whether two counties share any edge of a pixel, however short.
+function countiesTouch(w, a, b) {
+  const cs = w.counties;
+  if ([...(cs.adjacency?.get(a) || [])].includes(b)) return true;
+  const A = cs.byId.get(a), B = cs.byId.get(b), box = cs.bounds?.get(a);
+  if (!A || !B || !box) return false;
+  const W = cs.width, H = cs.height, at = cs.countyAt;
+  for (let y = Math.max(0, box.minY - 1); y <= Math.min(H - 1, box.maxY + 1); y++) {
+    for (let x = box.minX - 1; x <= box.maxX + 1; x++) {
+      const i = y * W + ((x % W) + W) % W;
+      if (at[i] !== A.index) continue;
+      const r = y * W + (((x + 1) % W) + W) % W, l = y * W + (((x - 1) % W) + W) % W;
+      if (at[r] === B.index || at[l] === B.index || (y > 0 && at[i - W] === B.index) || (y + 1 < H && at[i + W] === B.index)) return true;
+    }
+  }
+  return false;
+}
+
 function queueConstruction(w, tag, id, where, to, aid = false) {
   const ground = aid ? aidGround : ownGround;
   const proj = projectOf(w, id);
@@ -112,7 +131,7 @@ function queueConstruction(w, tag, id, where, to, aid = false) {
     const here = (x) => x.county === where && x.project === id;
     if (id === 'rail') {
       if (c.rail !== undefined || queued(here)) throw new Error(`"${where}" is already railed or queued`);
-      if (to !== undefined && ![...(w.counties.adjacency?.get(where) || [])].includes(to)) throw new Error(`"${where}" and "${to}" do not border each other`);
+      if (to !== undefined && !countiesTouch(w, where, to)) throw new Error(`"${where}" and "${to}" do not border each other`);
       multiplier = groundCost(c);
     } else if (proj.level === 'fortification') {
       const max = countyFortCeiling(c);
@@ -243,7 +262,10 @@ function complete(w, x, tag) {
 }
 
 // One day of every polity's queues.
-function dailyProduction(w) {
+function dailyProduction(w) { return finish(productionSteps(w)); }
+
+// The same in steps, what a finished project changes rebuilt in steps.
+function* productionSteps(w) {
   const out = new Map();
   let changed = false;
   const equipment = tables(w).equipment || {};
@@ -320,11 +342,9 @@ function dailyProduction(w) {
       }
       // What could not be readied is owed no further than a day's worth.
       order.owed = Math.min(order.owed, Math.max(1, x.amount || 0));
-      // On its day the shipment is sent.
-      if (shipmentDue(x)) {
-        for (const [k, n] of Object.entries(order.ready)) rv.stockpile[k] = (rv.stockpile[k] || 0) + n;
-        order.ready = {};
-      }
+      // Readied items gather for the next shipment, sent with the resources on its day.
+      for (const [k, n] of Object.entries(order.ready)) gatherShipment(w, x, 'goods', k, n, x.second, true);
+      order.ready = {};
     }
     // Orders for agreements out of force: readied items go back to our stockpile.
     const held = new Set(activeAgreements(w).filter((y) => y.first === tag).map((y) => y.second + '|' + y.good));
@@ -391,13 +411,13 @@ function dailyProduction(w) {
     }
     out.set(tag, day);
   }
-  if (changed) worldChanged();
+  if (changed) yield* worldChangedSteps();
   return out;
 }
 
 // Last day's spending, draws and completions per polity, read by the treasury, resources and the console.
 live.lastProduction = new Map();
-everyDay((w) => { live.lastProduction = dailyProduction(w); });
+everyDay(function* (w) { live.lastProduction = yield* productionSteps(w); });
 
 // What a polity has queued, held and in service, for the console.
 function queuesOf(w, tag) {
@@ -416,4 +436,4 @@ function queuesOf(w, tag) {
   };
 }
 
-export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, AID_POLITICAL_POWER, COLONY_AID_POLITICAL_POWER, AID_PROJECTS, COLONY_AID_PROJECTS, giveDevelopmentAid, recordAid, queueEquipment, queueShip, cancelQueued, dailyProduction, queuesOf, genCost };
+export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, countiesTouch, AID_POLITICAL_POWER, COLONY_AID_POLITICAL_POWER, AID_PROJECTS, COLONY_AID_PROJECTS, giveDevelopmentAid, recordAid, queueEquipment, queueShip, cancelQueued, dailyProduction, productionSteps, queuesOf, genCost };

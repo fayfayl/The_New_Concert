@@ -264,7 +264,7 @@ function showMarkTooltip(hit, ev) {
 
 // A province's true surface area, as a line of text.
 function areaText(p) {
-  if (typeof p.area !== 'number') return '— (run sync-provinces.js)';
+  if (typeof p.area !== 'number') return '— (run test/sync-provinces.js)';
   return p.area >= 1e6
     ? `${(p.area / 1e6).toFixed(2)}M km²`
     : `${Math.round(p.area).toLocaleString()} km²`;

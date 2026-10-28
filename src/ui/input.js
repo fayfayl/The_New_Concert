@@ -5,8 +5,8 @@ const { realmOf } = await import(`../world/mapdata.js${VERSION}`);
 const { SPEEDS, clock, els, invalidateBuffer, invalidateProvinces, invalidateView, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre;
-export function link(all) { ({ DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre } = all); }
+let DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre;
+export function link(all) { ({ DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre } = all); }
 
 // Attaches every event listener. Called once, from init().
 function wireInput() {
@@ -64,6 +64,13 @@ function wireInput() {
         else closeDiplo();
         return;
       }
+      // A click on a trade route opens its panel and selects nothing.
+      const lane = routeAtEvent(ev);
+      if (lane) {
+        dragging = false;
+        openRoutePanel(lane);
+        return;
+      }
       closeDiplo();
       select(id);
       // Water is selectable only in Navy mode.
@@ -93,8 +100,10 @@ function wireInput() {
     hoverSub(state.mode === 'navy' && !id ? subAtEvent(ev) : null);
 
     const deposit = resourceAtEvent(ev);
-    const building = deposit ? null : markAtEvent(ev);
+    const lane = deposit ? null : routeAtEvent(ev);
+    const building = deposit || lane ? null : markAtEvent(ev);
     if (deposit) showResourceTooltip(deposit, ev);
+    else if (lane) showRouteTooltip(lane, ev);
     else if (building) showMarkTooltip(building, ev);
     else showTooltip(id, ev, seaId);
   });
@@ -203,7 +212,8 @@ function wireInput() {
       setPaused(!clock.paused);
     }
     else if (ev.key === 'Escape') {
-      if (diploOpen()) closeDiplo();
+      if (routePanelOpen()) closeRoutePanel();
+      else if (diploOpen()) closeDiplo();
       else if (state.county) selectCounty(null);
       else if (state.selected) select(null);
       else if (state.selectedSea || state.selectedSub) { selectSea(null); selectSub(null); }
@@ -274,6 +284,7 @@ function wireInput() {
     if (!b) return;
     state.mode = b.dataset.mode;
     if (state.mode !== 'navy') { state.selectedSea = null; state.hoveredSea = null; }
+    if (state.mode !== 'routes') closeRoutePanel();
     for (const other of els.toolbar.querySelectorAll('button[data-mode]')) {
       other.classList.toggle('active', other === b);
     }

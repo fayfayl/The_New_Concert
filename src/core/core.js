@@ -19,17 +19,42 @@ function cssToken(name) {
 
 const UNKNOWN_POLITY = { id: '?', name: 'Unknown', colour: [90, 90, 96] };
 
-// Change registry: caches to clear and figures to rebuild on world change.
+// Change registry: caches to clear and figures to rebuild on world change, and caches to clear on a change of acts.
 const onWorldForget = [];
 const onWorldDerive = [];
+const onGovernmentForget = [];
 function forgetOnChange(forget) { onWorldForget.push(forget); }
+// A derive may be a generator, run a step at a time.
 function deriveOnChange(derive) { onWorldDerive.push(derive); }
+// A forget called with the world and the polities whose acts moved, or null for every polity.
+function forgetOnGovernment(forget) { onGovernmentForget.push(forget); }
 
-function worldChanged() {
+function worldChanged() { finish(worldChangedSteps()); }
+
+// The same in steps, pausing after the forgets and between derives.
+function* worldChangedSteps() {
   const w = state.world;
   if (!w) return;
   for (const forget of onWorldForget) forget(w);
-  for (const derive of onWorldDerive) derive(w);
+  for (const forget of onGovernmentForget) forget(w, null);
+  for (const derive of onWorldDerive) {
+    yield;
+    const steps = derive(w);
+    if (typeof steps?.next === 'function') yield* steps;
+  }
+  refreshShown();
+}
+
+// Acts of the given polities moved in strength: their caches go, the map's stay.
+function governmentChanged(ids = null) {
+  const w = state.world;
+  if (!w) return;
+  for (const forget of onGovernmentForget) forget(w, ids);
+  refreshShown();
+}
+
+// Redraws the card, the panel and the open file.
+function refreshShown() {
   if (state.selected) updateCard();
   updatePanel();
   // Redraws the open file in place without the selection sound.
@@ -169,7 +194,7 @@ function invalidateProvinces(...ids) {
 }
 
 // Running-average timings and tallies for the debug Performance block.
-const perf = { resources: 0, frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null, maskBuilds: 0, night: 0, cities: 0, labels: 0, ringDraw: 0, ringBuild: 0, ringBuilds: 0, ringPx: 0, frameJs: 0 };
+const perf = { resources: 0, frameMs: 0, draw: 0, paint: 0, fullRepaints: 0, partRepaints: 0, lastFrame: 0, load: null, maskBuilds: 0, night: 0, cities: 0, labels: 0, ringDraw: 0, ringBuild: 0, ringBuilds: 0, ringPx: 0, frameJs: 0, trade: 0 };
 const ease = (was, now) => (was ? was * 0.9 + now * 0.1 : now);
 
 // True when the canvas's CSS box no longer matches its pixel buffer.
@@ -218,26 +243,78 @@ const clock = {
   tickDone: 0,          // last tick the tick handlers ran for
 };
 
-// Handlers run once for each in-game day, and once for each tick, the clock passes.
+// Handlers run once for each in-game day, and once for each tick, the clock passes; a handler may be a generator, run a step at a time.
 const onEveryDay = [];
 function everyDay(fn) { onEveryDay.push(fn); }
 const onEveryTick = [];
 function everyTick(fn) { onEveryTick.push(fn); }
 
-// Runs the handlers for each tick crossed since the last call, a new day's first.
-function runDays() {
+// Next daily handler of the day in hand, or -1 with none left, and the steps of the one running.
+let dayStep = -1, dayPiece = null;
+// Next tick handler of the tick in hand, or -1 with none left, the steps of the one running, and the tick.
+let tickStep = -1, tickPiece = null, tickAt = 0;
+// Milliseconds of daily handlers a sliced call runs before stopping, after its first step.
+const DAY_SLICE_MS = 8;
+// Whether the day in hand has handlers or steps left.
+const dayLeft = () => dayStep >= 0 || dayPiece !== null;
+// Whether the day or the tick in hand has handlers or steps left.
+const dayPending = () => dayLeft() || tickStep >= 0 || tickPiece !== null;
+
+// Runs a generator's steps to its end and returns its value.
+function finish(steps) {
+  for (;;) {
+    const x = steps.next();
+    if (x.done) return x.value;
+  }
+}
+
+// Runs the handlers for each tick crossed since the last call, a new day's first; sliced, it stops after DAY_SLICE_MS of days or ticks and goes on at the next call.
+function runDays(sliced = false) {
   const w = state.world;
-  while (w && clock.tickDone < clock.tick) {
+  if (!w) {
+    clock.tickDone = clock.tick;
+    clock.day = Math.floor(clock.tick / TICKS_PER_DAY);
+    return;
+  }
+  const t0 = performance.now();
+  let ran = false;
+  // A tick's handlers, from the first.
+  const startTick = (t) => { if (onEveryTick.length) { tickStep = 0; tickAt = t; } };
+  while (dayPending() || clock.tickDone < clock.tick) {
+    if (sliced && ran && performance.now() - t0 >= DAY_SLICE_MS) return;
+    ran = true;
+    if (dayLeft()) {
+      if (dayPiece) {
+        if (dayPiece.next().done) dayPiece = null;
+      } else {
+        const fn = onEveryDay[dayStep];
+        dayStep = dayStep + 1 < onEveryDay.length ? dayStep + 1 : -1;
+        const steps = fn(w, clock.day);
+        if (typeof steps?.next === 'function') dayPiece = steps;
+      }
+      // The day done, its first tick's handlers.
+      if (!dayLeft()) startTick(clock.tickDone);
+      continue;
+    }
+    if (tickPiece || tickStep >= 0) {
+      if (tickPiece) {
+        if (tickPiece.next().done) tickPiece = null;
+      } else {
+        const fn = onEveryTick[tickStep];
+        tickStep = tickStep + 1 < onEveryTick.length ? tickStep + 1 : -1;
+        const steps = fn(w, tickAt);
+        if (typeof steps?.next === 'function') tickPiece = steps;
+      }
+      continue;
+    }
     const t = ++clock.tickDone;
     const day = Math.floor(t / TICKS_PER_DAY);
     if (day > clock.day) {
       clock.day = day;
-      for (const fn of onEveryDay) fn(w, clock.day);
+      if (onEveryDay.length) { dayStep = 0; continue; }
     }
-    for (const fn of onEveryTick) fn(w, t);
+    startTick(t);
   }
-  clock.tickDone = clock.tick;
-  clock.day = Math.floor(clock.tick / TICKS_PER_DAY);
 }
 
 // Calendar date and time for a tick count.
@@ -256,4 +333,4 @@ function clockDate(tick) {
   };
 }
 
-export { rootStyle, cssToken, UNKNOWN_POLITY, onWorldForget, onWorldDerive, forgetOnChange, deriveOnChange, worldChanged, els, state, dirtyProvinces, dirtyBoxes, invalidateBuffer, invalidateView, invalidateProvinces, perf, ease, canvasResized, TICK_MINUTES, TICKS_PER_HOUR, TICKS_PER_DAY, CLOCK_EPOCH, DAY_MS, SPEEDS, MAX_TICKS_PER_FRAME, RUNDEAN_MONTHS, clock, onEveryDay, everyDay, onEveryTick, everyTick, runDays, clockDate };
+export { rootStyle, cssToken, UNKNOWN_POLITY, onWorldForget, onWorldDerive, onGovernmentForget, forgetOnChange, deriveOnChange, forgetOnGovernment, worldChanged, worldChangedSteps, governmentChanged, refreshShown, els, state, dirtyProvinces, dirtyBoxes, invalidateBuffer, invalidateView, invalidateProvinces, perf, ease, canvasResized, TICK_MINUTES, TICKS_PER_HOUR, TICKS_PER_DAY, CLOCK_EPOCH, DAY_MS, SPEEDS, MAX_TICKS_PER_FRAME, RUNDEAN_MONTHS, clock, onEveryDay, everyDay, onEveryTick, everyTick, DAY_SLICE_MS, dayPending, finish, runDays, clockDate };

@@ -3,12 +3,12 @@
 const VERSION = new URL(import.meta.url).search;
 const { UNOWNED, isOccupied, realmOf } = await import(`../world/mapdata.js${VERSION}`);
 const { UNALIGNED, actEffects, heldActs, dugDeposits, feltFor, industryShares, miningShare, nameOf, spreadByWeight, spreadOverProvinces, supportHappiness, urbanisation } = await import(`./government.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, deriveOnChange, everyDay, forgetOnChange, state } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, deriveOnChange, everyDay, forgetOnChange, forgetOnGovernment, state } = await import(`../core/core.js${VERSION}`);
 const { clamp } = await import(`../render/view.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let colonyHolder, demonymOf, fillTokens, foodHappiness, governmentPosition, nationalModifier, nationalParts, polityOf, stabilityOf, updateCard;
-export function link(all) { ({ colonyHolder, demonymOf, fillTokens, foodHappiness, governmentPosition, nationalModifier, nationalParts, polityOf, stabilityOf, updateCard } = all); }
+let colonyHolder, demonymOf, fillTokens, foodHappiness, forgetTouched, governmentPosition, nationalModifier, nationalParts, polityOf, stabilityOf, touchedBy, updateCard;
+export function link(all) { ({ colonyHolder, demonymOf, fillTokens, foodHappiness, forgetTouched, governmentPosition, nationalModifier, nationalParts, polityOf, stabilityOf, touchedBy, updateCard } = all); }
 
 // The province card: what a province has.
 // Happiness and unrest: happiness is derived, unrest is stored.
@@ -69,6 +69,8 @@ function railsReachingTheCapital(w) {
 function connectedOf(w, p) {
   if (!w?.counties?.byId || !p) return true;
   if (builtLevel(w.stats?.[p.id] || {}, 'road') >= 1) return true;
+  // A coast is reached by sea from the nearest port.
+  if (w.coastal?.has(p.id)) return true;
   return railsReachingTheCapital(w).has(p.id);
 }
 
@@ -273,7 +275,7 @@ const label = (s) => s.factor || s.name;
 
 // The ideology a province's owner holds, cached per polity.
 const heldIdeologyBy = new Map();
-forgetOnChange(() => heldIdeologyBy.clear());
+forgetOnGovernment((w, ids) => forgetTouched(heldIdeologyBy, w, ids));
 function heldIdeology(w, id) {
   const table = w.government?.ideologies?.ideologies;
   if (!id || !table || !w.government?.byPolity?.has(id)) return null;
@@ -417,8 +419,16 @@ function occupationGovernment(w, occupier, subject) {
   return { laws: {}, policies, decrees, stateOwned };
 }
 
+// Kept per holder, occupied owner and key.
 const actEffectBy = new Map();
-forgetOnChange(() => actEffectBy.clear());
+forgetOnGovernment((w, ids) => {
+  const touched = touchedBy(w, ids);
+  if (!touched) return actEffectBy.clear();
+  for (const k of actEffectBy.keys()) {
+    const [holder, owner] = k.split('|');
+    if (touched(holder) || (owner && touched(owner))) actEffectBy.delete(k);
+  }
+});
 function actEffect(w, p, key) {
   const occupied = isOccupied(p);
   const holder = polityOf(w, p)?.id;
@@ -568,12 +578,17 @@ function unrestOf(w, p, stats, happiness, stability = null) {
   return { value: clamp(stats.unrest || 0, 0, 100), rate, parts };
 }
 
+// Provinces worked out between pauses of the daily unrest.
+const UNREST_SLICE = 25;
+
 // Moves every province's unrest by its rate, all worked out from the same day.
-everyDay((w, day) => {
+everyDay(function* (w, day) {
   const today = new Date(CLOCK_EPOCH + day * DAY_MS);
   const stability = new Map();
   const steps = [];
+  let worked = 0;
   for (const p of w.table?.provinces || []) {
+    if (++worked % UNREST_SLICE === 0) yield;
     const st = w.stats?.[p.id];
     if (!st || !p.owner || p.owner === UNOWNED) continue;
     if (!stability.has(p.owner)) stability.set(p.owner, stabilityOf(w, p.owner));
@@ -583,4 +598,4 @@ everyDay((w, day) => {
   if (state.selected) updateCard();
 });
 
-export { HAPPINESS_BASE, UNREST_THRESHOLD, UNREST_DECAY, railCache, railCacheWorld, railToCapital, railToCapitalWorld, railsReachingTheCapital, connectedOf, railShare, occupiedFraction, STRUCK_CAP, STRUCK_HAPPINESS, wearinessWeight, struckOf, provinceTraits, wearinessMean, WEARINESS_CAP, wearinessOf, unsettledShare, developmentOf, developmentPitOf, builtLevel, unlockedSlots, weighForSpread, namedDeposits, spiritSpreadBy, spiritEffect, label, heldIdeologyBy, heldIdeology, ideologyHappiness, spiritTotal, taxMultiplier, depositsBy, depositsOf, nationalShareBy, nationalShares, occupiedShare, industryAt, supportFor, governingLeads, spiritById, spiritPenalty, occupationGovernment, actEffectBy, actEffect, complianceOf, leaderParts, happinessOf, unrestHeldBy, unrestOf };
+export { HAPPINESS_BASE, UNREST_THRESHOLD, UNREST_DECAY, UNREST_SLICE, railCache, railCacheWorld, railToCapital, railToCapitalWorld, railsReachingTheCapital, connectedOf, railShare, occupiedFraction, STRUCK_CAP, STRUCK_HAPPINESS, wearinessWeight, struckOf, provinceTraits, wearinessMean, WEARINESS_CAP, wearinessOf, unsettledShare, developmentOf, developmentPitOf, builtLevel, unlockedSlots, weighForSpread, namedDeposits, spiritSpreadBy, spiritEffect, label, heldIdeologyBy, heldIdeology, ideologyHappiness, spiritTotal, taxMultiplier, depositsBy, depositsOf, nationalShareBy, nationalShares, occupiedShare, industryAt, supportFor, governingLeads, spiritById, spiritPenalty, occupationGovernment, actEffectBy, actEffect, complianceOf, leaderParts, happinessOf, unrestHeldBy, unrestOf };

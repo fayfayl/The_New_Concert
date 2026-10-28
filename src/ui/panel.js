@@ -6,8 +6,8 @@ const { compass, costWeighting, industryShares, nameOf, realmCompass } = await i
 const { els, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let RESOURCE_NAME, areaText, depositsOf, flaggedName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight;
-export function link(all) { ({ RESOURCE_NAME, areaText, depositsOf, flaggedName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight } = all); }
+let RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight;
+export function link(all) { ({ RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight } = all); }
 
 const panelOpen = () => els.panel.classList.contains('open');
 
@@ -28,6 +28,7 @@ function updatePanel() {
   if (!state.selected) {
     els.selName.textContent = '—';
     els.selBody.innerHTML = '<span class="hint">Click a province on the map.</span>';
+    els.government.innerHTML = '';
     els.neighbours.innerHTML = '';
     return;
   }
@@ -75,9 +76,9 @@ function fillTokens(text, target, tables, polity, mark = false) {
       ? bareDemonym(movement) + ' ' : '')
     .replaceAll('MOVEMENT_NAME', movement ?? named ?? '')
     .replaceAll('INDUSTRY_NAME', industryName(named))
-    .replaceAll('RESOURCE_NAME', mark && RESOURCE_NAME[named]
-      ? resourceIcon(named) + tipName(RESOURCE_NAME[named].toLowerCase())
-      : (RESOURCE_NAME[named] ?? named ?? '').toLowerCase())
+    .replaceAll('RESOURCE_NAME', mark && goodName(named)
+      ? resourceIcon(named) + tipName(goodName(named).toLowerCase())
+      : (goodName(named) ?? named ?? '').toLowerCase())
     .replaceAll('INFRASTRUCTURE_NAME', (project?.name ?? built?.infrastructure ?? '').toLowerCase())
     .replaceAll('PROVINCE_NAME', state.world?.byId?.get(built?.province)?.name ?? built?.province ?? '')
     .replaceAll('POLITY_NAME', gold(shortNameOf(country, true)));
@@ -124,7 +125,7 @@ function governmentPanel(w, p) {
   const owner = controllerOf(p);
   const realm = realmOf(w.table, owner);
   return governmentBlock(w, realm, 'Government')
-    + (realm === owner ? '' : governmentBlock(w, owner, 'Its government'));
+    + (realm === owner ? '' : governmentBlock(w, owner, 'Subgovernment'));
 }
 
 function governmentBlock(w, held, title) {
@@ -147,6 +148,7 @@ function governmentBlock(w, held, title) {
 
   return `<h1>${title}</h1>`
     + row('Polity', `${polSwatch(pol)}${pol?.name ?? held}`)
+    + row('ID', held)
     + row('Form', gov.form)
     + row('Ideology', c.ideology)
     + row('Compass', `${c.position[0].toFixed(0)} economic, ${c.position[1].toFixed(0)} authority`)

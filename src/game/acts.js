@@ -1,7 +1,7 @@
 // Acts over time and who may take them: policies coming on and going off, decrees that run out, what ends what, law ceilings and prospecting.
 
 const VERSION = new URL(import.meta.url).search;
-const { clock, everyDay, invalidateView, worldChanged } = await import(`../core/core.js${VERSION}`);
+const { clock, everyDay, finish, governmentChanged, invalidateView, worldChangedSteps } = await import(`../core/core.js${VERSION}`);
 const { actKey, industryKind, nameOf } = await import(`./government.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
@@ -117,8 +117,13 @@ function completeDecree(w, id, gov, x, act) {
 }
 
 // Each day: acts come on, duration decrees count down, departed acts go off.
-function dailyActs(w) {
-  let changed = false;
+function dailyActs(w) { finish(actSteps(w)); }
+
+// The same in steps, what a decree's end changes rebuilt in steps.
+function* actSteps(w) {
+  // Polities whose acts moved in strength, and whether a decree ran out.
+  const moved = new Set();
+  let completed = false;
   for (const [id, gov] of w.government?.byPolity || []) {
     for (const field of ['policies', 'decrees']) {
       const kind = field === 'policies' ? 'policy' : 'decree';
@@ -130,25 +135,27 @@ function dailyActs(w) {
         if (x?.since !== undefined && (x.strength ?? 1) < 1) {
           const { ramp } = timingOf(w, kind, act);
           x.strength = ramp ? Math.min(1, (clock.day - x.since) / ramp) : 1;
-          changed = true;
+          moved.add(id);
         }
         if (kind === 'decree' && act.durationDays && !x?.expired) {
           if (typeof x === 'string') x = held[i] = { decree: x };
           x.daysLeft = (x.daysLeft ?? startingDaysLeft(id, x, act)) - 1;
-          if (x.daysLeft <= 0) { completeDecree(w, id, gov, x, act); changed = true; }
+          if (x.daysLeft <= 0) { completeDecree(w, id, gov, x, act); completed = true; }
         }
       }
     }
     if (gov.fading?.length) {
+      const was = gov.fading.map((f) => f.strength);
       for (const f of gov.fading) f.strength = f.fade ? Math.max(0, f.from * (1 - (clock.day - f.ended) / f.fade)) : 0;
       // Kept until gone and past the wait to restart.
       gov.fading = gov.fading.filter((f) => f.strength > 0 || clock.day - f.ended < RESTART_DAYS);
-      changed = true;
+      if (gov.fading.length !== was.length || gov.fading.some((f, i) => f.strength !== was[i])) moved.add(id);
     }
   }
-  if (changed) { worldChanged(); invalidateView(); }
+  if (completed) { yield* worldChangedSteps(); invalidateView(); }
+  else if (moved.size) { governmentChanged(moved); invalidateView(); }
 }
-everyDay(dailyActs);
+everyDay(actSteps);
 
 // The highest option a country's spirits allow in a law category, or null.
 function lawCeilingOf(w, id, category, above = null) {
@@ -253,4 +260,4 @@ function unavailable(w, id, kind, act, target) {
   return barred ? `${act.name} is barred by ${Object.keys(barred).join(', ')}` : null;
 }
 
-export { HAND_OVER, TAKE_OVER, REQUEST_HAND_OVER, clearAid, enactInfrastructure, RESTART_DAYS, timingOf, startingDaysLeft, startAct, fadeAct, restartWait, endsWithDecree, prospect, completeDecree, dailyActs, lawCeilingOf, conditionHolds, unavailable };
+export { HAND_OVER, TAKE_OVER, REQUEST_HAND_OVER, clearAid, enactInfrastructure, RESTART_DAYS, timingOf, startingDaysLeft, startAct, fadeAct, restartWait, endsWithDecree, prospect, completeDecree, dailyActs, actSteps, lawCeilingOf, conditionHolds, unavailable };

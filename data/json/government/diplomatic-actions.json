@@ -1,5 +1,5 @@
 {
-  "note": "cost: opening price in political power, before tensionDiscount and any charge given in effect. options: one act, its kind chosen when taken, each kind with its own cost and needs. notByMembers: a realm's member may not take it; its realm does. bindsMembers: when a realm takes it or is its target, every member takes part with it. cooldownDays: days before a country may take it again against the same country. notAgainstOwnVassals: a country may not take it against its own colonies, puppets or other vassals. notByVassals: a colony, puppet or other vassal may not take it against anyone; its suzerain does. notAgainstOwnSuzerain: a vassal may take it, but not against its own suzerain. needs: a relations figure is read as the target's view of the actor, so a country may act toward one it dislikes when the other is willing.",
+  "note": "cost: opening price in political power, before tensionDiscount and any charge given in effect. options: one act, its kind chosen when taken, each kind with its own cost and needs. notByMembers: a realm's member may not take it; its realm does. bindsMembers: when a realm takes it or is its target, every member takes part with it. cooldownDays: days before a country may take it again against the same country. notAgainstOwnVassals: a country may not take it against its own colonies, puppets or other vassals. notByVassals: a colony, puppet or other vassal may not take it against anyone; its suzerain does. notAgainstOwnSuzerain: a vassal may take it, but not against its own suzerain. onlyByMembers: only a realm's member may take it, and only toward its own realm. needs: a relations figure is read as the target's view of the actor, so a country may act toward one it dislikes when the other is willing.",
   "tensionDiscount": {
     "note": "perPoint: political power off the act per point of world tension, floored at floor times the listed cost.",
     "floor": 0.5,
@@ -141,6 +141,13 @@
       "bindsMembers": true,
       "cost": 200,
       "effect": "war. Free with a casus belli, 200 without one"
+    },
+    {
+      "name": "Ask for diplomatic action",
+      "onlyByMembers": true,
+      "cooldownDays": 90,
+      "cost": 15,
+      "effect": "a realm's member asks its realm to take a named diplomatic action against a named country. The realm takes it at its own cost, or refuses. Theirs to accept or refuse"
     }
   ]
 }

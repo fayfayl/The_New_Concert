@@ -5,8 +5,8 @@ const { mapLatAt, mapLonAt, sinSolarElevation, solarDeclination, subsolarLongitu
 const { canvasResized, clock, dirtyBoxes, dirtyProvinces, ease, els, invalidateProvinces, invalidateView, perf, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let COUNTY_RING_ALPHA, COUNTY_RING_COLOUR, F_CAPITAL_NAME, F_CITY_NAME, F_RIVER, MAP_GROUND, NIGHT_DARKEN, NIGHT_DAY_START, NIGHT_FULL_DARK, NIGHT_LIGHTS, NIGHT_LIGHT_SCALE, OUTLINE_COLOUR, OUTLINE_WIDTH, advanceClock, buildOutlinePath, cityFade, clockKey, debug, drawBuildingMarks, drawCities, drawInfrastructure, drawOverlays, drawRail, drawResources, fadeStrength, layoutLabels, markHits, overviewCovers, paintLabels, repaintProvinces, resourceHits, startRepaint, stepCityFades, stepLabelDim, stepRepaint, sunShiftPx, tilesOver, timeMarkup, updateReadout, viewportLayer;
-export function link(all) { ({ COUNTY_RING_ALPHA, COUNTY_RING_COLOUR, F_CAPITAL_NAME, F_CITY_NAME, F_RIVER, MAP_GROUND, NIGHT_DARKEN, NIGHT_DAY_START, NIGHT_FULL_DARK, NIGHT_LIGHTS, NIGHT_LIGHT_SCALE, OUTLINE_COLOUR, OUTLINE_WIDTH, advanceClock, buildOutlinePath, cityFade, clockKey, debug, drawBuildingMarks, drawCities, drawInfrastructure, drawOverlays, drawRail, drawResources, fadeStrength, layoutLabels, markHits, overviewCovers, paintLabels, repaintProvinces, resourceHits, startRepaint, stepCityFades, stepLabelDim, stepRepaint, sunShiftPx, tilesOver, timeMarkup, updateReadout, viewportLayer } = all); }
+let COUNTY_RING_ALPHA, COUNTY_RING_COLOUR, F_CAPITAL_NAME, F_CITY_NAME, F_RIVER, MAP_GROUND, NIGHT_DARKEN, NIGHT_DAY_START, NIGHT_FULL_DARK, NIGHT_LIGHTS, NIGHT_LIGHT_SCALE, OUTLINE_COLOUR, OUTLINE_WIDTH, advanceClock, buildOutlinePath, cityFade, clockKey, debug, drawBuildingMarks, drawCities, drawInfrastructure, drawOverlays, drawRail, drawResources, drawTradeRoutes, fadeStrength, layoutLabels, markHits, overviewCovers, paintLabels, repaintProvinces, resourceHits, startRepaint, stepCityFades, stepLabelDim, stepRepaint, sunShiftPx, tilesOver, timeMarkup, updateReadout, viewportLayer;
+export function link(all) { ({ COUNTY_RING_ALPHA, COUNTY_RING_COLOUR, F_CAPITAL_NAME, F_CITY_NAME, F_RIVER, MAP_GROUND, NIGHT_DARKEN, NIGHT_DAY_START, NIGHT_FULL_DARK, NIGHT_LIGHTS, NIGHT_LIGHT_SCALE, OUTLINE_COLOUR, OUTLINE_WIDTH, advanceClock, buildOutlinePath, cityFade, clockKey, debug, drawBuildingMarks, drawCities, drawInfrastructure, drawOverlays, drawRail, drawResources, drawTradeRoutes, fadeStrength, layoutLabels, markHits, overviewCovers, paintLabels, repaintProvinces, resourceHits, startRepaint, stepCityFades, stepLabelDim, stepRepaint, sunShiftPx, tilesOver, timeMarkup, updateReadout, viewportLayer } = all); }
 
 const MIN_SCALE = 0.25;         // zoomed out: whole world, small
 const MAX_SCALE = 16;           // zoomed in: individual map pixels visible
@@ -366,7 +366,9 @@ function drawView() {
     };
     const nameLayer = () => paintLabels(ctx, ops);
 
+    // Rail and trade routes lie under the cities and names.
     if (state.mode === 'infra:rail') drawRail(ctx, cssW, cssH, dx);
+    else if (state.mode === 'routes') drawTradeRoutes(ctx, cssW, cssH, dx);
 
     if (state.selected) { nameLayer(); cityLayer(); } else { cityLayer(); nameLayer(); }
     drawBuildingMarks(ctx, cssW, cssH, dx);

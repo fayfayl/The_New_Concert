@@ -18,6 +18,13 @@ export function hashBytes(bytes, seed = 0x811c9dc5) {
   return h >>> 0;
 }
 
+// The same over 32-bit words.
+export function hashWords(words, seed = 0x811c9dc5) {
+  let h = seed >>> 0;
+  for (let i = 0; i < words.length; i++) h = Math.imul(h ^ words[i], 0x01000193) >>> 0;
+  return h >>> 0;
+}
+
 // Hash of the bitmaps and JSON fields the cached data is derived from.
 export function hashInputs(pngBytes, raw, seaPngBytes = null, seaRaw = null,
   countyPngBytes = null, countyRaw = null, subPngBytes = null) {
@@ -336,4 +343,59 @@ export function worldFromCache(table, cache, indexProvinces) {
     },
     geometry,
   };
+}
+
+// ------------------------------------------------------------ the route store
+
+// Browser store keeping what trade route lines rest on between sessions: one record, under the key of the map it was drawn on.
+const ROUTE_DB = 'tnc-routes';
+const ROUTE_TABLE = 'store';
+
+function openRouteDb() {
+  return new Promise((ok, fail) => {
+    if (typeof indexedDB === 'undefined') { ok(null); return; }
+    const req = indexedDB.open(ROUTE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(ROUTE_TABLE);
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => fail(req.error);
+  });
+}
+
+// The record kept under a key, or null.
+export async function loadRouteStore(key) {
+  try {
+    const db = await openRouteDb();
+    if (!db) return null;
+    try {
+      return await new Promise((ok, fail) => {
+        const req = db.transaction(ROUTE_TABLE, 'readonly').objectStore(ROUTE_TABLE).get(key);
+        req.onsuccess = () => ok(req.result ?? null);
+        req.onerror = () => fail(req.error);
+      });
+    } finally { db.close(); }
+  } catch (err) {
+    console.warn('the stored trade route lines could not be read; drawing them again.', err);
+    return null;
+  }
+}
+
+// Keeps a record under a key in place of any other.
+export async function saveRouteStore(key, data) {
+  try {
+    const db = await openRouteDb();
+    if (!db) return false;
+    try {
+      return await new Promise((ok, fail) => {
+        const tx = db.transaction(ROUTE_TABLE, 'readwrite'), table = tx.objectStore(ROUTE_TABLE);
+        table.clear();
+        table.put(data, key);
+        tx.oncomplete = () => ok(true);
+        tx.onerror = () => fail(tx.error);
+        tx.onabort = () => fail(tx.error);
+      });
+    } finally { db.close(); }
+  } catch (err) {
+    console.warn('the trade route lines could not be stored.', err);
+    return false;
+  }
 }

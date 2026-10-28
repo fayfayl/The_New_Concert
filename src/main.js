@@ -7,11 +7,11 @@ const { CACHE_FILE, applyCountyOccupation, countiesFromCache, hashInputs, seaFro
 const { addRealmBlocks, attachBlockMembers, buildBorderDistance, buildCountyWorld, buildSeaWorld, buildSubWorld, buildWorld, computeLabelGeometry, indexCounties, indexProvinces, indexSea, indexSubs, normaliseCountyTable, normaliseSeaTable, normaliseSubTable, normaliseTable, toRgb } = await import(`./world/mapdata.js${VERSION}`);
 const { BUILDINGS, BUILDING_AT, mergeStats } = await import(`./world/provincestats.js${VERSION}`);
 const { UNALIGNED } = await import(`./game/government.js${VERSION}`);
-const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'render/labels', 'render/view', 'layers/cities', 'layers/resourcelayer', 'layers/debugdraw', 'layers/infralayer', 'layers/marks', 'ui/console', 'ui/card', 'game/clock', 'ui/select', 'ui/tooltip', 'ui/panel', 'game/province', 'ui/diplo', 'ui/tips', 'game/nation', 'game/industry', 'game/production', 'game/resources', 'game/relations', 'game/treaties', 'game/acts', 'ui/readout', 'ui/menus', 'ui/audio', 'ui/input'];
+const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'render/labels', 'render/view', 'layers/cities', 'layers/resourcelayer', 'layers/routelayer', 'layers/debugdraw', 'layers/infralayer', 'layers/marks', 'ui/console', 'ui/card', 'game/clock', 'ui/select', 'ui/tooltip', 'ui/panel', 'game/province', 'ui/diplo', 'ui/tips', 'game/nation', 'game/industry', 'game/production', 'game/resources', 'game/routes', 'game/relations', 'game/treaties', 'game/acts', 'ui/readout', 'ui/menus', 'ui/audio', 'ui/input'];
 const loaded = await Promise.all(MODULES.map((n) => import(`./${n}.js${VERSION}`)));
 const all = Object.assign({}, ...loaded);
 for (const m of loaded) m.link?.(all);
-const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween } = all;
+const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, runDays, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween, nationalModifier, setTariff, setShippingTerms, tariffTable, bunkeringRate, routeOf, tradeEnds, seaGraphStats } = all;
 
 // Loads the data, builds the model, and starts the render loop.
 async function init() {
@@ -279,6 +279,8 @@ async function init() {
     }),
     // A jump: no daily handlers run for the days skipped.
     setTick: (tick) => {
+      // The day in hand finishes first.
+      runDays();
       clock.tick = Math.max(0, Math.round(tick));
       clock.day = Math.floor(clock.tick / TICKS_PER_DAY);
       clock.tickDone = clock.tick;
@@ -287,6 +289,7 @@ async function init() {
     },
     // Month is 1 to 12 here.
     setDate: (year, month, day, hour = 0) => {
+      runDays();
       const days = Math.round((Date.UTC(year, month - 1, day) - CLOCK_EPOCH) / DAY_MS);
       clock.tick = Math.max(0, days * TICKS_PER_DAY + Math.round(hour * TICKS_PER_HOUR));
       clock.day = Math.floor(clock.tick / TICKS_PER_DAY);
@@ -373,6 +376,63 @@ async function init() {
         storage: r(s.storage),
       };
     },
+    // What a country bought and sold on the automatic market yesterday, by good, with its top partners; with no tag, the world by good.
+    trade: (tag) => {
+      const w = state.world;
+      const r = (n) => Number((n || 0).toFixed(2));
+      if (tag === undefined) {
+        return Object.fromEntries(Object.entries(live.lastSupply.market || {}).map(([k, x]) => [k, {
+          deficit: r(x.deficit), wanted: r(x.wanted), offered: r(x.offered), moved: r(x.moved), unfilled: r(x.unfilled), countriesShort: x.short, sellersWithoutRoute: x.unrouted,
+        }]));
+      }
+      if (!w?.table?.polityById?.has(tag)) throw new Error(`no polity "${tag}"`);
+      const t = live.lastSupply.get(tag)?.trade;
+      if (!t) return null;
+      const top = (by) => Object.fromEntries(Object.entries(by || {}).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, n]) => [k, r(n)]));
+      const side = (amounts, partners, key) => Object.fromEntries(Object.entries(amounts).sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => [k, { amount: r(n), [key]: top(partners[k]) }]));
+      const raised = 1 + nationalModifier(w, tag, 'tradeIncome');
+      const scaled = (by) => Object.fromEntries(Object.entries(by || {}).map(([k, n]) => [k, n * raised]));
+      // Its largest sales and purchases with the stops each made.
+      const routes = (live.lastSupply.sales || []).filter((x) => x.seller === tag || x.buyer === tag).sort((a, b) => b.amount - a.amount).slice(0, 5)
+        .map((x) => ({ good: x.kind, from: x.seller, to: x.buyer, amount: r(x.amount), ...(x.via ? { via: x.via } : {}), km: Math.round(x.route.km), stops: x.route.stops }));
+      return {
+        bought: side(t.bought, t.from, 'from'), sold: side(t.sold, t.to, 'to'), landed: r(t.landed), routes,
+        tariffs: {
+          earned: r(t.tariffs * raised), earnedFrom: top(scaled(t.tariffsFrom)), earnedOn: top(scaled(t.tariffsOn)),
+          paid: r(t.tariffsPaid), paidTo: top(t.tariffsTo),
+        },
+        bunkering: {
+          spent: r(t.bunkering * raised), fuelSales: r(t.fuelSales * raised), tax: r((t.bunkering - t.fuelSales) * raised * bunkeringRate(w, tag)),
+          fuelBurnt: { coal: Number(t.fuelBurnt.coal.toFixed(4)), oil: Number(t.fuelBurnt.oil.toFixed(4)) },
+        },
+        shipping: { paid: r(t.shipping), paidTo: top(t.shippingTo) },
+      };
+    },
+    // The route a seller's good takes to a buyer, hub to hub: each leg by mode with its km and stop, the route's cost in points, and the provinces yesterday's goods were drawn from and to.
+    route: (from, to, kind = 'coal') => {
+      const w = state.world;
+      for (const t of [from, to]) if (!w?.table?.polityById?.has(t)) throw new Error(`no polity "${t}"`);
+      const x = routeOf(w, from, to, kind);
+      if (!x) return null;
+      const name = (id) => (id ? w.byId.get(id)?.name || id : 'capital');
+      const n = (v) => Math.round(v);
+      const ends = (id, selling) => tradeEnds(live.lastSupply.get(id), kind, selling).slice(0, 5).map(([p, s]) => `${name(p)} ${Math.round(s * 100)}%`);
+      return {
+        cost: n(x.cost), untaxed: n(x.untaxed), km: n(x.km),
+        stops: x.stops.map((s, i) => s + (x.rates[i] ? ` at ${Math.round(x.rates[i] * 100)}%` : '')),
+        legs: x.legs.map((l) => `${l.mode} ${name(l.from)} to ${name(l.to)}, ${n(l.km)} km${l.stop ? ', stop in ' + l.stop : ''}`),
+        drawnFrom: ends(from, true), drawnTo: ends(to, false),
+      };
+    },
+    // Ports and sea legs in the route graph, and how long it took to build.
+    seaGraph: () => seaGraphStats(state.world),
+    // Sets a country's tariff: target a tag or 'all', product a good, a class or 'all', rate 0 to 1.
+    setTariff: (tag, target, product, rate) => setTariff(state.world, tag, target, product, rate),
+    // A country's tariff table with its ceilings.
+    tariffs: (tag) => tariffTable(state.world, tag),
+    // Sets who pays the shipping on leases and state agreements from one country to another: terms 'CIF' or 'FOB', what a good, resource or province.
+    shippingTerms: (first, second, terms, what = null) => setShippingTerms(state.world, first, second, terms, what),
     // Sets how much of a resource is put by (positive) or released (negative) each day.
     reserve: (tag, resource, rate) => {
       const v = state.world?.polityValues?.[tag];
@@ -459,8 +519,8 @@ async function init() {
       return {
         stored: r(w.polityValues?.[tag]?.treasury),
         perDay: r(b.net),
-        revenue: { tax: r(b.tax), fromRealmMembers: r(b.realmIn), fromColonies: r(b.colonialIn), reparations: r(b.reparationsIn), rent: r(b.rentIn), stateAgreements: r(b.agreementsIn), total: r(b.revenue) },
-        expenditure: { toRealm: r(b.realmOut), toHolder: r(b.colonialOut), rail: r(b.rail), maintenance: r(b.maintenance), occupation: r(b.occupation), policies: r(b.policies), interest: r(b.interest), construction: r(b.construction), production: r(b.production), fleet: r(b.fleet), storage: r(b.storage), stateIndustry: r(b.stateIndustry), reparations: r(b.reparations), rent: r(b.rent), stateAgreements: r(b.agreements), total: r(b.expenditure) },
+        revenue: { tax: r(b.tax), tariffs: r(b.tariffs), fuelSales: r(b.fuelSales), bunkeringTax: r(b.bunkeringTax), fromRealmMembers: r(b.realmIn), fromColonies: r(b.colonialIn), reparations: r(b.reparationsIn), rent: r(b.rentIn), stateAgreements: r(b.agreementsIn), total: r(b.revenue) },
+        expenditure: { toRealm: r(b.realmOut), toHolder: r(b.colonialOut), rail: r(b.rail), maintenance: r(b.maintenance), occupation: r(b.occupation), policies: r(b.policies), interest: r(b.interest), construction: r(b.construction), production: r(b.production), fleet: r(b.fleet), storage: r(b.storage), stateIndustry: r(b.stateIndustry), reparations: r(b.reparations), rent: r(b.rent), stateAgreements: r(b.agreements), shipping: r(b.shipping), total: r(b.expenditure) },
         colonyOf: colonyHolder(w, tag),
       };
     },

@@ -2,7 +2,7 @@
 
 const VERSION = new URL(import.meta.url).search;
 const { UNOWNED } = await import(`../world/mapdata.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, clock, everyDay, live } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let actEffect, debtRatio, happinessOf, lawsFor, nationalModifier, nationalParts, occupiedFraction, stabilityOf;
@@ -70,9 +70,16 @@ function shortagesOf(id) {
 }
 
 // One day of every country's industry: construction, equipment and ship points, consumer goods and their parts.
-function dailyIndustry(w) {
+function dailyIndustry(w) { return finish(industrySteps(w)); }
+
+// Provinces, or countries, worked through between pauses of a day's industry.
+const INDUSTRY_SLICE = 25;
+
+// The same in steps, pausing between provinces and between countries.
+function* industrySteps(w) {
   const today = new Date(CLOCK_EPOCH + clock.day * DAY_MS);
   const out = new Map();
+  let worked = 0;
   const of = (id) => {
     if (!out.has(id)) out.set(id, { points: 0, goods: 0, spenders: 0, equipment: 0, ships: 0, dockyards: 0, ordered: 0, consumer: 0, military: 0, people: 0, provinces: 0, electricity: 0, electrified: 0, materials: { textiles: 0, timber: 0, iron: 0 } });
     return out.get(id);
@@ -99,6 +106,7 @@ function dailyIndustry(w) {
   for (const c of w.counties?.byId?.values() || []) if (c.dockyard) yards.set(c.province, (yards.get(c.province) || 0) + 1);
 
   for (const p of w.table?.provinces || []) {
+    if (++worked % INDUSTRY_SLICE === 0) yield;
     const st = w.stats?.[p.id];
     if (!st || !p.owner || p.owner === UNOWNED) continue;
     const home = of(p.owner);
@@ -152,6 +160,7 @@ function dailyIndustry(w) {
     }
   }
   for (const [id, b] of out) {
+    if (++worked % INDUSTRY_SLICE === 0) yield;
     b.demand = b.spenders * GOODS_PER_PERSON;
     b.balance = b.goods - b.demand;
     // Research comes from people who live with power: each province's people times its electricity / 10.
@@ -165,6 +174,6 @@ function dailyIndustry(w) {
 
 // Last day's industry per country, read by the console.
 live.lastIndustry = new Map();
-everyDay((w) => { live.lastIndustry = dailyIndustry(w); });
+everyDay(function* (w) { live.lastIndustry = yield* industrySteps(w); });
 
-export { DOCKYARD_POINTS, DOCKYARD_ELECTRICITY, DOCKYARD_MILITARY, DOCKYARD_MILITARY_CAP, DOCKYARD_SUPPLY_HUB, RESEARCH_PEOPLE, RESEARCH_SLOTS, RESEARCH_STABILITY, ELECTRICITY_OUTPUT, UNREST_OUTPUT, UNREST_CONSTRUCTION, GOODS_PER_PERSON, OCCUPATION_EFFICIENCY, DEBT_CONSTRUCTION, GOODS_MATERIALS, consumerShareOf, debtConstruction, shortagesOf, occupationEfficiencyOf, dailyIndustry };
+export { DOCKYARD_POINTS, DOCKYARD_ELECTRICITY, DOCKYARD_MILITARY, DOCKYARD_MILITARY_CAP, DOCKYARD_SUPPLY_HUB, RESEARCH_PEOPLE, RESEARCH_SLOTS, RESEARCH_STABILITY, ELECTRICITY_OUTPUT, UNREST_OUTPUT, UNREST_CONSTRUCTION, GOODS_PER_PERSON, OCCUPATION_EFFICIENCY, DEBT_CONSTRUCTION, GOODS_MATERIALS, consumerShareOf, debtConstruction, shortagesOf, occupationEfficiencyOf, dailyIndustry, INDUSTRY_SLICE, industrySteps };

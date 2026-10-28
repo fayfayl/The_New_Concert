@@ -144,7 +144,7 @@ for (const button of dom.modeButtons) {
   if (near === null) {
     problems.push(['rivers', new Error('the debug panel has no Rivers row')]);
   } else if (near.includes('no rivers.png')) {
-    problems.push(['rivers', new Error('data/img/bitmap/rivers.png did not load — run: node sync-provinces.js --rivers --write')]);
+    problems.push(['rivers', new Error('data/img/bitmap/rivers.png did not load — run: node test/sync-provinces.js --rivers --write')]);
   } else {
     const fade = (t) => Number((String(t).match(/^([0-9.]+)/) || [])[1]);
     if (!(fade(near) > 0.9)) {

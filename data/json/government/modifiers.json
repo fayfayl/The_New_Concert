@@ -293,7 +293,7 @@
     },
     "tradeIncome": {
       "unit": "fraction",
-      "means": "what a country earns from trade routes crossing its ground: coal, water, provisions, warehousing and repairs bought where the traffic stops. It follows how much crosses and is not a rate the country sets. The tariff is separate",
+      "means": "what trade routes crossing the country spend there on fuel. It follows how much crosses and is not a rate the country sets. Raises that spending and the tariffs. Trade income is the coal and oil a state-owned industry sells to it plus tariffs; what private firms sell is taxed under corporate tax",
       "shown": "PERCENTAGE trade income"
     },
     "conscriptionRaiseCost": {

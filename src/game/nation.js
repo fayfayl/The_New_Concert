@@ -1,11 +1,11 @@
 // National figures: modifiers, stability, manpower, political power, command power and the treasury.
 
 const VERSION = new URL(import.meta.url).search;
-const { UNOWNED, isUnder, membersOf } = await import(`../world/mapdata.js${VERSION}`);
+const { UNOWNED, isUnder, membersOf, realmOf } = await import(`../world/mapdata.js${VERSION}`);
 const { actKey, governingSupport, heldActs, industryKind, industryShares, nameOf, nationalSupport, ownedLabel } = await import(`./government.js${VERSION}`);
 const { groundCost } = await import(`../world/ceilings.js${VERSION}`);
 const { LEVELS, FACTORIES, BUILDINGS } = await import(`../world/provincestats.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, clock, everyDay, forgetOnChange, live } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnChange, forgetOnGovernment, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays;
@@ -16,9 +16,27 @@ function nationalModifier(w, polityId, key) {
   return nationalParts(w, polityId, key).reduce((a, [, n]) => a + n, 0);
 }
 
+// Whether a polity's figures follow the acts of the given polities: every polity in their realms; null for every polity.
+function touchedBy(w, ids) {
+  if (!ids) return null;
+  const realms = new Set([...ids].map((id) => realmOf(w.table, id)));
+  const seen = new Map();
+  return (id) => {
+    if (!seen.has(id)) seen.set(id, realms.has(realmOf(w.table, id)));
+    return seen.get(id);
+  };
+}
+
+// Drops a cache's entries keyed by polity, or by polity and more after a '|', for the polities given acts touch.
+function forgetTouched(held, w, ids) {
+  const touched = touchedBy(w, ids);
+  if (!touched) return held.clear();
+  for (const k of held.keys()) if (touched(String(k).split('|')[0])) held.delete(k);
+}
+
 // Itemised national modifier: each source's name and amount, cached per polity and key.
 const nationalPartsBy = new Map();
-forgetOnChange(() => nationalPartsBy.clear());
+forgetOnGovernment((w, ids) => forgetTouched(nationalPartsBy, w, ids));
 function nationalParts(w, polityId, key) {
   const at = polityId + '|' + key;
   if (!nationalPartsBy.has(at)) nationalPartsBy.set(at, nationalPartsOf(w, polityId, key));
@@ -56,7 +74,8 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
   const take = (label, kind, effects, strength = 1, except = null) => {
     if (except?.includes(head)) return;
     const v = tail === undefined ? effects?.[key] : effects?.[head]?.[tail];
-    if (typeof v === 'number' && v !== 0 && strength) out.push([label, v * strength, kind]);
+    // Tariff ceilings keep a figure of 0.
+    if (typeof v === 'number' && (v !== 0 || head === 'tariffCeiling') && strength) out.push([label, v * strength, kind]);
   };
   const heldBy = (list, x) => (list || []).some((y) => actKey(y) === actKey(x));
   const acts = (field) => [above, gov].flatMap((holder) => (holder?.[field] || [])
@@ -296,7 +315,7 @@ const SANCTION_COST = 0.02;
 
 // Share of a country's people behind the ideology it holds, 0 to 100, cached per polity.
 const governingSupportBy = new Map();
-forgetOnChange(() => governingSupportBy.clear());
+forgetOnGovernment((w, ids) => forgetTouched(governingSupportBy, w, ids));
 function governingSupportOf(w, polityId) {
   if (!governingSupportBy.has(polityId)) {
     const ideology = heldIdeology(w, polityId)?.name || null;
@@ -329,12 +348,20 @@ function politicalPowerOf(w, polityId) {
   return { daily, earned, actions, flat, percent, stability, stabilityFactor, ideology, support, supportFactor, modifier };
 }
 
-everyDay((w) => {
+// Countries worked through between pauses of the daily national figures.
+const NATIONAL_SLICE = 20;
+
+everyDay(function* (w) {
+  // Every country's income worked out, then added.
+  const gains = [];
+  let worked = 0;
   for (const [id, values] of Object.entries(w.polityValues || {})) {
     if (!w.table?.polityById?.has(id)) continue;
+    if (++worked % NATIONAL_SLICE === 0) yield;
     const { daily } = politicalPowerOf(w, id);
-    values.politicalPower = Math.max(0, Math.min(POLITICAL_POWER_CAP, (values.politicalPower || 0) + daily));
+    gains.push([values, daily]);
   }
+  for (const [values, daily] of gains) values.politicalPower = Math.max(0, Math.min(POLITICAL_POWER_CAP, (values.politicalPower || 0) + daily));
 });
 
 // Command power: base income, units per extra point, income cap and stock cap.
@@ -348,7 +375,7 @@ function unitsFielded(w, polityId) { return 0; }
 
 // Occupation laws touching a modifier, once each, per occupier, cached.
 const occupationPartsBy = new Map();
-forgetOnChange(() => occupationPartsBy.clear());
+forgetOnGovernment(() => occupationPartsBy.clear());
 function occupationParts(w, polityId, key) {
   if (!occupationPartsBy.has(key)) {
     const out = new Map();
@@ -379,16 +406,24 @@ function commandPowerOf(w, polityId) {
   return { daily, units, base, percent, modifier };
 }
 
-everyDay((w) => {
+everyDay(function* (w) {
+  // Every country's income worked out, then added.
+  const gains = [];
+  let worked = 0;
   for (const [id, values] of Object.entries(w.polityValues || {})) {
     if (!w.table?.polityById?.has(id)) continue;
-    values.commandPower = Math.min(COMMAND_POWER_CAP, (values.commandPower || 0) + commandPowerOf(w, id).daily);
+    if (++worked % NATIONAL_SLICE === 0) yield;
+    gains.push([values, commandPowerOf(w, id).daily]);
   }
+  for (const [values, daily] of gains) values.commandPower = Math.min(COMMAND_POWER_CAP, (values.commandPower || 0) + daily);
 });
 
 // Treasury rates, in $ a day.
 const REALM_SHARE = 0.25;             // of a member's tax, paid to its realm at Moderate national tax
 const COLONIAL_SHARE = 0.2;          // of a colony's tax, paid to its holder at Moderate colonial tax
+// Corporate tax on private fuel sold to passing traffic, by corporate tax law.
+const BUNKERING_RATE = { 'Minimal taxation': 0.06, 'Low taxation': 0.12, 'Moderate taxation': 0.2, 'High taxation': 0.3, 'Punitive taxation': 0.4 };
+const bunkeringRate = (w, id) => BUNKERING_RATE[lawsFor(w, id).corporateTax] ?? BUNKERING_RATE['Moderate taxation'];
 const DEBT_INTEREST = 0.0002;         // of the debt
 const GOLD_INTEREST = 1;              // extra interest at no gold at all, on the shortage curve
 const OCCUPATION_HOLDING = 200;       // per occupied province, paid by the occupier
@@ -427,15 +462,23 @@ function colonyHolder(w, id) {
 }
 
 // One day of every country's books: revenue, expenditure and each line of both.
-function dailyBooks(w, day) {
+function dailyBooks(w, day) { return finish(bookSteps(w, day)); }
+
+// Provinces, and ten times as many counties, worked through between pauses of a day's books.
+const BOOKS_SLICE = 50;
+
+// The same in steps, pausing between provinces and between counties.
+function* bookSteps(w, day) {
   const today = new Date(CLOCK_EPOCH + day * DAY_MS);
   const books = new Map();
+  let worked = 0;
   const of = (id) => {
-    if (!books.has(id)) books.set(id, { tax: 0, realmIn: 0, realmOut: 0, colonialIn: 0, colonialOut: 0, rail: 0, maintenance: 0, occupation: 0, policies: 0, interest: 0, construction: 0, production: 0, fleet: 0, storage: 0, stateIndustry: 0, reparations: 0, reparationsIn: 0, rent: 0, rentIn: 0, agreements: 0, agreementsIn: 0 });
+    if (!books.has(id)) books.set(id, { tax: 0, realmIn: 0, realmOut: 0, colonialIn: 0, colonialOut: 0, rail: 0, maintenance: 0, occupation: 0, policies: 0, interest: 0, construction: 0, production: 0, fleet: 0, storage: 0, stateIndustry: 0, reparations: 0, reparationsIn: 0, rent: 0, rentIn: 0, agreements: 0, agreementsIn: 0, tariffs: 0, fuelSales: 0, bunkeringTax: 0, shipping: 0 });
     return books.get(id);
   };
 
   for (const p of w.table?.provinces || []) {
+    if (++worked % BOOKS_SLICE === 0) yield;
     const st = w.stats?.[p.id];
     if (!st || !p.owner || p.owner === UNOWNED) continue;
     const people = (st.population || 0) / 1000 * (1 + nationalModifier(w, p.owner, 'revenueFromPeople'));
@@ -501,6 +544,7 @@ function dailyBooks(w, day) {
   };
   const ground = new Map();   // province id -> [area-weighted ground, area]
   for (const c of w.counties?.byId?.values() || []) {
+    if (++worked % (BOOKS_SLICE * 10) === 0) yield;
     const p = w.byId?.get(c.province);
     if (!p || !p.owner || p.owner === UNOWNED) continue;
     const g = ground.get(p.id) || [0, 0];
@@ -513,6 +557,7 @@ function dailyBooks(w, day) {
   }
 
   for (const p of w.table?.provinces || []) {
+    if (++worked % BOOKS_SLICE === 0) yield;
     const st = w.stats?.[p.id];
     if (!st || !p.owner || p.owner === UNOWNED) continue;
     const [weighted, area] = ground.get(p.id) || [0, 0];
@@ -543,6 +588,7 @@ function dailyBooks(w, day) {
     of(p.owner).stateIndustry += amount * unrest * (1 - occupiedFraction(w, p)) * (1 + nationalModifier(w, p.owner, 'maintenance'));
   };
   for (const p of w.table?.provinces || []) {
+    if (++worked % BOOKS_SLICE === 0) yield;
     const st = w.stats?.[p.id];
     if (!st || !p.owner || p.owner === UNOWNED || !owned(p.owner).size) continue;
     const held = owned(p.owner);
@@ -552,17 +598,31 @@ function dailyBooks(w, day) {
     }
   }
 
+  // Tariffs and bunkering yesterday at stops in the country, raised by trade income: state fuel sold, and corporate tax on private fuel sold.
+  // Shipping: the bunkering and tariffs the state paid along the routes of its shipments.
+  for (const [id, s] of live.lastSupply || []) {
+    const t = s.trade;
+    if (!t?.tariffs && !t?.bunkering && !t?.shipping) continue;
+    const raised = 1 + nationalModifier(w, id, 'tradeIncome');
+    const b = of(id);
+    b.shipping += t.shipping || 0;
+    b.tariffs += (t.tariffs || 0) * raised;
+    b.fuelSales += (t.fuelSales || 0) * raised;
+    b.bunkeringTax += ((t.bunkering || 0) - (t.fuelSales || 0)) * raised * bunkeringRate(w, id);
+  }
+
+  // A member's tax and trade, its realm's share.
   for (const [id, b] of books) {
     const parent = w.table?.polityById?.get(id)?.parent;
     if (!parent || parent === id) continue;
-    b.realmOut = b.tax * REALM_SHARE * (1 + nationalModifier(w, parent, 'revenueFromMembers'));
+    b.realmOut = (b.tax + b.tariffs + b.fuelSales + b.bunkeringTax) * REALM_SHARE * (1 + nationalModifier(w, parent, 'revenueFromMembers'));
     of(parent).realmIn += b.realmOut;
   }
 
   for (const [id, b] of [...books]) {
     const holder = colonyHolder(w, id);
     if (!holder) continue;
-    b.colonialOut = b.tax * COLONIAL_SHARE * (1 + nationalModifier(w, holder, 'revenueFromColonies'));
+    b.colonialOut = (b.tax + b.tariffs + b.fuelSales + b.bunkeringTax) * COLONIAL_SHARE * (1 + nationalModifier(w, holder, 'revenueFromColonies'));
     of(holder).colonialIn += b.colonialOut;
   }
 
@@ -595,7 +655,7 @@ function dailyBooks(w, day) {
     const policies = w.government?.byPolity?.get(id)?.policies || [];
     const share = policies.reduce((a, x) => a + (w.government.policies?.policies
       ?.find((q) => q.name === nameOf(x))?.upkeep || 0), 0);
-    b.revenue = b.tax + b.realmIn + b.colonialIn + b.reparationsIn + b.rentIn + b.agreementsIn;
+    b.revenue = b.tax + b.tariffs + b.fuelSales + b.bunkeringTax + b.realmIn + b.colonialIn + b.reparationsIn + b.rentIn + b.agreementsIn;
     b.policies = b.revenue * share * (1 + nationalModifier(w, id, 'policyUpkeep'));
     const debt = Math.max(0, -(values.treasury || 0));
     // Short of gold, a country borrows on worse terms.
@@ -608,7 +668,7 @@ function dailyBooks(w, day) {
     b.fleet = made?.fleetUpkeep || 0;
     b.storage = (made?.stockpileStorage || 0) + (live.lastSupply?.get(id)?.storage || 0);
     b.expenditure = b.realmOut + b.colonialOut + b.rail + b.maintenance + b.occupation + b.policies + b.interest
-      + b.construction + b.production + b.fleet + b.storage + b.stateIndustry + b.reparations + b.rent + b.agreements;
+      + b.construction + b.production + b.fleet + b.storage + b.stateIndustry + b.reparations + b.rent + b.agreements + b.shipping;
     b.net = b.revenue - b.expenditure;
   }
   return books;
@@ -620,7 +680,14 @@ const WEARINESS_DAYS_CAP = 3;
 const WEARINESS_DEATHS = 400;
 const WEARINESS_PEACE_DECAY = 1;
 const WEARINESS_HALF_LIFE = 1095;
-everyDay((w) => {
+everyDay(function* (w) {
+  // Each country's weariness modifier read in steps, before the day is applied.
+  let worked = 0;
+  for (const id of Object.keys(w.polityValues || {})) {
+    if (!w.government?.byPolity?.has(id)) continue;
+    if (++worked % NATIONAL_SLICE === 0) yield;
+    nationalParts(w, id, 'wearinessModifier');
+  }
   const halve = 0.5 ** (1 / WEARINESS_HALF_LIFE);
   for (const [id, v] of Object.entries(w.polityValues || {})) {
     if (!w.government?.byPolity?.has(id)) continue;
@@ -647,8 +714,8 @@ everyDay((w) => {
 // Last day's books per country, read by the debt penalty and the console.
 live.lastBooks = new Map();
 
-everyDay((w, day) => {
-  live.lastBooks = dailyBooks(w, day);
+everyDay(function* (w, day) {
+  live.lastBooks = yield* bookSteps(w, day);
   for (const [id, values] of Object.entries(w.polityValues || {})) {
     const b = live.lastBooks.get(id);
     if (b) values.treasury = (values.treasury || 0) + b.net;
@@ -677,4 +744,4 @@ function debtStability(w, id) {
   return DEBT_STEPS.find(([at]) => ratio > at)?.[1] || 0;
 }
 
-export { nationalModifier, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, IMPROVE_COST, IMPROVE_DISTANCE, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, debtRatio, debtStability };
+export { NATIONAL_SLICE, nationalModifier, touchedBy, forgetTouched, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, IMPROVE_COST, IMPROVE_DISTANCE, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, BUNKERING_RATE, bunkeringRate, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, BOOKS_SLICE, bookSteps, debtRatio, debtStability };

@@ -1,7 +1,7 @@
 // The resource layer: yields, stacks and drawing.
 
 const VERSION = new URL(import.meta.url).search;
-const { deriveOnChange, ease, perf, state, live } = await import(`../core/core.js${VERSION}`);
+const { deriveOnChange, ease, finish, perf, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let RESOURCE_ICON, RESOURCE_LINE, RESOURCE_MARK, RESOURCE_MAX_LINE, RESOURCE_MIN_LINE, RESOURCE_OVERHANG, RESOURCE_SELECTED, RESOURCE_SHEET_CELL, RESOURCE_SHEET_COLS, UNFERTILISED, connectedOf, debug, developmentOf, developmentPitOf, resourceFont, resourceIconPx, view;
@@ -25,13 +25,21 @@ const yieldOf = (kind, amount, dev, devPit, connected = true, nitrates = 1) =>
 const nitratesOf = (w, id) => live.lastSupply?.get(w.byId?.get(id)?.owner)?.kept?.nitrates ?? 1;
 
 // Rebuilds the resource lines whenever the world changes.
-deriveOnChange((w) => { w.resourceLines = buildResourceLines(w); });
+deriveOnChange(function* (w) { w.resourceLines = yield* resourceLineSteps(w); });
 
-function buildResourceLines(world) {
+function buildResourceLines(world) { return finish(resourceLineSteps(world)); }
+
+// Provinces worked through between pauses of the resource lines.
+const LINES_SLICE = 100;
+
+// The same in steps, pausing between provinces.
+function* resourceLineSteps(world) {
   const out = new Map();
   if (!world.resources) return out;
   const hasSheet = Boolean(world.resourceSheet);
+  let worked = 0;
   for (const id in world.resources) {
+    if (++worked % LINES_SLICE === 0) yield;
     const held = world.resources[id];
     const lines = [];
     const stats = world.stats?.[id] || {};
@@ -49,9 +57,15 @@ function buildResourceLines(world) {
     lines.wide = lines.reduce((a, b) => (rowChars(b, hasSheet) > rowChars(a, hasSheet) ? b : a));
     out.set(id, lines);
   }
-  for (const [id, lines] of out) anchorStack(world, id, lines);
+  for (const [id, lines] of out) {
+    if (++worked % LINES_SLICE === 0) yield;
+    anchorStack(world, id, lines);
+  }
   return out;
 }
+
+// Anchors found, by a province's bounds, with the map they were found on.
+const anchorsBy = new WeakMap();
 
 // Stack anchor: centre of the largest island, snapped onto its land.
 function anchorStack(world, id, lines) {
@@ -64,7 +78,14 @@ function anchorStack(world, id, lines) {
   const at = world.provinceAt;
   const index = world.byId.get(id)?.index;
   if (!at || index === undefined) return;
+  const held = anchorsBy.get(bb);
+  if (held && held[0] === at && held[1] === index && held[2] === W) { lines.ax = held[3]; lines.ay = held[4]; return; }
+  findAnchor(lines, bb, at, index, W, H);
+  anchorsBy.set(bb, [at, index, W, lines.ax, lines.ay]);
+}
 
+// The same, worked out.
+function findAnchor(lines, bb, at, index, W, H) {
   const owns = (x, y) => y >= 0 && y < H && at[y * W + ((x % W) + W) % W] === index;
   if (owns(Math.round(bb.cx), Math.round(bb.cy))) return;
 
@@ -243,4 +264,4 @@ function drawResources(ctx, cssW, cssH, dx) {
   debug.resourcesDrawn = drawn;
 }
 
-export { ALWAYS_FULL, FLOOR, PIT, yieldOf, nitratesOf, buildResourceLines, anchorStack, resourceHits, resourceLineCache, resourceMeasure, rowChars, bakedResourceLine, drawResources };
+export { ALWAYS_FULL, FLOOR, PIT, yieldOf, nitratesOf, buildResourceLines, LINES_SLICE, resourceLineSteps, anchorStack, resourceHits, resourceLineCache, resourceMeasure, rowChars, bakedResourceLine, drawResources };

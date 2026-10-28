@@ -71,8 +71,12 @@ function miniFlag(polity) {
     + ' onerror="window.flagMiss(this, \'' + slug + '\')">') + '</span>';
 }
 
-// A resource's icon markup from the sprite sheet.
+// A traded good's display name: a resource, or consumer goods.
+const goodName = (kind) => RESOURCE_NAME[kind] ?? (kind === 'consumerGoods' ? 'Consumer goods' : undefined);
+
+// A resource's icon markup from the sprite sheet; consumer goods from their own icon.
 function resourceIcon(kind) {
+  if (kind === 'consumerGoods') return '<i class="res goods"></i>';
   const cell = RESOURCE_ICON[kind];
   if (cell === undefined) return '';
   return '<i class="res" style="--cols:' + RESOURCE_SHEET_COLS + ';--col:' + (cell % RESOURCE_SHEET_COLS)
@@ -83,6 +87,7 @@ function resourceIcon(kind) {
 const everyOf = (x) => x.every ?? SHIPMENT_DAYS;
 const perShipment = (n, x) => (Math.round(n * everyOf(x) * 10) / 10).toLocaleString('en-GB');
 const intervalOf = (x) => ' every ' + everyOf(x) + ' days';
+// Who pays a shipment's bunkering and tariffs.
 
 // A count of equipment items, plural past one; infantry equipment is counted in sets and takes none.
 function equipmentCount(w, id, n) {
@@ -141,7 +146,7 @@ function relationTip(w, band, r, other = null) {
   if (r.band === 'war') return line(first + ' and ' + second + ' are at war');
   if (r.band === 'volunteers') return line(first + ' has sent ' + (r.divisions ? r.divisions + ' divisions of ' : '') + 'volunteers to fight for ' + second);
   if (r.band === 'stateAgreement') {
-    const good = (g, n) => (RESOURCE_NAME[g] ? n + ' ' + resourceIcon(g) + tipName(RESOURCE_NAME[g].toLowerCase())
+    const good = (g, n) => (goodName(g) ? n + ' ' + resourceIcon(g) + tipName(goodName(g).toLowerCase())
       : equipmentCount(w, g, n));
     const paidFor = (x) => {
       const price = typeof x.price === 'number' ? { money: x.price } : x.price || {};
@@ -266,7 +271,7 @@ function modifierLines(w, key, v, stated = false, target = null, keepZero = fals
     && (typeof v.polity === 'string' || Array.isArray(v.whileForm));
   if (v && typeof v === 'object' && !Array.isArray(v) && !settings) {
     const say = (s) => {
-      if (RESOURCE_NAME[s]) return resourceIcon(s) + tipName(RESOURCE_NAME[s].toLowerCase());
+      if (goodName(s)) return resourceIcon(s) + tipName(goodName(s).toLowerCase());
       const law = lawLabel(w, s);
       return law ? law.toLowerCase()
         : String(s).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
@@ -372,4 +377,4 @@ const diploRow = (label, value, icon) =>
   + (value == null ? '' : '<span class="val">' + value + '</span>')
   + '</div>';
 
-export { tipName, maskFlagShading, FLAG_DIR, flagFile, FLAG_PLACEHOLDER, flagMissing, flaggedName, capitaliseArticle, flagSlug, flagSrc, miniFlag, resourceIcon, relationTip, lawLabel, LOWER_IS_BETTER, FIGURE_TOKEN, isLevel, modifierLine, modifierLines, spiritTip, DIPLO_DOCTRINE_LABEL, doctrineTip, lawTip, diploRow };
+export { tipName, maskFlagShading, FLAG_DIR, flagFile, FLAG_PLACEHOLDER, flagMissing, flaggedName, capitaliseArticle, flagSlug, flagSrc, miniFlag, goodName, resourceIcon, relationTip, lawLabel, LOWER_IS_BETTER, FIGURE_TOKEN, isLevel, modifierLine, modifierLines, spiritTip, DIPLO_DOCTRINE_LABEL, doctrineTip, lawTip, diploRow };

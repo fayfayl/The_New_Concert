@@ -102,6 +102,8 @@ const MODES = {
 
   // Resource mode: political colour under the resource figures.
   resources: (w, p) => polityOf(w, p).colour,
+  // Trade routes mode: political colour under the routes.
+  routes: (w, p) => polityOf(w, p).colour,
   // Ideology mode: the leading movement's colour.
   ideology: (w, p) => supportColour(w, p),
 

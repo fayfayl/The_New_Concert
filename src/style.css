@@ -1491,7 +1491,8 @@ canvas.panning {
 }
 
 /* Inline flag beside a country name. */
-#tooltip .mini-flag-box {
+#tooltip .mini-flag-box,
+#route-panel .mini-flag-box {
   position: relative;
   display: inline-block;
   margin-right: .3em;
@@ -1500,7 +1501,8 @@ canvas.panning {
   line-height: 0;
 }
 
-#tooltip .mini-flag {
+#tooltip .mini-flag,
+#route-panel .mini-flag {
   display: block;
   height: .8em;
   width: auto;
@@ -1508,14 +1510,16 @@ canvas.panning {
 }
 
 /* Blank flag: country colour at flag shape. */
-#tooltip .mini-flag-box.blank {
+#tooltip .mini-flag-box.blank,
+#route-panel .mini-flag-box.blank {
   width: 1.2em;
   height: .8em;
   background-color: var(--flag-colour, rgb(128, 128, 128));
 }
 
 /* Flag shading over the mini flag. */
-#tooltip .mini-flag-box::after {
+#tooltip .mini-flag-box::after,
+#route-panel .mini-flag-box::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1945,10 +1949,10 @@ canvas.panning {
 #tooltip .none { color: var(--ink-3); font-style: italic; }
 
 /* Bold names in tooltip lines. */
-#tooltip .named, .cm-note .named { color: var(--ink); font-weight: 700; }
+#tooltip .named, .cm-note .named, #route-panel .named { color: var(--ink); font-weight: 700; }
 
 /* Tooltip rule drawn as typed hyphens. */
-#tooltip hr {
+#tooltip hr, #route-panel-body hr {
   width: 0;
   min-width: 100%;
   height: 1em;
@@ -1958,7 +1962,7 @@ canvas.panning {
   color: var(--ink-3);
 }
 
-#tooltip hr::before {
+#tooltip hr::before, #route-panel-body hr::before {
   content: "--------------------------------------------------------------------------------";
   display: block;
   white-space: nowrap;
@@ -2712,6 +2716,107 @@ canvas.panning {
   background-image: url("../data/icons/resources.png");
   background-size: calc(var(--cols) * var(--res-px)) auto;
   background-position: calc(var(--col) * var(--res-px) * -1) calc(var(--row) * var(--res-px) * -1);
+}
+
+/* Consumer goods icon, its own file. */
+.res.goods {
+  background-image: url("../data/icons/consumer_goods.png");
+  background-size: 100% 100%;
+  background-position: 0 0;
+}
+
+/* ===== trade route panel: a dialog sheet over the map, dragged by its head */
+#route-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 22;
+  width: min(440px, calc(100% - 24px));
+  max-height: min(560px, calc(100% - 24px));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
+}
+
+#route-panel-head {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+#route-panel-head.grabbed {
+  cursor: grabbing;
+}
+
+#route-panel-body {
+  font: 400 12.5px/1.4 var(--type);
+}
+
+/* Section heads: label left, unit right. */
+#route-panel-body h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 6px;
+  font: 700 12px/1.3 var(--type);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+#route-panel-body h3 span {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-3);
+}
+
+#route-panel-body hr {
+  margin: 8px 0;
+}
+
+/* One trade a row: good, amount, ends; the ends wrap under on a narrow sheet. */
+.route-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route-rows li {
+  display: grid;
+  grid-template-columns: 10.5em 3.5em 1fr;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 3px 0;
+}
+
+.route-rows b {
+  color: var(--ink);
+  text-align: right;
+}
+
+.route-stops li {
+  grid-template-columns: 1fr 3.5em;
+}
+
+.route-none {
+  margin: 0;
+  color: var(--ink-3);
+}
+
+@media (max-width: 480px) {
+  .route-rows li {
+    grid-template-columns: 1fr 3.5em;
+  }
+
+  .route-rows li .route-ends {
+    grid-column: 1 / -1;
+    padding-left: 1em;
+  }
+
+  .route-stops li .route-ends {
+    grid-column: auto;
+    padding-left: 0;
+  }
 }
 
 /* Controls list: key and action in two columns. */

@@ -286,6 +286,7 @@
     {
       "id": "the_cost_of_victory",
       "name": "The Cost of Victory",
+      "image": "the_cost_of_victory",
       "description": "With the horrors of the Continuation War still carved into memory, many are reluctant to send another generation of men to die in the trenches.",
       "polity": [
         "FNA"
@@ -300,6 +301,7 @@
     {
       "id": "house_of_brumunvik",
       "name": "House of Brumunvik",
+      "image": "house_of_brumunvik",
       "description": "The people of Fellnor and Avanta stand proud of their imperial history under the royal House of Brumunvik.",
       "polity": [
         "FNA"
@@ -313,6 +315,7 @@
     {
       "id": "uneasy_throne",
       "name": "Uneasy Throne",
+      "image": "uneasy_throne",
       "description": "Many in the colonies are unsatisfied by the hand they were dealt after the Continuation War, and their demands are getting louder.",
       "factor": "colonial demands",
       "polity": [
@@ -328,6 +331,7 @@
     {
       "id": "the_black_twenties",
       "name": "The Black Twenties",
+      "image": "the_black_twenties",
       "description": "When the Nyhaven exchange collapsed, Fellnor-Avanta's economic output fell drastically. Struggling with high rates of unemployment and inflation, resentment towards politicians are at an all time high.",
       "factor": "economic turmoil",
       "polity": [
@@ -1217,7 +1221,9 @@
         }
       },
       "permanent": false,
-      "tags": []
+      "tags": [
+        "entrepot"
+      ]
     },
     {
       "id": "metropolis",
@@ -2868,7 +2874,9 @@
         "factoryOutput": -0.1
       },
       "permanent": false,
-      "tags": []
+      "tags": [
+        "entrepot"
+      ]
     },
     {
       "id": "high_unemployment",
@@ -3432,7 +3440,9 @@
         "factoryOutput": -0.05
       },
       "permanent": false,
-      "tags": []
+      "tags": [
+        "entrepot"
+      ]
     },
     {
       "id": "home_rule_movement",

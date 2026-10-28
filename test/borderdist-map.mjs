@@ -20,7 +20,7 @@ import { refreshBorderDistance, CHAMFER_ORTH, BORDER_DIST_MAX, OCEAN } from '../
 import { applyCountyOccupation } from '../src/world/mapcache.js';
 
 // The decoder the sync script uses, lifted rather than duplicated.
-const src = fs.readFileSync('sync-provinces.js', 'utf8');
+const src = fs.readFileSync('test/sync-provinces.js', 'utf8');
 const a = src.indexOf('function decodePNG(file) {');
 let depth = 0, e = a;
 for (; e < src.length; e++) {

@@ -94,7 +94,7 @@ class FakeCtx {
   save() {} restore() {} beginPath() {} closePath() {} moveTo() {} lineTo() {}
   arc() {} rect() {} fill() {} stroke() {} clip() {} translate() {} rotate() {}
   scale() {} setTransform() {} resetTransform() {} fillRect() { this.calls++; }
-  clearRect() {} strokeRect() {} quadraticCurveTo() {}
+  clearRect() {} strokeRect() {} quadraticCurveTo() {} setLineDash() {}
   // Recorded, so a test can ask what the map actually wrote. A no-op here meant
   // a layer made entirely of text could be checked only for not throwing.
   fillText(t, x, y) { texts.push({ t: String(t), x, y }); }
@@ -372,7 +372,7 @@ export function install(root) {
     return byId.get(id);
   };
 
-  const modeButtons = ['political', 'province', 'terrain', 'county', 'navy', 'resources', 'ideology'].map((m) => {
+  const modeButtons = ['political', 'province', 'terrain', 'county', 'navy', 'resources', 'ideology', 'routes'].map((m) => {
     const b = makeEl('button');
     b.dataset.mode = m;
     return b;

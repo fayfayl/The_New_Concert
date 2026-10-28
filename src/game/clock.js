@@ -1,7 +1,7 @@
 // Advancing the clock and its controls.
 
 const VERSION = new URL(import.meta.url).search;
-const { MAX_TICKS_PER_FRAME, RUNDEAN_MONTHS, SPEEDS, clock, clockDate, els, invalidateView, runDays, state, live } = await import(`../core/core.js${VERSION}`);
+const { MAX_TICKS_PER_FRAME, RUNDEAN_MONTHS, SPEEDS, TICKS_PER_DAY, clock, clockDate, dayPending, els, invalidateView, runDays, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let NIGHT_MIN_MS, buildNightMask, clamp, mapIsShowing, pauseOpen;
@@ -14,13 +14,16 @@ const clockRunning = () => !clock.paused && mapIsShowing() && !pauseOpen();
 function advanceClock(now) {
   const elapsed = clock.last ? now - clock.last : 0;
   clock.last = now;
+  // Work in hand runs on while the clock goes; the clock waits only once it is a day ahead, keeping the time owed.
+  if (dayPending() || clock.tickDone < clock.tick) runDays(true);
+  const busy = clock.tick - clock.tickDone >= TICKS_PER_DAY;
   if (!clockRunning()) return;
 
   const ms = SPEEDS[clock.speed - 1];
   clock.carry += elapsed;
 
   let ticked = 0;
-  while (clock.carry >= ms && ticked < MAX_TICKS_PER_FRAME) {
+  while (!busy && clock.carry >= ms && ticked < MAX_TICKS_PER_FRAME) {
     clock.carry -= ms;
     clock.tick++;
     ticked++;
@@ -30,7 +33,7 @@ function advanceClock(now) {
   if (ticked) {
     clock.ticked += ticked;
     applyClock();
-    runDays();
+    runDays(true);
   }
 }
 
