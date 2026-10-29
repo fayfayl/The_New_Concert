@@ -11,9 +11,12 @@ const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'rend
 const loaded = await Promise.all(MODULES.map((n) => import(`./${n}.js${VERSION}`)));
 const all = Object.assign({}, ...loaded);
 for (const m of loaded) m.link?.(all);
-const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, runDays, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween, nationalModifier, setTariff, setShippingTerms, tariffTable, bunkeringRate, routeOf, tradeEnds, seaGraphStats } = all;
+const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, runDays, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween, nationalModifier, setTariff, setShippingTerms, tariffTable, addAgreement, bunkeringRate, routeOf, tradeEnds, seaGraphStats, buildRoutesNow, industrySteps, supplySteps } = all;
 
 // Loads the data, builds the model, and starts the render loop.
+// Frame time the loading screen gives each slice of work, in ms.
+const LOAD_SLICE_MS = 30;
+
 async function init() {
   const t0 = performance.now();
   setLoadingNote('Loading data…');
@@ -234,15 +237,36 @@ async function init() {
 
   // Fills the national caches under the loading screen, books first: debt is weighed against them.
   // Industry, resources and happiness feed each other; settle them before the first day.
-  for (let i = 0; i < 4; i++) { live.lastIndustry = dailyIndustry(world); live.lastSupply = dailySupply(world); }
+  // Worked in slices of a frame so the loading screen keeps moving.
+  const sliced = async (steps) => {
+    for (;;) {
+      const t0 = performance.now();
+      let x;
+      while (!(x = steps.next()).done && performance.now() - t0 < LOAD_SLICE_MS);
+      if (x.done) return x.value;
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  };
+  for (let i = 0; i < 4; i++) {
+    live.lastIndustry = await sliced(industrySteps(world));
+    live.lastSupply = await sliced(supplySteps(world));
+    setLoadingProgress(72 + 4 * (i + 1));
+  }
   live.lastBooks = dailyBooks(world, clock.day);
   world.resourceLines = buildResourceLines(world);
   live.lastRelations = dailyRelations(world);
   for (const id of Object.keys(world.polityValues || {})) politicalPowerOf(world, id);
 
   setLoadingNote('Drawing the map…');
-  setLoadingProgress(92);
+  setLoadingProgress(90);
   frame();
+
+  // The trade routes and feeders laid under the loading screen; Ctrl+Q leaves the rest to the background.
+  let skipRoutes = false;
+  const skipKey = (ev) => { if (ev.ctrlKey && ev.key.toLowerCase() === 'q') { ev.preventDefault(); skipRoutes = true; } };
+  window.addEventListener('keydown', skipKey);
+  await buildRoutesNow((done) => setLoadingProgress(90 + 10 * done), () => skipRoutes);
+  window.removeEventListener('keydown', skipKey);
   setLoadingProgress(100);
   markMapReady();
 
@@ -431,6 +455,8 @@ async function init() {
     setTariff: (tag, target, product, rate) => setTariff(state.world, tag, target, product, rate),
     // A country's tariff table with its ceilings.
     tariffs: (tag) => tariffTable(state.world, tag),
+    // Adds a state agreement from today: first supplies second with amount of a good a day, for price $ a day or goods by name, for years.
+    addAgreement: (first, second, good, amount, price = 0, years = 5) => addAgreement(state.world, first, second, good, amount, price, years),
     // Sets who pays the shipping on leases and state agreements from one country to another: terms 'CIF' or 'FOB', what a good, resource or province.
     shippingTerms: (first, second, terms, what = null) => setShippingTerms(state.world, first, second, terms, what),
     // Sets how much of a resource is put by (positive) or released (negative) each day.

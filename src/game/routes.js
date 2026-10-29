@@ -21,8 +21,14 @@ const PORT_MAX = 4;
 // Spirit tag making every port of its holder an entrepot, where a call costs ENTREPOT_FACTOR of the plain stop.
 const ENTREPOT = 'entrepot';
 const ENTREPOT_FACTOR = 0.5;
-// Km of unbroken passage at which its cost doubles.
-const PASSAGE_KM = 4000;
+// Km of unbroken land passage at which its cost doubles.
+const STEP_KM = 4000;
+// Km a ship sails on one load of coal: a sea leg costs its worked km up to it, and more beyond, double at twice it.
+const PASSAGE_KM = 10000;
+// Most a step between subregions is cheapened for being on a busy lane: the busiest by this share, others by it times the square root of their use against the busiest.
+const LANE_PULL = 0.3;
+// Most a lane may lengthen the way between two ports, as a share of the direct way.
+const LANE_DETOUR = 0.1;
 // Points over the cheapest at which another port of call takes 1/e as much cargo; ports dearer by SPREAD_REACH times it take none.
 const ROUTE_SPREAD = 100;
 const SPREAD_REACH = 3;
@@ -51,9 +57,9 @@ const RAD = Math.PI / 180;
 const kmBetween = (a, b) => distanceKm({ lat: a[0] * RAD, lon: a[1] * RAD }, { lat: b[0] * RAD, lon: b[1] * RAD });
 
 // Points to cover km by a mode in one passage.
-const passage = (km, mode) => km * MODE_POINTS[mode] * (1 + km / PASSAGE_KM);
+const passage = (km, mode) => km * MODE_POINTS[mode] * (1 + km / STEP_KM);
 // Points to sail km in one passage, of which worked is the km each counted at its region's mode.
-const sailing = (km, worked = km) => worked * (1 + km / PASSAGE_KM);
+const sailing = (km, worked = km) => worked * (1 + Math.max(0, km - PASSAGE_KM) / PASSAGE_KM);
 // A whole sea leg with its call, untaxed.
 const seaLeg = (km, worked = km, factor = 1) => sailing(km, worked) + STOP_POINTS * factor;
 // Highest level road and electricity are built to.
@@ -66,6 +72,10 @@ const PORT_DEVELOPMENT = 0.5;
 const portFactor = (people, development = PORT_DEVELOPMENT) => Math.min(PORT_MAX, Math.max(1, Math.sqrt(PORT_REF / Math.max(1, (people || 0) * development / PORT_DEVELOPMENT))));
 
 // A binary min-heap of node indices by cost; stale entries are left for the caller to skip.
+// Whether a way of cost n through u beats the one of cost d through p: cheaper, or as cheap and through the lower-numbered county, so every search breaks ties alike.
+const TIE = 1e-9;
+const better = (n, d, u, p) => n < d * (1 - TIE) || (n <= d * (1 + TIE) && (p < 0 || u < p));
+
 class Heap {
   constructor(cap = 1024) { this.k = new Float64Array(cap); this.v = new Int32Array(cap); this.n = 0; this.top = 0; }
   push(key, val) {
@@ -194,7 +204,7 @@ function buildSeaGraph(w) {
   }
 
   const tScan = performance.now() - t0;
-  // Where a province berths: the county of a city on the coast, else its coastal dockyard county, else the coastal county nearest an inland dockyard over the county graph.
+  // Where a province berths: the county of its capital on the coast, else of another city on the coast, else its coastal dockyard county, else the coastal county nearest an inland dockyard over the county graph.
   const berth = new Map();
   const offer = (p, k, at, rank) => { if (!berth.has(p) || rank < berth.get(p).rank) berth.set(p, { k, at, rank }); };
   const nearestCoast = (p, k0) => {
@@ -214,7 +224,8 @@ function buildSeaGraph(w) {
   for (const t of w.cities || []) {
     const p = w.byId.get(t.province)?.index, k = ca[t.y * W + t.x];
     if (!p || !k || provOf(k) !== p) continue;
-    if (shore.has(k)) offer(p, k, [t.x, t.y], 0);
+    // A coastal capital before any other coastal city.
+    if (shore.has(k)) offer(p, k, [t.x, t.y], t.capital ? 0 : 0.5);
   }
   for (const [p, list] of yards) {
     for (const c of list) {
@@ -223,8 +234,36 @@ function buildSeaGraph(w) {
     }
   }
   // The shore pixel of a county facing a subregion nearest a point, as [lat, lon].
+  // Whether a water pixel belongs to water larger than a pocket: a few pixels touching the sea only at a corner do not count.
+  const opened = new Int8Array(W * H).fill(-1), stamp = new Int32Array(W * H);
+  let pass = 0;
+  const openWater = (j) => {
+    if (opened[j] >= 0) return opened[j] === 1;
+    const seen = [j];
+    stamp[j] = ++pass;
+    let reached = false;
+    for (let n = 0; n < seen.length && seen.length < POCKET_PX && !reached; n++) {
+      const i = seen[n], x = i % W, y = (i - x) / W;
+      for (const m of [y * W + (x + 1) % W, y * W + (x + W - 1) % W, i - W, i + W]) {
+        if (m < 0 || m >= W * H || stamp[m] === pass || ca[m] || !sa[m]) continue;
+        if (opened[m] === 1) { reached = true; break; }
+        stamp[m] = pass;
+        seen.push(m);
+      }
+    }
+    const big = reached || seen.length >= POCKET_PX ? 1 : 0;
+    for (const i of seen) if (opened[i] < 0) opened[i] = big;
+    return big === 1;
+  };
+  // Whether a shore pixel faces open water of a subregion.
+  const facesOpen = (i, s) => {
+    const x = i % W, y = (i - x) / W;
+    return [y * W + (x + 1) % W, y * W + (x + W - 1) % W, i - W, i + W].some((m) => m >= 0 && m < W * H && !ca[m] && sa[m] === s && openWater(m));
+  };
   const facing = (k, s, at) => {
-    const px = shore.get(k).get(s);
+    const all = shore.get(k).get(s);
+    const fair = all.filter((i) => facesOpen(i, s));
+    const px = fair.length ? fair : all;
     let best = px[px.length >> 1];
     if (at) {
       let near = Infinity;
@@ -273,44 +312,81 @@ function buildSeaGraph(w) {
     subOff[s + 1] = subTo.length;
   }
 
-  // Sea km from every port to every other on the least worked km, and the path each takes.
+  // Sea km from every port to every other on the least worked km, and the path each takes; worked over the given weight of each step between subregions.
   const dist = new Float64Array(NS), distKm = new Float64Array(NS);
   const parent = new Int16Array(P * NS);
   const km = new Float32Array(P * P).fill(Infinity), worked = new Float32Array(P * P).fill(Infinity);
   const endSub = new Int16Array(P * P);
   const heap = new Heap(NS * 4);
-  for (let i = 0; i < P; i++) {
-    dist.fill(Infinity);
-    const base = i * NS;
-    parent.fill(-1, base, base + NS);
-    heap.n = 0;
-    for (const [s, k, c] of seeds[i]) if (c < dist[s]) { dist[s] = c; distKm[s] = k; parent[base + s] = 0; heap.push(c, s); }
-    while (heap.n) {
-      const s = heap.pop();
-      const d = heap.top;
-      if (d > dist[s]) continue;
-      for (let e = subOff[s]; e < subOff[s + 1]; e++) {
-        const t = subTo[e], n = d + subWorked[e];
-        if (n < dist[t]) { dist[t] = n; distKm[t] = distKm[s] + subKm[e]; parent[base + t] = s; heap.push(n, t); }
+  const allPorts = (weight) => {
+    for (let i = 0; i < P; i++) {
+      dist.fill(Infinity);
+      const base = i * NS;
+      parent.fill(-1, base, base + NS);
+      heap.n = 0;
+      for (const [s, k, c] of seeds[i]) if (c < dist[s]) { dist[s] = c; distKm[s] = k; parent[base + s] = 0; heap.push(c, s); }
+      while (heap.n) {
+        const s = heap.pop();
+        const d = heap.top;
+        if (d > dist[s]) continue;
+        for (let e = subOff[s]; e < subOff[s + 1]; e++) {
+          const t = subTo[e], n = d + weight[e];
+          if (n < dist[t]) { dist[t] = n; distKm[t] = distKm[s] + subKm[e]; parent[base + t] = s; heap.push(n, t); }
+        }
+      }
+      for (let j = 0; j < P; j++) {
+        if (j === i) continue;
+        let best = Infinity, at = 0, length = Infinity;
+        for (const [s, k, c] of seeds[j]) {
+          const n = dist[s] + c;
+          if (n < best) { best = n; at = s; length = distKm[s] + k; }
+        }
+        km[i * P + j] = length;
+        worked[i * P + j] = best;
+        endSub[i * P + j] = at;
       }
     }
+  };
+  allPorts(subWorked);
+  // The direct ways, kept for pairs the lanes would take too far round.
+  const direct = { km: km.slice(), worked: worked.slice(), endSub: endSub.slice(), parent: parent.slice() };
+  const straight = new Uint8Array(P * P);
+  // Lanes: how many of those ways cross each step between subregions, either way; the busier a step, the cheaper it is worked, by up to LANE_PULL, and the ways are found again.
+  const used = new Map();
+  for (let i = 0; i < P; i++) {
+    const base = i * NS;
     for (let j = 0; j < P; j++) {
-      if (j === i) continue;
-      let best = Infinity, at = 0, length = Infinity;
-      for (const [s, k, c] of seeds[j]) {
-        const n = dist[s] + c;
-        if (n < best) { best = n; at = s; length = distKm[s] + k; }
+      if (j === i || km[i * P + j] === Infinity) continue;
+      for (let t = endSub[i * P + j], s = parent[base + t]; s > 0; t = s, s = parent[base + t]) {
+        const key = s < t ? s * NS + t : t * NS + s;
+        used.set(key, (used.get(key) || 0) + 1);
       }
-      km[i * P + j] = length;
-      worked[i * P + j] = best;
-      endSub[i * P + j] = at;
     }
   }
+  let busiest = 0;
+  for (const n of used.values()) busiest = Math.max(busiest, n);
+  const laned = Float64Array.from(subWorked);
+  if (busiest) {
+    for (let s = 1; s < NS; s++) {
+      for (let e = subOff[s]; e < subOff[s + 1]; e++) {
+        const t = subTo[e], n = used.get(s < t ? s * NS + t : t * NS + s) || 0;
+        laned[e] = subWorked[e] * (1 - LANE_PULL * Math.sqrt(n / busiest));
+      }
+    }
+    allPorts(laned);
+    // A pair whose lane way is more than LANE_DETOUR longer than its direct one keeps the direct way.
+    for (let x = 0; x < P * P; x++) {
+      if (!(km[x] > direct.km[x] * (1 + LANE_DETOUR))) continue;
+      km[x] = direct.km[x]; worked[x] = direct.worked[x]; endSub[x] = direct.endSub[x]; straight[x] = 1;
+    }
+  }
+  // The parents a pair's way is read through.
+  const parentFor = (i, j) => (straight[i * P + j] ? direct.parent : parent);
 
   const tSea = performance.now() - t0;
   // A leg is dropped where a port on its way splits it for less, even after a full stop and tariff there.
-  // A leg too short to split: halving it saves at most km * (worked - km / 2) / PASSAGE_KM, against two stops at the cheapest port.
-  const whole = (L, Wk) => L * (Wk - L / 2) < 2 * STOP_POINTS * Math.min(1, ENTREPOT_FACTOR) * PASSAGE_KM;
+  // A leg too short to split: a call saves at most what it costs beyond PASSAGE_KM, against a stop at the cheapest port.
+  const whole = (L, Wk) => Wk * Math.max(0, L - PASSAGE_KM) / PASSAGE_KM < STOP_POINTS * Math.min(1, ENTREPOT_FACTOR);
   const legAt = (a, b) => seaLeg(km[a * P + b], worked[a * P + b], factor[b]);
   const edgeOff = new Int32Array(P + 1), edgeTo = [], edgeKm = [], edgeWorked = [], edgeEnd = [];
   for (let i = 0; i < P; i++) {
@@ -321,7 +397,8 @@ function buildSeaGraph(w) {
       if (j === i || L === Infinity) continue;
       const direct = legAt(i, j);
       let beaten = false;
-      for (let s = whole(L, worked[i * P + j]) ? 0 : endSub[i * P + j]; s > 0 && !beaten; s = parent[base + s]) {
+      const up = parentFor(i, j);
+      for (let s = whole(L, worked[i * P + j]) ? 0 : endSub[i * P + j]; s > 0 && !beaten; s = up[base + s]) {
         for (const k of subPorts[s]) {
           if (k === i || k === j) continue;
           if (legAt(i, k) + legAt(k, j) + STOP_POINTS * factor[k] <= direct) { beaten = true; break; }
@@ -336,7 +413,7 @@ function buildSeaGraph(w) {
   return {
     subOff, subTo: Int32Array.from(subTo), subKm: Float32Array.from(subKm), subWorked: Float32Array.from(subWorked), mode,
     ports, portAt, quay, quayAt, quayCounty, factor, coast: Int32Array.from(touch.keys()), touch,
-    coastAt: new Map([...shore].map(([k, t]) => [k, new Map([...t.keys()].map((x) => [x, facing(k, x, null)]))])), subPorts, parent, NS, regionOf, km, worked, endSub, P,
+    coastAt: new Map([...shore].map(([k, t]) => [k, new Map([...t.keys()].map((x) => [x, facing(k, x, null)]))])), subPorts, parent, parentDirect: direct.parent, straight, NS, regionOf, km, worked, endSub, P,
     edgeOff, edgeTo: Int32Array.from(edgeTo), edgeKm: Float32Array.from(edgeKm), edgeWorked: Float32Array.from(edgeWorked), edgeEnd: Int16Array.from(edgeEnd),
     edgeAt: Int32Array.from(edgeTo, (j) => ports[j]), edgeCall: Float64Array.from(edgeTo, (j) => STOP_POINTS * factor[j]),
     edgeSail: Float64Array.from(edgeKm, (k, e) => sailing(k, edgeWorked[e])),
@@ -345,12 +422,22 @@ function buildSeaGraph(w) {
 }
 
 // The sea regions a sea leg crosses, by index.
+// The parents a pair's sea way is read through: the direct ones for a pair the lanes would take too far round.
+const pairParents = (g, i, j) => (g.straight?.[i * g.P + j] ? g.parentDirect : g.parent);
+
+// Whether the sea way from one port to another crosses Arctic water.
+function pairIced(g, i, j) {
+  const up = pairParents(g, i, j);
+  for (let s = g.endSub[i * g.P + j]; s > 0; s = up[i * g.NS + s]) if (g.mode[s] > MODE_POINTS.sea) return true;
+  return false;
+}
+
 function seaLegRegions(g, e) {
   g.regionsOf ||= new Map();
   if (!g.regionsOf.has(e)) {
-    const i = portOfEdge(g, e);
+    const i = portOfEdge(g, e), up = pairParents(g, i, g.edgeTo[e]);
     const out = new Set();
-    for (let s = g.edgeEnd[e]; s > 0; s = g.parent[i * g.NS + s]) out.add(g.regionOf[s]);
+    for (let s = g.edgeEnd[e]; s > 0; s = up[i * g.NS + s]) out.add(g.regionOf[s]);
     g.regionsOf.set(e, [...out]);
   }
   return g.regionsOf.get(e);
@@ -358,9 +445,9 @@ function seaLegRegions(g, e) {
 
 // The subregions a sea leg passes, first to last, as ids.
 function seaLegSubs(w, g, e) {
-  const i = portOfEdge(g, e);
+  const i = portOfEdge(g, e), up = pairParents(g, i, g.edgeTo[e]);
   const out = [];
-  for (let s = g.edgeEnd[e]; s > 0; s = g.parent[i * g.NS + s]) out.push(w.subs.atIndex[s].id);
+  for (let s = g.edgeEnd[e]; s > 0; s = up[i * g.NS + s]) out.push(w.subs.atIndex[s].id);
   return out.reverse();
 }
 // The port a sea edge leaves from.
@@ -627,7 +714,7 @@ function* treeSteps(w, land, sea, start, rates, blocked, closed) {
       let n = d + cost[e] + unload;
       if (via[u] > 0 && land.rail[via[u] - 1] !== land.rail[e]) n += STOP_POINTS * RAIL_HANDLING;
       if (cv >= 0 && cv !== cu) n += STOP_POINTS * (1 + rates[cv]);
-      if (n < dist[v]) { dist[v] = n; parent[v] = u; via[v] = e + 1; heap.push(n, v); }
+      if (better(n, dist[v], u, parent[v])) { dist[v] = n; parent[v] = u; via[v] = e + 1; heap.push(n, v); }
     }
     const i = portAt[u];
     if (i < 0) continue;
@@ -1074,8 +1161,8 @@ function seaEdgeLine(w, g, e) {
 const pairEnds = (g, i, j) => (i > j && Number.isFinite(g.km[j * g.P + i]) ? [j, i] : [i, j]);
 // The subregions from one port to another, first to last.
 function pairPath(g, i, j) {
-  const path = [];
-  for (let s = g.endSub[i * g.P + j]; s > 0; s = g.parent[i * g.NS + s]) path.push(s);
+  const path = [], up = pairParents(g, i, j);
+  for (let s = g.endSub[i * g.P + j]; s > 0; s = up[i * g.NS + s]) path.push(s);
   return path.reverse();
 }
 // The same from one port to another by index, whether or not a leg joins them; kept per pair.
@@ -1201,7 +1288,7 @@ function feederHub(w, land, sea, id) {
 
 // Share of the way on from a point of the network to the hub that counts against joining there.
 const NET_ONWARD = 0.5;
-// A country's feeder network: grown from its hub over its own land and ports, each time joining the city or province seat cheapest to reach, by the way to it plus NET_ONWARD of the way on to the hub; pausing between counties.
+// A country's feeder network: grown from its hub over its own land and ports, each time joining the city, province seat or port cheapest to reach, by the way to it plus NET_ONWARD of the way on to the hub; pausing between counties.
 function* feederNet(w, land, sea, id, hub, ours) {
   const NC = land.NC, cs = w.counties;
   const dist = new Float64Array(NC).fill(Infinity), prev = new Int32Array(NC).fill(-1), via = new Int32Array(NC);
@@ -1214,6 +1301,8 @@ function* feederNet(w, land, sea, id, hub, ours) {
     if (k && mine[k] && w.byId.get(t.province)?.owner === id) targets.add(k);
   }
   for (const p of w.atIndex) if (p?.owner === id && land.seat[p.index] > 0 && mine[land.seat[p.index]]) targets.add(land.seat[p.index]);
+  // And the country's ports, so every port hangs on the same network.
+  sea.ports.forEach((p, i) => { const k = sea.quayCounty[i]; if (k > 0 && mine[k] && land.ctrl[k] === land.countryAt.get(id)) targets.add(k); });
   const heap = new Heap(256);
   let settled = 0;
   // Joined counties, their way to the hub known.
@@ -1226,13 +1315,13 @@ function* feederNet(w, land, sea, id, hub, ours) {
       for (let e = land.off[u]; e < land.off[u + 1]; e++) {
         const v = land.to[e];
         const n = d + land.cost[e] / land.warAt[v] + (via[u] > 0 && land.rail[via[u] - 1] !== land.rail[e] ? STOP_POINTS * RAIL_HANDLING : 0);
-        if (mine[v] && !inNet[v] && n < dist[v]) { dist[v] = n; prev[v] = u; via[v] = e + 1; heap.push(n, v); }
+        if (mine[v] && !inNet[v] && better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = e + 1; heap.push(n, v); }
       }
       const i = land.portAt[u];
       if (i < 0) continue;
       for (let e = sea.edgeOff[i]; e < sea.edgeOff[i + 1]; e++) {
         const v = sea.quayCounty[sea.edgeTo[e]], n = d + FEEDER_SEA_HOP + sea.edgeSail[e];
-        if (v > 0 && mine[v] && !inNet[v] && n < dist[v]) { dist[v] = n; prev[v] = u; via[v] = -(e + 1); heap.push(n, v); }
+        if (v > 0 && mine[v] && !inNet[v] && better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = -(e + 1); heap.push(n, v); }
       }
     }
   };
@@ -1248,7 +1337,164 @@ function* feederNet(w, land, sea, id, hub, ours) {
     for (const k of path) toHub[k] = toHub[at] + dist[k] - dist[at];
     join(path);
   }
-  return { has: (k) => inNet[k] === 1 && k !== hub, get: (k) => [prev[k], via[k]] };
+  return { has: (k) => inNet[k] === 1 && k !== hub, get: (k) => [prev[k], via[k]], prev, via, inNet };
+}
+
+// Water pixels a pocket stays under: water joined to the sea by less is not berthed on.
+const POCKET_PX = 300;
+// Share of a sale's cargo under which a port of landing or departure hands it over to the nearest busier one by sea.
+const PORT_FOLD = 0.1;
+// How far behind a port on wholly Arctic water starts in a port network, in points: at NET_ONWARD, about 1,000 km of rail.
+const ARCTIC_PORT_BEHIND = 6000;
+
+// A country's ports along its feeder network: for each county on the network, the port nearest along it, the next county towards that port and the network step taken, a port on icebound water starting behind by the share of its waters that are Arctic; null for a country with no port on the network.
+function* portNet(w, land, sea, id, tree) {
+  const NC = land.NC, c = land.countryAt.get(id);
+  const { prev, via, inNet } = tree;
+  // The network's steps both ways: from each county, to its neighbours on the network with the step's cost.
+  const near = new Map();
+  const link = (a, b, e, up) => { if (!near.has(a)) near.set(a, []); near.get(a).push([b, e, up]); };
+  let worked = 0;
+  for (let k = 1; k < NC; k++) {
+    if (!inNet[k] || prev[k] < 0) continue;
+    if (++worked % TREE_SLICE === 0) yield;
+    link(k, prev[k], via[k], true);
+    link(prev[k], k, via[k], false);
+  }
+  const stepCost = (e) => (e > 0 ? land.cost[e - 1] : FEEDER_SEA_HOP + sea.edgeSail[-e - 1]);
+  const dist = new Float64Array(NC).fill(Infinity), root = new Int32Array(NC).fill(-1), step = new Int32Array(NC).fill(-1), stepVia = new Int32Array(NC), stepUp = new Uint8Array(NC);
+  const heap = new Heap(256);
+  let any = false;
+  sea.ports.forEach((p, i) => {
+    const k = sea.quayCounty[i];
+    if (k <= 0 || land.ctrl[k] !== c || !inNet[k]) return;
+    const waters = [...sea.quayAt[i].keys()];
+    const ice = waters.length ? waters.filter((x) => sea.mode[x] > MODE_POINTS.sea).length / waters.length : 0;
+    const start = NET_ONWARD * ARCTIC_PORT_BEHIND * ice;
+    if (start < dist[k]) { dist[k] = start; root[k] = i; heap.push(start, k); any = true; }
+  });
+  if (!any) return null;
+  let settled = 0;
+  while (heap.n) {
+    const u = heap.pop(), d = heap.top;
+    if (d > dist[u]) continue;
+    if (++settled % TREE_SLICE === 0) yield;
+    for (const [v, e, up] of near.get(u) || []) {
+      const n = d + stepCost(e);
+      if (better(n, dist[v], u, step[v])) { dist[v] = n; root[v] = root[u]; step[v] = u; stepVia[v] = e; stepUp[v] = up ? 0 : 1; heap.push(n, v); }
+    }
+  }
+  return { root, step, stepVia, stepUp, inNet };
+}
+
+// The counties of each province's cities, once per map.
+const cityCountiesBy = new WeakMap();
+function cityCounties(w) {
+  if (!cityCountiesBy.has(w)) {
+    const cs = w.counties, out = new Map();
+    for (const t of w.cities || []) {
+      const k = cs.countyAt[t.y * cs.width + t.x];
+      if (!k) continue;
+      if (!out.has(t.province)) out.set(t.province, []);
+      if (!out.get(t.province).includes(k)) out.get(t.province).push(k);
+    }
+    cityCountiesBy.set(w, out);
+  }
+  return cityCountiesBy.get(w);
+}
+
+// A county's way along its country's network to its port, as pieces by rail, road and sea from the county; reversed for cargo coming ashore; kept per country and county.
+function portPieces(w, land, sea, id, net, k, ashore) {
+  const held = feedersOf(land);
+  held.portLines ||= new Map();
+  const key = id + '|' + k;
+  if (!held.portLines.has(key)) {
+    const centre = (u) => nodeAt(w, land, sea, u);
+    const pieces = [];
+    const walked = [k];
+    let line = null;
+    for (let u = k; net.step[u] >= 0; u = net.step[u]) {
+      const v = net.step[u], e = net.stepVia[u];
+      if (e < 0) {
+        // A sea step on the network, held from the parent's port to the child's.
+        const x = -e - 1, from = portOfEdge(sea, x), to = sea.edgeTo[x];
+        pieces.push({ mode: 'sea', points: net.stepUp[u] ? seaPairLine(w, sea, to, from) : seaPairLine(w, sea, from, to) });
+        line = null;
+      } else {
+        const mode = land.rail[e - 1] ? 'rail' : 'road';
+        if (!line || line.mode !== mode) pieces.push((line = { mode, points: [centre(u)] }));
+        line.points.push(...landBend(w, u, v, line.points[line.points.length - 1], centre(v)), centre(v));
+      }
+      walked.push(v);
+    }
+    pieces.walked = walked;
+    held.portLines.set(key, pieces);
+  }
+  const out = held.portLines.get(key);
+  if (!ashore) return out;
+  const back = out.slice().reverse().map((piece) => ({ mode: piece.mode, points: piece.points.slice().reverse() }));
+  back.walked = out.walked;
+  return back;
+}
+
+// Where a sale's cargo comes ashore (landing) or goes aboard at home: the port each of the country's provinces hangs from in its port network, by the provinces' shares, the ports under PORT_FOLD of the cargo handed to the nearest busier one by sea.
+// As { leg, home, at, net, ports: Map(port -> { share, counties: [[county, share]], via: [{ port, share, counties }] }), rest }: leg the route's last or first sea leg, home the port the route itself uses there, at the port sailed from (landing) or for (departure), rest the share of provinces no reachable port serves; null where that leg does not touch the country.
+function* endPlan(w, route, id, ends, landing) {
+  const { land, sea } = drawnGraphs(w);
+  const legs = route.legs;
+  let n = -1;
+  if (landing) legs.forEach((l, i) => { if (l.mode === 'sea') n = i; });
+  else n = legs.findIndex((l) => l.mode === 'sea');
+  const c = land.countryAt.get(id);
+  if (n < 0 || c === undefined) return null;
+  const home = landing ? sea.edgeTo[legs[n].edge] : portOfEdge(sea, legs[n].edge);
+  if (land.ctrl[sea.quayCounty[home]] !== c) return null;
+  const at = landing ? portOfEdge(sea, legs[n].edge) : sea.edgeTo[legs[n].edge];
+  const held = feedersOf(land);
+  held.portNets ||= new Map();
+  if (!held.portNets.has(id)) {
+    const hub = feederHub(w, land, sea, id), netKey = id + '|' + hub;
+    if (hub < 0) return null;
+    if (!held.nets.has(netKey)) {
+      const ours = (k) => land.ctrl[k] === c || w.atIndex[land.provOf[k]]?.owner === id;
+      held.nets.set(netKey, yield* feederNet(w, land, sea, id, hub, ours));
+    }
+    held.portNets.set(id, yield* portNet(w, land, sea, id, held.nets.get(netKey)));
+  }
+  const net = held.portNets.get(id);
+  if (!net) return null;
+  // A port reached by sea from the other end, and through ice only where the route itself goes through it.
+  const iced = pairIced(sea, portOfEdge(sea, legs[n].edge), sea.edgeTo[legs[n].edge]);
+  const sails = (y) => y === at || (Number.isFinite(landing ? sea.km[at * sea.P + y] : sea.km[y * sea.P + at]) && (iced || !(landing ? pairIced(sea, at, y) : pairIced(sea, y, at))));
+  const towns = cityCounties(w);
+  const all = new Map();
+  let rest = 0;
+  for (const [p, share] of ends) {
+    const ks = p ? (towns.get(p) || [land.seat[w.byId.get(p)?.index ?? -1]]) : [feederCapital(w, land, id)];
+    for (const k of ks) {
+      const part = share / ks.length;
+      const y = k > 0 && net.inNet[k] ? net.root[k] : -1;
+      if (y < 0 || !sails(y)) { rest += part; continue; }
+      if (!all.has(y)) all.set(y, { share: 0, counties: [], via: [] });
+      const e = all.get(y);
+      e.share += part;
+      e.counties.push([k, part]);
+    }
+  }
+  if (!all.size) return null;
+  // The busier ports keep their own; each lesser one goes to the nearest of them by sea.
+  const ranked = [...all].sort((a, b) => b[1].share - a[1].share);
+  const kept = new Map(ranked.filter(([, e], i) => i === 0 || e.share >= PORT_FOLD));
+  for (const [z, e] of ranked) {
+    if (kept.has(z)) continue;
+    let best = -1, near = Infinity;
+    for (const y of kept.keys()) { const km = sea.km[(landing ? y * sea.P + z : z * sea.P + y)]; if (km < near) { near = km; best = y; } }
+    if (best < 0) { rest += e.share; continue; }
+    const into = kept.get(best);
+    into.share += e.share;
+    into.via.push({ port: z, share: e.share, counties: e.counties });
+  }
+  return { leg: n, home, at, net, ports: kept, rest };
 }
 
 // A feeder inside a country: from a county where given, else a province's seat, or the capital where null, to the country's hub, as pieces { mode: 'sea', 'rail' or 'road', points }.
@@ -1286,7 +1532,7 @@ function* feederPieces(w, land, sea, id, hub, province, county = -1, reached = n
     let settled = 0;
     dist[hub] = 0;
     heap.push(0, hub);
-    const reach = (u, v, n, e) => { if (n < dist[v]) { dist[v] = n; prev[v] = u; via[v] = e; heap.push(n, v); } };
+    const reach = (u, v, n, e) => { if (better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = e; heap.push(n, v); } };
     while (heap.n) {
       const u = heap.pop(), d = heap.top;
       if (d > dist[u]) continue;
@@ -1314,7 +1560,8 @@ function* feederPieces(w, land, sea, id, hub, province, county = -1, reached = n
     walked.push(start);
     for (let u = start, n = 0; u !== hub && !(reached?.has(u)); n++) {
       if (n % LAND_SLICE === LAND_SLICE - 1) yield;
-      const [v, via] = back.get(u);
+      // A fallback way joins the network at the first county of it it reaches, and follows it from there.
+      const [v, via] = (back !== net && net?.has(u) ? net : back).get(u);
       if (via < 0) {
         // Sea edges are held from v's port to u's, so the line is walked back.
         const e = -via - 1;
@@ -1402,7 +1649,7 @@ function* feederPieces(w, land, sea, id, hub, province, county = -1, reached = n
 // ------------------------------------------------------------ the store
 
 // Store layout version; bumped when what is kept or how it is drawn changes.
-const ROUTE_STORE_VERSION = 1;
+const ROUTE_STORE_VERSION = 8;
 // Words of a bitmap hashed between pauses.
 const HASH_WORDS = 1 << 18;
 // The key of what the drawn lines rest on: the county and subregion bitmaps and their counts.
@@ -1477,4 +1724,4 @@ function seaGraphStats(w) {
   return { ports: g.ports.length, legs: g.edgeTo.length, ms: Math.round(g.ms), parts: Object.fromEntries(Object.entries(g.parts || {}).map(([k, n]) => [k, Math.round(n)])) };
 }
 
-export { HUB_REACH_KM, hubScore, MODE_POINTS, HANDLING, RAIL_HANDLING, ROUTE_SPREAD, SPREAD_REACH, SPREAD_PORTS, spreadLines, PORT_DEVELOPMENT, LEVEL_MAX, portDevelopment, TERRAIN_COST, CLIMATE_COST, WARZONE_RESISTANCE, ARCTIC_RESISTANCE, PORT_REF, PORT_MAX, ENTREPOT, ENTREPOT_FACTOR, PASSAGE_KM, EMBARGO, passage, sailing, seaLeg, portFactor, seaKm, seaGraph, seaGraphStats, landGraph, treesBuilt, capitalOf, hubCounty, hubOf, findRoute, routeSteps, routeLine, routeLineSteps, feederLine, feederSteps, routeSeaSteps, closedSeas, drawnGraphs, routesDrawable, borderPrep, seaEdgeSteps, storeKeySteps, routeStoreSteps, restoreSteps, routeStoreNew };
+export { LANE_PULL, LANE_DETOUR, HUB_REACH_KM, hubScore, MODE_POINTS, HANDLING, RAIL_HANDLING, ROUTE_SPREAD, SPREAD_REACH, SPREAD_PORTS, spreadLines, PORT_DEVELOPMENT, LEVEL_MAX, portDevelopment, TERRAIN_COST, CLIMATE_COST, WARZONE_RESISTANCE, ARCTIC_RESISTANCE, PORT_REF, PORT_MAX, ENTREPOT, ENTREPOT_FACTOR, STEP_KM, PASSAGE_KM, EMBARGO, passage, sailing, seaLeg, portFactor, seaKm, seaGraph, seaGraphStats, landGraph, treesBuilt, capitalOf, hubCounty, hubOf, findRoute, routeSteps, routeLine, routeLineSteps, feederLine, feederSteps, routeSeaSteps, closedSeas, drawnGraphs, routesDrawable, borderPrep, seaEdgeSteps, storeKeySteps, routeStoreSteps, restoreSteps, routeStoreNew, PORT_FOLD, endPlan, portPieces, seaPairLine };

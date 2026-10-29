@@ -2,7 +2,7 @@
 
 const VERSION = new URL(import.meta.url).search;
 const { UNOWNED } = await import(`../world/mapdata.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnGovernment, invalidateView, live, perf } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnGovernment, governmentChanged, invalidateView, live, perf } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
 let ALWAYS_FULL, FLOOR, PIT, builtLevel, connectedOf, developmentOf, developmentPitOf, findRoute, lawsFor, nationalModifier, nationalParts, occupationEfficiencyOf, occupiedFraction, partsUnder, realmAbove, relationsBetween, reparationsDue, resourceLineSteps, routeSteps, treesBuilt;
@@ -26,6 +26,9 @@ const UNFERTILISED = 0.6;
 
 // Happiness lost at no supply at all.
 const FOOD_HAPPINESS = { calories: 20, fertileLand: 4, livestock: 4, fish: 4 };
+// A share of food met within this of whole counts as whole.
+const MET_EPSILON = 1e-9;
+const metShare = (supply, demand) => (demand > 0 && supply / demand < 1 - MET_EPSILON ? supply / demand : 1);
 const GOODS_HAPPINESS = 10;
 const GOLD_HAPPINESS = 3;
 
@@ -144,6 +147,24 @@ function setShippingTerms(w, first, second, terms, what = null) {
   return list.map((x) => ({ band: x.band, good: x.good || x.resource, province: x.province, terms: x.terms }));
 }
 
+// A state agreement from today for so many years: first supplies second with amount of a good a day, for price $ a day or goods by name.
+function addAgreement(w, first, second, good, amount, price = 0, years = 5) {
+  for (const id of [first, second]) if (!w.table?.polityById?.has(id)) throw new Error(`no polity "${id}"`);
+  if (first === second) throw new Error('a country cannot supply itself');
+  const goods = [...(w.resourceKinds || []), 'consumerGoods', ...equipmentIds(w)];
+  if (!goods.includes(good)) throw new Error(`no good "${good}"; one of ${goods.join(', ')}`);
+  if (!(amount > 0)) throw new Error('amount must be above 0');
+  const today = CLOCK_EPOCH + clock.day * DAY_MS, d = new Date(today);
+  const x = {
+    band: 'stateAgreement', first, second, good, amount, price,
+    since: new Date(today - DAY_MS).toISOString().slice(0, 10),
+    until: new Date(Date.UTC(d.getUTCFullYear() + years, d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0, 10),
+  };
+  ((w.government.relations ||= {}).relations ||= []).push(x);
+  governmentChanged(new Set([first, second]));
+  return x;
+}
+
 // Goods state-regulated in every country, moved only by state agreement.
 const STATE_REGULATED = new Set(['tazkuri', 'goizederium']);
 // A state-owned industry's good where its name is not one.
@@ -202,6 +223,13 @@ function tradeTermsOf(w, id) {
 // Route cost of a stop in points, and $ a point is worth on a unit of cargo.
 const STOP_POINTS = 800;
 const POINT_DOLLARS = 0.1;
+// $ a unit of each traded good is worth.
+const GOODS_VALUE = {
+  naturalGas: 330, coal: 1200, timber: 1500, iron: 1900, oil: 3000,
+  fertileLand: 4000, nitrates: 4000, livestock: 5700, fish: 5700,
+  baseMetals: 11500, rubber: 19000, baul: 19000, textiles: 16000, consumerGoods: 20000,
+  aluminium: 32000, tungsten: 49000, rareMetals: 49000, gold: 1000000,
+};
 // Coal and oil a route burns; to follow the cargo origin's Oil-fired shipping research, not yet in the tree.
 const COAL_SHARE = 0.7;
 const OIL_SHARE = 0.3;
@@ -354,10 +382,10 @@ function ratesOn(w, index, from, kind) {
   return held.get(key);
 }
 
-// A seller's place on a buyer's list: what it offers, by the buyer's view of it, by the route's untaxed cost over its cost, less the tariffs charged along it.
-function partnerScore(offered, relations, route) {
+// What a buyer counts a unit of a seller's cargo as costing to land: its value with the tariffs along the route, and the shipping; cheaper by the buyer's good view of the seller and dearer by a poor one.
+function landedCost(route, relations, value) {
   const charged = (route.rates || []).reduce((a, n) => a + n, 0);
-  return offered * (1 + relations / 100) * (route.cost > 0 ? route.untaxed / route.cost : 1) * Math.max(0, 1 - charged);
+  return (value * (1 + charged) + route.untaxed * POINT_DOLLARS) / (1 + relations / 100);
 }
 
 // The highest rate each country levies on each other, whatever on, as [levier, taxed, rate].
@@ -427,11 +455,12 @@ function tariffTable(w, tag) {
 }
 
 // A country's trade for a day; shipping: what the state paid for its shipments' bunkering and tariffs, by stop.
-const tradeBooks = () => ({ bought: {}, sold: {}, from: {}, to: {}, landed: 0, tariffs: 0, tariffsFrom: {}, tariffsOn: {}, tariffsPaid: 0, tariffsTo: {}, bunkering: 0, fuelSales: 0, fuelBurnt: { coal: 0, oil: 0 }, shipping: 0, shippingTo: {} });
+// with: by the seller and the buyer of the cargo, the tariffs, bunkering and state fuel sold at the country's stops.
+const tradeBooks = () => ({ bought: {}, sold: {}, from: {}, to: {}, landed: 0, tariffs: 0, tariffsFrom: {}, tariffsOn: {}, tariffsPaid: 0, tariffsTo: {}, bunkering: 0, fuelSales: 0, fuelBurnt: { coal: 0, oil: 0 }, shipping: 0, shippingTo: {}, with: {} });
 
 // Cargo put in at each stop on a route, the bunkering and fuel it takes on there, and the tariff charged there on the seller's goods.
 // payer: a state paying a shipment's bunkering and tariffs, charged no tariff at its own stops; else the seller's tariffs paid.
-function bookStops(w, trade, route, n, seller, kind, terms = null, payer = null) {
+function bookStops(w, trade, route, n, seller, kind, terms = null, payer = null, buyer = null) {
   if (!trade.has(seller)) trade.set(seller, tradeBooks());
   if (payer && !trade.has(payer)) trade.set(payer, tradeBooks());
   const s = trade.get(seller), p = payer && trade.get(payer);
@@ -444,12 +473,19 @@ function bookStops(w, trade, route, n, seller, kind, terms = null, payer = null)
       at.landed += m;
       const spent = STOP_POINTS * POINT_DOLLARS * m;
       const owner = terms?.get(stop) || tradeTermsOf(w, stop);
+      const fuel = spent * (COAL_SHARE * owner.owns('coal') + OIL_SHARE * owner.owns('oil'));
       at.bunkering += spent;
-      at.fuelSales += spent * (COAL_SHARE * owner.owns('coal') + OIL_SHARE * owner.owns('oil'));
+      at.fuelSales += fuel;
+      const due0 = stop === payer ? 0 : STOP_POINTS * POINT_DOLLARS * rate * m;
+      for (const party of [seller, buyer]) {
+        if (!party || party === stop) continue;
+        const x = (at.with[party] ||= { tariffs: 0, bunkering: 0, fuelSales: 0 });
+        x.tariffs += due0; x.bunkering += spent; x.fuelSales += fuel;
+      }
       at.fuelBurnt.coal += STOP_FUEL * m * COAL_SHARE;
       at.fuelBurnt.oil += STOP_FUEL * m * OIL_SHARE;
       if (p) { p.shipping += spent; p.shippingTo[stop] = (p.shippingTo[stop] || 0) + spent; }
-      const due = stop === payer ? 0 : STOP_POINTS * POINT_DOLLARS * rate * m;
+      const due = due0;
       if (!due) continue;
       at.tariffs += due;
       at.tariffsFrom[seller] = (at.tariffsFrom[seller] || 0) + due;
@@ -463,7 +499,12 @@ function bookStops(w, trade, route, n, seller, kind, terms = null, payer = null)
 
 // Buyers served and routes asked for between pauses of a market in steps, where no route needs a tree built.
 const ROUTE_SLICE = 10;
-
+// How far over a buyer's cheapest landed cost a seller may be and still share the order.
+const SHARE_BAND = 0.15;
+// Most sellers a buyer shares an order among at once.
+const SHARE_SELLERS = 3;
+// Least a sale moves, but for a buyer whose whole need is less.
+const MIN_LOT = 0.1;
 // One day of the automatic market over every country's yield and demand; run(kinds) matches those goods, steps(kinds) the same in steps. tariffs: an index in place of the countries' own.
 function tradeMarket(w, out, tariffs = null) {
   const ids = [...out.keys()];
@@ -529,53 +570,92 @@ function tradeMarket(w, out, tariffs = null) {
         if (offered > TRADE_EPSILON) { sellers.push([i, offered]); row.offered += offered; }
       }
       sellers.sort((a, b) => b[1] - a[1]);
-      const at = sellers.map(([i]) => i), offered = sellers.map(([, n]) => n), left = offered.slice();
-      const routes = new Array(at.length), routeFor = new Array(at.length).fill(-1);
-      // Buyers' own need first, then what a free trader takes beyond it.
+      const at = sellers.map(([i]) => i), left = sellers.map(([, n]) => n);
+      // Every seller each buyer reaches, with the route and its landed cost.
+      const reach = new Map();
+      for (const bi of order) {
+        if (pos[bi] >= 0) continue;
+        const buyer = ids[bi];
+        const list = [];
+        for (let j = 0; j < at.length; j++) {
+          const relations = viewOf(bi, at[j]);
+          // A seller viewed at -100 or below, or at war, is passed over.
+          if (relations === null || 1 + relations / 100 <= 0) continue;
+          // A pause after a route tree is built, or after ROUTE_SLICE routes.
+          const built = treesBuilt();
+          const route = yield* routeOfSteps(w, ids[at[j]], buyer, kind, tariffs, hostile);
+          if (treesBuilt() !== built || ++asked >= ROUTE_SLICE) { asked = 0; yield; }
+          if (!route) { row.unrouted++; continue; }
+          list.push({ j, route, cost: landedCost(route, relations, GOODS_VALUE[kind] || 0), n: 0 });
+        }
+        if (list.length) reach.set(bi, list);
+      }
+      // Buyers' own need first, then what a free trader takes beyond it. Each round a buyer splits what it still wants among the sellers with cargo left within SHARE_BAND of its cheapest, the SHARE_SELLERS cheapest of them, the cheaper the larger, no order under MIN_LOT; each seller fills the orders cheapest to land first.
+      // Buyers whose whole need is under MIN_LOT, who buy it in one lot.
+      const small = new Set();
+      // Each pair's sale of this good, so a free trader's extra joins its first.
+      const saleOf = new Map();
       for (const beyond of [false, true]) {
-        for (const bi of order) {
-          const deficit = -pos[bi];
-          if (deficit <= 0) continue;
-          if (++asked >= ROUTE_SLICE) { asked = 0; yield; }
-          const buyer = ids[bi];
-          const fill = terms.get(buyer).fill;
-          const t = trade.get(buyer);
-          let want = deficit * (beyond ? fill : Math.min(1, fill)) - (t.bought[kind] || 0);
-          if (!beyond) row.wanted += deficit * fill;
-          while (want > TRADE_EPSILON) {
-            let best = -1, top = -1;
-            for (let j = 0; j < at.length; j++) {
-              // A score is at most twice what a seller first offered, so no later seller can pass the best.
-              if (2 * offered[j] <= top) break;
-              if (left[j] <= TRADE_EPSILON) continue;
-              const relations = viewOf(bi, at[j]);
-              // A seller viewed at -100 or below is passed over.
-              if (relations === null || 1 + relations / 100 <= 0) continue;
-              if (routeFor[j] !== bi) {
-                // A pause after a route tree is built, or after ROUTE_SLICE routes.
-                const built = treesBuilt();
-                routes[j] = yield* routeOfSteps(w, ids[at[j]], buyer, kind, tariffs, hostile); routeFor[j] = bi; if (!routes[j]) row.unrouted++;
-                if (treesBuilt() !== built || ++asked >= ROUTE_SLICE) { asked = 0; yield; }
-              }
-              if (!routes[j]) continue;
-              const score = partnerScore(left[j], relations, routes[j]);
-              if (score > top) { top = score; best = j; }
+        const want = new Map();
+        for (const [bi] of reach) {
+          const fill = terms.get(ids[bi]).fill;
+          if (!beyond) row.wanted += -pos[bi] * fill;
+          const n = -pos[bi] * (beyond ? fill : Math.min(1, fill)) - (trade.get(ids[bi]).bought[kind] || 0);
+          if (!beyond && n > TRADE_EPSILON && n < MIN_LOT) small.add(bi);
+          if (beyond ? n >= MIN_LOT : n > TRADE_EPSILON) want.set(bi, n);
+        }
+        // A sale of m to a buyer that wants n, kept to MIN_LOT unless it fills the buyer.
+        const lot = (bi, m, n) => m >= MIN_LOT || m >= n - TRADE_EPSILON;
+        // Each round fills every buyer that orders or empties a seller.
+        for (let round = 0; round <= 2 * at.length && want.size; round++) {
+          const orders = [];
+          for (const [bi, n] of want) {
+            const open = reach.get(bi).filter((x) => lot(bi, left[x.j], n) && left[x.j] > TRADE_EPSILON);
+            if (!open.length) { want.delete(bi); continue; }
+            const cheapest = Math.min(...open.map((x) => x.cost));
+            const reachOf = cheapest * SHARE_BAND;
+            const band = open.map((x) => [x, reachOf > 0 ? 1 - (x.cost - cheapest) / reachOf : Number(x.cost <= cheapest)]).filter(([, k]) => k > 0).sort((a, b) => a[0].cost - b[0].cost || a[0].j - b[0].j);
+            // The most sellers whose every order comes to MIN_LOT, one for a small buyer.
+            let shares = band.slice(0, 1);
+            for (let c = Math.min(SHARE_SELLERS, band.length); c > 1 && !small.has(bi); c--) {
+              const pick = band.slice(0, c), total = pick.reduce((a, [, k]) => a + k, 0);
+              if (pick.every(([, k]) => n * k / total >= MIN_LOT)) { shares = pick; break; }
             }
-            if (best < 0) break;
-            const n = Math.min(want, left[best]);
-            const seller = ids[at[best]];
+            const total = shares.reduce((a, [, k]) => a + k, 0);
+            for (const [x, k] of shares) orders.push([bi, x, n * k / total]);
+          }
+          orders.sort((a, b) => a[1].cost - b[1].cost || a[0] - b[0] || a[1].j - b[1].j);
+          let moved = 0;
+          for (const [bi, x, n] of orders) {
+            const wants = want.get(bi) || 0;
+            const m = Math.min(n, left[x.j], wants);
+            if (m <= TRADE_EPSILON || !lot(bi, m, wants)) continue;
+            x.n += m; left[x.j] -= m; moved += m;
+            // What is left under MIN_LOT of a buyer that wanted more counts as filled.
+            const rest = wants - m;
+            if (rest > TRADE_EPSILON && (rest >= MIN_LOT || small.has(bi))) want.set(bi, rest); else want.delete(bi);
+          }
+          if (moved <= TRADE_EPSILON) break;
+        }
+        // Each buyer's purchases booked by seller, its route's stops and all.
+        for (const [bi, list] of reach) {
+          const buyer = ids[bi];
+          const t = trade.get(buyer);
+          for (const x of list) {
+            const n = x.n;
+            x.n = 0;
+            if (n <= TRADE_EPSILON) continue;
+            const seller = ids[at[x.j]];
             const s = trade.get(seller);
-            left[best] -= n;
-            want -= n;
             row.moved += n;
             t.bought[kind] = (t.bought[kind] || 0) + n;
             s.sold[kind] = (s.sold[kind] || 0) + n;
             (t.from[kind] ||= {})[seller] = (t.from[kind][seller] || 0) + n;
             (s.to[kind] ||= {})[buyer] = (s.to[kind][buyer] || 0) + n;
             // Cargo put in at each stop on the route, the bunkering and fuel it takes on there, and the tariff charged there.
-            const route = routes[best];
-            sales.push({ kind, seller, buyer, amount: n, route });
-            bookStops(w, trade, route, n, seller, kind, terms);
+            if (saleOf.has(x)) saleOf.get(x).amount += n;
+            else { saleOf.set(x, { kind, seller, buyer, amount: n, route: x.route }); sales.push(saleOf.get(x)); }
+            bookStops(w, trade, x.route, n, seller, kind, terms, null, buyer);
           }
         }
       }
@@ -672,7 +752,7 @@ function* supplySteps(w, settle = false) {
       addAt(b.places.demand, 'fish', p.id, people * PER_PERSON.fish * tier);
     } else if (people) {
       const own = w.resources?.[p.id] || {};
-      const met = (supply, demand) => (demand > 0 ? Math.min(1, supply / demand) : 1);
+      const met = metShare;
       local.set(p.id, {
         calories: met((own.fertileLand || 0) + (own.livestock || 0) + (own.fish || 0), people / PEOPLE_PER_FOOD),
         fertileLand: met(own.fertileLand || 0, people * PER_PERSON.fertileLand),
@@ -761,6 +841,9 @@ function* supplySteps(w, settle = false) {
       gather(x, 'price', kind, given, x.first);
     }
   }
+  // Today's tariffs, rebuilt once for shipments and the market alike.
+  const tariffs = yield* tariffsFreshSteps(w);
+  tariffsHeld = { w, index: tariffs };
   // Shipments due today are sent along their route, into the receiver's reserve or stockpile; with no route open one waits for its next day.
   const held = settle ? [...activeLeases(w), ...activeAgreements(w)] : [];
   const shipped = [];
@@ -773,7 +856,7 @@ function* supplySteps(w, settle = false) {
         if (!s.n) continue;
         const from = senderOf(x, s);
         if (!back) {
-          const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), yield* tariffsTodaySteps(w), routeMemo);
+          const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
           if (!route) continue;
           shipped.push({ x, from, to: s.to, kind: s.kind, n: s.n, route });
         }
@@ -841,18 +924,15 @@ function* supplySteps(w, settle = false) {
   // The automatic market: everything but rubber now, rubber once synthetic rubber is known; one good a step.
   yield;
   let tradeMs = 0;
-  // Today's tariffs, rebuilt as each market's are.
-  const tariffs = yield* tariffsFreshSteps(w);
-  tariffsHeld = { w, index: tariffs };
   const market = tradeMarket(w, out, tariffs);
   // Shipments sent today book their stops as market cargo does, their bunkering and tariffs charged to the payer.
-  for (const s of shipped) bookStops(w, market.trade, s.route, s.n, s.from, shipmentGood(s.kind), null, shippingPayer(s.x, s.from, s.to));
+  for (const s of shipped) bookStops(w, market.trade, s.route, s.n, s.from, shipmentGood(s.kind), null, shippingPayer(s.x, s.from, s.to), s.to);
   // Each lease and agreement drawn on the routes at what gathered for it today.
   for (const x of held) {
     for (const s of shipmentsOf(x)) {
       if (!s.today || s.day < clock.day - 1) continue;
       const from = senderOf(x, s);
-      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), yield* tariffsTodaySteps(w), routeMemo);
+      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
       if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(x) });
     }
   }
@@ -862,7 +942,7 @@ function* supplySteps(w, settle = false) {
       .map((x) => ({ x, to: x.second, kind: x.good, today: x.amount }));
     for (const s of [...noted.values(), ...equipment]) {
       const from = senderOf(s.x, s);
-      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), yield* tariffsTodaySteps(w), routeMemo);
+      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
       if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(s.x) });
     }
   }
@@ -938,7 +1018,7 @@ function* supplySteps(w, settle = false) {
     // Food: calories decide hunger, each kind decides how well a country eats.
     const calories = b.fedPeople / PEOPLE_PER_FOOD;
     const fed = (supply.fertileLand || 0) + (supply.livestock || 0) + (supply.fish || 0);
-    met.calories = calories > 0 ? Math.min(1, fed / calories) : 1;
+    met.calories = metShare(fed, calories);
     // A hungry country minds only the hunger; the kinds count once it is fed.
     const wellFed = met.calories >= 1 ? 1 : 0;
     const happiness = {
@@ -950,6 +1030,8 @@ function* supplySteps(w, settle = false) {
       'consumer goods shortage': -GOODS_HAPPINESS * (1 - (kept.consumerGoods ?? 1)),
       'gold shortage': -GOLD_HAPPINESS * (1 - (kept.gold ?? 1)),
     };
+    // Losses within rounding of nothing are nothing.
+    for (const k of Object.keys(happiness)) if (Math.abs(happiness[k]) < MET_EPSILON) happiness[k] = 0;
 
     const storage = RESERVE_STORAGE * Object.values(held).reduce((a, n) => a + n, 0);
     out.set(id, {
@@ -990,4 +1072,4 @@ everyDay(function* (w) {
   if (moved) { w.resourceLines = yield* resourceLineSteps(w); invalidateView(); }
 });
 
-export { COAL_POWER, GAS_POWER, OIL_FUEL, TIMBER_POWER, PEOPLE_PER_FOOD, PER_PERSON, FISH_TIER, FERTILISER, UNFERTILISED, FOOD_HAPPINESS, GOODS_HAPPINESS, GOLD_HAPPINESS, SHORTAGE_K, RESERVE_DAYS, RESERVE_STORAGE, lostAt, SHIPMENT_DAYS, shipmentKey, shipmentDue, shipmentDays, gatherShipment, SHIPPING_TERMS, shippingPayer, shipmentVia, shipmentGood, setShippingTerms, tradeBooks, bookStops, activeLeases, activeAgreements, agreementPrice, STATE_REGULATED, tradedKinds, tradeTerms, tradeTermsOf, STOP_POINTS, POINT_DOLLARS, COAL_SHARE, OIL_SHARE, STOP_FUEL, TARIFF_CLASSES, productClass, tariffCeilings, tariffRate, tariffIndex, TARIFF_SLICE, tariffIndexSteps, tariffsToday, tariffsTodaySteps, tariffsFresh, tariffsFreshSteps, routeOf, routeOfSteps, tradeEnds, partnerScore, highestTariffs, highestTariffSteps, setTariff, tariffTable, tradeMarket, provinceYields, heldYields, dailySupply, SUPPLY_SLICE, supplySteps, foodHappiness };
+export { COAL_POWER, GAS_POWER, OIL_FUEL, TIMBER_POWER, PEOPLE_PER_FOOD, PER_PERSON, FISH_TIER, FERTILISER, UNFERTILISED, FOOD_HAPPINESS, GOODS_HAPPINESS, GOLD_HAPPINESS, SHORTAGE_K, RESERVE_DAYS, RESERVE_STORAGE, lostAt, SHIPMENT_DAYS, shipmentKey, shipmentDue, shipmentDays, gatherShipment, SHIPPING_TERMS, shippingPayer, shipmentVia, shipmentGood, setShippingTerms, addAgreement, tradeBooks, bookStops, activeLeases, activeAgreements, agreementPrice, STATE_REGULATED, tradedKinds, tradeTerms, tradeTermsOf, STOP_POINTS, POINT_DOLLARS, COAL_SHARE, OIL_SHARE, STOP_FUEL, TARIFF_CLASSES, productClass, tariffCeilings, tariffRate, tariffIndex, TARIFF_SLICE, tariffIndexSteps, tariffsToday, tariffsTodaySteps, tariffsFresh, tariffsFreshSteps, routeOf, routeOfSteps, tradeEnds, GOODS_VALUE, landedCost, SHARE_BAND, SHARE_SELLERS, MIN_LOT, highestTariffs, highestTariffSteps, setTariff, tariffTable, tradeMarket, provinceYields, heldYields, dailySupply, SUPPLY_SLICE, supplySteps, foodHappiness };

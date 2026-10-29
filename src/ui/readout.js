@@ -8,7 +8,7 @@ let CAPITAL_AT, CAPITAL_NAME_AT, CITY_AT, CITY_NAME_AT, F_CAPITAL, F_CAPITAL_NAM
 export function link(all) { ({ CAPITAL_AT, CAPITAL_NAME_AT, CITY_AT, CITY_NAME_AT, F_CAPITAL, F_CAPITAL_NAME, F_CITY, F_CITY_NAME, F_RIVER, RIVER_ALPHA, RIVER_AT, TILE, cityFade, debug, levelLineCache, overviewCovers, panelOpen, resourceLineCache, sfx, sunShiftPx, view } = all); }
 
 // Build version shown in the debug menu.
-const BUILD = 'v0.10-indev';
+const BUILD = 'v0.10.a-indev';
 
 // The size a ring was traced at, for the readout.
 const ringShape = (holder) => (holder.silhouette

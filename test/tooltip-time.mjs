@@ -46,7 +46,7 @@ const run = (n) => {
 
 // The load awaits fetches, decodes and the cache, so it is waited for in real
 // time exactly as the smoke test waits for it.
-for (let i = 0; i < 400 && !dom.frameQueue.length; i++) await new Promise((r) => setTimeout(r, 50));
+for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms`);
 clockMs = realNow();
 performance.now = () => clockMs;

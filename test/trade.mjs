@@ -137,19 +137,27 @@ m = market({ [EXPORT]: { yields: { coal: 100 } }, [FREE2]: { yields: { coal: 1 }
 expect('coal bought from a country viewed at -100', m.trade.get(FREE).from.coal?.[EXPORT] ?? 0, 0);
 expect('coal bought from the small seller instead', bought(m, FREE, 'coal'), 1);
 
-// Supply is the base and relations a multiplier: 10 at -50 scores 5, 4 at +100 scores 8; no tariffs.
+// Relations scale what a buyer counts landing a seller's cargo as costing: -50 doubles it, +100 halves it; the seller cheapest to land sells the most.
+const landed = (seller, buyer, relations, index = new Map()) => res.landedCost(res.routeOf(w, seller, buyer, 'coal', index), relations, res.GOODS_VALUE.coal);
+// What a buyer bought of coal from a seller.
+const from = (m, buyer, seller) => m.trade.get(buyer).from.coal?.[seller] ?? 0;
 view(FREE, EXPORT, -50);
 view(FREE, FREE2, 100);
 m = res.tradeMarket(w, new Map(Object.entries({ [EXPORT]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: 4 } }, [FREE]: { demand: { coal: 2 } } }).map(([id, b]) => [id, { yields: b.yields || {}, demand: b.demand || {}, fedPeople: 0 }])), new Map());
 m.run(['coal']);
-expect('liked small seller ranks first', m.trade.get(FREE).from.coal?.[FREE2] ?? 0, 2);
+let first = landed(FREE2, FREE, 100) <= landed(EXPORT, FREE, -50) ? FREE2 : EXPORT;
+const freeWants = 2 * res.tradeTermsOf(w, FREE).fill;
+expect('the seller cheapest to land sells the most', Number(from(m, FREE, first) >= from(m, FREE, first === FREE2 ? EXPORT : FREE2)), 1);
+expect('and the buyer is filled, a free trader beyond its need', bought(m, FREE, 'coal'), freeWants);
 view(FREE, EXPORT, 0);
 view(FREE, FREE2, 0);
 
-// Short worldwide: a buyer offering its own surplus is served before one that offers none.
+// Short worldwide: the buyer cheapest to land at is served first, the other takes what is left.
 m = market({ [EXPORT]: { yields: { coal: 5 }, demand: { iron: 5 } }, [LIMITED]: { demand: { iron: 5 } }, [FREE]: { yields: { iron: 5 } } });
-expect('the giver gets the iron', bought(m, EXPORT, 'iron'), 5);
-expect('the taker is served last', bought(m, LIMITED, 'iron'), 0);
+const ironTo = (buyer) => res.landedCost(res.routeOf(w, FREE, buyer, 'iron', new Map()), 0, res.GOODS_VALUE.iron);
+first = ironTo(EXPORT) <= ironTo(LIMITED) ? EXPORT : LIMITED;
+expect('the buyer cheapest to land at is served first', bought(m, first, 'iron'), Math.min(5, 5 * Math.min(1, res.tradeTermsOf(w, first).fill)));
+expect('all the iron is sold', bought(m, EXPORT, 'iron') + bought(m, LIMITED, 'iron'), 5);
 
 // Tariffs: a hand-made index, the buyer charging 25% on one seller's coal.
 const charging = (buyer, seller, kind, rate) => new Map([[buyer, { ceilings: { resources: 1, equipment: 1, consumerGoods: 1 }, rates: new Map([[seller + '|' + kind, rate]]) }]]);
@@ -165,25 +173,39 @@ const stopsIn = (r, id) => r.stops.filter((c) => c === id).length;
 // A stop's call costs more at a small port, so the tariff there does too.
 const callsIn = (r, id) => r.stops.reduce((a, c, i) => a + (c === id ? r.calls[i] : 0), 0);
 expect('route cost: 25% at each stop in the buyer, by its port', route.cost - route.untaxed, 800 * 0.25 * callsIn(route, FREE));
-expect('score of 10 at 0 relations under 25%', res.partnerScore(10, 0, route), 10 * route.untaxed / route.cost * (1 - 0.25 * stopsIn(route, FREE)));
-// Tariffs cut the score by their total along the route, whatever the distance.
+// Landed cost: the value with the tariffs along the route, and the shipping at POINT_DOLLARS a point, over 1 plus relations/100.
+expect('landed cost at 0 relations: value with tariffs, and shipping', res.landedCost(route, 0, 1000), 1000 * (1 + route.rates.reduce((a, n) => a + n, 0)) + route.untaxed * res.POINT_DOLLARS);
 const flat = { cost: 1000, untaxed: 1000, rates: [0] };
-expect('25% in total ranks 25% lower', res.partnerScore(10, 0, { ...flat, rates: [0.25] }) / res.partnerScore(10, 0, flat), 0.75);
-expect('10% and 15% at two stops rank the same', res.partnerScore(10, 0, { ...flat, rates: [0.1, 0.15] }), res.partnerScore(10, 0, { ...flat, rates: [0.25] }));
-expect('over 100% in total scores nothing', res.partnerScore(10, 0, { ...flat, rates: [0.6, 0.6] }), 0);
-expect('score of 10 at +100 relations stays under twice what is offered', Number(res.partnerScore(10, 100, route) <= 20), 1);
-// 10 under a tariff scores below 10; a smaller untaxed seller between the two scores more.
-const tariffed = res.routeOf(w, FREE, EXPORT, 'coal', charging(EXPORT, FREE, 'coal', 0.25));
-const SMALL = (10 + res.partnerScore(10, 0, tariffed)) / 2;
-m = taxed({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: SMALL } }, [EXPORT]: { demand: { coal: 5 } } }, new Map());
-expect('untaxed: the larger seller fills', m.trade.get(EXPORT).from.coal?.[FREE] ?? 0, 5);
-m = taxed({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: SMALL } }, [EXPORT]: { demand: { coal: 5 } } }, charging(EXPORT, FREE, 'coal', 0.25));
-expect('tariffed larger seller fills nothing', m.trade.get(EXPORT).from.coal?.[FREE] ?? 0, 0);
-expect('untaxed smaller seller fills first', m.trade.get(EXPORT).from.coal?.[FREE2] ?? 0, 5);
-m = taxed({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: SMALL } }, [EXPORT]: { demand: { coal: 12 } } }, charging(EXPORT, FREE, 'coal', 0.25));
-expect('untaxed seller first, then the tariffed one', m.trade.get(EXPORT).from.coal?.[FREE] ?? 0, 12 - SMALL);
+expect('shipping 1000 points costs $100', res.landedCost(flat, 0, 0), 100);
+expect('+100 relations halves the landed cost', res.landedCost(flat, 100, 900), 500);
+expect('-50 relations doubles the landed cost', res.landedCost(flat, -50, 900), 2000);
+expect('10% and 15% at two stops charge 25% on the value', res.landedCost({ ...flat, rates: [0.1, 0.15] }, 0, 1000), 1350);
+expect('gold is worth more than coal a unit', Number(res.GOODS_VALUE.gold > res.GOODS_VALUE.coal), 1);
+// Sellers within SHARE_BAND of the cheapest share the order.
+m = taxed({ [FREE]: { yields: { gold: 10 } }, [FREE2]: { yields: { gold: 10 } }, [EXPORT]: { demand: { gold: 4 } } }, new Map(), ['gold']);
+expect('two gold sellers at near the same landed cost both sell', Number((m.trade.get(EXPORT).from.gold?.[FREE] ?? 0) > 0 && (m.trade.get(EXPORT).from.gold?.[FREE2] ?? 0) > 0), 1);
+// Two sellers, 10 and 4; the cheaper to land sells first, a tariff counting in the cost.
+const bags = (want) => ({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: 4 } }, [EXPORT]: { demand: { coal: want } } });
+const exportWants = 5 * Math.min(1, res.tradeTermsOf(w, EXPORT).fill);
+m = taxed(bags(5), new Map());
+first = landed(FREE, EXPORT, 0) <= landed(FREE2, EXPORT, 0) ? FREE : FREE2;
+expect('untaxed: the seller cheaper to land sells the most', Number(from(m, EXPORT, first) >= from(m, EXPORT, first === FREE ? FREE2 : FREE)), 1);
+const tax = charging(EXPORT, first, 'coal', 1);
+m = taxed(bags(5), tax);
+const second = first === FREE ? FREE2 : FREE;
+const after = landed(first, EXPORT, 0, tax) <= landed(second, EXPORT, 0, tax) ? first : second;
+expect('a tariff counts in which seller lands cheaper', Number(from(m, EXPORT, after) >= from(m, EXPORT, after === first ? second : first)), 1);
+expect('and the buyer is filled', bought(m, EXPORT, 'coal'), exportWants);
+m = taxed(bags(12), tax);
+expect('a buyer wanting more than either has is filled from both', bought(m, EXPORT, 'coal'), Math.min(14, 12 * Math.min(1, res.tradeTermsOf(w, EXPORT).fill)));
 m = taxed({ [EXPORT]: { yields: { coal: 100 } }, [FREE]: { demand: { coal: 10 } } }, charging(FREE, EXPORT, 'coal', 1));
 expect('a sole seller at 100% still fills', bought(m, FREE, 'coal'), 12);
+// No sale under MIN_LOT, but a buyer whose whole need is under it buys that in one lot.
+m = taxed({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: 10 } }, [EXPORT]: { demand: { coal: 0.05 } } }, new Map());
+expect('a buyer needing under MIN_LOT still buys it', bought(m, EXPORT, 'coal'), 0.05 * Math.min(1, res.tradeTermsOf(w, EXPORT).fill));
+expect('and from one seller', Object.keys(m.trade.get(EXPORT).from.coal || {}).length, 1);
+m = taxed({ [FREE]: { yields: { coal: 10 } }, [FREE2]: { yields: { coal: 10 } }, [EXPORT]: { demand: { coal: 0.25 } } }, new Map());
+expect('no sale under MIN_LOT to a buyer needing more', Object.values(m.trade.get(EXPORT).from.coal || {}).filter((n) => n < res.MIN_LOT - 1e-9).length, 0);
 // Revenue at each stop in the buyer: 80 x rate x units.
 m = taxed({ [EXPORT]: { yields: { coal: 100 } }, [FREE]: { demand: { coal: 10 } } }, charging(FREE, EXPORT, 'coal', 0.25));
 expect('tariff earned on 12 coal at 25%', m.trade.get(FREE).tariffs, 80 * 0.25 * 12 * stopsIn(route, FREE));
@@ -356,10 +378,10 @@ expect('TVC to SAN goes by sea', Number(sails.length > 0), 1);
 expect('every sea leg ends at a port', sails.filter((l) => !isPort(l.from) || !isPort(l.to)).length, 0);
 expect('every sea leg stops in the country holding its port', sails.filter((l) => l.stop !== holder(l.to)).length, 0);
 expect('the route lands in the buyer', Number(far.stops.at(-1) === 'SAN'), 1);
-// A long crossing breaks at intermediate ports, cheaper than one unbroken passage.
+// A crossing longer than PASSAGE_KM breaks at a port on the way, cheaper than one unbroken passage.
 const sailed = sails.reduce((a, l) => a + l.km, 0);
 const sailCost = sails.reduce((a, l) => a + routes.seaLeg(l.km), 0);
-expect('TVC to SAN calls at ports on the way', Number(sails.length >= 3), 1);
+expect('TVC to SAN, longer than PASSAGE_KM, calls at a port on the way', Number(sailed > routes.PASSAGE_KM && sails.length >= 2), 1);
 expect('the broken crossing costs less than one unbroken passage', Number(sailCost < routes.seaLeg(sailed)), 1);
 // The plan's breaking, measured on this map's water: by God Vind and Costa Acero against straight across.
 const depart = sails[0].from, arrive = sails.at(-1).to;
@@ -440,8 +462,8 @@ console.log(`  ${sea.ports.length} ports of ${sea.coast.length} coastal province
 // A sea leg berths at its port's city or dockyard.
 const quayed = sails.filter((l) => { const q = sea.quay[sea.portAt[w.byId.get(l.to).index]]; return q[0] !== w.byId.get(l.to).centre[0] || q[1] !== w.byId.get(l.to).centre[1]; }).length;
 expect('TVC to SAN berths off province centres', Number(quayed > 0), 1);
-// Arctic water counts 2.5 a km, open water 1.
-expect('no leg counts less than its km', Array.from(sea.edgeWorked).filter((x, e) => x < sea.edgeKm[e] - 1e-3).length, 0);
+// Arctic water counts 2.5 a km, open water 1, a busy lane down to 1 less LANE_PULL.
+expect('no leg counts less than its km less the lane pull', Array.from(sea.edgeWorked).filter((x, e) => x < (1 - routes.LANE_PULL) * sea.edgeKm[e] - 1e-3).length, 0);
 expect('no leg counts more than 2.5 a km', Array.from(sea.edgeWorked).filter((x, e) => x > routes.ARCTIC_RESISTANCE * sea.edgeKm[e] + 1e-3).length, 0);
 expect('some legs cross Arctic water', Number(Array.from(sea.edgeWorked).some((x, e) => x > sea.edgeKm[e] * 1.01)), 1);
 // A call at a small port costs more, up to PORT_MAX; at a port of an entrepot spirit's holder it costs ENTREPOT_FACTOR.

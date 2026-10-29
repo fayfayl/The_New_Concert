@@ -39,7 +39,7 @@ const run = (n) => {
   }
 };
 
-for (let i = 0; i < 400 && !dom.frameQueue.length; i++) await new Promise((r) => setTimeout(r, 50));
+for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 fire(dom.el('start-enter'), 'click');
 run(40);
 

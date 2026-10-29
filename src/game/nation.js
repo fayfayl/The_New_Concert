@@ -467,6 +467,21 @@ function dailyBooks(w, day) { return finish(bookSteps(w, day)); }
 // Provinces, and ten times as many counties, worked through between pauses of a day's books.
 const BOOKS_SLICE = 50;
 
+// A country's tradeIncomeWithTarget by the country named: from its spirits' targets and the targets of its policies and decrees.
+function incomeWithTargets(w, id) {
+  const gov = w.government?.byPolity?.get(id);
+  const out = new Map();
+  const add = (target, n) => { if (target && n) out.set(target, (out.get(target) || 0) + n); };
+  for (const sid of gov?.spirits || []) { const sp = spiritById(w, sid); add(sp?.target, sp?.effects?.tradeIncomeWithTarget); }
+  for (const [list, table] of [[gov?.policies, w.government?.policies?.policies], [gov?.decrees, w.government?.decrees?.decrees]]) {
+    for (const x of list || []) {
+      if (typeof x !== 'object' || !x.target) continue;
+      add(x.target, (table || []).find((q) => q.name === x.name)?.effects?.tradeIncomeWithTarget);
+    }
+  }
+  return out;
+}
+
 // The same in steps, pausing between provinces and between counties.
 function* bookSteps(w, day) {
   const today = new Date(CLOCK_EPOCH + day * DAY_MS);
@@ -609,6 +624,14 @@ function* bookSteps(w, day) {
     b.tariffs += (t.tariffs || 0) * raised;
     b.fuelSales += (t.fuelSales || 0) * raised;
     b.bunkeringTax += ((t.bunkering || 0) - (t.fuelSales || 0)) * raised * bunkeringRate(w, id);
+    // Trade income with a named country: its cargo's tariffs and fuel at the country's stops, raised or cut by the modifier for it.
+    for (const [target, f] of incomeWithTargets(w, id)) {
+      const x = t.with?.[target];
+      if (!x || !f) continue;
+      b.tariffs += x.tariffs * f;
+      b.fuelSales += x.fuelSales * f;
+      b.bunkeringTax += (x.bunkering - x.fuelSales) * f * bunkeringRate(w, id);
+    }
   }
 
   // A member's tax and trade, its realm's share.
@@ -744,4 +767,4 @@ function debtStability(w, id) {
   return DEBT_STEPS.find(([at]) => ratio > at)?.[1] || 0;
 }
 
-export { NATIONAL_SLICE, nationalModifier, touchedBy, forgetTouched, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, IMPROVE_COST, IMPROVE_DISTANCE, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, BUNKERING_RATE, bunkeringRate, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, BOOKS_SLICE, bookSteps, debtRatio, debtStability };
+export { NATIONAL_SLICE, incomeWithTargets, nationalModifier, touchedBy, forgetTouched, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, IMPROVE_COST, IMPROVE_DISTANCE, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, BUNKERING_RATE, bunkeringRate, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, BOOKS_SLICE, bookSteps, debtRatio, debtStability };

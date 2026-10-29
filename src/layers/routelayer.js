@@ -6,8 +6,8 @@ const { DAY_SLICE_MS, cssToken, dayPending, els, finish, invalidateView, live, s
 const { loadRouteStore, saveRouteStore } = await import(`../world/mapcache.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let borderPrep, debug, drawnGraphs, feederSteps, flaggedName, goodName, placeTooltip, resourceIcon, restoreSteps, routeLine, routeLineSteps, routeSeaSteps, routeStoreNew, routeStoreSteps, routesDrawable, screenToMap, seaEdgeSteps, shortNameOf, spreadLines, storeKeySteps, tradeEnds, view;
-export function link(all) { ({ borderPrep, debug, drawnGraphs, feederSteps, flaggedName, goodName, placeTooltip, resourceIcon, restoreSteps, routeLine, routeLineSteps, routeSeaSteps, routeStoreNew, routeStoreSteps, routesDrawable, screenToMap, seaEdgeSteps, shortNameOf, spreadLines, storeKeySteps, tradeEnds, view } = all); }
+let borderPrep, debug, drawnGraphs, endPlan, portPieces, seaPairLine, feederSteps, flaggedName, goodName, placeTooltip, resourceIcon, restoreSteps, routeLine, routeLineSteps, routeSeaSteps, routeStoreNew, routeStoreSteps, routesDrawable, screenToMap, seaEdgeSteps, shortNameOf, spreadLines, storeKeySteps, tradeEnds, view;
+export function link(all) { ({ borderPrep, debug, drawnGraphs, endPlan, portPieces, seaPairLine, feederSteps, flaggedName, goodName, placeTooltip, resourceIcon, restoreSteps, routeLine, routeLineSteps, routeSeaSteps, routeStoreNew, routeStoreSteps, routesDrawable, screenToMap, seaEdgeSteps, shortNameOf, spreadLines, storeKeySteps, tradeEnds, view } = all); }
 
 // Colour and dash of each mode, in the paper and ink palette: rail an ink track, road a paper line cased in ink, sea a dashed chart line.
 const ROUTE_STYLE = {
@@ -40,6 +40,13 @@ const ROUTE_TIP_STOPS = 10;
 const linesOf = new WeakMap();
 const lineOf = (w, route) => { if (!linesOf.has(route)) linesOf.set(route, routeLine(w, route)); return linesOf.get(route); };
 
+// Shipments drawn from the sender's capital to the receiver's, by what they go by.
+const BY_CAPITAL = new Set(['state agreement', 'lend lease']);
+// A country's whole side of a good at its capital.
+const CAPITAL_END = [[null, 1]];
+// Where a sale's cargo leaves or lands in a country: the capital for a shipment by BY_CAPITAL, else by province.
+const endsOf = (supply, sale, id, selling) => (BY_CAPITAL.has(sale.via) ? CAPITAL_END : tradeEnds(supply.get(id), sale.kind, selling));
+
 // Segments built from yesterday's sales: each step of a leg and of a feeder, with what passed along it.
 let held = null;
 function routeSegments(w) {
@@ -54,13 +61,25 @@ function* segmentSteps(w, supply, out = {}) {
   const sales = supply?.sales;
   const at = (c) => [mapColAt(c[1] * Math.PI / 180, w.width), mapRowAt(c[0] * Math.PI / 180)];
   const segs = new Map(), stops = new Map();
+  // Each sale's share taken ashore and aboard by province through ports.
+  const planned = new Map();
   Object.assign(out, { w, sales, byKey: segs, stopsAt: stops });
   // A line's points as map steps, each adding its volume and sale to the segment it runs along.
+  // The ports at either end of every sea lane drawn, by position, with what passes through each.
+  const seaEnds = new Map();
   const addLine = (pts, mode, volume, key, stopsIn) => {
     // Points carried across the map seam the short way.
     for (let i = 1; i < pts.length; i++) {
       const d = pts[i][0] - pts[i - 1][0];
       if (d > w.width / 2) pts[i][0] -= w.width; else if (d < -w.width / 2) pts[i][0] += w.width;
+    }
+    if (mode === 'sea' && pts.length > 1) {
+      for (const p of [pts[0], pts[pts.length - 1]]) {
+        const x = ((p[0] % w.width) + w.width) % w.width, k = Math.round(x) + ',' + Math.round(p[1]);
+        const e = seaEnds.get(k) || { x, y: p[1], volume: 0 };
+        e.volume += volume;
+        seaEnds.set(k, e);
+      }
     }
     for (let i = 1; i < pts.length; i++) {
       // Each segment held on the copy of the map its western end is on.
@@ -103,11 +122,59 @@ function* segmentSteps(w, supply, out = {}) {
     const kept = (l) => l?.shares?.[0].share ?? 1;
     // Where cargo on a leg next stops, as country|province|mode: its own stop, else the next leg's that has one.
     const nextStop = (li) => { const l = sale.route.legs.slice(li).find((x) => x.stop); return l && l.stop + '|' + l.to + '|' + l.mode; };
+    // Cargo landing at home goes ashore at the ports its provinces hang from in the port network, and cargo sailing from home goes aboard at theirs; what no port serves keeps to the route and the hub.
+    const landed = yield* endPlan(w, sale.route, sale.buyer, endsOf(supply, sale, sale.buyer, false), true);
+    const left = yield* endPlan(w, sale.route, sale.seller, endsOf(supply, sale, sale.seller, true), false);
+    planned.set(sale, { landed: landed ? 1 - landed.rest : 0, left: left ? 1 - left.rest : 0 });
     sale.route.legs.forEach((leg, li) => {
-      const volume = sale.amount * kept(leg) * kept(sale.route.legs[li - 1]);
+      // The legs past the landing and before the departure carry only what no port serves.
+      const rest = (landed && li >= landed.leg ? landed.rest : 1) * (left && li <= left.leg ? left.rest : 1);
+      if (!rest) return;
+      const volume = sale.amount * kept(leg) * kept(sale.route.legs[li - 1]) * rest;
       const pts = addLine(line[li].map(at), leg.mode, volume, saleKey, [nextStop(li)].filter(Boolean));
-      if (leg.stop) mark(pts, leg.mode, leg.stop, sale.amount * kept(leg));
+      if (leg.stop) mark(pts, leg.mode, leg.stop, sale.amount * kept(leg) * rest);
     });
+    const g = drawnGraphs(w).sea;
+    const portName = (y) => w.atIndex[g.ports[y]].id;
+    const sail = (a, b, volume, next, stop) => {
+      if (a === b || !Number.isFinite(g.km[a * g.P + b]) || volume <= 0) return;
+      const pts = addLine(seaPairLine(w, g, a, b).map(at), 'sea', volume, saleKey, next ? [next] : []);
+      if (stop) mark(pts, 'sea', stop, volume);
+    };
+    // The end sea legs: from each port of departure, or the route's own, to each port of landing, or the route's own.
+    if (landed || left) {
+      const sameLeg = landed && left && landed.leg === left.leg;
+      const lastLeg = landed ? sale.route.legs[landed.leg] : null;
+      const firstLeg = left ? sale.route.legs[left.leg] : null;
+      const outs = left ? [...[...left.ports].map(([y, e]) => [y, e.share])] : [];
+      const ins = landed ? [...[...landed.ports].map(([y, e]) => [y, e.share])] : [];
+      if (sameLeg) {
+        const from = [...outs, ...(left.rest ? [[left.home, left.rest]] : [])], to = [...ins, ...(landed.rest ? [[landed.home, landed.rest]] : [])];
+        for (const [a, sa] of from) for (const [b, sb] of to) if (a !== left.home || b !== landed.home) sail(a, b, sale.amount * sa * sb, lastLeg.stop + '|' + portName(b) + '|sea', lastLeg.stop);
+      } else {
+        if (left) for (const [a, sa] of outs) sail(a, left.at, sale.amount * kept(firstLeg) * sa, nextStop(left.leg), firstLeg.stop);
+        if (landed) for (const [b, sb] of ins) sail(landed.at, b, sale.amount * kept(sale.route.legs[landed.leg - 1]) * sb, lastLeg.stop + '|' + portName(b) + '|sea', lastLeg.stop);
+      }
+    }
+    // Coastal hops for the lesser ports, then overland along the port network between each port and the provinces it serves.
+    for (const [plan, ashore] of [[landed, true], [left, false]]) {
+      if (!plan) continue;
+      const after = ashore ? [] : [nextStop(left.leg)].filter(Boolean);
+      const feed = (y, counties) => {
+        for (const [k, share] of counties) {
+          const pieces = portPieces(w, drawnGraphs(w).land, g, ashore ? sale.buyer : sale.seller, plan.net, k, ashore);
+          for (const n of pieces.walked || []) onLine.add(n);
+          for (const piece of pieces) addLine(piece.points.map(at), piece.mode, sale.amount * share, saleKey, after);
+        }
+      };
+      for (const [y, e] of plan.ports) {
+        feed(y, e.counties);
+        for (const v of e.via) {
+          if (ashore) sail(y, v.port, sale.amount * v.share, null, null); else sail(v.port, y, sale.amount * v.share, after[0], null);
+          feed(v.port, v.counties);
+        }
+      }
+    }
     // The other ports a shared stop calls at.
     for (const alt of spreadLines(w, sale.route)) {
       const into = addLine(alt.points[0].map(at), 'sea', sale.amount * alt.share, saleKey, [alt.stop + '|' + alt.province + '|sea']);
@@ -118,8 +185,15 @@ function* segmentSteps(w, supply, out = {}) {
   }
   // Feeders: from each province with a surplus to the seller's hub, and from the buyer's hub to each with demand, the capital for national demand, by its share, split evenly between its cities; by sea where the land does not join.
   const fed = new Map();
+  // Cargo taken to or from its ports by province is fed there already; the rest is fed from the hub.
+  const ported = new Map();
   for (const sale of sales || []) {
-    for (const k of [sale.seller + '|1|' + sale.kind, sale.buyer + '|0|' + sale.kind]) fed.set(k, (fed.get(k) || 0) + sale.amount);
+    const ends = planned.get(sale) || { landed: 0, left: 0 };
+    const capital = BY_CAPITAL.has(sale.via) ? '|capital' : '';
+    for (const [k, by] of [[sale.seller + '|1|' + sale.kind + capital, ends.left], [sale.buyer + '|0|' + sale.kind + capital, ends.landed]]) {
+      if (by) ported.set(k, (ported.get(k) || 0) + sale.amount * by);
+      if (by < 1) fed.set(k, (fed.get(k) || 0) + sale.amount * (1 - by));
+    }
   }
   // Each province's cities by county.
   const citiesIn = new Map();
@@ -130,8 +204,8 @@ function* segmentSteps(w, supply, out = {}) {
     citiesIn.get(t.province).add(k);
   }
   for (const [k, volume] of fed) {
-    const [id, side, kind] = k.split('|');
-    for (const [p, share] of tradeEnds(supply.get(id), kind, side === '1')) {
+    const [id, side, kind, capital] = k.split('|');
+    for (const [p, share] of capital ? CAPITAL_END : tradeEnds(supply.get(id), kind, side === '1')) {
       // From each of the province's cities by an even part, else its seat.
       const from = p && citiesIn.has(p) ? [...citiesIn.get(p)] : [-1];
       for (const c of from) {
@@ -151,7 +225,16 @@ function* segmentSteps(w, supply, out = {}) {
     for (const piece of pieces) addLine(piece.points.map(at), piece.mode, 0, '', null);
     yield;
   }
-  return Object.assign(out, finished(out), { fed, done: true });
+  // Every port a sea lane starts or ends at is marked as a call, under the country holding its shore; a coast with no port, reached by sea, is not.
+  const quays = drawnGraphs(w).land.portAt;
+  for (const [k, e] of seaEnds) {
+    if (stops.has(k)) continue;
+    const at = cs.countyAt[Math.round(e.y) * cs.width + ((Math.round(e.x) % cs.width) + cs.width) % cs.width];
+    if (!at || quays[at] < 0) continue;
+    const country = w.byId.get(cs.atIndex[at]?.province)?.owner;
+    if (country) stops.set(k, { x: e.x, y: e.y, country, volume: e.volume, sea: true, dx: 0, dy: 0 });
+  }
+  return Object.assign(out, finished(out), { fed, ported, done: true });
 }
 
 // A set of segments as drawn: listed, with the busiest's volume, and in runs of one mode and width, quietest first.
@@ -270,6 +353,25 @@ function wake(ms = 0) {
   if (ms) setTimeout(ask, ms); else ask();
 }
 wake();
+
+// Frame time the work takes while the loading screen waits on it, in ms, and rests in a row after which it is left to the background.
+const LOAD_SLICE_MS = 30;
+const LOAD_RESTS = 120;
+// Builds the routes a frame's slice at a time until they are done or skipped, telling progress from 0 to 1.
+async function buildRoutesNow(progress, skipped) {
+  if (!work) return;
+  let rests = 0;
+  for (;;) {
+    const st = routeWorkState();
+    progress(((st.readied ? 1 : 0) + (st.segments ? 1 : 0) + (st.edges ? 1 : 0)) / 3);
+    if ((st.readied && st.segments && st.edges) || skipped() || rests >= LOAD_RESTS) return;
+    const t0 = performance.now();
+    let rest = false;
+    while (!rest && performance.now() - t0 < LOAD_SLICE_MS) rest = work.next().value === REST;
+    rests = rest ? rests + 1 : 0;
+    await new Promise((r) => setTimeout(r, 0));
+  }
+}
 
 // How far the work has gone: the store read, today's segments built, every sea leg's line drawn.
 const routeWorkState = () => ({ at: { ...doneAt }, readied: readied === state.world, segments: held?.w === state.world && held.sales === live.lastSupply?.sales, edges: Boolean(edgesDrawn) && edgesDrawn === (routesDrawable(state.world) ? drawnGraphs(state.world).sea : null) });
@@ -528,4 +630,4 @@ function wireRoutePanel() {
   window.addEventListener('resize', clampRoutePanel);
 }
 
-export { ROUTE_STYLE, ROUTE_HALO, ROUTE_THIN, ROUTE_THICK, STAMP_OUTER, BAR_HALF, ROUTE_HOVER_PX, ROUTE_TIP_ROWS, ROUTE_TIP_STOPS, routeSegments, routeWorkState, drawTradeRoutes, routeAtEvent, showRouteTooltip, routePanelOpen, openRoutePanel, closeRoutePanel, stopPlace };
+export { ROUTE_STYLE, ROUTE_HALO, ROUTE_THIN, ROUTE_THICK, STAMP_OUTER, BAR_HALF, ROUTE_HOVER_PX, ROUTE_TIP_ROWS, ROUTE_TIP_STOPS, routeSegments, routeWorkState, drawTradeRoutes, routeAtEvent, showRouteTooltip, routePanelOpen, openRoutePanel, closeRoutePanel, stopPlace, buildRoutesNow };

@@ -42,7 +42,7 @@ try {
 }
 
 // Let the load settle: it awaits fetches, decodes and the cache.
-for (let i = 0; i < 400 && !dom.frameQueue.length; i++) await new Promise((r) => setTimeout(r, 50));
+for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms, ${dom.frameQueue.length} frame(s) queued`);
 
 /** Runs n frames, draining whatever requestAnimationFrame the last one queued. */

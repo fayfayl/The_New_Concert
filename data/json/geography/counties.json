@@ -84374,10 +84374,10 @@
       "province": "sava",
       "terrain": ["Plains", "Urban"],
       "climate": "Monsoon",
-      "riverShare": 0.1493,
-      "riverBorders": {"sava_12": 0.0714, "sava_2": 0.125, "sava_3": 0.1667},
-      "area": 2903,
-      "centre": [13.2086, -86.6584]
+      "riverShare": 0.1571,
+      "riverBorders": {"sava_12": 0.0714, "sava_2": 0.125, "sava_3": 0.4},
+      "area": 3034,
+      "centre": [13.1966, -86.6614]
     },
     {
       "id": "bukadar_3",
@@ -85003,10 +85003,9 @@
       "province": "sava",
       "terrain": ["Plains"],
       "climate": "Monsoon",
-      "riverShare": 0.0135,
-      "riverBorders": {"sava_1": 0.1667},
-      "area": 3214,
-      "centre": [12.6171, -86.6214]
+      "riverBorders": {"sava_1": 0.4},
+      "area": 3084,
+      "centre": [12.6038, -86.6168]
     },
     {
       "id": "sarniktas_6",
