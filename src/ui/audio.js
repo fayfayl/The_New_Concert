@@ -8,6 +8,9 @@ const DRAG_SLOP = 4;
 
 // ---------------------------------------------------------------- the click
 const SFX_CLICK = './data/sfx/old_radio_button.ogg';
+// Button press and release, played on the way down and the way up.
+const SFX_PRESS = './data/sfx/old_radio_button_start.ogg';
+const SFX_RELEASE = './data/sfx/old_radio_button_end.ogg';
 const SFX_SELECT = './data/sfx/province_county_selection.ogg';
 // Water selection recordings, one picked at random per click.
 const SFX_WATER = [
@@ -27,6 +30,10 @@ live.sfxDelay = 0;            // seconds
 
 const sfx = {
   ctx: null, buffer: null, gain: null, offset: 0, on: true,
+  // Release sound and its leading silence; the key code or 'pointer' holding a press.
+  release: null, releaseOffset: 0, held: null,
+  // The old one-piece click, decoded but not played.
+  click: null,
   // Selection sounds and their leading silence: select is ground, water is sea.
   select: null, selectOffset: 0,
   // One { buffer, offset } per water recording.
@@ -44,15 +51,24 @@ async function loadSounds() {
     sfx.gain = sfx.ctx.createGain();
     sfx.gain.gain.value = SFX_VOLUME;
     sfx.gain.connect(sfx.ctx.destination);
-    const bytes = await (await fetch(SFX_CLICK)).arrayBuffer();
-    sfx.buffer = await sfx.ctx.decodeAudioData(bytes);
-    sfx.offset = leadingSilence(sfx.buffer);
 
     const decode = async (url) => {
       const raw = await (await fetch(url)).arrayBuffer();
       const buffer = await sfx.ctx.decodeAudioData(raw);
       return { buffer, offset: leadingSilence(buffer) };
     };
+
+    const press = await decode(SFX_PRESS);
+    sfx.buffer = press.buffer;
+    sfx.offset = press.offset;
+
+    try {
+      const up = await decode(SFX_RELEASE);
+      sfx.release = up.buffer;
+      sfx.releaseOffset = up.offset;
+    } catch { sfx.release = null; }
+
+    try { sfx.click = (await decode(SFX_CLICK)).buffer; } catch { sfx.click = null; }
 
     try {
       const one = await decode(SFX_SELECT);
@@ -92,9 +108,20 @@ function leadingSilence(buf) {
   return 0;
 }
 
-// Plays the button click sound.
-function playClick(ev) {
+// The key or pointer behind an event.
+const holder = (ev) => (ev && (ev.code || ev.key)) || 'pointer';
+
+// Plays the button press sound and holds it for the matching release.
+function playPress(ev) {
+  sfx.held = holder(ev);
   playSound(sfx.buffer, sfx.offset, ev);
+}
+
+// Plays the button release sound if this key or pointer holds a press.
+function playRelease(ev) {
+  if (!sfx.held || sfx.held !== holder(ev)) return;
+  sfx.held = null;
+  playSound(sfx.release, sfx.releaseOffset, ev);
 }
 
 // Mute one sound when a single gesture selects two things.
@@ -131,4 +158,4 @@ function playSound(buffer, offset, ev) {
   } catch { }
 }
 
-export { DRAG_SLOP, SFX_CLICK, SFX_SELECT, SFX_WATER, SFX_VOLUME, SFX_ONSET, SFX_PREROLL, sfx, loadSounds, leadingSilence, playClick, playPaper, playSelect, playWater, playSound };
+export { DRAG_SLOP, SFX_CLICK, SFX_PRESS, SFX_RELEASE, SFX_SELECT, SFX_WATER, SFX_VOLUME, SFX_ONSET, SFX_PREROLL, sfx, loadSounds, leadingSilence, playPress, playRelease, playPaper, playSelect, playWater, playSound };

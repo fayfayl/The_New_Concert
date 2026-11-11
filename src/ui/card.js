@@ -43,7 +43,7 @@ function unrestColour(v) {
 // A daily rate, to two decimals below 1.
 const rateText = (n) => (Math.abs(n) < 1 ? n.toFixed(2) : n.toFixed(1));
 
-function partsMarkup(title, parts, empty, risingIsGood = true, digits = null) {
+function partsMarkup(title, parts, empty, risingIsGood = true, digits = null, unit = '') {
   const body = parts.length
     ? [...parts].sort((a, b) => b[1] - a[1])
       .map(([label, n]) => {
@@ -52,7 +52,7 @@ function partsMarkup(title, parts, empty, risingIsGood = true, digits = null) {
           : Math.abs(n) < 1 ? n.toFixed(2)
             : Math.abs(n) < 10 ? n.toFixed(1) : n.toFixed(0);
         const good = n > 0 === risingIsGood;
-        return `<div class="cm-line"><span>${label}</span><b class="${good ? 'up' : 'down'}">${sign}${round}</b></div>`;
+        return `<div class="cm-line"><span>${label}</span><b class="${good ? 'up' : 'down'}">${sign}${round}${unit}</b></div>`;
       })
       .join('')
     : `<div class="sub none">${empty}</div>`;
@@ -74,11 +74,11 @@ function paintMeters(w, p, stats) {
   const happy = happinessOf(w, p, stats, today);
   const unrest = unrestOf(w, p, stats, happy.value);
 
-  els.cardHappy.textContent = happy.value.toFixed(0);
+  els.cardHappy.textContent = happy.value.toFixed(0) + '%';
   els.cardHappyFill.style.width = `${happy.value}%`;
   els.cardHappyFill.style.background = moodColour(happy.value);
   els.cardHappyNote.innerHTML = `tax &times;${taxMultiplier(w, p, happy.value).value.toFixed(2)}`;
-  meterTip(els.cardHappyRow, partsMarkup('Happiness', happy.parts, 'nothing here yet', true, 1));
+  meterTip(els.cardHappyRow, partsMarkup('Happiness', happy.parts, 'nothing here yet', true, 1, '%'));
 
   els.cardUnrest.textContent = unrest.value.toFixed(0);
   els.cardUnrestFill.style.width = `${unrest.value}%`;

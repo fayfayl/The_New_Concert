@@ -424,9 +424,11 @@ function shadeTable(world, mode, selected, hovered) {
     if (!ownerOrdinal.has(key)) ownerOrdinal.set(key, ownerOrdinal.size);
     ownerAt[ix] = ownerOrdinal.get(key);
 
-    let role = selected === p.id ? 'selected'
-      : neighbours?.has(p.id) ? 'neighbour'
-        : hovered === p.id ? 'hovered' : null;
+    // Country selection lights no single province.
+    let role = state.choosing ? (hovered === p.id ? 'hovered' : null)
+      : selected === p.id ? 'selected'
+        : neighbours?.has(p.id) ? 'neighbour'
+          : hovered === p.id ? 'hovered' : null;
 
     let strength = 1;
     if (!role && dropped) {

@@ -11,7 +11,7 @@ export function link(all) { ({ actEffect, debtRatio, happinessOf, lawsFor, natio
 const ELECTRICITY_OUTPUT = 0.025;        // per level, on everything a factory makes
 const UNREST_OUTPUT = 0.01;              // lost per 10 unrest
 const UNREST_CONSTRUCTION = [[70, 0], [40, 0.8]];   // unrest at or above: construction kept
-const GOODS_PER_PERSON = 1 / 2500000;    // consumer goods a day each person wants, at happiness 50
+const GOODS_PER_PERSON = 1 / 3100000;    // consumer goods a day each person wants, at happiness 50
 const OCCUPATION_EFFICIENCY = 0.6;       // what occupied ground yields its occupier, before modifiers
 // Dockyard: ship points a day, and what each level or factory in its province adds.
 const DOCKYARD_POINTS = 2;
@@ -69,6 +69,15 @@ function shortagesOf(id) {
   };
 }
 
+// A running product of what moves one kind of point, summed over provinces.
+const blankWhy = () => ({ count: 0, lit: 0, calm: 0, held: 0, electricity: 0, factories: 0, hub: 0 });
+function noteWhy(why, count, lit, calm, occupied) {
+  why.count += count;
+  why.lit += count * lit;
+  why.calm += count * lit * calm;
+  why.held += count * lit * calm * (1 - occupied);
+}
+
 // One day of every country's industry: construction, equipment and ship points, consumer goods and their parts.
 function dailyIndustry(w) { return finish(industrySteps(w)); }
 
@@ -85,6 +94,7 @@ function* industrySteps(w) {
     return out.get(id);
   };
   const country = new Map();   // owner -> figures read once a day
+  const needs = new Map();     // province id -> its owner and its goods wanted per person
   const figures = (id) => {
     if (!country.has(id)) {
       country.set(id, {
@@ -112,7 +122,9 @@ function* industrySteps(w) {
     const home = of(p.owner);
     home.people += st.population || 0;
     // What a province can afford follows its happiness, as tax does.
-    home.spenders += (st.population || 0) * (0.5 + happinessOf(w, p, st, today).value / 100);
+    const need = 0.5 + happinessOf(w, p, st, today).value / 100;
+    home.spenders += (st.population || 0) * need;
+    needs.set(p.id, [p.owner, need]);
     home.provinces++;
     const level = Array.isArray(st.electricity) ? st.electricity[0] : Number(st.electricity) || 0;
     home.electricity += level;
@@ -141,6 +153,17 @@ function* industrySteps(w) {
     // Output follows control: the owner keeps the unoccupied share, the occupier gets the rest at its efficiency.
     const occupied = occupiedFraction(w, p);
     const owner = of(p.owner);
+    // What moved each kind of point here, for the top bar's breakdowns.
+    const calm = Math.max(0, 1 - UNREST_OUTPUT * Math.floor(unrest / 10));
+    const lit = 1 + ELECTRICITY_OUTPUT * level * f.cover;
+    const why = (owner.why ||= { civilian: 0, points: blankWhy(), equipment: blankWhy(), ships: blankWhy() });
+    why.civilian += civ;
+    noteWhy(why.points, ordered, lit, calm * built, occupied);
+    noteWhy(why.equipment, mil, lit, calm, occupied);
+    noteWhy(why.ships, docks * DOCKYARD_POINTS, yard / DOCKYARD_POINTS, calm, occupied);
+    why.ships.electricity += docks * DOCKYARD_POINTS * DOCKYARD_ELECTRICITY * level * f.cover;
+    why.ships.factories += docks * DOCKYARD_POINTS * DOCKYARD_MILITARY * Math.min(DOCKYARD_MILITARY_CAP, mil);
+    why.ships.hub += docks * DOCKYARD_POINTS * DOCKYARD_SUPPLY_HUB * hub;
     owner.points += points * (1 - occupied);
     owner.goods += goods * (1 - occupied);
     owner.ordered += ordered * (1 - occupied);
@@ -157,6 +180,10 @@ function* industrySteps(w) {
       occupier.goods += goods * e;
       occupier.equipment += equipment * e;
       occupier.ships += ships * e;
+      occupier.seized = occupier.seized || { points: 0, equipment: 0, ships: 0 };
+      occupier.seized.points += points * e;
+      occupier.seized.equipment += equipment * e;
+      occupier.seized.ships += ships * e;
     }
   }
   for (const [id, b] of out) {
@@ -169,6 +196,11 @@ function* industrySteps(w) {
       * Math.max(0, 1 + nationalModifier(w, id, 'research')) * (1 + (stabilityOf(w, id) - 50) / RESEARCH_STABILITY);
     b.slots = RESEARCH_SLOTS.find(([at]) => b.electrified >= at)?.[1] ?? 1;
   }
+  // Each province's goods wanted per person against its country's mean.
+  live.goodsNeed = new Map([...needs].map(([id, [owner, need]]) => {
+    const b = out.get(owner);
+    return [id, b?.spenders && b.people ? need / (b.spenders / b.people) : 1];
+  }));
   return out;
 }
 

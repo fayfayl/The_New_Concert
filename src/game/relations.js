@@ -439,11 +439,16 @@ function alliedInWar(w) {
   return out;
 }
 
-// Compass positions, refreshed one country at a time; and what every pair shares, refreshed daily.
+// Compass positions and ideological tolerance, refreshed one country at a time; and what every pair shares, refreshed daily.
 const positions = new Map();
+const tolerances = new Map();
 let terms = { standing: new Map(), tension: { value: 0, caused: new Map() }, friends: new Map() };
 const positionOf = (w, id) => {
-  try { const pos = governmentPosition(w, id)?.position; if (pos) positions.set(id, pos); } catch { /* no position */ }
+  try {
+    const at = governmentPosition(w, id);
+    if (at?.position) positions.set(id, at.position);
+    tolerances.set(id, w.government?.ideologies?.ideologies?.find((i) => i.name === at?.ideology)?.tolerance ?? 1);
+  } catch { /* no position */ }
 };
 function refreshTerms(w) { finish(termSteps(w)); }
 
@@ -566,7 +571,7 @@ function pairRelations(w, a, b, t = terms) {
   const pa = positions.get(a), pb = positions.get(b);
   if (!pa || !pb) return null;
   const distance = Math.hypot(pa[0] - pb[0], pa[1] - pb[1]);
-  const base = RELATIONS_BASE - distance * RELATIONS_PER_DISTANCE;
+  const base = RELATIONS_BASE - distance * RELATIONS_PER_DISTANCE / (tolerances.get(a) ?? 1);
   const parts = [...historyParts(w, a, b, t), ...(t.friends.get(pairKey(a, b)) || [])];
   const before = base + parts.reduce((s, [, n]) => s + n, 0);
   // What b raised in tension, weighed more heavily the further apart the two stand.

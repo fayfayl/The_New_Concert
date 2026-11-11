@@ -51,6 +51,7 @@ const run = (n) => {
 };
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 const ok = (c, m) => { console.log(`  ${c ? 'ok  ' : 'FAIL'}  ${m}`); if (!c) problems.push(['check', new Error(m)]); };
@@ -139,10 +140,12 @@ ok(afterRight === 1, `a right click plays it ONCE, not once per selection (${aft
 const sea = seaPixel();
 ok(Boolean(sea), `found open water to click (${sea?.x},${sea?.y})`);
 
-// Outside the Navy mode a click on water picks nothing at all, so it says
-// nothing. It also clears whatever was selected, which is silent too.
+// Outside the Navy mode a click on water picks nothing, and dismisses the open
+// county card with the ground sound.
 lookAndClick(sea);
-ok(selections() === 0, `clicking water plays no ground sound (${selections()})`);
+ok(selections() === 1, `clicking water to dismiss a panel plays the ground sound once (${selections()})`);
+lookAndClick(sea);
+ok(selections() === 0, `clicking water with nothing open stays quiet (${selections()})`);
 ok(waters() === 0, `and no water sound outside the Navy mode (${waters()})`);
 
 // In the Navy mode it picks the region and the subregion inside it, both from

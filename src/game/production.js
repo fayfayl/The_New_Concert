@@ -159,9 +159,12 @@ function queueConstruction(w, tag, id, where, to, aid = false) {
   return { project: id, where, points: Math.round(total), money: Math.round(entry.money), materials: round(entry.materials) };
 }
 
-// Development aid: political power a level at full relations' distance, abroad and in a colony of one's own.
-const AID_POLITICAL_POWER = 15;
-const COLONY_AID_POLITICAL_POWER = 5;
+// Development aid: political power a level at a view of 0, abroad or in a colony of one's own.
+const aidEntry = (w) => w.government?.actions?.actions?.find((x) => x.name === 'Development aid') || {};
+function aidPoliticalPower(w, own) {
+  const act = aidEntry(w);
+  return (own ? act.colonyCost : act.cost) || 0;
+}
 // What anyone may build abroad, and what a suzerain may also build in its own colony.
 const AID_PROJECTS = ['road', 'electricity', 'rail'];
 const COLONY_AID_PROJECTS = [...AID_PROJECTS, 'fortification', 'antiAir', 'radar', 'supplyHub', 'airBase', 'dockyard', 'eyrie', 'syntheticOil', 'syntheticRubber'];
@@ -180,8 +183,9 @@ function giveDevelopmentAid(w, tag, id, where, to) {
   if ((w.polityValues?.[tag]?.atWar || []).includes(host)) throw new Error(`${tag} is at war with ${host}`);
   const view = relationsBetween(host, tag)?.value;
   if (typeof view !== 'number') throw new Error(`no view of ${tag} held by ${host} yet`);
-  if (view < 0) throw new Error(`${host}'s view of ${tag} is ${view.toFixed(1)}, below 0`);
-  const cost = (own ? COLONY_AID_POLITICAL_POWER : AID_POLITICAL_POWER) * (100 - view) / 100;
+  const least = aidEntry(w).needs?.relations ?? 0;
+  if (view < least) throw new Error(`${host}'s view of ${tag} is ${view.toFixed(1)}, below ${least}`);
+  const cost = aidPoliticalPower(w, own) * (100 - view) / 100;
   const v = valuesOf(w, tag);
   if ((v.politicalPower || 0) < cost) throw new Error(`${tag} holds ${(v.politicalPower || 0).toFixed(1)} political power of ${cost.toFixed(1)}`);
   const out = queueConstruction(w, tag, id, where, to, true);
@@ -436,4 +440,4 @@ function queuesOf(w, tag) {
   };
 }
 
-export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, countiesTouch, AID_POLITICAL_POWER, COLONY_AID_POLITICAL_POWER, AID_PROJECTS, COLONY_AID_PROJECTS, giveDevelopmentAid, recordAid, queueEquipment, queueShip, cancelQueued, dailyProduction, productionSteps, queuesOf, genCost };
+export { MEDIAN_PROVINCE_KM2, ROAD_CONSTRUCTION, ELECTRICITY_CONSTRUCTION, RESEARCHED_GENERATION, provinceGround, countyShore, queueConstruction, countiesTouch, aidPoliticalPower, AID_PROJECTS, COLONY_AID_PROJECTS, giveDevelopmentAid, recordAid, queueEquipment, queueShip, cancelQueued, dailyProduction, productionSteps, queuesOf, genCost };

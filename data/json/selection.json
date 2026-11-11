@@ -1,0 +1,141 @@
+{
+  "countries": [
+    {
+      "tag": "TRN",
+      "major": true,
+      "description": "Our geopolitical position after the Great War has never been more secure, despite the financial instabilities of the immediate post-war period. The impacts of our industry and culture can be felt in all four corners of the world. Athanasia, New Cona, and Dimuro are united under one republic, as our founding fathers intended. Our adversaries will no doubt wish to exact revenge, but By Will We Stand as One, and nothing will deny us the Trinational Century."
+    },
+    {
+      "tag": "FNA",
+      "major": true,
+      "description": "We emerged from the bloody 1910s as one of Therundia's foremost powers. But at home, threats of a left-wing revolution and frequent strikes have made our victory ring hollow among our people, and concessions and rebellions in our colonies overseas such as Nunattiavak and Muburnyika have bled us dry further. Nevertheless, Fellnor and Avanta remain united under stable Union leadership. The world will soon be reminded of what our Empire can do."
+    },
+    {
+      "tag": "MRI",
+      "major": true,
+      "description": "Birthed from the civil war that toppled the Mari Empire, we must learn from our mistakes in the Intercontinental War if we are ever to reclaim our old prestige. After a slew of unworthy leaders during the early 1920s, Aappo Miettinen rose to the occasion and secured the survival of our nation in these uncertain decades. The conduct of our military and our politics remains a serious hurdle. But now that the old Concert has come to a close, it is clear we will soon become the leaders of the New Act."
+    },
+    {
+      "tag": "ARY",
+      "major": true,
+      "description": "The end of the Intercontinental War saw the collapse of the old Aroyani Empire, the last of a long line of gatafolk empires that had ruled the Stumathalassan for millennia. We rose from the ashes of this collapse, yet our economic conditions have remained dismal at best, and our political situation has been marred by violence in the streets and weak governmental authority. Abroad, we are beset by enemies on all sides, both old and new, many of which we once considered part of our great empire."
+    },
+    {
+      "tag": "AUS",
+      "major": true,
+      "description": "Our independence was won from the Aroyani Empire in 1922 after years of conflict. Since then, we have ensured that the avisian people remember the empire our ancestors built thousands of years ago, and know that it will rise again. We have held firm against those who seek to destroy or hold us back, against the insurgents of the borderlands, against the enemies across the borders. Soon, a new era of avisian hegemony over Therundia will begin once more."
+    },
+    {
+      "tag": "TWD",
+      "major": true,
+      "description": "By the time of our surrender in the Continuation War, our resources and people had been greatly spent. Combined with the harsh terms at Larajevo, our recovery has been greatly hampered. Although our government has enjoyed relative stability, the lack of a clear heir and revanchist restlessness among our people cast a long shadow over our future. If Twadamia is to rise again, the crown must be secured and the anger of our people directed against our enemies."
+    },
+    {
+      "tag": "AMY",
+      "major": true,
+      "description": "The slovenly nature of our governing institutions was swiftly rectified following Chancellor Barylan Celgylyn's rise to power in 1919. Political unity has been assured, and the corrupt and weak have been weeded out. Now, we must ensure our neighbours and enemies pose no threat to our rule over western Sakan, either by winning friends further afield in Therundia or eastern Sakan, or by teaching them the cost of standing in our way."
+    },
+    {
+      "tag": "ZAN",
+      "major": true,
+      "description": "Our triumphant victory in the Intercontinental War has bolstered our position on the world stage. Despite the high costs of reconstruction, one of our greatest enemy has been forced to retreat into its heartlands. But our people must know that we cannot lower our guard, for the faltering of one axis of power in eastern Sakan has brought us into wider confrontation with the other, namely the Virupans. The contest for dominance over eastern Sakan has only just begun."
+    },
+    {
+      "tag": "VOS",
+      "major": true,
+      "description": "Although we emerged victorious from the Continuation War, the effects of the war on our people and industry have caused widespread unrest and instability. An instability which allowed Florent Seyrès and his National Party to assume control of the nation. So far, he has done wonders for the national economy, but has the price been worth it, with our greatest allies insulted and our nation isolated? Abroad we stand alone. At home not every eye on Seyrès is a friendly one."
+    },
+    {
+      "tag": "TVC",
+      "description": ""
+    },
+    {
+      "tag": "NAH",
+      "description": ""
+    },
+    {
+      "tag": "NNT",
+      "description": ""
+    },
+    {
+      "tag": "GWR",
+      "description": ""
+    },
+    {
+      "tag": "KAN",
+      "description": ""
+    },
+    {
+      "tag": "SCN",
+      "description": ""
+    },
+    {
+      "tag": "NCN",
+      "description": ""
+    },
+    {
+      "tag": "SAN",
+      "description": ""
+    },
+    {
+      "tag": "VRP",
+      "description": ""
+    },
+    {
+      "tag": "JEN",
+      "description": ""
+    },
+    {
+      "tag": "KRN",
+      "description": ""
+    },
+    {
+      "tag": "QRG",
+      "description": ""
+    },
+    {
+      "tag": "AKA",
+      "description": ""
+    },
+    {
+      "tag": "CNC",
+      "description": ""
+    },
+    {
+      "tag": "SBY",
+      "description": ""
+    },
+    {
+      "tag": "VKD",
+      "description": ""
+    },
+    {
+      "tag": "NKO",
+      "description": ""
+    },
+    {
+      "tag": "SUK",
+      "description": ""
+    },
+    {
+      "tag": "EMS",
+      "description": ""
+    },
+    {
+      "tag": "PMK",
+      "description": ""
+    },
+    {
+      "tag": "KOF",
+      "description": ""
+    },
+    {
+      "tag": "SGQ",
+      "description": ""
+    },
+    {
+      "tag": "JNI",
+      "description": ""
+    }
+  ]
+}

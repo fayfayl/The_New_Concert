@@ -7,10 +7,13 @@ const { CACHE_FILE, applyCountyOccupation, countiesFromCache, hashInputs, seaFro
 const { addRealmBlocks, attachBlockMembers, buildBorderDistance, buildCountyWorld, buildSeaWorld, buildSubWorld, buildWorld, computeLabelGeometry, indexCounties, indexProvinces, indexSea, indexSubs, normaliseCountyTable, normaliseSeaTable, normaliseSubTable, normaliseTable, toRgb } = await import(`./world/mapdata.js${VERSION}`);
 const { BUILDINGS, BUILDING_AT, mergeStats } = await import(`./world/provincestats.js${VERSION}`);
 const { UNALIGNED } = await import(`./game/government.js${VERSION}`);
-const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'render/labels', 'render/view', 'layers/cities', 'layers/resourcelayer', 'layers/routelayer', 'layers/debugdraw', 'layers/infralayer', 'layers/marks', 'ui/console', 'ui/card', 'game/clock', 'ui/select', 'ui/tooltip', 'ui/panel', 'game/province', 'ui/diplo', 'ui/tips', 'game/nation', 'game/industry', 'game/production', 'game/resources', 'game/routes', 'game/relations', 'game/treaties', 'game/acts', 'ui/readout', 'ui/menus', 'ui/audio', 'ui/input'];
+const MODULES = ['core/core', 'core/load', 'render/modes', 'render/tiles', 'render/labels', 'render/view', 'layers/cities', 'layers/resourcelayer', 'layers/routelayer', 'layers/debugdraw', 'layers/infralayer', 'layers/marks', 'ui/console', 'ui/card', 'game/clock', 'ui/select', 'ui/tooltip', 'ui/panel', 'game/province', 'ui/diplo', 'ui/tips', 'game/nation', 'game/industry', 'game/production', 'game/resources', 'game/routes', 'game/relations', 'game/treaties', 'game/acts', 'ui/readout', 'ui/menus', 'ui/choose', 'ui/hud', 'ui/scrollbars', 'ui/audio', 'ui/input'];
 const loaded = await Promise.all(MODULES.map((n) => import(`./${n}.js${VERSION}`)));
 const all = Object.assign({}, ...loaded);
 for (const m of loaded) m.link?.(all);
+all.wireScrollbars();
+all.wireChoose();
+all.wireHud();
 const { CLOCK_EPOCH, DAY_MS, MARKS, MARK_KINDS, MAX_SCALE, MIN_SCALE, POLITICAL_POWER_BASE, RESOURCE_KINDS, RUNDEAN_MONTHS, TICKS_PER_DAY, TICKS_PER_HOUR, applyClock, buildLabels, buildNightMask, buildResourceLines, buildTiles, changeOwners, clamp, clampPan, clock, clockDate, consoleGovSummary, consoleInfrastructure, countedLoad, dailyBooks, els, fillLoadingQuote, fitToView, frame, invalidateView, linkInternationalCities, loadBitmap, loadBytes, loadCache, loadJSON, loadPixels, markMapReady, openStartMenu, perf, politicalPowerOf, provinceTraits, runDays, setActFromConsole, setBuilding, setDoctrineFromConsole, setFactoriesFromConsole, setFormFromConsole, setFortFromConsole, setLawFromConsole, setLevelFromConsole, setLoadingNote, setLoadingProgress, setPaused, setRailFromConsole, setSpeed, setSpiritFromConsole, sfx, showStats, startParallax, state, colonyHolder, updateClockControls, updatePanel, view, wireInput, live, happinessOf, unrestOf, dailyIndustry, commandPowerOf, COMMAND_POWER_CAP, dailySupply, queueConstruction, giveDevelopmentAid, queueEquipment, queueShip, cancelQueued, queuesOf, dailyRelations, relationsBetween, nationalModifier, setTariff, setShippingTerms, tariffTable, addAgreement, bunkeringRate, routeOf, tradeEnds, seaGraphStats, buildRoutesNow, industrySteps, supplySteps } = all;
 
 // Loads the data, builds the model, and starts the render loop.
@@ -27,7 +30,7 @@ async function init() {
     startGovernment, lawTable, policyTable, decreeTable, ideologyTable, spiritTable, modifierTable,
     actionTable, relationTable, leaderTable,
     startOccupation, pastWars, treaties,
-    resources, constructionTable, equipmentTable, shipTable, quotes,
+    resources, constructionTable, equipmentTable, shipTable, quotes, selection, rules,
     seaRaw, seaPngBytes, countyRaw, countyValues, countyPngBytes, subPngBytes] = await Promise.all(countedLoad(0, 70, [
       loadJSON('./data/json/geography/provinces.json'),
       loadJSON('./data/json/geography/polities.json'),
@@ -65,6 +68,8 @@ async function init() {
       loadJSON('./data/json/production/equipment.json', true),
       loadJSON('./data/json/production/ships.json', true),
       loadJSON('./data/json/quotes.json', true),
+      loadJSON('./data/json/selection.json', true),
+      loadJSON('./data/json/rules.json', true),
       loadJSON('./data/json/geography/sea.json', true),
       loadBytes('./data/img/bitmap/sea.png', true),
       loadJSON('./data/json/geography/counties.json', true),
@@ -85,7 +90,7 @@ async function init() {
 
   let world, geometry;
   const restored = cache && worldFromCache(table, cache, indexProvinces);
-  setLoadingNote(restored ? 'Restoring the map…' : 'Building the map…');
+  setLoadingNote('Preparing map…');
   setLoadingProgress(70);
   if (restored) {
     ({ world, geometry } = restored);
@@ -211,6 +216,9 @@ async function init() {
   world.resourceSheet = resourceSheet;
   world.resourceLines = buildResourceLines(world);
   world.quotes = quotes?.quotes ?? [];
+  world.selection = selection?.countries ?? [];
+  world.rules = rules?.rules ?? [];
+  state.rules = new Map(world.rules.map((r) => [r.name, r.default]));
 
   fillLoadingQuote(world.quotes);
 
@@ -247,6 +255,7 @@ async function init() {
       await new Promise((r) => setTimeout(r, 0));
     }
   };
+  setLoadingNote('Predicting markets…');
   for (let i = 0; i < 4; i++) {
     live.lastIndustry = await sliced(industrySteps(world));
     live.lastSupply = await sliced(supplySteps(world));
@@ -256,8 +265,10 @@ async function init() {
   world.resourceLines = buildResourceLines(world);
   live.lastRelations = dailyRelations(world);
   for (const id of Object.keys(world.polityValues || {})) politicalPowerOf(world, id);
+  // Industry again, as debt in the books moves stability and stability moves output.
+  live.lastIndustry = await sliced(industrySteps(world));
 
-  setLoadingNote('Drawing the map…');
+  setLoadingNote('Charting trade routes…');
   setLoadingProgress(90);
   frame();
 
@@ -267,12 +278,17 @@ async function init() {
   window.addEventListener('keydown', skipKey);
   await buildRoutesNow((done) => setLoadingProgress(90 + 10 * done), () => skipRoutes);
   window.removeEventListener('keydown', skipKey);
+  await all.prepareChoose();
   setLoadingProgress(100);
   markMapReady();
 
   // Console API, e.g. game.setOwner('norrhus', 'FNA').
   const game = {
     setOwner: (province, owner) => changeOwners([[province, owner]]),
+    // Opens or closes the debug menu.
+    togglePanel: () => all.togglePanel(),
+    // Leaves country selection playing a country.
+    play: (tag) => all.playCountry(tag),
     setOwners: changeOwners,
     world: () => state.world,
 

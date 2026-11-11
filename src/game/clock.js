@@ -71,12 +71,12 @@ function updateClockFace(at) {
 function updateClockControls() {
   els.clock.classList.toggle('running', !clock.paused);
   els.clockPlay.setAttribute('aria-pressed', String(!clock.paused));
-  els.clockPlay.title = clock.paused ? 'Resume (Space)' : 'Pause (Space)';
+  els.clockPlay.setAttribute('data-tip', clock.paused ? 'Resume (Space)' : 'Pause (Space)');
 
   els.clockSlower.disabled = clock.speed <= 1;
   els.clockFaster.disabled = clock.speed >= SPEEDS.length;
-  els.clockSlower.title = `Slower (now ${clock.speed} of ${SPEEDS.length})`;
-  els.clockFaster.title = `Faster (now ${clock.speed} of ${SPEEDS.length})`;
+  els.clockSlower.setAttribute('data-tip', `Slower (now ${clock.speed} of ${SPEEDS.length})`);
+  els.clockFaster.setAttribute('data-tip', `Faster (now ${clock.speed} of ${SPEEDS.length})`);
 }
 
 function setSpeed(speed) {

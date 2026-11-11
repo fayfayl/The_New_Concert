@@ -56,6 +56,7 @@ const run = (n) => {
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms`);
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 // loadSounds() is deliberately not awaited by the caller, so give the fetch and

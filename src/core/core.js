@@ -84,6 +84,15 @@ const els = {
   diploFaction: document.getElementById('diplo-faction'),
   diploLeader: document.getElementById('diplo-leader'),
   diploPortrait: document.getElementById('diplo-portrait'),
+  diploPair: document.getElementById('diplo-pair'),
+  diploPairUs: document.getElementById('diplo-pair-us'),
+  diploPairThem: document.getElementById('diplo-pair-them'),
+  diploPairOurs: document.getElementById('diplo-pair-ours'),
+  diploPairUsBox: document.getElementById('diplo-pair-us-box'),
+  diploPairThemBox: document.getElementById('diplo-pair-them-box'),
+  diploPairTo: document.getElementById('diplo-pair-to'),
+  diploPairFrom: document.getElementById('diplo-pair-from'),
+  diploPairTheirs: document.getElementById('diplo-pair-theirs'),
   diploStability: document.getElementById('diplo-stability'),
   diploManpower: document.getElementById('diplo-manpower'),
   diploParty: document.getElementById('diplo-party'),
@@ -97,6 +106,7 @@ const els = {
   diploPaneLedger: document.getElementById('diplo-pane-ledger'),
   diploRelations: document.getElementById('diplo-relations'),
   diploActions: document.getElementById('diplo-actions'),
+  wipNote: document.getElementById('wip-note'),
   diploLedgerLeft: document.getElementById('diplo-ledger-left'),
   diploLedgerRight: document.getElementById('diplo-ledger-right'),
   countyCard: document.getElementById('county-card'),
@@ -136,7 +146,6 @@ const els = {
   cardMilN: document.getElementById('card-mil-n'),
   stats: document.getElementById('stats'),
   toolbar: document.getElementById('toolbar'),
-  zoomLevel: document.getElementById('zoom-level'),
   pause: document.getElementById('pause'),
   clock: document.getElementById('clock'),
   clockFace: document.getElementById('clock-face'),
@@ -146,6 +155,12 @@ const els = {
 };
 
 const state = {
+  choosing: false,        // country selection is open
+  chooseMember: false,    // country selection takes the province's owner, not its realm
+  chosenTag: null,        // the country lit in country selection
+  chosenLand: null,       // its province ids
+  playing: null,          // the player's country tag, or null
+  rules: null,            // the chosen option of each game rule, by rule name
   mode: 'political',      // which of MODES colours the map
   selected: null,         // province id, or null
   hovered: null,          // province id, or null
@@ -184,7 +199,7 @@ const dirtyBoxes = [];                // Map rectangles to repaint
 // Requests a full repaint or a re-blit.
 
 const invalidateBuffer = () => { live.bufferDirty = true; };
-const invalidateView = () => { live.viewDirty = true; els.zoomLevel.textContent = `${Math.round(view.scale * 100)}%`; };
+const invalidateView = () => { live.viewDirty = true; };
 
 // Marks provinces for a pixel repaint, skipping those too big to light.
 function invalidateProvinces(...ids) {

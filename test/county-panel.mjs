@@ -36,6 +36,7 @@ const run = (n) => {
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms`);
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 const canvas = dom.el('map');
@@ -120,7 +121,7 @@ if (!found) {
   // NaN and the silhouette traced nothing. Read out of the debug panel, which is
   // the only place the traced size is visible from outside.
   {
-    fire(dom.el('toggle-panel'), 'click');
+    game.togglePanel();
     run(4);
     await new Promise((r) => setTimeout(r, 300));   // the readout is throttled
     run(6);
@@ -145,7 +146,7 @@ if (!found) {
         problems.push(['ring', new Error(`fewer than two traced shapes: "${said}"`)]);
       }
     }
-    fire(dom.el('toggle-panel'), 'click');
+    game.togglePanel();
     run(4);
   }
 

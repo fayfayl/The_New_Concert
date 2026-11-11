@@ -828,16 +828,16 @@ function spreadLines(w, route) {
 // The land graph, read once per memo: one market sees one set of wars.
 const LAND_KEY = '#land';
 // The cheapest open route for a seller's cargo to a buyer, hub to hub, or null; rates: the tariff each country charges on it, as [sig, Map].
-function findRoute(w, from, to, rates, memo = null) { return finish(routeSteps(w, from, to, rates, memo)); }
+function findRoute(w, from, to, rates, memo = null, end = null) { return finish(routeSteps(w, from, to, rates, memo, end)); }
 
-// The same in steps, pausing while a tree is built.
-function* routeSteps(w, from, to, rates, memo = null) {
+// The same in steps, pausing while a tree is built. end: 'capital' to end at the buyer's capital rather than its hub.
+function* routeSteps(w, from, to, rates, memo = null, end = null) {
   // The sea graph brought up to date a step before the land graph.
   if (!memo?.has(LAND_KEY)) { seaGraph(w); yield; }
   const land = memo?.get(LAND_KEY) || landGraph(w);
   memo?.set(LAND_KEY, land);
   const sea = seaGraph(w);
-  const start = hubCounty(w, land, from), target = hubCounty(w, land, to);
+  const start = hubCounty(w, land, from), target = end === 'capital' ? capitalOf(w, land, to) : hubCounty(w, land, to);
   if (start < 0 || target < 0 || from === to) return null;
   if (start === target) return { cost: 0, untaxed: 0, stops: [], rates: [], calls: [], km: 0, legs: [] };
   if ((w.polityValues?.[from]?.atWar || []).includes(to) || (w.polityValues?.[to]?.atWar || []).includes(from)) return null;
@@ -1287,13 +1287,21 @@ function feederHub(w, land, sea, id) {
 }
 
 // Share of the way on from a point of the network to the hub that counts against joining there.
-const NET_ONWARD = 0.5;
+const NET_ONWARD = 0.75;
+// Most points a feeder runs through others' land at a stretch, from leaving its own to coming back.
+const TRANSIT_POINTS = 12000;
 // A country's feeder network: grown from its hub over its own land and ports, each time joining the city, province seat or port cheapest to reach, by the way to it plus NET_ONWARD of the way on to the hub; pausing between counties.
+// It may pass through the land of a country neither at war with it nor embargoing either way, RAIL_HANDLING of a stop at each border and TRANSIT_POINTS at a stretch.
 function* feederNet(w, land, sea, id, hub, ours) {
   const NC = land.NC, cs = w.counties;
   const dist = new Float64Array(NC).fill(Infinity), prev = new Int32Array(NC).fill(-1), via = new Int32Array(NC);
   const inNet = new Uint8Array(NC), mine = new Uint8Array(NC), toHub = new Float64Array(NC);
   for (let k = 1; k < NC; k++) mine[k] = ours(k) ? 1 : 0;
+  // Countries whose land is open to pass through, by index; and the points run abroad at a stretch to each county.
+  const shut = hostileTo(w, land, id, null);
+  const passable = Uint8Array.from(land.polities, (c) => (c !== id && !shut.has(c) && (relationsBetween(id, c)?.value ?? 0) > EMBARGO ? 1 : 0));
+  const open = (k) => mine[k] === 1 || (land.ctrl[k] >= 0 && passable[land.ctrl[k]] === 1);
+  const abroad = new Float64Array(NC);
   // Cities and the seats of provinces, held by the country.
   const targets = new Set();
   for (const t of w.cities || []) {
@@ -1314,11 +1322,16 @@ function* feederNet(w, land, sea, id, hub, ours) {
       if (++settled % TREE_SLICE === 0) yield;
       for (let e = land.off[u]; e < land.off[u + 1]; e++) {
         const v = land.to[e];
-        const n = d + land.cost[e] / land.warAt[v] + (via[u] > 0 && land.rail[via[u] - 1] !== land.rail[e] ? STOP_POINTS * RAIL_HANDLING : 0);
-        if (mine[v] && !inNet[v] && better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = e + 1; heap.push(n, v); }
+        if (inNet[v] || !open(v)) continue;
+        const step = land.cost[e] / land.warAt[v];
+        const out = mine[v] ? 0 : abroad[u] + step;
+        if (out > TRANSIT_POINTS) continue;
+        const border = land.ctrl[v] !== land.ctrl[u] && !(mine[u] && mine[v]) ? STOP_POINTS * RAIL_HANDLING : 0;
+        const n = d + step + border + (via[u] > 0 && land.rail[via[u] - 1] !== land.rail[e] ? STOP_POINTS * RAIL_HANDLING : 0);
+        if (better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = e + 1; abroad[v] = out; heap.push(n, v); }
       }
       const i = land.portAt[u];
-      if (i < 0) continue;
+      if (i < 0 || !mine[u]) continue;
       for (let e = sea.edgeOff[i]; e < sea.edgeOff[i + 1]; e++) {
         const v = sea.quayCounty[sea.edgeTo[e]], n = d + FEEDER_SEA_HOP + sea.edgeSail[e];
         if (v > 0 && mine[v] && !inNet[v] && better(n, dist[v], u, prev[v])) { dist[v] = n; prev[v] = u; via[v] = -(e + 1); heap.push(n, v); }
@@ -1345,7 +1358,7 @@ const POCKET_PX = 300;
 // Share of a sale's cargo under which a port of landing or departure hands it over to the nearest busier one by sea.
 const PORT_FOLD = 0.1;
 // How far behind a port on wholly Arctic water starts in a port network, in points: at NET_ONWARD, about 1,000 km of rail.
-const ARCTIC_PORT_BEHIND = 6000;
+const ARCTIC_PORT_BEHIND = 4000;
 
 // A country's ports along its feeder network: for each county on the network, the port nearest along it, the next county towards that port and the network step taken, a port on icebound water starting behind by the share of its waters that are Arctic; null for a country with no port on the network.
 function* portNet(w, land, sea, id, tree) {
@@ -1649,7 +1662,7 @@ function* feederPieces(w, land, sea, id, hub, province, county = -1, reached = n
 // ------------------------------------------------------------ the store
 
 // Store layout version; bumped when what is kept or how it is drawn changes.
-const ROUTE_STORE_VERSION = 8;
+const ROUTE_STORE_VERSION = 10;
 // Words of a bitmap hashed between pauses.
 const HASH_WORDS = 1 << 18;
 // The key of what the drawn lines rest on: the county and subregion bitmaps and their counts.

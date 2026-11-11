@@ -6,15 +6,14 @@ const { compass, costWeighting, industryShares, nameOf, realmCompass } = await i
 const { els, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight;
-export function link(all) { ({ RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, tipName, tooBigToLight } = all); }
+let RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, terrainName, tipName, tooBigToLight;
+export function link(all) { ({ RESOURCE_NAME, areaText, depositsOf, flaggedName, goodName, nationalShares, polSwatch, polityOf, realmAbove, resourceIcon, shortNameOf, spiritById, terrainName, tipName, tooBigToLight } = all); }
 
 const panelOpen = () => els.panel.classList.contains('open');
 
 // Slides the development inspector in or out; backtick key.
 function togglePanel() {
   els.panel.classList.toggle('open');
-  document.getElementById('toggle-panel').classList.toggle('active', panelOpen());
   if (panelOpen()) {
     updatePanel();
     live.readoutAt = 0;             // Forces an immediate readout refresh
@@ -41,7 +40,7 @@ function updatePanel() {
   els.selBody.innerHTML = `
     <div class="row"><span>ID</span><span>${p.id}</span></div>
     <div class="row"><span>Owner</span><span>${polSwatch(polityOf(w, p))}${polityOf(w, p).name}</span></div>
-    <div class="row"><span>Terrain</span><span>${p.terrain.join(' + ') || '—'}</span></div>
+    <div class="row"><span>Terrain</span><span>${p.terrain.map(terrainName).join(' + ') || '—'}</span></div>
     <div class="row"><span>Climate</span><span>${p.climate.join(' + ') || '—'}</span></div>
     <div class="row"><span>Coastal</span><span>${w.coastal.has(p.id) ? 'yes' : 'no'}</span></div>
     <div class="row"><span>Area</span><span>${areaText(p)}</span></div>

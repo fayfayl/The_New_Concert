@@ -752,10 +752,46 @@ function buildSilhouette(world, id, at = world.provinceAt) {
   return { canvas, x: bb.minX, y: bb.minY, w, h };
 }
 
+// White silhouette of several provinces together, cropped to their bounds.
+function buildLandSilhouette(world, ids) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const members = new Uint8Array(world.byId.size + 2);
+  for (const id of ids) {
+    const bb = world.bounds.get(id);
+    if (!bb) continue;
+    minX = Math.min(minX, bb.minX);
+    minY = Math.min(minY, bb.minY);
+    maxX = Math.max(maxX, bb.maxX);
+    maxY = Math.max(maxY, bb.maxY);
+    members[world.byId.get(id).index] = 1;
+  }
+  if (minX > maxX) return null;
+  if (maxX - minX + 1 > world.width) { minX = 0; maxX = world.width - 1; }
+
+  const w = maxX - minX + 1;
+  const h = maxY - minY + 1;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(w, h);
+  for (let y = 0; y < h; y++) {
+    const row = (minY + y) * world.width;
+    for (let x = 0; x < w; x++) {
+      const mx = minX + x;
+      if (!members[world.provinceAt[row + (mx < world.width ? mx : mx - world.width)]]) continue;
+      const o = (y * w + x) * 4;
+      img.data[o] = img.data[o + 1] = img.data[o + 2] = img.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return { canvas, data: img.data, bake: true, x: minX, y: minY, w, h };
+}
+
 // The province border as a path, in the silhouette's pixel coordinates.
 function buildOutlinePath(s) {
   const w = s.w, h = s.h;
-  const data = s.canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  const data = s.data || s.canvas.getContext('2d').getImageData(0, 0, w, h).data;
   const on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3] !== 0;
 
   const path = new Path2D();
@@ -781,4 +817,4 @@ function buildOutlinePath(s) {
   return path;
 }
 
-export { LABEL_TRACKING, LABEL_LINE_HEIGHT, LABEL_ALPHA, LABEL_DIM_TO, LABEL_DIM_MS, labelDim, labelDimClock, stepLabelDim, labelDimming, LABEL_FADE_IN, LABEL_FADE_OUT, smoothstep, labelOpacity, BEND_RADIUS, LABEL_COLOUR, LABEL_OUTLINE, LABEL_COLOUR_OPACITY, LABEL_OUTLINE_ALPHA, LABEL_OUTLINE_WIDTH, LABEL_FIT, LABEL_MAX_LINES, LABEL_WRAP_ASPECT, LABEL_WRAP_GAIN, LABEL_DENSITY_FLOOR, LABEL_MIN_DENSITY, LABEL_ISLANDS_SHARE, LABEL_SPARSE_TRACKING, LABEL_SPARSE_LIFT, LABEL_ISLANDS_MAX_SPAN, LABEL_FACE, RESOURCE_FACE, resourceFont, resourceIconPx, labelFont, MEASURE_SIZE, measureCtx, widthRatio, wrapInto, fitLabel, denseRange, buildLabels, surrendered, nameArchipelagos, buildLabel, labelBounds, solveQuadratic, spinePoint, advanceT, curveWiden, GLYPH_STEP, GLYPH_MIN, GLYPH_MAX, GLYPH_SUPERSAMPLE, GLYPH_BUDGET_PX, glyphAtlas, glyphAtlasPx, glyphMeasure, glyphSize, bakedGlyph, glyphBox, glyphOverlapArea, GRID_CELL, makeGrid, glyphExtent, pointInGlyph, coveredFraction, boxHitsGlyph, layoutLabels, REALM_HANDOVER, realmHold, realmHolds, labelOps, labelOpCount, paintLabels, buildSilhouette, buildOutlinePath };
+export { buildLandSilhouette, LABEL_TRACKING, LABEL_LINE_HEIGHT, LABEL_ALPHA, LABEL_DIM_TO, LABEL_DIM_MS, labelDim, labelDimClock, stepLabelDim, labelDimming, LABEL_FADE_IN, LABEL_FADE_OUT, smoothstep, labelOpacity, BEND_RADIUS, LABEL_COLOUR, LABEL_OUTLINE, LABEL_COLOUR_OPACITY, LABEL_OUTLINE_ALPHA, LABEL_OUTLINE_WIDTH, LABEL_FIT, LABEL_MAX_LINES, LABEL_WRAP_ASPECT, LABEL_WRAP_GAIN, LABEL_DENSITY_FLOOR, LABEL_MIN_DENSITY, LABEL_ISLANDS_SHARE, LABEL_SPARSE_TRACKING, LABEL_SPARSE_LIFT, LABEL_ISLANDS_MAX_SPAN, LABEL_FACE, RESOURCE_FACE, resourceFont, resourceIconPx, labelFont, MEASURE_SIZE, measureCtx, widthRatio, wrapInto, fitLabel, denseRange, buildLabels, surrendered, nameArchipelagos, buildLabel, labelBounds, solveQuadratic, spinePoint, advanceT, curveWiden, GLYPH_STEP, GLYPH_MIN, GLYPH_MAX, GLYPH_SUPERSAMPLE, GLYPH_BUDGET_PX, glyphAtlas, glyphAtlasPx, glyphMeasure, glyphSize, bakedGlyph, glyphBox, glyphOverlapArea, GRID_CELL, makeGrid, glyphExtent, pointInGlyph, coveredFraction, boxHitsGlyph, layoutLabels, REALM_HANDOVER, realmHold, realmHolds, labelOps, labelOpCount, paintLabels, buildSilhouette, buildOutlinePath };

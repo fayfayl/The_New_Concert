@@ -21,6 +21,7 @@ await import('../src/main.js');
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms`);
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 
 const { state } = await import('../src/core/core.js');
 const rel = await import('../src/game/relations.js');

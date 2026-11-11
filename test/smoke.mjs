@@ -108,11 +108,12 @@ for (const button of dom.modeButtons) {
 // place either fact is visible from outside.
 {
   const { fire: fireEv } = await import('./dom-shim.mjs');
-  // The button rather than the backtick key: window-level listeners are not
-  // recorded by the shim, so a keydown reaches nothing.
-  if (!fireEv(dom.el('toggle-panel'), 'click')) {
+  // The console command rather than the backtick key: window-level listeners
+  // are not recorded by the shim, so a keydown reaches nothing.
+  if (!globalThis.window.game) {
     problems.push(['rivers', new Error('the debug button is not wired, so nothing below can be read')]);
   }
+  globalThis.window.game.togglePanel();
   run(4, 'open the panel');
 
   const riversRow = () => {
@@ -161,7 +162,7 @@ for (const button of dom.modeButtons) {
 // draws whole regions and looks completely normal, so it needs asserting.
 {
   const { fire: fireEv } = await import('./dom-shim.mjs');
-  fireEv(dom.el('toggle-panel'), 'click');
+  globalThis.window.game.togglePanel();
   run(4);
   await new Promise((r) => setTimeout(r, 300));
   run(6);
@@ -171,7 +172,7 @@ for (const button of dom.modeButtons) {
   if (!said) problems.push(['navy', new Error('the debug panel has no Sea subregions row')]);
   else if (said.startsWith('none')) problems.push(['navy', new Error(`the subregion layer did not load: ${said}`)]);
   else if (!/^[0-9,]+ drawn/.test(said)) problems.push(['navy', new Error(`the row reads "${said}"`)]);
-  fireEv(dom.el('toggle-panel'), 'click');
+  globalThis.window.game.togglePanel();
   run(4);
 }
 

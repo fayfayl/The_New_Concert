@@ -5,11 +5,11 @@ const { UNOWNED, isUnder, membersOf, realmOf } = await import(`../world/mapdata.
 const { actKey, governingSupport, heldActs, industryKind, industryShares, nameOf, nationalSupport, ownedLabel } = await import(`./government.js${VERSION}`);
 const { groundCost } = await import(`../world/ceilings.js${VERSION}`);
 const { LEVELS, FACTORIES, BUILDINGS } = await import(`../world/provincestats.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnChange, forgetOnGovernment, live } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnChange, forgetOnGovernment, live, state } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays;
-export function link(all) { ({ actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays } = all); }
+let tipLabel, actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays;
+export function link(all) { ({ tipLabel, actEffect, aidRecords, complianceOf, consumerShareOf, relationsBetween, depositsOf, heldYields, fillTokens, happinessOf, heldIdeology, label, lawLabel, occupiedFraction, populationOf, spiritById, taxMultiplier, unsettledShare, reparationsDue, activeLeases, activeAgreements, agreementPrice, shipmentDue, shipmentDays } = all); }
 
 // Sum of one modifier across everything a country carries.
 function nationalModifier(w, polityId, key) {
@@ -39,8 +39,16 @@ const nationalPartsBy = new Map();
 forgetOnGovernment((w, ids) => forgetTouched(nationalPartsBy, w, ids));
 function nationalParts(w, polityId, key) {
   const at = polityId + '|' + key;
-  if (!nationalPartsBy.has(at)) nationalPartsBy.set(at, nationalPartsOf(w, polityId, key));
+  if (!nationalPartsBy.has(at)) nationalPartsBy.set(at, [...nationalPartsOf(w, polityId, key), ...difficultyParts(w, polityId, key)]);
   return nationalPartsBy.get(at);
+}
+
+// The chosen difficulty's share of a modifier, for the player's country only.
+function difficultyParts(w, polityId, key) {
+  if (!polityId || polityId !== state.playing) return [];
+  const rule = (w.rules || []).find((r) => r.name === 'Difficulty');
+  const v = rule?.options.find((o) => o.name === state.rules?.get(rule.name))?.effects?.[key];
+  return v ? [['Difficulty', v, 'difficulty']] : [];
 }
 
 function nationalPartsOf(w, polityId, key) {
@@ -86,11 +94,13 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
   take(gov.startingIdeology, 'ideology', g.ideologies?.ideologies
     ?.find((i) => i.name === gov.startingIdeology)?.effects);
   for (const [cat, chosen] of Object.entries(laws)) {
-    take(chosen + ' ' + (lawLabel(w, cat) || cat).toLowerCase(), 'law',
+    const kind = (lawLabel(w, cat) || cat).toLowerCase();
+    take(chosen.toLowerCase().endsWith(kind) ? chosen : chosen + ' ' + kind, 'law',
       g.laws?.categories?.[cat]?.options?.find((o) => o.name === chosen)?.effects);
   }
   for (const [, p] of acts('policies')) {
-    take(nameOf(p), 'policy', g.policies?.policies?.find((x) => x.name === nameOf(p))?.effects, p?.strength ?? 1);
+    const act = g.policies?.policies?.find((x) => x.name === nameOf(p));
+    take(act?.factor || nameOf(p), 'policy', act?.effects, p?.strength ?? 1);
   }
   for (const [holder, d] of acts('decrees')) {
     const act = g.decrees?.decrees?.find((x) => x.name === nameOf(d));
@@ -98,7 +108,7 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
       ? Object.fromEntries(Object.entries(act?.effects || {})
         .filter(([k]) => (act?.permanent || []).includes(k)))
       : act?.effects;
-    take(fillTokens(nameOf(d), d?.target, w.government, w.table?.polityById?.get(holder.id)),
+    take(fillTokens(act?.factor || nameOf(d), d?.target, w.government, w.table?.polityById?.get(holder.id)),
       'decree', effects, d?.strength ?? 1);
   }
   // Acts that have left, going off.
@@ -106,7 +116,7 @@ function partsUnder(w, gov, above, laws, key, skip = null) {
     for (const f of holder?.fading || []) {
       const table = f.policy ? g.policies?.policies : g.decrees?.decrees;
       const act = table?.find((x) => x.name === nameOf(f));
-      take(fillTokens(nameOf(f), f.target, w.government, w.table?.polityById?.get(holder.id)),
+      take(fillTokens(act?.factor || nameOf(f), f.target, w.government, w.table?.polityById?.get(holder.id)),
         f.policy ? 'policy' : 'decree', act?.effects, f.strength, f.except);
     }
   }
@@ -281,37 +291,39 @@ function stabilityTip(w, polityId, value) {
   const parts = [...nationalParts(w, polityId, 'stability')].sort((x, y) => y[1] - x[1]);
   const terms = stabilityTerms(w, polityId);
   const line = (label, n, cls, kind) => '<div class="cm-line"><span>'
-    + (kind === 'spirit' ? '<i>' + label + '</i>' : label) + '</span><b'
+    + (kind === 'spirit' ? '<i>' + label + '</i>' : tipLabel(w, label)) + '</span><b'
     + (cls ? ' class="' + cls + '"' : '') + '>' + (n > 0 ? '+' : '') + Math.round(n)
-    + '</b></div>';
+    + '%</b></div>';
   return '<b>Stability</b>'
-    + '<div class="cm-line"><span>Base</span><b>50</b></div>'
+    + '<div class="cm-line"><span>Baseline</span><b>50%</b></div>'
     + parts.map(([label, n, kind]) => line(label, n, n > 0 ? 'up' : 'down', kind)).join('')
     + [['Rebel-held ground', terms.rebels], ['Debt', terms.debt], ['Standing unrest', terms.unrest], ['Held to 0 to 100', terms.held]]
       .filter(([, n]) => Math.round(n)).map(([label, n]) => line(label, n, n > 0 ? 'up' : 'down')).join('')
-    + '<hr><div class="cm-line"><span>total</span><b>' + Math.round(value) + '</b></div>';
+    + '<hr><div class="cm-line"><span>Total</span><b>' + Math.round(value) + '%</b></div>';
 }
 
 // Manpower pool breakdown tooltip.
 function manpowerTip(w, polityId, m) {
   return '<b>Manpower</b>'
-    + '<div class="cm-line"><span>population</span><b>' + menText(m.people) + '</b></div>'
-    + [['occupied', -m.occupied], ['unsettled', -m.unsettled], ['held abroad', m.held], ['in ships', -(m.crews || 0) / (m.share || 1)]]
+    + '<div class="cm-line"><span>Population</span><b>' + menText(m.people) + '</b></div>'
+    + [['Occupied', -m.occupied], ['Unsettled', -m.unsettled], ['Held abroad', m.held], ['In ships', -(m.crews || 0) / (m.share || 1)]]
       .filter(([, n]) => Math.round(n)).map(([label, n]) => '<div class="cm-line"><span>' + label + '</span><b class="'
         + (n > 0 ? 'up' : 'down') + '">' + (n > 0 ? '+' : '−') + menText(Math.round(Math.abs(n))) + '</b></div>').join('')
-    + '<div class="cm-line"><span>conscription</span><b>'
+    + '<div class="cm-line"><span>Conscription</span><b>'
     + Number((m.share * 100).toFixed(1)) + '%</b></div>'
-    + '<hr><div class="cm-line"><span>pool</span><b>' + menText(m.pool) + '</b></div>';
+    + '<hr><div class="cm-line"><span>Pool</span><b>' + menText(m.pool) + '</b></div>';
 }
 
 // Political power: base income and stock cap.
 const POLITICAL_POWER_BASE = 2;
 const POLITICAL_POWER_CAP = 2000;
-// Improve relations: political power a day on the same compass point, and the distance at which it doubles.
-const IMPROVE_COST = 0.2;
-const IMPROVE_DISTANCE = 283;
-// Sanctions: share of earned political power each one costs a day.
-const SANCTION_COST = 0.02;
+// A diplomatic action's entry.
+const actionEntry = (w, name) => w.government?.actions?.actions?.find((x) => x.name === name) || {};
+// What a running action costs a day, across a compass distance where it rises with one.
+function actionDailyCost(w, name, distance = 0) {
+  const act = actionEntry(w, name);
+  return (act.dailyCost || 0) * (1 + distance / (act.dailyCostDistance || Infinity));
+}
 
 // Share of a country's people behind the ideology it holds, 0 to 100, cached per polity.
 const governingSupportBy = new Map();
@@ -333,7 +345,7 @@ function politicalPowerOf(w, polityId) {
   const percent = nationalParts(w, polityId, 'politicalPower');
   // Each Improve relations a country runs costs more the further apart the two stand on the compass.
   const actions = (w.government?.relations?.relations || []).filter((x) => x.band === 'improving' && x.first === polityId)
-    .map((x) => ['improving relations with ' + x.second, -IMPROVE_COST * (1 + (relationsBetween(x.first, x.second)?.distance || 0) / IMPROVE_DISTANCE)]);
+    .map((x) => ['improving relations with ' + x.second, -actionDailyCost(w, 'Improve relations', relationsBetween(x.first, x.second)?.distance || 0)]);
   const stability = stabilityOf(w, polityId);
   const { ideology, support } = governingSupportOf(w, polityId);
   const base = POLITICAL_POWER_BASE + flat.reduce((a, [, n]) => a + n, 0);
@@ -342,7 +354,7 @@ function politicalPowerOf(w, polityId) {
   const modifier = 1 + percent.reduce((a, [, n]) => a + n, 0);
   const earned = Math.max(0, base * stabilityFactor * supportFactor * modifier);
   for (const x of w.government?.relations?.relations || []) {
-    if (x.band === 'sanctions' && x.first === polityId) actions.push(['sanctioning ' + x.second, -SANCTION_COST * earned]);
+    if (x.band === 'sanctions' && x.first === polityId) actions.push(['sanctioning ' + x.second, -actionDailyCost(w, 'Sanction')]);
   }
   const daily = earned + actions.reduce((a, [, n]) => a + n, 0);
   return { daily, earned, actions, flat, percent, stability, stabilityFactor, ideology, support, supportFactor, modifier };
@@ -767,4 +779,4 @@ function debtStability(w, id) {
   return DEBT_STEPS.find(([at]) => ratio > at)?.[1] || 0;
 }
 
-export { NATIONAL_SLICE, incomeWithTargets, nationalModifier, touchedBy, forgetTouched, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, IMPROVE_COST, IMPROVE_DISTANCE, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, BUNKERING_RATE, bunkeringRate, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, BOOKS_SLICE, bookSteps, debtRatio, debtStability };
+export { NATIONAL_SLICE, incomeWithTargets, nationalModifier, touchedBy, forgetTouched, nationalPartsBy, nationalParts, nationalPartsOf, partsUnder, realmAbove, lawsFor, provincesUnderBy, provincesUnder, stabilityOf, stabilityTerms, nationalUnrestOf, risenShare, rebelPeople, rebelPeopleByProvince, UNSETTLED_MANPOWER, OCCUPIED_MANPOWER, manpowerOf, menText, stabilityTip, manpowerTip, POLITICAL_POWER_BASE, POLITICAL_POWER_CAP, actionEntry, actionDailyCost, governingSupportBy, governingSupportOf, politicalPowerOf, COMMAND_POWER_BASE, COMMAND_POWER_UNITS, COMMAND_POWER_DAILY_CAP, COMMAND_POWER_CAP, unitsFielded, occupationPartsBy, occupationParts, ownParts, commandPowerOf, REALM_SHARE, COLONIAL_SHARE, BUNKERING_RATE, bunkeringRate, DEBT_INTEREST, GOLD_INTEREST, OCCUPATION_HOLDING, MEDIAN_PROVINCE_KM2, upkeepRates, crewsOf, OCCUPIED_UPKEEP, UNREST_UPKEEP, DEBT_STEPS, nationalMultiplier, colonyHolder, dailyBooks, BOOKS_SLICE, bookSteps, debtRatio, debtStability };

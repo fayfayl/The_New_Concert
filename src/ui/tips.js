@@ -40,7 +40,8 @@ window.flagMiss = function flagMiss(img, slug) {
 // A country named in a tooltip: article, flag, then name in gold.
 function flaggedName(polity, name) {
   const cut = /^(the )(.*)$/i.exec(name || '');
-  return cut ? cut[1] + miniFlag(polity) + tipName(cut[2]) : miniFlag(polity) + tipName(name);
+  const whole = (s) => '<span class="flagged">' + miniFlag(polity) + tipName(s) + '</span>';
+  return cut ? cut[1] + whole(cut[2]) : whole(name);
 }
 
 // Capitalises an article at the head of a sentence in markup.
@@ -272,6 +273,7 @@ function modifierLines(w, key, v, stated = false, target = null, keepZero = fals
   if (v && typeof v === 'object' && !Array.isArray(v) && !settings) {
     const say = (s) => {
       if (goodName(s)) return resourceIcon(s) + tipName(goodName(s).toLowerCase());
+      if (s === 'alpine') return 'high mountains';
       const law = lawLabel(w, s);
       return law ? law.toLowerCase()
         : String(s).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();

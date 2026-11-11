@@ -39,6 +39,7 @@ const run = (n) => {
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 console.log(`booted in ${Date.now() - t0}ms`);
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 const canvas = dom.el('map');
@@ -109,22 +110,54 @@ if (!found) {
     problems.push(['panel', new Error(`the flag src is "${flagSrc}"`)]);
   }
 
-  // The actions box is not playable yet and says so. Anything else there is a
-  // list of acts that cannot be taken.
+  // The actions box and the relation rows are elements, each hanging its terms
+  // on a tooltip; the shim never fills innerHTML from append().
   const actions = dom.el('diplo-actions');
   const relations = dom.el('diplo-relations');
-  // The actions box is one innerHTML string; the relation rows are elements,
-  // since each hangs its terms on a tooltip and the shim never fills innerHTML
-  // from append(). So the two are read differently.
-  const said = String(actions.innerHTML);
+  // One slot per action, each holding its key: a name and a cost.
+  const actKeys = [...actions.children].filter((k) => k.className === 'act-slot').map((k) => k.children[0]);
+  const said = actKeys.map((k) => `${k.children[0]?.textContent} ${k.children[1]?.textContent}`).join(', ');
   const relRows = [...relations.children].filter((k) => String(k.className).includes('diplo-row'));
   const nBands = relRows.length;
-  console.log(`  actions    ${said.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}`);
+  console.log(`  actions    ${said}`);
   console.log(`  bands      ${nBands}`);
-  // It says so with a stamp rather than a row, so any row at all is an act
-  // being listed.
-  if (!said.includes('>WIP<') || /diplo-row/.test(said)) {
+  // Another country's dossier lists the player's actions toward it.
+  if (!actKeys.length || actKeys.some((k) => !k.dataset.act || !/^[0-9]+$/.test(String(k.children[1]?.textContent)))) {
     problems.push(['diplomacy', new Error(`the actions box says "${said}"`)]);
+  }
+  // Every action row's tooltip names it and its political power.
+  for (const k of [...actions.children].filter((x) => x.className === 'act-slot')) {
+    k.onmouseenter({ clientX: 40, clientY: 40 });
+    const tipText = String(dom.el('tooltip').innerHTML);
+    if (!tipText.includes('Political power') || /(NaN|undefined|null)/.test(tipText)) {
+      problems.push(['actions', new Error(`the tooltip of "${k.children[0].children[0].textContent}" reads "${tipText}"`)]);
+    }
+    k.onmouseleave();
+  }
+  // Taking an action spends its political power and leaves its record; one not in the game shows the WIP note.
+  const w = globalThis.window.game.world();
+  const them = w.table.polities.find((p) => p.name === text('diplo-name'))?.id;
+  w.polityValues.KAN.politicalPower = 500;
+  const press = (key) => {
+    const k = [...dom.el('diplo-actions').children].filter((x) => x.className === 'act-slot').map((x) => x.children[0]).find((b) => b.dataset.act === key);
+    if (k) fire(actions, 'click', { target: k });
+    run(2);
+    return k;
+  };
+  const before = w.polityValues.KAN.politicalPower;
+  const denounce = press('Denounce');
+  const record = (w.government.relations.relations || []).find((x) => x.band === 'denounced' && x.first === 'KAN' && x.second === them);
+  console.log(`  denounce   ${denounce ? (denounce.disabled ? 'shut' : 'taken') : 'absent'}, ${(before - w.polityValues.KAN.politicalPower).toFixed(1)} political power, record ${record ? record.on : 'none'}`);
+  if (denounce && !denounce.disabled && (!record || w.polityValues.KAN.politicalPower !== before - 20)) {
+    problems.push(['actions', new Error('Denounce did not spend 20 political power and leave a record')]);
+  }
+  const wip = [...actions.children].filter((x) => x.className === 'act-slot').map((x) => x.children[0]).find((b) => !b.disabled && b.dataset.act === 'Justify war');
+  if (wip) {
+    fire(actions, 'click', { target: wip });
+    if (!dom.el('wip-note').classList.contains('open')) problems.push(['actions', new Error('a WIP action showed no note')]);
+    fire(globalThis.window, 'keydown', { key: 'Escape' });
+    if (dom.el('wip-note').classList.contains('open')) problems.push(['actions', new Error('Escape left the WIP note up')]);
+    if (!open()) problems.push(['actions', new Error('Escape on the WIP note closed the panel too')]);
   }
   // A band with nothing in it for this country is not drawn, and a country in
   // no relations at all draws no rows: the box is left empty under its heading.
@@ -389,3 +422,4 @@ if (problems.length) {
 } else {
   console.log('no problems');
 }
+process.exit(process.exitCode || 0);

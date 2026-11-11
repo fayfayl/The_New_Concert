@@ -3,7 +3,7 @@
 const VERSION = new URL(import.meta.url).search;
 const { UNOWNED, isOccupied, realmOf } = await import(`../world/mapdata.js${VERSION}`);
 const { UNALIGNED, actEffects, heldActs, dugDeposits, feltFor, industryShares, miningShare, nameOf, spreadByWeight, spreadOverProvinces, supportHappiness, urbanisation } = await import(`./government.js${VERSION}`);
-const { CLOCK_EPOCH, DAY_MS, deriveOnChange, everyDay, forgetOnChange, forgetOnGovernment, state } = await import(`../core/core.js${VERSION}`);
+const { CLOCK_EPOCH, DAY_MS, deriveOnChange, everyDay, forgetOnChange, forgetOnGovernment, live, state } = await import(`../core/core.js${VERSION}`);
 const { clamp } = await import(`../render/view.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
@@ -517,7 +517,8 @@ function happinessOf(w, p, stats, today) {
   add('war weariness', -wearinessOf(w, p, stats));
   add('fought over', -struckOf(stats));
   add('recently annexed', -25 * unsettledShare(stats, today));
-  for (const [name, n] of Object.entries(foodHappiness(w, p) || {})) add(name, n);
+  // A goods shortage falls on a province by what it wants per person.
+  for (const [name, n] of Object.entries(foodHappiness(w, p) || {})) add(name, name === 'consumer goods shortage' ? n * (live.goodsNeed?.get(p.id) ?? 1) : n);
   for (const [name, n] of spiritEffect(w, p, 'happiness')) add(name, n);
   for (const [name, n] of actEffect(w, p, 'happiness')) add(name, n);
   const creed = heldIdeology(w, polityOf(w, p)?.id);

@@ -4,8 +4,8 @@ const VERSION = new URL(import.meta.url).search;
 const { clock, cssToken, els, invalidateProvinces, state } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let clamp, playClick, select;
-export function link(all) { ({ clamp, playClick, select } = all); }
+let clamp, playPress, select, setChoosing, setPaused;
+export function link(all) { ({ clamp, playPress, select, setChoosing, setPaused } = all); }
 
 // ---------------------------------------------------------- the pause menu
 
@@ -45,6 +45,7 @@ function setPause(open) {
 function quitToStartMenu() {
   setPause(false);
   select(null);
+  setChoosing(false);
   showStartMenu();
 }
 
@@ -108,6 +109,19 @@ function setLoadingProgress(pct) {
   done.textContent = '='.repeat(n);
   todo.textContent = '.'.repeat(gaugeCells - n);
   figure.textContent = String(pct).padStart(3) + '%';
+}
+
+// Brings the loading screen back, gauge empty, or fades it out.
+function setLoadingScreen(open) {
+  const loading = document.getElementById('loading');
+  if (open) {
+    loadingShown = 0;
+    setLoadingProgress(0);
+    loading?.classList.add('brief');
+    loading?.classList.remove('ready');
+  }
+  loading?.classList.toggle('gone', !open);
+  loading?.setAttribute('aria-hidden', String(!open));
 }
 
 // Advances the gauge from `from` to `to` as each start-up fetch lands.
@@ -235,6 +249,10 @@ function openStartMenu() {
     menu.classList.add('gone');
     menu.setAttribute('aria-hidden', 'true');
     els.canvas.focus?.();
+    setPaused(true);
+    state.playing = null;
+    select(null);
+    setChoosing(true);
   };
   enter.addEventListener('click', dismiss);
 
@@ -286,9 +304,9 @@ function openStartMenu() {
 
     ev.stopImmediatePropagation();
 
-    playClick(ev);
+    playPress(ev);
     dismiss();
   });
 }
 
-export { mapIsShowing, pauseOpen, controlsOpen, setControls, setPause, quitToStartMenu, markMapReady, setLoadingNote, gaugeCells, loadingShown, setLoadingProgress, countedLoad, fillLoadingQuote, typedRun, deckleEdge, PARALLAX_PX, PARALLAX_MS, startParallax, showStartMenu, openStartMenu };
+export { setLoadingScreen, mapIsShowing, pauseOpen, controlsOpen, setControls, setPause, quitToStartMenu, markMapReady, setLoadingNote, gaugeCells, loadingShown, setLoadingProgress, countedLoad, fillLoadingQuote, typedRun, deckleEdge, PARALLAX_PX, PARALLAX_MS, startParallax, showStartMenu, openStartMenu };

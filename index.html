@@ -19,7 +19,8 @@
       <h1>The New Concert<span class="title-stamp">Indev</span></h1>
 
       <div class="start-buttons">
-        <button id="start-enter" data-sfx="paper">Enter</button>
+        <button id="start-enter" data-sfx="paper">New game</button>
+        <button class="start-secondary" data-dialog="load-game" data-sfx="paper">Load game</button>
         <button class="start-secondary" data-dialog="controls" data-sfx="paper">Controls</button>
         <button class="start-secondary" data-dialog="changelog" data-sfx="paper">Changelog</button>
         <button class="start-secondary" data-dialog="about" data-sfx="paper">About</button>
@@ -37,10 +38,30 @@
       <div class="dialog-panel milled" role="dialog" aria-label="Changelog">
         <div class="dialog-head">
           <h2>Changelog</h2>
-          <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button class="dialog-close" aria-label="Close">&times;</button>
         </div>
 
         <div class="dialog-body changelog-body">
+          <section>
+            <h3>Indev v0.10.b <span>11 Nov 2026</span></h3>
+            <ul>
+              <li>Added "New game" button and a WIP "load game" button.</li>
+              <li>Added country selection screen. The main countries have briefs, more are planned to be added for other countries.</li>
+              <li>Added game rules tab. Only difficulty levels work currently.</li>
+              <li>New top bar for country controlled by a player, including showing the political power, treasury, stability, etc.</li>
+              <li>Diplomacy panel now shows both countries&#39; opinion of each other (player country and NPC country).</li>
+              <li>Working diplomatic actions (for the most part, some are still WIP)</li>
+              <li>Some ideologies are now more tolerant of others in terms of opinion. (i.e. Technocracies don&#39;t care much about your ideology, while Fascists will more.)</li>
+              <li>Retouched UI for the clock and date as well as where layers can be selected.</li>
+              <li>Custom scrollbar added.</li>
+              <li>More national spirit icons for Gwerinlur, Swanders, Kanland, and Ajaxgul.</li>
+              <li>Treaty of Chuhai no longer makes Amargigurun hate Nuteamryn.</li>
+              <li>Alpine terrain is now called "High mountains."</li>
+              <li>Subeny&#39;s neutrality now makes Fellnor-Avanta dislike them.</li>
+              <li>More flags added for Shiniwanogan, Jenensavezin Managan, Sanatese Vortopaga, and Wrightsland. (special thanks to Histepford)</li>
+            </ul>
+          </section>
+
           <section>
             <h3>Indev v0.10.a <span>29 Oct 2026</span></h3>
             <ul>
@@ -209,11 +230,23 @@
       </div>
     </div>
 
+    <div id="load-game" class="start-dialog" aria-hidden="true">
+      <div class="dialog-panel milled" role="dialog" aria-label="Load game">
+        <div class="dialog-head">
+          <h2>Load game</h2>
+          <button class="dialog-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="dialog-body">
+          <p>WIP, no game saving or loading yet</p>
+        </div>
+      </div>
+    </div>
+
     <div id="about" class="start-dialog" aria-hidden="true">
       <div class="dialog-panel milled" role="dialog" aria-label="About">
         <div class="dialog-head">
           <h2>About</h2>
-          <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button class="dialog-close" aria-label="Close">&times;</button>
         </div>
 
         <div class="dialog-body about-body">
@@ -256,10 +289,36 @@
   </div>
 
   <div id="map-area">
-    <div id="toolbar" class="milled">
-      <span class="wordmark">The New Concert<b>Third Sapient War</b></span>
+    <!-- The playing country's bar. -->
+    <div id="hud">
+      <div id="hud-flag-mount"><i class="hoist"></i><span id="hud-flag-box" class="diplo-flag"><img id="hud-flag" alt=""></span></div>
+      <div id="hud-stack">
+        <div id="hud-values"></div>
+        <div class="platen"></div>
+        <div id="hud-menu"></div>
+      </div>
+    </div>
 
-      <span class="sep"></span>
+    <div id="toolbar" class="milled">
+      <div id="clock-paper"></div>
+      <!-- Clock: slower, run state, date, faster. -->
+      <div id="clock">
+        <button id="clock-slower" data-tip="Slower" aria-label="Slower">&minus;</button>
+
+        <button id="clock-play" data-tip="Pause and resume (Space)" aria-label="Pause and resume"
+          aria-pressed="false">
+          <i class="play"></i><i class="halt"></i>
+        </button>
+
+        <span id="clock-face">&mdash;</span>
+
+        <button id="clock-faster" data-tip="Faster" aria-label="Faster">+</button>
+      </div>
+
+      <div class="platen"></div>
+
+      <div id="layer-rod">
+      <button id="layers-button" aria-expanded="false" aria-controls="modes">Layers</button>
 
       <!-- Map mode tray, with the layer menu. -->
       <span id="modes">
@@ -280,32 +339,6 @@
         <div id="infra-list" hidden></div>
       </span>
       </span>
-
-      <span class="sep"></span>
-
-      <span id="zoom-group">
-        <button id="zoom-out" title="Zoom out (&minus;)">&minus;</button>
-        <span id="zoom-level">100%</span>
-        <button id="zoom-in" title="Zoom in (+)">+</button>
-        <button id="zoom-fit" title="Fit to window (0)">Fit</button>
-      </span>
-
-      <span class="sep"></span>
-
-      <button id="toggle-panel" title="Debug menu (`)">Debug</button>
-
-      <!-- Clock: slower, run state, date, faster. -->
-      <div id="clock">
-        <button id="clock-slower" title="Slower" aria-label="Slower">&minus;</button>
-
-        <button id="clock-play" title="Pause and resume (Space)" aria-label="Pause and resume"
-          aria-pressed="false">
-          <i class="play"></i><i class="halt"></i>
-        </button>
-
-        <span id="clock-face">&mdash;</span>
-
-        <button id="clock-faster" title="Faster" aria-label="Faster">+</button>
       </div>
     </div>
 
@@ -317,9 +350,14 @@
       <div id="route-panel" class="dialog-panel" role="dialog" aria-label="Trade route" aria-hidden="true" hidden>
         <div id="route-panel-head" class="dialog-head">
           <h2 id="route-panel-title">Trade route</h2>
-          <button id="route-panel-close" class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button id="route-panel-close" class="dialog-close" data-tip="Close (Esc)" aria-label="Close">&times;</button>
         </div>
         <div id="route-panel-body" class="dialog-body"></div>
+      </div>
+
+      <!-- Note for a diplomatic action not in the game yet. -->
+      <div id="wip-note" class="dialog-panel" role="alertdialog" aria-hidden="true" hidden>
+        <div class="dialog-body">WIP, feature not implemented yet</div>
       </div>
 
       <!-- Province card. -->
@@ -327,7 +365,7 @@
       <aside id="county-card" class="milled" aria-hidden="true">
         <div class="card-head">
           <h2 id="county-name">&mdash;</h2>
-          <button id="county-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button id="county-close" data-tip="Close (Esc)" aria-label="Close">&times;</button>
         </div>
 
         <div class="card-owner">
@@ -349,7 +387,7 @@
       <aside id="card" class="milled" aria-hidden="true">
         <div class="card-head">
           <h2 id="card-name">&mdash;</h2>
-          <button id="card-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button id="card-close" data-tip="Close (Esc)" aria-label="Close">&times;</button>
         </div>
 
         <div class="card-owner">
@@ -401,7 +439,7 @@
         <div class="diplo-sheet">
         <div class="card-head">
           <h2 id="diplo-name">&mdash;</h2>
-          <button id="diplo-close" title="Close (Esc)" aria-label="Close">&times;</button>
+          <button id="diplo-close" data-tip="Close (Esc)" aria-label="Close">&times;</button>
         </div>
 
         <div class="diplo-ident">
@@ -415,6 +453,16 @@
             <b id="diplo-polity">&mdash;</b>
             <i id="diplo-faction">No faction</i>
             <i id="diplo-leader">&mdash;</i>
+          </div>
+          <div class="diplo-pair" id="diplo-pair" hidden>
+            <b class="pair-ours" id="diplo-pair-ours">0</b>
+            <span class="diplo-flag pair-flag pair-us" id="diplo-pair-us-box"><img id="diplo-pair-us" alt="" src="./data/img/flags/placeholder.png"></span>
+            <span class="diplo-flag pair-flag pair-them" id="diplo-pair-them-box"><img id="diplo-pair-them" alt="" src="./data/img/flags/placeholder.png"></span>
+            <svg class="pair-arrows" viewBox="0 0 88 64" aria-hidden="true">
+              <g id="diplo-pair-to"><path class="hit" d="M34 19 H71 V32"/><path d="M34 19 H71 V28"/><path d="M67 26 L71 32 L75 26"/></g>
+              <g id="diplo-pair-from"><path class="hit" d="M54 45 H17 V32"/><path d="M54 45 H17 V36"/><path d="M13 38 L17 32 L21 38"/></g>
+            </svg>
+            <b class="pair-theirs" id="diplo-pair-theirs">0</b>
           </div>
           <div class="diplo-meters">
             <span><u>Stability</u><b id="diplo-stability">0%</b></span>
@@ -460,12 +508,59 @@
     </div>
   </div>
 
+  <!-- Country selection, over the map. -->
+  <div id="choose" aria-hidden="true">
+    <div id="choose-folder">
+      <div id="choose-tabs">
+        <button type="button" class="folder-tab on" data-choose-tab="country" data-sfx="paper">Select country</button>
+        <button type="button" class="folder-tab" data-choose-tab="rules" data-sfx="paper">Game rules</button>
+      </div>
+      <div id="choose-box">
+        <div id="choose-majors"></div>
+        <div id="choose-minors"></div>
+        <div id="choose-panes">
+          <section class="choose-paper">
+            <h3>Information</h3>
+            <div class="choose-info-wrap">
+              <div id="choose-info" class="choose-scroll"></div>
+              <span id="choose-photo" class="diplo-photo" hidden>
+                <svg class="paperclip" viewBox="0 0 13 34" aria-hidden="true"><path d="M2.5 8 V4.5 A3 3 0 0 1 8.5 4.5 V22 A2 2 0 0 1 4.5 22 V12"/></svg>
+                <img id="choose-portrait" alt="">
+              </span>
+            </div>
+          </section>
+          <section id="choose-middle" class="choose-paper">
+            <h3 id="choose-name">No country selected</h3>
+            <span id="choose-flag-box" class="diplo-flag" hidden>
+              <svg class="paperclip" viewBox="0 0 13 34" aria-hidden="true"><path d="M2.5 8 V4.5 A3 3 0 0 1 8.5 4.5 V22 A2 2 0 0 1 4.5 22 V12"/></svg>
+              <img id="choose-flag" alt="">
+            </span>
+            <div id="choose-spirits"></div>
+            <div id="choose-actions">
+              <button id="choose-back" class="choose-key">Back</button>
+              <button id="choose-play" class="choose-key" hidden>Play</button>
+            </div>
+          </section>
+          <section class="choose-paper">
+            <h3>Brief</h3>
+            <p id="choose-brief" class="choose-scroll"></p>
+          </section>
+        </div>
+        <!-- Game rules: one sheet per rule, Back and Play under them. -->
+        <div id="choose-rules" hidden>
+          <div id="choose-rule-sheets"></div>
+          <div id="choose-rules-foot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Controls dialog and pause menu, outside the start screen. -->
   <div id="controls" class="start-dialog" aria-hidden="true">
     <div class="dialog-panel milled" role="dialog" aria-label="Controls">
       <div class="dialog-head">
         <h2>Controls</h2>
-        <button class="dialog-close" title="Close (Esc)" aria-label="Close">&times;</button>
+        <button class="dialog-close" aria-label="Close">&times;</button>
       </div>
 
       <div class="dialog-body controls-body">

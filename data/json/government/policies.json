@@ -8,6 +8,7 @@
       "name": "Rationing",
       "description": "We will ration food and consumer goods, and every household will receive its share by coupon.",
       "target": null,
+      "factor": "rationing",
       "start": 25,
       "upkeep": 0.02,
       "compass": [
@@ -28,6 +29,7 @@
       "name": "Lobby for a law",
       "description": "Our ministers, editors and party members will campaign for a new law.",
       "target": "law or decree",
+      "factor": "political lobbying",
       "start": 25,
       "upkeep": 0.03,
       "compass": [
@@ -47,6 +49,7 @@
       "name": "War bonds",
       "description": "We will sell war bonds to our people to fund our war effort.",
       "target": null,
+      "factor": "war bonds",
       "start": 30,
       "upkeep": 0.03,
       "compass": [
@@ -67,6 +70,7 @@
       "name": "Officer training",
       "description": "Our staff colleges will train more officers than our army needs.",
       "target": null,
+      "factor": "officer training",
       "start": 30,
       "upkeep": 0.03,
       "compass": [
@@ -82,6 +86,7 @@
       "name": "Civil defence",
       "description": "We will build air-raid shelters, train wardens and move our industry out of the cities.",
       "target": null,
+      "factor": "civil defence",
       "start": 30,
       "upkeep": 0.04,
       "compass": [
@@ -118,6 +123,7 @@
       "name": "Foreign investment",
       "description": "We will invest state money in another country's industry.",
       "target": "country",
+      "factor": "foreign investment",
       "start": 30,
       "upkeep": 0.04,
       "compass": [
@@ -140,6 +146,7 @@
       "name": "Consolidate the colonies",
       "description": "We will send administrators, garrisons and teachers out to our colonies.",
       "target": null,
+      "factor": "colonial administration",
       "start": 40,
       "upkeep": 0.06,
       "compass": [
@@ -159,6 +166,7 @@
       "name": "Public works",
       "description": "We will put the unemployed to work building roads, canals and public buildings.",
       "target": null,
+      "factor": "public works",
       "start": 40,
       "upkeep": 0.06,
       "compass": [
@@ -174,6 +182,7 @@
       "name": "Propaganda",
       "description": "Our information office will supply the press and cinemas with official material.",
       "target": null,
+      "factor": "state propaganda",
       "start": 40,
       "upkeep": 0.04,
       "compass": [
@@ -201,6 +210,7 @@
       "name": "Industrial subsidies",
       "description": "We will pay our manufacturers a fixed sum for every unit they produce.",
       "target": null,
+      "factor": "industrial subsidies",
       "start": 50,
       "upkeep": 0.08,
       "compass": [
@@ -216,6 +226,7 @@
       "name": "Armaments drive",
       "description": "We will pay for extra shifts in our arms factories.",
       "target": null,
+      "factor": "armaments drive",
       "start": 50,
       "upkeep": 0.07,
       "compass": [
@@ -236,6 +247,7 @@
       "name": "Secret police",
       "description": "Our political police and their informers will keep watch on our people.",
       "target": null,
+      "factor": "secret police",
       "start": 60,
       "upkeep": 0.05,
       "compass": [
@@ -256,6 +268,7 @@
       "name": "Border war",
       "description": "Our troops will fight over a disputed border without either side declaring war.",
       "target": "neighbour",
+      "factor": "border war",
       "start": 60,
       "upkeep": 0.07,
       "compass": [
@@ -341,6 +354,7 @@
       "name": "State of alert",
       "description": "We will keep our garrisons manned and our reserves at readiness the year round.",
       "target": null,
+      "factor": "state of alert",
       "start": 40,
       "upkeep": 0.06,
       "compass": [-5, 6],

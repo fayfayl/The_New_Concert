@@ -172,7 +172,13 @@
 #clock-face::after,
 .diplo-sheet::after,
 .pause-body::after,
-.folder-tab::after {
+.folder-tab::after,
+#hud-flag-strip::after,
+#hud-values::after,
+#hud-menu::after,
+.hud-value::after,
+#toolbar #modes::after,
+.choose-major::after {
   content: "";
   position: absolute;
   top: 0;
@@ -204,7 +210,13 @@
 #clock-face,
 .diplo-sheet,
 .pause-body,
-.folder-tab {
+.folder-tab,
+#hud-flag-strip,
+#hud-values,
+#hud-menu,
+.hud-value,
+#toolbar #modes,
+.choose-major {
   isolation: isolate;
   overflow: hidden;
 }
@@ -216,9 +228,23 @@
 #start-enter,
 #clock-face,
 .diplo-sheet,
-.pause-body {
+.pause-body,
+#hud-flag-strip,
+#hud-values,
+#hud-menu,
+.hud-value,
+.choose-major {
   position: relative;
 }
+
+/* Boxes whose crop and turn are drawn at random. */
+#hud-flag-strip,
+#hud-values,
+#hud-menu,
+#toolbar #modes { --tex-span: 3000px; }
+
+.hud-value,
+.choose-major { --tex-span: 900px; }
 
 /* Toolbar keys carry no grain. */
 #toolbar button::after {
@@ -323,6 +349,11 @@
 .start-buttons .start-secondary:nth-child(4) {
   --tex-turn: 219deg;
   --tex-at: -355px -120px;
+}
+
+.start-buttons .start-secondary:nth-child(5) {
+  --tex-turn: 143deg;
+  --tex-at: -240px -210px;
 }
 
 .start-panel p {
@@ -441,7 +472,7 @@ body {
   margin: 0;
   background: var(--steel-deepest);
   color: var(--ink);
-  font: 14px/1.5 var(--type);
+  font: calc(14px / var(--text-k, 1))/1.5 var(--type);
   display: flex;
   height: 100vh;
   overflow: hidden;
@@ -523,7 +554,7 @@ body {
   position: relative;
   display: inline-block;
   margin: 0 0 34px;
-  font: 400 60px/1.05 var(--stamp);
+  font: 400 calc(60px / var(--text-k, 1))/1.05 var(--stamp);
   letter-spacing: .02em;
   color: var(--sheet);
   text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 4px 22px rgba(0, 0, 0, .8);
@@ -537,7 +568,7 @@ body {
   padding: 5px 7px 1px;
   border: 3px double #d0503c;
   border-radius: 7px;
-  font: 400 24px/.8 var(--stamp);
+  font: 400 calc(24px / var(--text-k, 1))/.8 var(--stamp);
   letter-spacing: .08em;
   text-transform: uppercase;
   text-shadow: none;
@@ -565,7 +596,7 @@ body {
   color: var(--ink);
   border: 1px solid var(--manila-edge);
   border-radius: 0;
-  font: 400 24px/1 var(--stamp);
+  font: 400 calc(24px / var(--text-k, 1))/1 var(--stamp);
   letter-spacing: .12em;
   text-indent: .12em;
   text-transform: uppercase;
@@ -602,7 +633,7 @@ body {
   color: var(--ink);
   border: 0;
   border-radius: 0;
-  font: 700 14px/1 var(--type);
+  font: 700 calc(14px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .08em;
   text-indent: .08em;
   text-transform: uppercase;
@@ -633,7 +664,7 @@ body {
   padding: 12px 18px 13px;
   background: var(--sheet-lo);
   color: var(--ink);
-  font: 400 13.5px/1.55 var(--type);
+  font: 400 calc(13.5px / var(--text-k, 1))/1.55 var(--type);
   text-align: left;
   rotate: -.8deg;
   box-shadow: 0 6px 16px rgba(0, 0, 0, .55);
@@ -683,7 +714,7 @@ body {
 
 .loading-bar {
   display: inline-block;
-  font: 700 15px/1 var(--type);
+  font: 700 calc(15px / var(--text-k, 1))/1 var(--type);
   white-space: pre;
   color: var(--sheet);
   text-shadow: 0 1px 6px rgba(0, 0, 0, .9);
@@ -698,7 +729,7 @@ body {
 /* Load stage note under the gauge. */
 #loading-note {
   margin: 10px 0 0;
-  font: 400 12.5px/1 var(--type);
+  font: 400 calc(12.5px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .04em;
   color: var(--sheet);
   opacity: .82;
@@ -753,7 +784,7 @@ body {
 
 #loading-quote blockquote {
   margin: 0;
-  font: 400 21px/1.6 var(--type);
+  font: 400 calc(21px / var(--text-k, 1))/1.6 var(--type);
   color: var(--ink);
 }
 
@@ -765,7 +796,7 @@ body {
 #loading-quote figcaption {
   margin-top: 16px;
   text-align: right;
-  font: 400 18px/1 var(--stamp);
+  font: 400 calc(18px / var(--text-k, 1))/1 var(--stamp);
   color: var(--ink-2);
 }
 
@@ -776,7 +807,7 @@ body {
   right: 0;
   bottom: 13%;
   margin: 0;
-  font: 700 14px/1 var(--type);
+  font: 700 calc(14px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .1em;
   text-indent: .1em;
   text-transform: uppercase;
@@ -859,7 +890,7 @@ body {
 
 .dialog-head h2 {
   margin: 0;
-  font: 400 20px/1.1 var(--stamp);
+  font: 400 calc(20px / var(--text-k, 1))/1.1 var(--stamp);
   color: var(--ink);
 }
 
@@ -879,7 +910,7 @@ body {
   color: var(--sheet);
   border: 2px solid var(--key-rim);
   box-shadow: var(--key-edge);
-  font: 700 13px/1 var(--type);
+  font: 700 calc(13px / var(--text-k, 1))/1 var(--type);
   cursor: pointer;
   transition: box-shadow .08s, transform .08s;
 }
@@ -914,8 +945,6 @@ body {
 .dialog-body {
   overflow-y: auto;
   padding: 16px 18px 18px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--ruled) transparent;
 }
 
 /* Rules between changelog releases. */
@@ -931,7 +960,7 @@ body {
   justify-content: space-between;
   gap: 12px;
   margin: 0 0 7px;
-  font: 700 13px/1.3 var(--type);
+  font: 700 calc(13px / var(--text-k, 1))/1.3 var(--type);
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--ink);
@@ -940,7 +969,7 @@ body {
 /* Release date in faded ink. */
 .changelog-body h3 span {
   flex: none;
-  font-size: 12px;
+  font-size: calc(12px / var(--text-k, 1));
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -955,7 +984,7 @@ body {
 .changelog-body li,
 .changelog-body p {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
   line-height: 1.55;
   color: var(--ink-2);
 }
@@ -988,7 +1017,7 @@ body {
 
 .about-body p {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
   line-height: 1.65;
   color: var(--ink-2);
 }
@@ -1037,18 +1066,27 @@ body {
   width: min(440px, 100%);
 }
 
+/* Tab: the edge colour, with a manila face 1px inside it. */
 .folder-tab {
   position: relative;
   display: inline-block;
   left: 18px;
-  padding: 6px 22px 3px;
-  background: var(--manila);
-  border: 1px solid var(--manila-edge);
-  border-bottom: 0;
+  padding: 7px 23px 3px;
+  background: var(--manila-edge);
+  border: 0;
   clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 100%, 0 100%);
-  font: 400 16px/1 var(--stamp);
+  font: 400 calc(16px / var(--text-k, 1))/1 var(--stamp);
   letter-spacing: .04em;
   color: var(--ink);
+}
+
+.folder-tab::before {
+  content: "";
+  position: absolute;
+  inset: 1px 1px 0;
+  z-index: -1;
+  background: var(--manila);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 100%, 0 100%);
 }
 
 #pause .pause-board {
@@ -1089,7 +1127,7 @@ body {
   color: var(--sheet);
   border: 2px solid var(--key-rim);
   box-shadow: var(--key-edge);
-  font: 700 9px/1 var(--type);
+  font: 700 calc(9px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .06em;
   text-indent: 0;
 }
@@ -1103,6 +1141,7 @@ body {
 
 /* =============================================================== map */
 #map-area {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1110,33 +1149,18 @@ body {
 }
 
 /* Manila toolbar strip across the top. */
-#toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 0 14px;
-  height: 52px;
-  flex: none;
-  background: var(--manila);
-  color: var(--ink);
-  border-bottom: 2px solid var(--manila-edge);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, .55);
-  position: relative;
-  z-index: 5;
-}
-
 .wordmark {
   display: grid;
   line-height: 1;
   white-space: nowrap;
-  font: 400 18px/1 var(--stamp);
+  font: 400 calc(18px / var(--text-k, 1))/1 var(--stamp);
   color: var(--ink);
 }
 
 .wordmark b {
   display: block;
   margin-top: 4px;
-  font: italic 400 11px/1 var(--type);
+  font: italic 400 calc(11px / var(--text-k, 1))/1 var(--type);
   color: var(--ink-2);
 }
 
@@ -1163,7 +1187,7 @@ body {
   color: var(--sheet);
   border: 2px solid var(--key-rim);
   box-shadow: var(--key-edge);
-  font: 700 11px/1 var(--type);
+  font: 700 calc(11px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1203,7 +1227,7 @@ body {
 
 #infra-button i {
   font-style: normal;
-  font-size: 9px;
+  font-size: calc(9px / var(--text-k, 1));
   margin-left: 8px;
   opacity: .7;
   vertical-align: middle;
@@ -1237,7 +1261,7 @@ body {
   letter-spacing: 0;
   white-space: nowrap;
   border-radius: 0;
-  font: 400 12.5px/1 var(--type);
+  font: 400 calc(12.5px / var(--text-k, 1))/1 var(--type);
   color: var(--ink-2);
   background: none;
   border: 0;
@@ -1279,7 +1303,7 @@ body {
   color: var(--sheet);
   border: 2px solid var(--key-rim);
   box-shadow: var(--key-edge);
-  font: 700 13px/1 var(--type);
+  font: 700 calc(13px / var(--text-k, 1))/1 var(--type);
   cursor: pointer;
   transition: box-shadow .08s, transform .08s;
 }
@@ -1316,7 +1340,7 @@ body {
   width: auto;
   border-radius: 13px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: calc(11px / var(--text-k, 1));
   letter-spacing: .06em;
   text-transform: uppercase;
 }
@@ -1324,13 +1348,13 @@ body {
 #zoom-level {
   min-width: 44px;
   text-align: center;
-  font: 700 13px/1 var(--type);
+  font: 700 calc(13px / var(--text-k, 1))/1 var(--type);
   color: var(--ink);
 }
 
 /* Inspector toggle as a quiet typed word. */
 #toggle-panel {
-  font: 400 12px/1 var(--type);
+  font: 400 calc(12px / var(--text-k, 1))/1 var(--type);
   color: var(--ink-3);
   background: none;
   border: 0;
@@ -1369,7 +1393,7 @@ body {
   border-top: 1px dashed var(--ruled);
   border-bottom: 1px dashed var(--ruled);
   box-shadow: 0 1px 2px rgba(60, 44, 18, .35);
-  font: 700 13px/1 var(--type);
+  font: 700 calc(13px / var(--text-k, 1))/1 var(--type);
   color: var(--ink);
   white-space: nowrap;
 }
@@ -1454,7 +1478,7 @@ canvas.panning {
   pointer-events: none;
   background: var(--sheet);
   border: 1px solid var(--ruled);
-  font: 400 12.5px/1.4 var(--type);
+  font: 400 calc(12.5px / var(--text-k, 1))/1.4 var(--type);
   padding: 0.5em 0.8em 0.55em;
   white-space: normal;
   max-width: 30em;
@@ -1533,16 +1557,20 @@ canvas.panning {
   font-weight: 700;
 }
 
+/* Names in a red sentence stay red. */
+#tooltip .sub.down>b,
+#tooltip .sub.down .named { color: inherit; }
+
 /* ===== debug screen (dev only): plain text lines over the map */
 #panel {
   position: fixed;
-  top: 60px;
+  top: 92px;
   right: 8px;
   z-index: 25;
   display: none;
   max-width: 400px;
-  max-height: calc(100vh - 68px);
-  font: 13px/1.3 Consolas, "Courier New", monospace;
+  max-height: calc(100vh - 100px);
+  font: calc(13px / var(--text-k, 1))/1.3 Consolas, "Courier New", monospace;
   color: #fff;
   text-shadow: 1px 1px 0 #000;
 }
@@ -1717,7 +1745,7 @@ canvas.panning {
   #clock-face {
     min-width: 0;
     padding: 3px 6px;
-    font-size: 11px;
+    font-size: calc(11px / var(--text-k, 1));
   }
 }
 
@@ -1736,7 +1764,7 @@ canvas.panning {
   background: var(--sheet);
   box-shadow: 0 1px 0 var(--ruled), 0 10px 26px rgba(0, 0, 0, .55);
 
-  font-size: 12.5px;
+  font-size: calc(12.5px / var(--text-k, 1));
   color: var(--ink-2);
 
   visibility: hidden;
@@ -1760,7 +1788,7 @@ canvas.panning {
   background: var(--sheet);
   box-shadow: 0 1px 0 var(--ruled), 0 10px 26px rgba(0, 0, 0, .55);
 
-  font-size: 12.5px;
+  font-size: calc(12.5px / var(--text-k, 1));
   color: var(--ink-2);
 
   visibility: hidden;
@@ -1803,7 +1831,7 @@ canvas.panning {
   flex: 1;
   min-width: 0;
   padding-top: 1px;
-  font: 400 21px/1.15 var(--stamp);
+  font: 400 calc(21px / var(--text-k, 1))/1.15 var(--stamp);
   color: var(--ink);
   overflow-wrap: anywhere;
 }
@@ -1844,14 +1872,14 @@ canvas.panning {
 
 .card-owner b {
   display: block;
-  font: 700 14px/1.2 var(--type);
+  font: 700 calc(14px / var(--text-k, 1))/1.2 var(--type);
   color: var(--ink);
 }
 
 .card-owner i {
   display: block;
   font-style: normal;
-  font-size: 10px;
+  font-size: calc(10px / var(--text-k, 1));
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -1940,6 +1968,10 @@ canvas.panning {
 /* Breakdown line: modifier label and figure on one line. */
 #tooltip .cm-line { display: flex; justify-content: space-between; gap: 1.1em; white-space: nowrap; }
 #tooltip .cm-line b { font-weight: 700; }
+/* A long label wraps; its figure keeps the right edge. */
+#tooltip .cm-line > :first-child { min-width: 0; white-space: normal; }
+.flagged, #tooltip .cm-line .named { white-space: nowrap; }
+#tooltip .cm-line > :last-child { flex: none; align-self: flex-end; }
 /* Italic national spirits in breakdowns. */
 #tooltip .cm-line i { font-style: italic; }
 
@@ -2000,7 +2032,7 @@ canvas.panning {
 /* Grid labels never break. */
 .card-cell span {
   color: var(--ink-2);
-  font-size: 12px;
+  font-size: calc(12px / var(--text-k, 1));
   white-space: nowrap;
 }
 
@@ -2023,7 +2055,7 @@ canvas.panning {
 .card-slot-head {
   margin-bottom: 7px;
   color: var(--ink-2);
-  font-size: 12.5px;
+  font-size: calc(12.5px / var(--text-k, 1));
 }
 
 .card-slot-head span {
@@ -2104,7 +2136,7 @@ canvas.panning {
   gap: 16px;
   margin-top: 8px;
   color: var(--ink-2);
-  font-size: 12px;
+  font-size: calc(12px / var(--text-k, 1));
 }
 
 .card-legend span {
@@ -2138,7 +2170,7 @@ canvas.panning {
 
   position: absolute;
   left: 12px;
-  top: 34px;
+  top: 122px;
   bottom: 12px;
   z-index: 21;
   width: 480px;
@@ -2150,7 +2182,7 @@ canvas.panning {
   border: 1px solid var(--manila-edge);
   box-shadow: 0 12px 30px rgba(0, 0, 0, .6);
 
-  font-size: 12.5px;
+  font-size: calc(12.5px / var(--text-k, 1));
   color: var(--ink-2);
 
   visibility: hidden;
@@ -2177,7 +2209,7 @@ canvas.panning {
 
   position: absolute;
   left: 30px;
-  top: 13px;
+  top: 101px;
   z-index: 21;
   visibility: hidden;
   transform: translateX(calc(-100% - 60px));
@@ -2293,13 +2325,13 @@ canvas.panning {
 }
 
 .diplo-titles b {
-  font: 700 15px/1.25 var(--type);
+  font: 700 calc(15px / var(--text-k, 1))/1.25 var(--type);
   color: var(--ink);
 }
 
 .diplo-titles i {
   font-style: normal;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
   line-height: 1.3;
   color: var(--ink-2);
 }
@@ -2308,10 +2340,65 @@ canvas.panning {
 .diplo-titles .blank {
   display: inline-block;
   padding: 0 7px;
-  font-size: 11.5px;
+  font-size: calc(11.5px / var(--text-k, 1));
   line-height: 18px;
   font-style: italic;
 }
+
+/* Two flags and what each thinks of the other. */
+.diplo-pair {
+  position: relative;
+  flex: none;
+  width: 88px;
+  height: 64px;
+}
+
+.diplo-pair[hidden] { display: none; }
+
+.diplo-pair .pair-flag {
+  position: absolute;
+  margin: 0;
+  translate: -50% -50%;
+}
+
+.diplo-pair .pair-flag img {
+  max-width: 34px;
+  max-height: 22px;
+}
+
+.pair-us { left: 17px; top: 22px; }
+.pair-them { left: 71px; top: 42px; }
+
+.pair-arrows {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pair-arrows path {
+  fill: none;
+  stroke: var(--good);
+  stroke-width: 2;
+}
+
+/* Wide unseen stroke that takes the hover. */
+.pair-arrows path.hit {
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+}
+
+.diplo-pair b {
+  position: absolute;
+  font: 700 calc(12px / var(--text-k, 1))/1 var(--type);
+  color: var(--ink);
+}
+
+.diplo-pair b.up { color: var(--good); }
+.diplo-pair b.down { color: var(--ribbon); }
+.pair-ours { right: 0; top: 0; }
+.pair-theirs { left: 0; bottom: 0; }
 
 .diplo-meters {
   flex: none;
@@ -2326,7 +2413,7 @@ canvas.panning {
 
 .diplo-meters u {
   text-decoration: none;
-  font-size: 10px;
+  font-size: calc(10px / var(--text-k, 1));
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -2334,7 +2421,7 @@ canvas.panning {
 }
 
 .diplo-meters b {
-  font: 700 17px/1.1 var(--type);
+  font: 700 calc(17px / var(--text-k, 1))/1.1 var(--type);
   color: var(--ink);
 }
 
@@ -2395,13 +2482,13 @@ canvas.panning {
 }
 
 .diplo-party b {
-  font: 700 14.5px/1.25 var(--type);
+  font: 700 calc(14.5px / var(--text-k, 1))/1.25 var(--type);
   color: var(--ink);
 }
 
 .diplo-party i {
   font-style: normal;
-  font-size: 13.5px;
+  font-size: calc(13.5px / var(--text-k, 1));
   line-height: 1.3;
   color: var(--ink-2);
 }
@@ -2409,7 +2496,7 @@ canvas.panning {
 .diplo-party .blank {
   min-height: 22px;
   padding: 1px 6px;
-  font-size: 12px;
+  font-size: calc(12px / var(--text-k, 1));
   font-weight: 400;
 }
 
@@ -2417,7 +2504,7 @@ canvas.panning {
   flex: 1 1 auto;
   min-height: 34px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
 }
 
 /* Spirit cells, wrapping, with placeholder art. */
@@ -2440,7 +2527,7 @@ canvas.panning {
 .diplo-spirits .none {
   width: 100%;
   height: 46px;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
 }
 
 /* Folder tabs on the sheet. */
@@ -2460,7 +2547,7 @@ canvas.panning {
   border-bottom: 0;
   border-radius: 3px 3px 0 0;
   color: var(--ink-3);
-  font: 700 12.5px/1 var(--type);
+  font: 700 calc(12.5px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .03em;
   text-transform: uppercase;
   cursor: pointer;
@@ -2479,7 +2566,8 @@ canvas.panning {
 }
 
 /* Panes that fill the rest of the panel and scroll. */
-.diplo-body { flex: 1 1 auto; min-height: 0; }
+/* The tab body takes what the head leaves, whichever tab is open. */
+.diplo-body { flex: 1 1 0; min-height: 0; }
 
 .diplo-pane {
   display: flex;
@@ -2503,13 +2591,11 @@ canvas.panning {
   border: 1px solid var(--ruled);
   background: rgba(255, 248, 230, .07);
   padding: 9px 10px 10px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--ruled) transparent;
 }
 
 .diplo-box h3 {
   margin: 4px 0 0;
-  font: 700 10px/1 var(--type);
+  font: 700 calc(10px / var(--text-k, 1))/1 var(--type);
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -2523,7 +2609,7 @@ canvas.panning {
   align-items: center;
   gap: 6px;
   padding: 2px 0;
-  font-size: 12px;
+  font-size: calc(12px / var(--text-k, 1));
 }
 
 .diplo-row:not(.none)::after {
@@ -2614,7 +2700,7 @@ canvas.panning {
   flex: none;
   min-height: 30px;
   padding: 4px 8px;
-  font-size: 12.5px;
+  font-size: calc(12.5px / var(--text-k, 1));
 }
 
 
@@ -2681,28 +2767,112 @@ canvas.panning {
 
 .diplo-row i.ico.law { background-image: url("../data/img/national_spirits/placeholder.png"); }
 
-/* Listed actions not yet available. */
-.diplo-row.action { cursor: default; }
+/* --- action rows: keys typed as ledger lines */
+#diplo-actions .act-slot { flex: none; }
 
-/* Stamp across the Actions box, masked by the texture. */
-.diplo-stamp {
-  flex: 1 1 auto;
-  display: grid;
-  place-items: center;
-  min-height: 70px;
-  border: 1.5px dashed var(--ruled);
+#diplo-actions .act {
+  align-items: flex-end;
+  width: 100%;
+  margin: 0;
+  padding: 3px 4px;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: var(--ink-2);
+  font: 400 calc(12px / var(--text-k, 1))/1.25 var(--type);
+  text-align: left;
+  cursor: pointer;
 }
 
-.diplo-stamp span {
-  padding: 8px 16px 4px;
-  border: 3px double var(--ribbon);
-  font: 400 40px/1 var(--stamp);
-  letter-spacing: .08em;
-  color: var(--ribbon);
-  rotate: -8deg;
-  opacity: .88;
-  -webkit-mask: url("../data/ui/texture-tile.png") 0 0 / 520px auto;
-  mask: url("../data/ui/texture-tile.png") 0 0 / 520px auto luminance;
+/* Leader on the last line of the label. */
+#diplo-actions .act::after { align-self: flex-end; transform: translateY(-0.3em); }
+
+#diplo-actions .act:hover {
+  background: rgba(180, 151, 91, .25);
+  color: var(--ink);
+}
+
+#diplo-actions .act:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 1px;
+}
+
+/* Shut actions in faded ink; the slot carries their tooltip. */
+#diplo-actions .act:disabled {
+  color: var(--ink-3);
+  cursor: default;
+  pointer-events: none;
+}
+
+#diplo-actions .act:disabled .val { color: var(--ink-3); font-weight: 400; }
+
+/* Development aid picker under its row. */
+.diplo-aid {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  padding: 1px 4px 5px 14px;
+}
+
+.diplo-aid select {
+  flex: 1 1 0;
+  height: 22px;
+  min-width: 0;
+  padding: 2px 3px;
+  background: rgba(255, 248, 230, .35);
+  border: 1px solid var(--ruled);
+  border-radius: 2px;
+  color: var(--ink);
+  font: 400 calc(11.5px / var(--text-k, 1))/1.2 var(--type);
+}
+
+/* Province across the row; project and the key beneath. */
+.diplo-aid select[data-pick="province"] { flex-basis: 100%; }
+
+.diplo-aid .aid-build {
+  flex: none;
+  height: 22px;
+  padding: 4px 8px 3px;
+  background: rgba(180, 151, 91, .35);
+  border: 1px solid var(--ink-2);
+  border-radius: 2px;
+  color: var(--ink);
+  font: 700 calc(10px / var(--text-k, 1))/1 var(--type);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.diplo-aid .aid-build:hover { background: rgba(180, 151, 91, .55); }
+
+.diplo-aid select:focus-visible,
+.diplo-aid .aid-build:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 1px;
+}
+
+/* Note for an action not in the game yet. */
+#wip-note {
+  position: fixed;
+  left: 50%;
+  top: 42%;
+  z-index: 40;
+  width: auto;
+  max-width: calc(100% - 24px);
+  transform: translate(-50%, -50%);
+  border-top: 3px double var(--ribbon);
+  cursor: default;
+}
+
+#wip-note[hidden] { display: none; }
+
+#wip-note .dialog-body {
+  padding: 13px 20px 12px;
+  font: 400 calc(14px / var(--text-k, 1))/1.3 var(--stamp);
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 /* One cell of the resource icon sheet, placed by --col and --row. */
@@ -2728,11 +2898,11 @@ canvas.panning {
 /* ===== trade route panel: a dialog sheet over the map, dragged by its head */
 #route-panel {
   position: absolute;
-  top: 12px;
+  top: 92px;
   right: 12px;
   z-index: 22;
   width: min(440px, calc(100% - 24px));
-  max-height: min(560px, calc(100% - 24px));
+  max-height: min(560px, calc(100% - 104px));
   box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
 }
 
@@ -2747,7 +2917,7 @@ canvas.panning {
 }
 
 #route-panel-body {
-  font: 400 12.5px/1.4 var(--type);
+  font: 400 calc(12.5px / var(--text-k, 1))/1.4 var(--type);
 }
 
 /* Section heads: label left, unit right. */
@@ -2757,7 +2927,7 @@ canvas.panning {
   justify-content: space-between;
   gap: 12px;
   margin: 0 0 6px;
-  font: 700 12px/1.3 var(--type);
+  font: 700 calc(12px / var(--text-k, 1))/1.3 var(--type);
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--ink);
@@ -2830,7 +3000,7 @@ canvas.panning {
 .controls-body dt,
 .controls-body dd {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px / var(--text-k, 1));
   line-height: 1.55;
 }
 
@@ -2849,3 +3019,907 @@ canvas.panning {
   position: fixed;
   z-index: 110;
 }
+
+/* --- the scrollbar: a punched telegraph tape with a typewriter key */
+.tape-scroller { scrollbar-width: none; }
+
+.tape-room { border-right: 14px solid transparent; }
+
+.tape-track {
+  position: absolute;
+  z-index: 3;
+  width: 13px;
+  border-left: 1px solid var(--ruled);
+  background-color: #eee3c5;
+  background-size: 13px 1400px;
+  background-repeat: repeat-y;
+  touch-action: none;
+}
+
+.tape-key {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  border: 2px solid var(--key-rim);
+  border-radius: 7px;
+  background: linear-gradient(to right, #17130f, #4a4237 42%, #17130f);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+  cursor: grab;
+  touch-action: none;
+}
+
+.tape-key:hover {
+  border-color: #b5ad98;
+  background: linear-gradient(to right, #221c16, #5c5244 42%, #221c16);
+}
+
+.tape-key.held {
+  border-color: var(--key-rim-down);
+  background: linear-gradient(to right, #100d0a, #2a241c 50%, #100d0a);
+  cursor: grabbing;
+}
+
+/* --- country selection: a manila folder over the map */
+#choose {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: none;
+}
+
+#choose.open { display: flex; }
+
+#choose [hidden] { display: none !important; }
+
+#choose-folder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(1100px, 100%);
+  max-height: calc((100vh - 72px) / var(--ui-scale, 1));
+  pointer-events: auto;
+}
+
+#choose-box,
+.choose-paper {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+#choose-box::after,
+.choose-paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--tex-span, 600px);
+  height: var(--tex-span, 600px);
+  transform: translate(-50%, -50%) rotate(var(--tex-turn, 0deg));
+  background: var(--texture-img) var(--tex-at, 0 0) / var(--texture-size) auto repeat;
+  mix-blend-mode: soft-light;
+  opacity: var(--texture-strength);
+  pointer-events: none;
+  z-index: -1;
+}
+
+#choose-box {
+  --tex-span: 4400px;
+  --tex-turn: 118deg;
+  --tex-at: -260px -90px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+  min-height: 0;
+  padding: 10px;
+  background: var(--manila);
+  border: 1px solid var(--manila-edge);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .6);
+}
+
+#choose-majors {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 6px;
+}
+
+/* A personnel slip: photograph, flag and name. */
+.choose-major {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px 6px;
+  min-width: 0;
+  padding: 5px 4px;
+  appearance: none;
+  background: var(--sheet);
+  border: 0;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  box-shadow: 0 1px 3px rgba(60, 44, 18, .45);
+  cursor: pointer;
+  transition: transform .1s ease-out, box-shadow .1s ease-out;
+}
+
+.choose-major:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 7px rgba(60, 44, 18, .5);
+}
+
+.choose-major.on { outline-color: var(--ribbon); }
+
+.choose-major .diplo-photo { height: 74px; }
+
+.choose-tile-side { display: contents; }
+
+.choose-major .diplo-flag img {
+  max-width: 40px;
+  max-height: 28px;
+}
+
+.choose-tile-name {
+  flex: 0 0 100%;
+  max-width: 100%;
+  color: var(--ink);
+  font: 700 calc(11px / var(--text-k, 1))/1.15 var(--type);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+#choose-minors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.choose-minor {
+  padding: 0;
+  appearance: none;
+  background: none;
+  border: 0;
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  cursor: pointer;
+  transition: transform .1s ease-out;
+}
+
+.choose-minor:hover { transform: translateY(-2px); }
+
+.choose-minor.on { outline-color: var(--ribbon); }
+
+.choose-minor { line-height: 0; }
+
+.choose-minor .diplo-flag img {
+  max-width: 48px;
+  max-height: 24px;
+}
+
+#choose-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, 1fr);
+  gap: 9px;
+  height: clamp(190px, 28vh, 270px);
+  min-height: 0;
+}
+
+.choose-paper {
+  --tex-span: 2400px;
+  --tex-turn: 76deg;
+  --tex-at: -55px -365px;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 12px 10px;
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(60, 44, 18, .45);
+}
+
+.choose-paper:nth-child(2) { --tex-turn: 203deg; --tex-at: -310px -120px; }
+
+.choose-paper:nth-child(3) { --tex-turn: 311deg; --tex-at: -150px -240px; }
+
+#choose-panes h3,
+#choose-rule-sheets h3 {
+  flex: none;
+  margin: 0 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ruled);
+  font: 400 calc(15px / var(--text-k, 1))/1.2 var(--stamp);
+  text-align: center;
+}
+
+.choose-info-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  min-height: 0;
+}
+
+#choose-info { flex: 1; min-width: 0; overflow-y: auto; }
+
+.choose-info-wrap .diplo-photo { height: 96px; margin-top: 4px; }
+
+.choose-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--ruled);
+  font: 400 calc(12px / var(--text-k, 1))/1.25 var(--type);
+}
+
+.choose-row u { flex: none; color: var(--ink-3); text-decoration: none; }
+
+.choose-row b { font-weight: 700; text-align: right; }
+
+#choose-brief {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  overflow-y: auto;
+  font: 400 calc(12.5px / var(--text-k, 1))/1.4 var(--type);
+}
+
+#choose-middle { align-items: center; gap: 7px; }
+
+#choose-middle h3 { align-self: stretch; margin-bottom: 0; }
+
+#choose-flag-box { flex: none; }
+
+#choose-spirits {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-height: 0;
+}
+
+#choose-actions { flex: none; display: flex; gap: 10px; }
+
+/* The two folder tabs: the one not shown in faded type. */
+#choose-tabs { display: flex; align-items: flex-end; gap: 4px; }
+/* The open tab over the box's top edge. */
+#choose-tabs .folder-tab {
+  z-index: 2;
+  margin-bottom: -2px;
+  padding-bottom: 5px;
+  appearance: none;
+  cursor: pointer;
+}
+/* The tab not shown: behind the box's top edge, in faded type. */
+#choose-tabs .folder-tab:not(.on) {
+  z-index: 0;
+  margin-bottom: -1px;
+  padding-bottom: 4px;
+  color: var(--ink-3);
+}
+#choose-tabs .folder-tab:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: -2px;
+}
+
+/* Game rules: a sheet per rule, Back and Play under them. */
+#choose-rules {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 0;
+}
+#choose-rule-sheets {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  min-height: 0;
+}
+
+.rule-sheet:nth-child(4) { --tex-turn: 142deg; --tex-at: -420px -60px; }
+.rule-sheet.shown-ledger { grid-row: 1 / -1; }
+
+#choose-rules button[data-rule] {
+  appearance: none;
+  background: none;
+}
+#choose-rules [data-rule] { cursor: pointer; }
+.rule-level,
+.rule-notch { border: 0; }
+#choose-rules [data-rule]:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 2px;
+}
+
+/* Red rubber stamp, masked by the paper texture. */
+.rule-level.on span,
+.rule-stamp.on {
+  border: 3px double var(--ribbon);
+  border-radius: 6px;
+  color: var(--ribbon);
+  -webkit-mask: url("../data/ui/texture-tile.png") -110px -240px / 900px auto;
+  mask: url("../data/ui/texture-tile.png") -110px -240px / 900px auto luminance;
+}
+
+/* Ledger: every level against its effects. */
+table.rule-ledger {
+  flex: 1;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 400 calc(12.5px / var(--text-k, 1))/1.25 var(--type);
+}
+table.rule-ledger th:first-child { width: 28%; }
+table.rule-ledger thead th {
+  height: 56px;
+  padding: 0 2px 8px;
+  vertical-align: bottom;
+}
+.rule-level {
+  width: 100%;
+  padding: 0;
+  color: var(--ink-3);
+  font: 400 calc(11.5px / var(--text-k, 1))/1.15 var(--stamp);
+}
+.rule-level:hover { color: var(--ink); }
+/* Level name, in a blank stamp border. */
+.rule-level span {
+  display: inline-block;
+  padding: 4px 4px 2px;
+  border: 3px double transparent;
+  border-radius: 6px;
+}
+.rule-level.on span { rotate: -8deg; }
+table.rule-ledger tbody th,
+table.rule-ledger tbody td {
+  padding: 6px 3px;
+  border-bottom: 1px dotted var(--ruled);
+}
+table.rule-ledger tbody th {
+  color: var(--ink-3);
+  font-weight: 400;
+  text-align: left;
+}
+table.rule-ledger td {
+  color: var(--ink-3);
+  text-align: center;
+}
+table.rule-ledger td.up { color: var(--good); font-weight: 700; }
+table.rule-ledger td.down { color: var(--ribbon); font-weight: 700; }
+table.rule-ledger .on { background: rgba(155, 42, 31, .08); }
+
+/* Stamps: the chosen one inked, the rest faint. */
+.rule-stamps {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+.rule-stamp {
+  padding: 7px 12px 4px;
+  border: 3px double var(--ink-3);
+  border-radius: 6px;
+  color: var(--ink-3);
+  font: 400 calc(16px / var(--text-k, 1))/1 var(--stamp);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  opacity: .4;
+  rotate: 3deg;
+  transition: opacity .1s ease-out;
+}
+.rule-stamp:nth-child(2) { rotate: -4deg; }
+.rule-stamp:hover { opacity: .7; }
+.rule-stamp.on { opacity: 1; }
+
+/* Dial: notches on a track, the key-cap knob on the chosen one. */
+.rule-dial {
+  display: grid;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  flex: 1;
+  grid-template-columns: repeat(var(--notches, 5), minmax(0, 1fr));
+  align-items: center;
+}
+.rule-notch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+}
+.rule-notch::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--ruled);
+}
+.rule-notch:first-child::before { left: 50%; }
+.rule-notch:last-child::before { right: 50%; }
+.rule-notch i {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 1px;
+  height: 10px;
+  margin: 4px 0;
+  background: var(--ruled);
+}
+.rule-notch.on i {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  background: var(--key-cap);
+  border: 2px solid var(--key-rim);
+  border-radius: 50%;
+  box-shadow: var(--key-edge);
+}
+.rule-notch span {
+  color: var(--ink-3);
+  font: 400 calc(11.5px / var(--text-k, 1))/1.15 var(--type);
+  text-align: center;
+}
+.rule-notch:hover span { color: var(--ink); }
+.rule-notch.on span { color: var(--ink); font-weight: 700; }
+/* Back and Play where the country tab's middle pane holds them. */
+#choose-rules-foot {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+
+/* The same round-capped keys as the toolbar. */
+.choose-key {
+  min-width: 96px;
+  padding: 6px 16px 7px;
+  appearance: none;
+  background: var(--key-cap);
+  border: 2px solid var(--key-rim);
+  border-radius: 999px;
+  box-shadow: var(--key-edge);
+  color: var(--sheet);
+  font: 400 calc(13px / var(--text-k, 1))/1 var(--stamp);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.choose-key:hover {
+  box-shadow: var(--key-edge-hover);
+  transform: translateY(var(--key-hover-drop));
+}
+
+.choose-key:active {
+  background: var(--key-cap-down);
+  border-color: var(--key-rim-down);
+  box-shadow: var(--key-edge-down);
+  color: var(--key-legend-down);
+  transform: translateY(var(--key-down-drop));
+}
+
+.choose-major:focus-visible,
+.choose-minor:focus-visible,
+.choose-key:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 2px;
+}
+
+body.choosing #card,
+body.choosing #county-card { display: none; }
+
+/* --- the gauge alone over the map, after Play */
+#loading.brief,
+#loading.brief.gone {
+  background: rgba(12, 16, 21, .62);
+  transition: none;
+}
+
+#loading.brief::before,
+#loading.brief::after,
+#loading.brief #loading-quote,
+#loading.brief #loading-prompt { display: none; }
+
+#loading.brief .loading-gauge {
+  opacity: 1;
+  transition: none;
+}
+
+/* --- the interface scales with the screen */
+:root { --ui-scale: 1; --ui-text-k: 1; }
+
+#hud,
+#toolbar,
+#card,
+#county-card,
+#diplo,
+#route-panel,
+#wip-note,
+#choose-folder,
+#tooltip,
+.diplo-folder-tab,
+.start-panel,
+.start-dialog .dialog-panel,
+.loading-panel,
+.loading-gauge,
+#loading-prompt,
+.pause-folder {
+  --text-k: var(--ui-text-k);
+  zoom: var(--ui-scale);
+}
+
+#hud,
+#toolbar,
+#choose-folder { font-size: calc(14px / var(--text-k)); }
+
+/* --- the typewriter bar */
+.platen {
+  position: relative;
+  z-index: 3;
+  height: 13px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #55554f, #1a1a18 45%, #000);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .7);
+}
+
+.platen::before,
+.platen::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  width: 12px;
+  height: 19px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #2b2b28 0 2px, #77776f 2px 3px);
+}
+
+.platen::before { left: -8px; }
+.platen::after { right: -8px; }
+
+#hud {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+body.playing #hud { display: flex; }
+
+/* The flag on its upright roller, flush with the screen's left. */
+#hud-flag-mount {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 84px;
+  margin-right: 11px;
+  pointer-events: auto;
+}
+
+.hoist {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  align-self: stretch;
+  width: 11px;
+  background: repeating-linear-gradient(0deg, transparent 0 7px, rgba(0, 0, 0, .28) 7px 8px),
+    linear-gradient(90deg, #17171a, #5d5d5a 30%, #2a2a29 55%, #050505);
+  filter: drop-shadow(2px 1px 2px rgba(0, 0, 0, .6));
+}
+
+.hoist::before,
+.hoist::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .55), transparent 35%, rgba(0, 0, 0, .55)),
+    repeating-linear-gradient(90deg, #2b2b28 0 1.5px, #8c8c84 1.5px 3px);
+}
+
+.hoist::before { top: 0; border-radius: 0 0 2px 2px; box-shadow: 0 1px 0 #b8b4a8, 0 2px 0 #4a4842; }
+.hoist::after { bottom: 0; border-radius: 2px 2px 0 0; box-shadow: 0 -1px 0 #b8b4a8, 0 -2px 0 #4a4842; }
+
+#hud-flag-box {
+  max-width: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .6));
+}
+
+#hud-flag-box img { max-width: none; max-height: none; filter: none; }
+
+#hud-flag-box::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .5), transparent 9px);
+  -webkit-mask: var(--flag-mask, linear-gradient(transparent, transparent)) center / 100% 100% no-repeat;
+  mask: var(--flag-mask, linear-gradient(transparent, transparent)) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+#hud-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .55));
+  pointer-events: auto;
+}
+
+/* The values are the sheet coming out of the roller. */
+#hud-values {
+  --tex-span: 3000px;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  z-index: 2;
+  display: flex;
+  gap: 11px;
+  padding: 7px 18px 8px 14px;
+  background: var(--sheet);
+  color: var(--ink);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 18%, 100% 38%, calc(100% - 5px) 60%, calc(100% - 1px) 80%, calc(100% - 5px) 100%, 0 100%);
+}
+
+.hud-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
+  font: 700 calc(15px / var(--text-k, 1))/1 var(--type);
+  white-space: nowrap;
+}
+
+.hud-value::after { display: none; }
+.hud-value img { width: 17px; height: 17px; }
+
+#hud-stack .platen { margin-top: -4px; }
+
+/* The menu keys hang from the roller on levers, with no backing. */
+#hud-menu {
+  display: flex;
+  gap: 8px;
+  padding: 11px 0 0 9px;
+}
+
+.hud-key {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  appearance: none;
+  border-radius: 50%;
+  background: var(--key-cap);
+  color: var(--sheet);
+  border: 2px solid var(--key-rim);
+  box-shadow: var(--key-edge);
+  cursor: pointer;
+  transition: box-shadow .08s, transform .08s;
+}
+
+.hud-key img { width: 18px; height: 18px; }
+.hud-key:hover { transform: translateY(var(--key-hover-drop)); box-shadow: var(--key-edge-hover); }
+
+.hud-key:active {
+  transform: translateY(var(--key-down-drop));
+  background: var(--key-cap-down);
+  border-color: var(--key-rim-down);
+  box-shadow: var(--key-edge-down);
+}
+
+.hud-key:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 2px;
+}
+
+.lever {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 2.5px;
+  height: 15px;
+  margin-left: -1px;
+  background: linear-gradient(90deg, #5c5a52, #d2cfc4, #55534c);
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: bottom;
+}
+
+/* The clock on its torn slip, and Layers on a rod under its roller. */
+#toolbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  isolation: isolate;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--ink);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .55));
+}
+
+#toolbar::before { display: none; }
+
+#clock-paper {
+  --tex-span: 3000px;
+
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42px;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--sheet);
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 90% 100%, 80% 91%, 70% 98%, 60% 92%, 50% 100%, 40% 91%, 30% 97%, 20% 90%, 10% 98%, 5% 92%, 2% 64%, 6% 42%, 1% 20%);
+}
+
+#clock-paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: var(--tex-span);
+  height: var(--tex-span);
+  transform: translate(-50%, -50%) rotate(var(--tex-turn, 0deg));
+  background: var(--texture-img) var(--tex-at, 0 0) / var(--texture-size) auto repeat;
+  mix-blend-mode: soft-light;
+  opacity: var(--texture-strength);
+  pointer-events: none;
+}
+
+#toolbar #clock {
+  height: 38px;
+  margin: 0;
+  padding: 0 12px 0 24px;
+}
+
+#clock-face {
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  font: 700 calc(15px / var(--text-k, 1))/1 var(--type);
+}
+
+#clock-face::after { display: none; }
+
+#toolbar > .platen {
+  position: absolute;
+  top: 36px;
+  left: 4px;
+  right: 4px;
+}
+
+#layer-rod {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 138px;
+  margin: 14px 12px 0 0;
+}
+
+#layer-rod::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  bottom: 8px;
+  left: 50%;
+  width: 3px;
+  margin-left: -1px;
+  background: linear-gradient(90deg, #5c5a52, #d2cfc4, #55534c);
+}
+
+#layers-button {
+  position: relative;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 13px;
+  background: var(--key-cap);
+  color: var(--sheet);
+  border: 2px solid var(--key-rim);
+  box-shadow: var(--key-edge);
+  font: 700 calc(11px / var(--text-k, 1))/1 var(--type);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: box-shadow .08s, transform .08s;
+}
+
+#layers-button:hover { transform: translateY(var(--key-hover-drop)); box-shadow: var(--key-edge-hover); }
+
+#layers-button:active,
+#layers-button.active {
+  transform: translateY(var(--key-down-drop));
+  background: var(--key-cap-down);
+  border-color: var(--key-rim-down);
+  color: var(--key-legend-down);
+  box-shadow: var(--key-edge-down);
+}
+
+#layers-button:focus-visible {
+  outline: 2px solid var(--ribbon);
+  outline-offset: 2px;
+}
+
+#toolbar #modes {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+  width: 100%;
+  margin-top: 7px;
+  overflow: visible;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#toolbar #modes.open { display: flex; }
+#toolbar #modes::after { display: none; }
+#toolbar #modes button { width: 100%; }
+
+#toolbar #infra-menu,
+#toolbar #infra-button {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+#hud-menu { overflow: visible; isolation: auto; }
+#hud-menu::after { display: none; }
+
+body.choosing #toolbar { display: none; }
+
+/* The infrastructure list opens beside its key. */
+#toolbar #infra-menu { position: relative; }
+
+#toolbar #infra-list {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 8px);
+  width: max-content;
+}
+
+#toolbar #infra-list button { width: 100%; }
+
+/* One modifier under its group on a breakdown. */
+.cm-line.cm-part > span:first-child { padding-left: 1em; }
+
+.hud-value b { font-weight: inherit; }

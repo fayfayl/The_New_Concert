@@ -260,7 +260,7 @@
       ],
       "target": "FNA",
       "effects": {
-        "relationsWithTarget": -5,
+        "relationsFromTarget": -5,
         "stability": 6,
         "tradeIncome": 0.1,
         "cannotMilitaryAlly": true
@@ -366,7 +366,8 @@
         }
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "constitution_of_1920"
     },
     {
       "id": "ruin_of_two_victories",
@@ -384,7 +385,8 @@
         "happiness": -10
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "ruin_of_two_victories"
     },
     {
       "id": "the_slums",
@@ -406,7 +408,8 @@
       "tags": [],
       "spread": {
         "unrestPerDay": 1
-      }
+      },
+      "image": "the_slums"
     },
     {
       "id": "crippling_debt",
@@ -422,7 +425,8 @@
         "stability": -10
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "crippling_debt"
     },
     {
       "id": "economic_downturn",
@@ -438,7 +442,8 @@
         "happiness": -15
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "economic_downturn"
     },
     {
       "id": "shell_shocked_caution",
@@ -456,7 +461,8 @@
         "militaryFactoryOutput": -0.1
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "shell_shocked_caution"
     },
     {
       "id": "political_violence",
@@ -479,7 +485,8 @@
       "permanent": false,
       "tags": [
         "paramilitaries"
-      ]
+      ],
+      "image": "political_violence"
     },
     {
       "id": "victors_of_the_continuation_war",
@@ -495,7 +502,8 @@
         "populationGrowth": -0.15
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "victors_of_the_continuation_war"
     },
     {
       "id": "weak_government",
@@ -512,7 +520,8 @@
         "stability": -5
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "weak_government"
     },
     {
       "id": "the_great_slump",
@@ -530,11 +539,13 @@
         "stability": -5
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "the_great_slump"
     },
     {
       "id": "thomas_ii",
       "name": "Thomas II",
+      "note": "Face claim is Julian Byng, 1st Viscount Byng of Vimy",
       "description": "Thomas II ascended to the Kanish throne after the death of his father in 1904. His political and military mettle was proven during the Cordial War and later the Continuation War and its aftermath. However, the government's weak policies have undermined his popularity in recent years and he must decide whether to take more decisive action or wait out the current uncertainty.",
       "polity": [
         "KAN"
@@ -548,7 +559,8 @@
         }
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "thomas_ii"
     },
     {
       "id": "peace_of_kostrava",
@@ -564,7 +576,8 @@
         "cannotIntervene": true
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "peace_of_kostrava"
     },
     {
       "id": "deronic_wall",
@@ -579,7 +592,8 @@
         "maintenance": 0.15
       },
       "permanent": false,
-      "tags": []
+      "tags": [],
+      "image": "deronic_wall"
     },
     {
       "id": "winged_communities",
@@ -597,7 +611,8 @@
         "maintenance": -0.1
       },
       "permanent": true,
-      "tags": []
+      "tags": [],
+      "image": "winged_communities"
     },
     {
       "id": "house_of_clore",
@@ -816,8 +831,8 @@
       "tags": []
     },
     {
-      "id": "army_of_1918",
-      "name": "Army of 1918",
+      "id": "vengeful_army",
+      "name": "Vengeful Army",
       "description": "Our officer corps, which overthrew the king in the 1918 Caitponte Revolution, rallied to Godino almost entirely on his promise to punish the traitorous politicians, who stabbed us in the back over the terms of peace.",
       "polity": [
         "NCN"
@@ -2940,7 +2955,7 @@
       "target": "AMY",
       "effects": {
         "tradeIncome": -0.1,
-        "relationsWithTarget": -25,
+        "relationsWithTarget": 25,
         "stability": -5
       },
       "permanent": false,

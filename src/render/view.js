@@ -86,6 +86,21 @@ function visibleRect(vx, cssW, cssH) {
   return x1 > x0 && y1 > y0 ? { x0, y0, x1, y1 } : null;
 }
 
+// How far the chosen country lightens towards white.
+const CHOSEN_LIGHTEN = 0.25;
+
+// Lightens the chosen country in country selection, from its silhouette.
+function drawChosenLand(ctx, vx) {
+  const s = state.chosenLand && state.silhouette;
+  if (!s) return;
+  ctx.save();
+  ctx.globalAlpha = CHOSEN_LIGHTEN;
+  ctx.translate(vx, view.y);
+  ctx.scale(view.scale, view.scale);
+  ctx.drawImage(s.canvas, s.x, s.y);
+  ctx.restore();
+}
+
 // Blits one copy of the map with its left edge at `vx`.
 function drawMapLayer(ctx, cssW, cssH, vx) {
   const s = view.scale;
@@ -281,6 +296,40 @@ function drawNightLayer(ctx, cssW, cssH) {
   if (w.night && lit > 0.004) drawCityLights(ctx, cssW, cssH, originX, lit);
 }
 
+// Largest baked ring, in pixels; beyond it the ring is stroked directly.
+const RING_BAKE_MAX_PX = 16e6;
+const RING_BAKE_PAD = 8;
+
+// Draws a large ring from a canvas stroked once per zoom level. False when too big.
+function drawBakedRing(ctx, s, alpha, colour) {
+  const dpr = live.pixelRatio || 1;
+  const k = view.scale * dpr;
+  const w = Math.ceil(s.w * k) + RING_BAKE_PAD * 2;
+  const h = Math.ceil(s.h * k) + RING_BAKE_PAD * 2;
+  if (w * h > RING_BAKE_MAX_PX) return false;
+  if (s.baked?.k !== k) {
+    const canvas = s.baked?.canvas || document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const c = canvas.getContext('2d');
+    c.translate(RING_BAKE_PAD, RING_BAKE_PAD);
+    c.scale(k, k);
+    c.lineWidth = OUTLINE_WIDTH / view.scale;
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    c.strokeStyle = colour;
+    c.stroke(s.path);
+    s.baked = { canvas, k };
+  }
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(view.x, view.y);
+  ctx.drawImage(s.baked.canvas, s.x * view.scale - RING_BAKE_PAD / dpr, s.y * view.scale - RING_BAKE_PAD / dpr, w / dpr, h / dpr);
+  ctx.restore();
+  return true;
+}
+
 // Draws the ring around a province at `alpha`.
 function drawSelectionRing(ctx, holder, alpha, colour = OUTLINE_COLOUR) {
   if (!holder.silhouette || alpha <= 0) return;
@@ -288,12 +337,17 @@ function drawSelectionRing(ctx, holder, alpha, colour = OUTLINE_COLOUR) {
   if (s.path === undefined) {
     const tBuild = performance.now();
     s.path = buildOutlinePath(s);
+    s.data = null;
     perf.ringBuild = ease(perf.ringBuild, performance.now() - tBuild);
     perf.ringBuilds++;
     perf.ringPx = s.segments;
   }
 
   const t0 = performance.now();
+  if (s.bake && drawBakedRing(ctx, s, alpha, colour)) {
+    perf.ringDraw = ease(perf.ringDraw, performance.now() - t0);
+    return;
+  }
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(view.x, view.y);
@@ -333,7 +387,10 @@ function drawView() {
   debug.tilesDrawn = 0;
   resourceHits.length = 0;
   markHits.length = 0;
-  for (const dx of offsets) drawMapLayer(ctx, cssW, cssH, view.x + dx);
+  for (const dx of offsets) {
+    drawMapLayer(ctx, cssW, cssH, view.x + dx);
+    drawChosenLand(ctx, view.x + dx);
+  }
 
   drawRivers(ctx, cssW, cssH);
 

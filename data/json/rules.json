@@ -1,0 +1,117 @@
+{
+  "note": "Rules of a new game, chosen on the Game rules tab. A difficulty level adds its effects to the player country only, as national modifiers keyed as in modifiers.json. The AI rules are kept but do nothing until there is an AI. `shown` picks how the rule is drawn: ledger (every option against its effects), stamps, or dial (notches along a track).",
+  "rules": [
+    {
+      "name": "Difficulty",
+      "shown": "ledger",
+      "default": "Captain",
+      "options": [
+        {
+          "name": "Cadet",
+          "effects": {
+            "stability": 20,
+            "politicalPowerPerDay": 1,
+            "factoryOutput": 0.4,
+            "construction": 0.4,
+            "manpower": 0.3,
+            "research": 0.2
+          }
+        },
+        {
+          "name": "Lieutenant",
+          "effects": {
+            "stability": 10,
+            "politicalPowerPerDay": 0.5,
+            "factoryOutput": 0.2,
+            "construction": 0.2,
+            "manpower": 0.15,
+            "research": 0.1
+          }
+        },
+        {
+          "name": "Captain",
+          "effects": {}
+        },
+        {
+          "name": "Colonel",
+          "effects": {
+            "stability": -10,
+            "politicalPowerPerDay": -0.5,
+            "factoryOutput": -0.2,
+            "construction": -0.2,
+            "manpower": -0.15,
+            "research": -0.1
+          }
+        },
+        {
+          "name": "Marshal",
+          "effects": {
+            "stability": -20,
+            "politicalPowerPerDay": -1,
+            "factoryOutput": -0.4,
+            "construction": -0.4,
+            "manpower": -0.3,
+            "research": -0.2
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI behaviour",
+      "shown": "stamps",
+      "default": "Historical",
+      "options": [
+        {
+          "name": "Historical"
+        },
+        {
+          "name": "Ahistorical"
+        }
+      ]
+    },
+    {
+      "name": "AI aggression",
+      "shown": "dial",
+      "default": "Normal",
+      "options": [
+        {
+          "name": "Very low"
+        },
+        {
+          "name": "Low"
+        },
+        {
+          "name": "Normal"
+        },
+        {
+          "name": "High"
+        },
+        {
+          "name": "Very high"
+        }
+      ]
+    },
+    {
+      "name": "AI acceptance",
+      "shown": "dial",
+      "default": "Normal",
+      "options": [
+        {
+          "name": "Very low"
+        },
+        {
+          "name": "Low"
+        },
+        {
+          "name": "Normal"
+        },
+        {
+          "name": "High"
+        },
+        {
+          "name": "Very high"
+        }
+      ]
+    }
+  ]
+}

@@ -120,6 +120,7 @@ if (role) {
   };
   for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
   fire(dom.el('start-enter'), 'click');
+  globalThis.window.game.play('KAN');
   run(40);
 
   const game = globalThis.window.game;

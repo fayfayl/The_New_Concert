@@ -5,30 +5,58 @@ const { realmOf } = await import(`../world/mapdata.js${VERSION}`);
 const { SPEEDS, clock, els, invalidateBuffer, invalidateProvinces, invalidateView, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre;
-export function link(all) { ({ DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, playClick, playPaper, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, togglePanel, view, zoomAt, zoomCentre } = all); }
+let DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, closeWipNote, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, pickAid, playPaper, playPress, playRelease, playSelect, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showWipNote, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, takeDiploAction, togglePanel, updateChoice, view, wipNoteOpen, zoomAt, zoomCentre;
+export function link(all) { ({ DRAG_SLOP, INFRA_LAYERS, INFRA_NAME, clampPan, closeCard, closeDiplo, closeRoutePanel, closeWipNote, controlsOpen, countyAtEvent, debug, diploOpen, fitToView, hoverSea, hoverSub, loadSounds, mapIsShowing, mapPointAtEvent, markAtEvent, openDiplo, openRoutePanel, pauseOpen, pickAid, playPaper, playPress, playRelease, playSelect, provinceAtEvent, quitToStartMenu, resourceAtEvent, routeAtEvent, routePanelOpen, seaAtEvent, select, selectCounty, selectSea, selectSub, setControls, setPause, setPaused, setSpeed, showDiploTab, showMarkTooltip, showWipNote, showResourceTooltip, showRouteTooltip, showTooltip, subAtEvent, takeDiploAction, togglePanel, updateChoice, view, wipNoteOpen, zoomAt, zoomCentre } = all); }
 
 // Attaches every event listener. Called once, from init().
 function wireInput() {
   loadSounds();
 
-  // Plays each button's sound on pointerdown via one delegated capture listener.
+  // Plays each button's or sounded element's sound on pointerdown via one delegated capture listener.
   const pressed = (ev) => {
-    const b = ev.target && ev.target.closest && ev.target.closest('button');
+    const b = ev.target && ev.target.closest && (ev.target.closest('button') || ev.target.closest('[data-sfx]'));
     if (!b || b.disabled) return;
     if (b.dataset && b.dataset.sfx === 'paper') playPaper(ev);
-    else playClick(ev);
+    else playPress(ev);
   };
   document.addEventListener('pointerdown', pressed, true);
 
+  // Any press puts the WIP note away.
+  document.addEventListener('pointerdown', () => { if (wipNoteOpen()) closeWipNote(); }, true);
+
+  // The bar's menu buttons open the WIP note.
+  document.getElementById('hud-menu')?.addEventListener('click', (ev) => {
+    const b = ev.target?.closest?.('.hud-key');
+    if (b) showWipNote(b, 'WIP thing here');
+  });
+
+  // Enter or Space on a focused button presses on key down; the click it sends is then silent.
+  let keyClick = false;
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const b = ev.target && ev.target.closest && ev.target.closest('button');
+    if (!b || b.disabled || (b.dataset && b.dataset.sfx === 'paper')) return;
+    keyClick = true;
+    if (!ev.repeat) playPress(ev);
+  }, true);
+
   // Keyboard-activated clicks (detail 0) sound too.
   document.addEventListener('click', (ev) => {
-    if (ev.detail === 0) pressed(ev);
+    if (ev.detail !== 0) return;
+    if (keyClick) keyClick = false;
+    else pressed(ev);
   }, true);
+
+  // Letting go of the pointer or key that pressed plays the release.
+  document.addEventListener('pointerup', playRelease, true);
+  document.addEventListener('pointercancel', playRelease, true);
+  window.addEventListener('keyup', playRelease, true);
 
   let dragging = false;
   let moved = false;
   let last = { x: 0, y: 0 };
+  let hadCounty = false;
+  const cardUp = () => els.card.classList.contains('open');
 
   els.canvas.addEventListener('mousedown', (ev) => {
     dragging = true;
@@ -54,25 +82,37 @@ function wireInput() {
   });
 
   window.addEventListener('mouseup', (ev) => {
+    // A drag that dismissed the county card.
+    if (dragging && moved && ev.button === 0 && hadCounty) playPaper(ev);
     if (dragging && !moved && ev.button === 0) {
       const id = provinceAtEvent(ev);
       // Ctrl-click opens the owner's diplomacy panel and selects nothing.
-      if (ev.ctrlKey || ev.metaKey) {
+      if ((ev.ctrlKey || ev.metaKey) && !state.choosing) {
         dragging = false;
         const owner = id ? state.world?.table?.provinces?.find((q) => q.id === id)?.owner : null;
         if (owner) openDiplo(realmOf(state.world.table, owner) || owner);
-        else closeDiplo();
+        else {
+          if (diploOpen() || hadCounty) playPaper(ev);
+          closeDiplo();
+        }
         return;
       }
       // A click on a trade route opens its panel and selects nothing.
       const lane = routeAtEvent(ev);
       if (lane) {
         dragging = false;
+        playSelect();
         openRoutePanel(lane);
         return;
       }
+      // A click that opens nothing new sounds as a dismissal.
+      const water = !id && state.mode === 'navy' && (seaAtEvent(ev) || subAtEvent(ev));
+      const dismissed = id ? id === state.selected && (diploOpen() || hadCounty) : !water && (diploOpen() || hadCounty || cardUp());
+      if (dismissed) playPaper(ev);
       closeDiplo();
+      state.chooseMember = false;
       select(id);
+      updateChoice();
       // Water is selectable only in Navy mode.
       if (state.mode === 'navy') {
         const seaId = id ? null : seaAtEvent(ev);
@@ -110,24 +150,40 @@ function wireInput() {
 
   // Right button selects the county under the pointer.
   els.canvas.addEventListener('mousedown', (ev) => {
-    if (ev.button === 0) selectCounty(null);
+    if (ev.button !== 0) return;
+    hadCounty = Boolean(state.county);
+    selectCounty(null);
   });
 
   els.canvas.addEventListener('contextmenu', (ev) => {
     ev.preventDefault();
+
+    // In country selection a right click picks the province's own owner.
+    if (state.choosing) {
+      const pick = countyAtEvent(ev)?.province ?? null;
+      if (pick && pick === state.selected) playSelect();
+      state.chooseMember = Boolean(pick);
+      select(pick);
+      updateChoice();
+      return;
+    }
 
     // Ctrl-right-click opens the member's diplomacy panel.
     if (ev.ctrlKey || ev.metaKey) {
       const id = provinceAtEvent(ev);
       const owner = id ? state.world?.table?.provinces?.find((q) => q.id === id)?.owner : null;
       if (owner) openDiplo(owner);
-      else closeDiplo();
+      else {
+        if (diploOpen()) playPaper(ev);
+        closeDiplo();
+      }
       return;
     }
 
-    closeDiplo();
-
     const county = countyAtEvent(ev);
+    if (!county && (diploOpen() || state.county || cardUp())) playPaper(ev);
+
+    closeDiplo();
 
     // Lights the province and rings the county inside it.
     if (county) {
@@ -154,11 +210,7 @@ function wireInput() {
     zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, Math.pow(1.0015, -ev.deltaY));
   }, { passive: false });
 
-  document.getElementById('zoom-in').addEventListener('click', () => zoomCentre(1.4));
-  document.getElementById('zoom-out').addEventListener('click', () => zoomCentre(1 / 1.4));
-  document.getElementById('zoom-fit').addEventListener('click', fitToView);
 
-  document.getElementById('toggle-panel').addEventListener('click', togglePanel);
 
   const sat = document.getElementById('toggle-satellite');
   sat.disabled = !state.world.satellite;
@@ -187,6 +239,13 @@ function wireInput() {
   window.addEventListener('keydown', (ev) => {
     if (!mapIsShowing()) return;
 
+    if (ev.key === 'Escape' && wipNoteOpen()) {
+      ev.preventDefault();
+      playPress(ev);
+      closeWipNote();
+      return;
+    }
+
     if (ev.key === 'Escape' && controlsOpen()) {
       ev.preventDefault();
       setControls(false);
@@ -203,15 +262,16 @@ function wireInput() {
     if (ev.key === '+' || ev.key === '=') zoomCentre(1.4);
     else if (ev.key === '-' || ev.key === '_') zoomCentre(1 / 1.4);
     else if (ev.key === '0') fitToView();
-    else if (ev.key === '`') { playClick(ev); togglePanel(); }
-    else if (ev.key >= '1' && ev.key <= String(SPEEDS.length)) { playClick(ev); setSpeed(Number(ev.key)); }
+    else if (ev.key === '`') { playPress(ev); togglePanel(); }
+    else if (ev.key >= '1' && ev.key <= String(SPEEDS.length)) { playPress(ev); setSpeed(Number(ev.key)); }
     else if (ev.key === ' ') {
       if (document.activeElement?.tagName === 'BUTTON') return;
       ev.preventDefault();
-      playClick(ev);
+      playPress(ev);
       setPaused(!clock.paused);
     }
     else if (ev.key === 'Escape') {
+      if (routePanelOpen() || diploOpen() || state.county || cardUp()) playPress(ev);
       if (routePanelOpen()) closeRoutePanel();
       else if (diploOpen()) closeDiplo();
       else if (state.county) selectCounty(null);
@@ -229,11 +289,26 @@ function wireInput() {
   document.getElementById('diplo-close').addEventListener('click', closeDiplo);
   els.diploTabDiplomacy.addEventListener('click', () => showDiploTab('diplomacy'));
   els.diploTabLedger.addEventListener('click', () => showDiploTab('ledger'));
+  els.diploActions.addEventListener('click', (ev) => {
+    const b = ev.target?.closest?.('button');
+    if (b?.dataset?.act && !b.disabled) takeDiploAction(b.dataset.act, b);
+  });
+  els.diploActions.addEventListener('change', (ev) => pickAid(ev.target));
 
   document.getElementById('card-close').addEventListener('click', closeCard);
   document.getElementById('county-close').addEventListener('click', () => selectCounty(null));
 
   // Layer menu and mode buttons clear each other.
+  // The Layers button opens the column of layer buttons under it.
+  const layersButton = document.getElementById('layers-button');
+  layersButton.addEventListener('click', () => {
+    const open = !document.getElementById('modes').classList.contains('open');
+    document.getElementById('modes').classList.toggle('open', open);
+    layersButton.classList.toggle('active', open);
+    layersButton.setAttribute('aria-expanded', String(open));
+    if (!open) document.getElementById('infra-list').hidden = true;
+  });
+
   const infraButton = document.getElementById('infra-button');
   const infraList = document.getElementById('infra-list');
   const infraLabel = document.getElementById('infra-label');
@@ -247,10 +322,6 @@ function wireInput() {
     infraList.hidden = !open;
     infraButton.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (!open) return;
-    const r = infraButton.getBoundingClientRect();
-    infraList.style.left = r.left + 'px';
-    infraList.style.top = (r.bottom + 6) + 'px';
-    infraList.style.minWidth = r.width + 'px';
   };
   const clearInfra = () => {
     infraButton.classList.remove('active');

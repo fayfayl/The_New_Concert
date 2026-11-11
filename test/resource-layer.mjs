@@ -41,6 +41,7 @@ const run = (n) => {
 
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 const ok = (c, m) => { console.log(`  ${c ? 'ok  ' : 'FAIL'}  ${m}`); if (!c) problems.push(['check', new Error(m)]); };

@@ -218,7 +218,7 @@ function conditionHolds(w, id, key, value, target) {
       return own === value;
     }
     case 'colonies': return [...(w.table?.polityById?.values() || [])].some((q) => colonyHolder(w, q.id) === id) === value;
-    case 'treatyTerm': return partiesOf(w).some((p) => (p.on || []).includes(id) && p.terms?.[value]);
+    case 'treatyTerm': return partiesOf(w).some((p) => (p.on || []).includes(id) && p.terms?.[value] && !p.terms[value].suspended);
     case 'targetAtWar': return (v.atWar || []).includes(target) === value;
     case 'targetNeighbour': {
       const theirs = new Set(provinces.filter((p) => p.owner === target).map((p) => p.id));

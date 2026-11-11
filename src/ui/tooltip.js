@@ -5,8 +5,8 @@ const { localHours, mapLatAt, mapLonAt, sinSolarElevation, solarDeclination, sub
 const { TICKS_PER_DAY, TICK_MINUTES, clock, els, state, live } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let MARKS, NIGHT_DAY_START, NIGHT_FULL_DARK, RESOURCE_NAME, countyAtEvent, flagFile, flagMissing, flagSlug, flagSrc, markHits, miniFlag, polityOf, resourceHits, subAtEvent, tipName;
-export function link(all) { ({ MARKS, NIGHT_DAY_START, NIGHT_FULL_DARK, RESOURCE_NAME, countyAtEvent, flagFile, flagMissing, flagSlug, flagSrc, markHits, miniFlag, polityOf, resourceHits, subAtEvent, tipName } = all); }
+let MARKS, NIGHT_DAY_START, NIGHT_FULL_DARK, RESOURCE_NAME, countyAtEvent, flagFile, flagMissing, flagSlug, flagSrc, markHits, miniFlag, polityOf, resourceHits, subAtEvent, terrainName, tipName;
+export function link(all) { ({ MARKS, NIGHT_DAY_START, NIGHT_FULL_DARK, RESOURCE_NAME, countyAtEvent, flagFile, flagMissing, flagSlug, flagSrc, markHits, miniFlag, polityOf, resourceHits, subAtEvent, terrainName, tipName } = all); }
 
 const swatch = (rgb) => `<span class="swatch" style="background: rgb(${rgb})"></span>`;
 
@@ -117,6 +117,9 @@ function timeAtLon(world, lon) {
 }
 
 // Shrinks the tooltip to the width of its text.
+// The interface's scale.
+const uiScale = () => (typeof getComputedStyle === 'function' && document.documentElement ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) : 1) || 1;
+
 function fitTooltip() {
   const el = els.tooltip;
   el.style.width = '';
@@ -143,8 +146,9 @@ function fitTooltip() {
   const style = getComputedStyle(el);
   const pad = (parseFloat(style.paddingRight) || 0) + (parseFloat(style.borderRightWidth) || 0);
   const em = parseFloat(style.fontSize) || 13;
-  const want = right - box.left + pad;
-  if (want > 0 && want < box.width - em / 3) el.style.width = `${(want / em).toFixed(3)}em`;
+  const k = uiScale();
+  const want = (right - box.left) / k + pad;
+  if (want > 0 && want < box.width / k - em / 3) el.style.width = `${(want / em).toFixed(3)}em`;
 }
 
 // Shows the tooltip beside the pointer, flipped at window edges.
@@ -155,11 +159,12 @@ function placeTooltip(ev) {
   const box = els.wrap.getBoundingClientRect();
   const x = ev.clientX - box.left;
   const y = ev.clientY - box.top;
-  const tw = els.tooltip.offsetWidth;
-  const th = els.tooltip.offsetHeight;
+  const k = uiScale();
+  const tw = els.tooltip.offsetWidth * k;
+  const th = els.tooltip.offsetHeight * k;
 
-  els.tooltip.style.left = `${x + TOOLTIP_OFFSET + tw > box.width ? x - TOOLTIP_OFFSET - tw : x + TOOLTIP_OFFSET}px`;
-  els.tooltip.style.top = `${y + TOOLTIP_OFFSET + th > box.height ? y - TOOLTIP_OFFSET - th : y + TOOLTIP_OFFSET}px`;
+  els.tooltip.style.left = `${(x + TOOLTIP_OFFSET + tw > box.width ? x - TOOLTIP_OFFSET - tw : x + TOOLTIP_OFFSET) / k}px`;
+  els.tooltip.style.top = `${(y + TOOLTIP_OFFSET + th > box.height ? y - TOOLTIP_OFFSET - th : y + TOOLTIP_OFFSET) / k}px`;
 }
 // Shows the hover tooltip, or hides it when `id` is null.
 function showTooltip(id, ev, seaId = null) {
@@ -177,7 +182,7 @@ function showTooltip(id, ev, seaId = null) {
     const ground = state.mode === 'ideology' ? null : county;
     live.tipHead =
       (ground
-        ? `<div class="plain">A <b>${ground.terrain[0]}</b> county in <b>${p.name}</b></div>`
+        ? `<div class="plain">A <b>${terrainName(ground.terrain[0])}</b> county in <b>${p.name}</b></div>`
         : `<div>${p.name}</div>`) +
       `<div class="sub">Owner: ${miniFlag(pol)}<b>${tipName(pol.name)}</b></div>` +
       (state.mode === 'ideology' ? ''

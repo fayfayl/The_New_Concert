@@ -41,6 +41,7 @@ const run = (n) => {
 // Loading ends when the console is set up; up to ten minutes.
 for (let i = 0; i < 12000 && !(dom.frameQueue.length && globalThis.window.game); i++) await new Promise((r) => setTimeout(r, 50));
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(40);
 
 const ok = (c, m) => { console.log(`  ${c ? 'ok  ' : 'FAIL'}  ${m}`); if (!c) problems.push(['check', new Error(m)]); };
@@ -95,9 +96,9 @@ ok(feeders.every((s) => [...s.sales.keys()].every((k) => k.endsWith('|'))), 'fee
 const soldBy = new Map();
 for (const x of sales) soldBy.set(x.seller + '|1|' + x.kind, (soldBy.get(x.seller + '|1|' + x.kind) || 0) + x.amount);
 const { fed, ported } = layer.routeSegments(w);
-// What a seller fed, by province and, for agreements and lend lease, from its capital.
-const fedAll = (k) => [k, k + '|capital'].reduce((a, x) => a + (fed.get(x) || 0) + (ported.get(x) || 0), 0);
-ok([...soldBy].every(([k, n]) => Math.abs(fedAll(k) - n) < 1e-6), 'every seller feeds what it sold, from its hub, its ports or its capital');
+// What a seller fed, by province for the market and from a shipment's own province or capital.
+const fedAll = (k) => [...new Set([...fed.keys(), ...ported.keys()])].filter((x) => x === k || x.startsWith(k + '|')).reduce((a, x) => a + (fed.get(x) || 0) + (ported.get(x) || 0), 0);
+ok([...soldBy].every(([k, n]) => Math.abs(fedAll(k) - n) < 1e-6), 'every seller feeds what it sold, from its hub, its ports, a leased province or its capital');
 const style = layer.ROUTE_STYLE;
 ok(style.sea.dash.length > 0 && style.rail.dash.length === 0 && style.road.dash.length === 0 && layer.ROUTE_HALO.road && !layer.ROUTE_HALO.rail && !layer.ROUTE_HALO.sea,
   'sea is dashed, rail a bare track, road a cased line');

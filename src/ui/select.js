@@ -7,8 +7,8 @@ const { setOwners } = await import(`../world/ownership.js${VERSION}`);
 const { UNKNOWN_POLITY, dirtyBoxes, els, invalidateBuffer, invalidateProvinces, invalidateView, state, worldChanged } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let DESELECT_FADE_MS, boxesFor, buildLabel, buildSilhouette, nameArchipelagos, paintFlagBlock, playSelect, playWater, polityOf, screenToMap, tooBigToLight, tooBigToLightBox, updateCard, updatePanel;
-export function link(all) { ({ DESELECT_FADE_MS, boxesFor, buildLabel, buildSilhouette, nameArchipelagos, paintFlagBlock, playSelect, playWater, polityOf, screenToMap, tooBigToLight, tooBigToLightBox, updateCard, updatePanel } = all); }
+let DESELECT_FADE_MS, boxesFor, buildLabel, buildSilhouette, nameArchipelagos, paintFlagBlock, playSelect, playWater, polityOf, screenToMap, terrainName, tooBigToLight, tooBigToLightBox, updateCard, updateChoice, updatePanel;
+export function link(all) { ({ DESELECT_FADE_MS, boxesFor, buildLabel, buildSilhouette, nameArchipelagos, paintFlagBlock, playSelect, playWater, polityOf, screenToMap, terrainName, tooBigToLight, tooBigToLightBox, updateCard, updateChoice, updatePanel } = all); }
 
 // Pointer position in map pixels, with the map copy it was read off.
 function mapPointAtEvent(ev) {
@@ -150,13 +150,14 @@ function select(id) {
 
   if (state.fade) invalidateProvinces(state.fade.id, ...state.fade.neighbours);
 
-  state.fade = was
+  state.fade = was && !state.choosing
     ? { id: was, neighbours: new Set(neighboursOf(was)), silhouette: state.silhouette, outline: null, t0: performance.now() }
     : null;
 
-  state.silhouette = id && !tooBigToLight(state.world, id) ? buildSilhouette(state.world, id) : null;
+  if (!state.choosing) state.silhouette = id && !tooBigToLight(state.world, id) ? buildSilhouette(state.world, id) : null;
   state.outline = null;
   updateCard();
+  updateChoice();
   updatePanel();
 }
 
@@ -202,7 +203,7 @@ function updateCountyCard(county) {
   els.countyOwner.hidden = !owner;
   els.countyOwner.textContent = owner ? `occupied — owned by ${owner.name}` : '';
 
-  els.countyTerrain.textContent = county.terrain.join(' + ') || '—';
+  els.countyTerrain.textContent = county.terrain.map(terrainName).join(' + ') || '—';
   els.countyClimate.textContent = county.climate || '—';
 
   els.countyFort.textContent = `${county.fortification || 0}/${countyFortCeiling(county)}`;

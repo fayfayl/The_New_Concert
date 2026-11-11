@@ -40,12 +40,12 @@ const ROUTE_TIP_STOPS = 10;
 const linesOf = new WeakMap();
 const lineOf = (w, route) => { if (!linesOf.has(route)) linesOf.set(route, routeLine(w, route)); return linesOf.get(route); };
 
-// Shipments drawn from the sender's capital to the receiver's, by what they go by.
-const BY_CAPITAL = new Set(['state agreement', 'lend lease']);
 // A country's whole side of a good at its capital.
 const CAPITAL_END = [[null, 1]];
-// Where a sale's cargo leaves or lands in a country: the capital for a shipment by BY_CAPITAL, else by province.
-const endsOf = (supply, sale, id, selling) => (BY_CAPITAL.has(sale.via) ? CAPITAL_END : tradeEnds(supply.get(id), sale.kind, selling));
+// Where a sale's cargo leaves or lands in a country, as a feeder key's last part: a shipment's own province, else the capital; none for the market, which goes by province.
+const endOf = (sale, selling) => (!sale.via ? '' : selling && sale.from ? sale.from : 'capital');
+// The provinces a feeder key's cargo leaves or lands at, with their shares.
+const endsAt = (supply, id, kind, selling, end) => (!end ? tradeEnds(supply.get(id), kind, selling) : end === 'capital' ? CAPITAL_END : [[end, 1]]);
 
 // Segments built from yesterday's sales: each step of a leg and of a feeder, with what passed along it.
 let held = null;
@@ -123,8 +123,8 @@ function* segmentSteps(w, supply, out = {}) {
     // Where cargo on a leg next stops, as country|province|mode: its own stop, else the next leg's that has one.
     const nextStop = (li) => { const l = sale.route.legs.slice(li).find((x) => x.stop); return l && l.stop + '|' + l.to + '|' + l.mode; };
     // Cargo landing at home goes ashore at the ports its provinces hang from in the port network, and cargo sailing from home goes aboard at theirs; what no port serves keeps to the route and the hub.
-    const landed = yield* endPlan(w, sale.route, sale.buyer, endsOf(supply, sale, sale.buyer, false), true);
-    const left = yield* endPlan(w, sale.route, sale.seller, endsOf(supply, sale, sale.seller, true), false);
+    const landed = yield* endPlan(w, sale.route, sale.buyer, endsAt(supply, sale.buyer, sale.kind, false, endOf(sale, false)), true);
+    const left = yield* endPlan(w, sale.route, sale.seller, endsAt(supply, sale.seller, sale.kind, true, endOf(sale, true)), false);
     planned.set(sale, { landed: landed ? 1 - landed.rest : 0, left: left ? 1 - left.rest : 0 });
     sale.route.legs.forEach((leg, li) => {
       // The legs past the landing and before the departure carry only what no port serves.
@@ -187,12 +187,22 @@ function* segmentSteps(w, supply, out = {}) {
   const fed = new Map();
   // Cargo taken to or from its ports by province is fed there already; the rest is fed from the hub.
   const ported = new Map();
+  // What each feeder draws: the market's under its country's good, a shipment's under the shipment.
+  const feeds = new Map();
   for (const sale of sales || []) {
     const ends = planned.get(sale) || { landed: 0, left: 0 };
-    const capital = BY_CAPITAL.has(sale.via) ? '|capital' : '';
-    for (const [k, by] of [[sale.seller + '|1|' + sale.kind + capital, ends.left], [sale.buyer + '|0|' + sale.kind + capital, ends.landed]]) {
+    const endKey = (selling) => (endOf(sale, selling) ? '|' + endOf(sale, selling) : '');
+    for (const [id, side, by] of [[sale.seller, '1', ends.left], [sale.buyer, '0', ends.landed]]) {
+      const k = id + '|' + side + '|' + sale.kind + endKey(side === '1');
       if (by) ported.set(k, (ported.get(k) || 0) + sale.amount * by);
-      if (by < 1) fed.set(k, (fed.get(k) || 0) + sale.amount * (1 - by));
+      if (by >= 1) continue;
+      fed.set(k, (fed.get(k) || 0) + sale.amount * (1 - by));
+      // A shipment's route ends at the receiver's capital already.
+      if (sale.via && side === '0') continue;
+      const label = sale.via ? sale.kind + '|' + sale.seller + '|' + sale.buyer + '|' + sale.via : sale.kind + '|' + id + '|';
+      const fk = k + '#' + label;
+      if (!feeds.has(fk)) feeds.set(fk, { k, label, volume: 0 });
+      feeds.get(fk).volume += sale.amount * (1 - by);
     }
   }
   // Each province's cities by county.
@@ -203,15 +213,15 @@ function* segmentSteps(w, supply, out = {}) {
     if (!citiesIn.has(t.province)) citiesIn.set(t.province, new Set());
     citiesIn.get(t.province).add(k);
   }
-  for (const [k, volume] of fed) {
-    const [id, side, kind, capital] = k.split('|');
-    for (const [p, share] of capital ? CAPITAL_END : tradeEnds(supply.get(id), kind, side === '1')) {
+  for (const { k, label, volume } of feeds.values()) {
+    const [id, side, kind, end] = k.split('|');
+    for (const [p, share] of endsAt(supply, id, kind, side === '1', end)) {
       // From each of the province's cities by an even part, else its seat.
       const from = p && citiesIn.has(p) ? [...citiesIn.get(p)] : [-1];
       for (const c of from) {
         const pieces = yield* feederSteps(w, id, p, c);
         for (const n of pieces.walked || []) onLine.add(n);
-        for (const piece of pieces) addLine(piece.points.map(at), piece.mode, volume * share / from.length, kind + '|' + id + '|', null);
+        for (const piece of pieces) addLine(piece.points.map(at), piece.mode, volume * share / from.length, label, null);
         yield;
       }
     }
@@ -591,12 +601,15 @@ function refreshRoutePanel() {
   fillRoutePanel(seg || { mode: panelSeg.seg.mode, sales: new Map(), stops: new Set(), calls: new Map() });
 }
 
+// The interface's scale, as dragged positions are read in screen pixels.
+const uiScale = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) || 1;
+
 // Keeps a dragged panel inside the map.
 function clampRoutePanel() {
   const el = panelEl(), wrap = el?.parentElement;
   if (!el || !wrap || !el.style.left) return;
-  el.style.left = Math.max(0, Math.min(parseFloat(el.style.left), wrap.clientWidth - el.offsetWidth)) + 'px';
-  el.style.top = Math.max(0, Math.min(parseFloat(el.style.top), wrap.clientHeight - el.offsetHeight)) + 'px';
+  el.style.left = Math.max(0, Math.min(parseFloat(el.style.left), wrap.clientWidth / uiScale() - el.offsetWidth)) + 'px';
+  el.style.top = Math.max(0, Math.min(parseFloat(el.style.top), wrap.clientHeight / uiScale() - el.offsetHeight)) + 'px';
 }
 
 // The close key, and dragging by the head.
@@ -612,16 +625,16 @@ function wireRoutePanel() {
     const box = el.getBoundingClientRect(), wrap = el.parentElement.getBoundingClientRect();
     grab = { dx: ev.clientX - box.left, dy: ev.clientY - box.top, left: wrap.left, top: wrap.top };
     el.style.right = 'auto';
-    el.style.left = box.left - wrap.left + 'px';
-    el.style.top = box.top - wrap.top + 'px';
+    el.style.left = (box.left - wrap.left) / uiScale() + 'px';
+    el.style.top = (box.top - wrap.top) / uiScale() + 'px';
     head.setPointerCapture?.(ev.pointerId);
     head.classList.add('grabbed');
     ev.preventDefault();
   });
   head.addEventListener('pointermove', (ev) => {
     if (!grab) return;
-    el.style.left = ev.clientX - grab.left - grab.dx + 'px';
-    el.style.top = ev.clientY - grab.top - grab.dy + 'px';
+    el.style.left = (ev.clientX - grab.left - grab.dx) / uiScale() + 'px';
+    el.style.top = (ev.clientY - grab.top - grab.dy) / uiScale() + 'px';
     clampRoutePanel();
   });
   const drop = () => { grab = null; head.classList.remove('grabbed'); };

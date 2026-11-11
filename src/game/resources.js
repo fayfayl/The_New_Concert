@@ -5,8 +5,8 @@ const { UNOWNED } = await import(`../world/mapdata.js${VERSION}`);
 const { CLOCK_EPOCH, DAY_MS, clock, everyDay, finish, forgetOnGovernment, governmentChanged, invalidateView, live, perf } = await import(`../core/core.js${VERSION}`);
 
 // Functions from other modules, filled in by main.js once every module has loaded.
-let ALWAYS_FULL, FLOOR, PIT, builtLevel, connectedOf, developmentOf, developmentPitOf, findRoute, lawsFor, nationalModifier, nationalParts, occupationEfficiencyOf, occupiedFraction, partsUnder, realmAbove, relationsBetween, reparationsDue, resourceLineSteps, routeSteps, treesBuilt;
-export function link(all) { ({ ALWAYS_FULL, FLOOR, PIT, builtLevel, connectedOf, developmentOf, developmentPitOf, findRoute, lawsFor, nationalModifier, nationalParts, occupationEfficiencyOf, occupiedFraction, partsUnder, realmAbove, relationsBetween, reparationsDue, resourceLineSteps, routeSteps, treesBuilt } = all); }
+let ALWAYS_FULL, voiceOf, FLOOR, PIT, builtLevel, connectedOf, developmentOf, developmentPitOf, findRoute, lawsFor, nationalModifier, nationalParts, occupationEfficiencyOf, occupiedFraction, partsUnder, realmAbove, relationsBetween, reparationsDue, resourceLineSteps, routeSteps, treesBuilt;
+export function link(all) { ({ ALWAYS_FULL, voiceOf, FLOOR, PIT, builtLevel, connectedOf, developmentOf, developmentPitOf, findRoute, lawsFor, nationalModifier, nationalParts, occupationEfficiencyOf, occupiedFraction, partsUnder, realmAbove, relationsBetween, reparationsDue, resourceLineSteps, routeSteps, treesBuilt } = all); }
 
 // Power a unit of each fuel makes; timber counts its household share.
 const COAL_POWER = 1.5;
@@ -83,11 +83,19 @@ function heldYields(w, p, st) {
 }
 
 // Whether a lease or agreement is in force today: begun, not ended, and its two parties not at war with each other.
+// Whether two countries' realms hold sanctions on each other, either way round.
+function underSanctions(w, a, b) {
+  const va = voiceOf(w, a), vb = voiceOf(w, b);
+  return (w.government?.relations?.relations || []).some((x) => x.band === 'sanctions'
+    && [voiceOf(w, x.first), voiceOf(w, x.second)].sort().join('|') === [va, vb].sort().join('|'));
+}
+
 function inForce(w, x) {
   const today = CLOCK_EPOCH + clock.day * DAY_MS;
   const ends = x.until === undefined ? Infinity : typeof x.until === 'number' ? Date.UTC(x.until, 0, 1) : Date.parse(x.until);
   if (ends <= today || Date.parse(x.since) >= today) return false;
-  return !(w.polityValues?.[x.first]?.atWar || []).includes(x.second) && !(w.polityValues?.[x.second]?.atWar || []).includes(x.first);
+  return !(w.polityValues?.[x.first]?.atWar || []).includes(x.second) && !(w.polityValues?.[x.second]?.atWar || []).includes(x.first)
+    && !underSanctions(w, x.first, x.second);
 }
 
 // Leases in force today: until a date, or 1 January of a year for those signed before the start.
@@ -137,6 +145,8 @@ const shippingPayer = (x, from, to) => (x.terms === 'FOB' ? to : from);
 const shipmentVia = (x) => (x.band === 'lease' ? 'lease' : Object.values(agreementPrice(x)).some((n) => n > 0) ? 'state agreement' : 'lend lease');
 // The good a shipment's route is found and taxed for: equipment by its type, not its generation.
 const shipmentGood = (kind) => String(kind).split(':')[0];
+// The province a shipment leaves from: a lease's deposit for what it yields the lessee, else none.
+const shipmentFrom = (x, s) => (x.band === 'lease' && s.kind === x.resource && s.to === x.second ? x.province : undefined);
 // Sets the shipping terms of every lease and agreement between two countries, or those of one good, resource or province.
 function setShippingTerms(w, first, second, terms, what = null) {
   if (!SHIPPING_TERMS.includes(terms)) throw new Error(`terms are ${SHIPPING_TERMS.join(' or ')}, not "${terms}"`);
@@ -336,14 +346,14 @@ function* tariffsFreshSteps(w) {
   return tariffsKept.index;
 }
 
-// The route a seller's cargo takes to a buyer, or null where none is open: the cheapest path from the seller's hub to the buyer's.
+// The route a seller's cargo takes to a buyer, or null where none is open: the cheapest path from the seller's hub to the buyer's, or to its capital where end is 'capital'.
 // cost: points with each stop's tariff on this cargo. untaxed: the same route without them. stops: the country of each port call and border crossing. rates: the tariff at each stop. legs: the path.
-function routeOf(w, from, to, kind, index = tariffsToday(w), memo = null) {
-  return findRoute(w, from, to, ratesOn(w, index, from, kind), memo);
+function routeOf(w, from, to, kind, index = tariffsToday(w), memo = null, end = null) {
+  return findRoute(w, from, to, ratesOn(w, index, from, kind), memo, end);
 }
 // The same in steps, pausing while a tree is built.
-function* routeOfSteps(w, from, to, kind, index, memo = null) {
-  return yield* routeSteps(w, from, to, ratesOn(w, index, from, kind), memo);
+function* routeOfSteps(w, from, to, kind, index, memo = null, end = null) {
+  return yield* routeSteps(w, from, to, ratesOn(w, index, from, kind), memo, end);
 }
 
 // Where a country's side of a good lies on the map, as [province id, share], largest first: surplus by province for a seller, demand by province for a buyer; what no province holds is the capital's, as null.
@@ -544,14 +554,22 @@ function tradeMarket(w, out, tariffs = null) {
     return y[0] - x[0] || y[1] - x[1] || (ids[a] < ids[b] ? -1 : 1);
   });
 
-  // A buyer's view of each seller, or null at war; filled as asked.
+  // Pairs of realms under sanctions, either way round.
+  const sanctioned = new Set();
+  for (const x of w.government?.relations?.relations || []) {
+    if (x.band !== 'sanctions') continue;
+    const a = voiceOf(w, x.first), b = voiceOf(w, x.second);
+    sanctioned.add(a + '|' + b).add(b + '|' + a);
+  }
+  // A buyer's view of each seller, or null at war or under sanctions; filled as asked.
   const views = new Array(ids.length * ids.length);
   const viewOf = (bi, si) => {
     const k = bi * ids.length + si;
     if (views[k] === undefined) {
       const buyer = ids[bi], seller = ids[si];
       const war = (w.polityValues?.[buyer]?.atWar || []).includes(seller) || (w.polityValues?.[seller]?.atWar || []).includes(buyer);
-      views[k] = war ? null : relationsBetween(buyer, seller)?.value ?? 0;
+      const barred = sanctioned.has(voiceOf(w, buyer) + '|' + voiceOf(w, seller));
+      views[k] = war || barred ? null : relationsBetween(buyer, seller)?.value ?? 0;
     }
     return views[k];
   };
@@ -856,7 +874,7 @@ function* supplySteps(w, settle = false) {
         if (!s.n) continue;
         const from = senderOf(x, s);
         if (!back) {
-          const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
+          const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo, 'capital');
           if (!route) continue;
           shipped.push({ x, from, to: s.to, kind: s.kind, n: s.n, route });
         }
@@ -932,8 +950,8 @@ function* supplySteps(w, settle = false) {
     for (const s of shipmentsOf(x)) {
       if (!s.today || s.day < clock.day - 1) continue;
       const from = senderOf(x, s);
-      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
-      if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(x) });
+      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo, 'capital');
+      if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(x), from: shipmentFrom(x, s) });
     }
   }
   // Outside a settled day: what was noted, and equipment agreements at their daily amount.
@@ -942,8 +960,8 @@ function* supplySteps(w, settle = false) {
       .map((x) => ({ x, to: x.second, kind: x.good, today: x.amount }));
     for (const s of [...noted.values(), ...equipment]) {
       const from = senderOf(s.x, s);
-      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo);
-      if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(s.x) });
+      const route = yield* routeOfSteps(w, from, s.to, shipmentGood(s.kind), tariffs, routeMemo, 'capital');
+      if (route) market.sales.push({ kind: shipmentGood(s.kind), seller: from, buyer: s.to, amount: s.today, route, via: shipmentVia(s.x), from: shipmentFrom(s.x, s) });
     }
   }
   yield;

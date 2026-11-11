@@ -56,6 +56,7 @@ run(60);
 // clockRunning — so without this the world never moves and the test would pass
 // or fail for the wrong reason.
 fire(dom.el('start-enter'), 'click');
+globalThis.window.game.play('KAN');
 run(30);
 const started = document.getElementById('start')?.classList.contains('gone');
 console.log(`start menu dismissed: ${started === true}`);
